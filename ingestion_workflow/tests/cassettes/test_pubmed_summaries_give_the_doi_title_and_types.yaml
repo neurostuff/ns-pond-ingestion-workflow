@@ -1,0 +1,95 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=22015111%2C10320212%2C40359377%2C10912589&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        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
+        AAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Wed, 21 Oct 2026 12:29:53 GMT
+      ncbi-phid:
+      - 1D341760D82B92E5000017E96D99EE5F.1.1.m_1
+      ncbi-sid:
+      - 07D4270000A52ECF_8D8CSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

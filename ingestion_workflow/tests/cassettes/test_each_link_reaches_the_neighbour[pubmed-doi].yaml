@@ -1,0 +1,207 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=21704176&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAJRU224aMRD9FctPrcTFXm6BN9pEaqIQVY3UPkR9MN4BHHlt6rVpKeq/d8ZLIJdG
+        DRIS6/GcuZ7jHV+BKiHwyY7H7Rr4hEOdqkqFLW/xDYTaeIdG0enxPy0e8NJGck6mrPnkjhdyJPpy
+        NOTfW8fv5h5hB0uLr9O8VJESFEJKduM3aIRn1qvkmCTv2qegyXwDKfi58ZZdgwqOzaDCa5Xiygcq
+        YMedqshxlkLwabliV9/2Dvt+ptkXbdqmOkLIhWEzB+Sl0n5jwFrPPpwIxeoqMHTFpidCP66wHdiy
+        89tTy/W1WUCtEzv/+iYobsaqOjYzexkgmmhzQX7pTDQbYOW2XiSnI66eGcdKWOPeiQgT5mgd2gSd
+        TAxbplyJpp8sriCoNaRoNKtjwI0uDdSdvMgQHzLo/2c4LQFR1NuUxzIm2pi6TnToE+HUEj0mfDDo
+        tYc9TkNwS6Is4B/OxNkqOfMjQR7TeCDO5HAfgxgvxajfHvWLEdH0wTQetMeDYb+hczP1O36FXHXK
+        smnA6rDRFv8CyKeflCSA9qHE4cdEtXxO8xmUrI1Nl/ALvxY+sNnF+fXlzUUT9OBaDKgY1cRsxLbj
+        ptyvGj0rKKnabMHqJM5C2dz9QXXEmgOk9Oaxf+/oL0VHCjns3ndwJh0SYkcMO0I8C7A2TwL0jwFu
+        D8N6J+V7gQFGbZmJt0JxeHxLqPjH3eFcAIlAHRz1L7qy6PYEE2IiRM79FLIx9TOE7IpBVxSvIJTW
+        sI4vIUP8vQIBFwP8fgkozpgY/gtwWMRbAehtjYMniKIrRt1CPCAybxYQwGli8B2eVYzBzFPMZ/5J
+        1Ww6Jx3oSCxbVxoB2icXSfEtvkjW3je0PL5UzTvql1vmF8zSa2rcMiusgsrnBx+s14pUmTWBjJmw
+        18mBHXi954Y2MeNI8eEvAAAA//9kVUkOwyAMvPcZ/UCVJwFKFFQTKhS48ffMyEY07c0ajD3eQ8gH
+        6QqKr/R9zu+xBaCCHMSaVIZ46o3RAcAnzPrg8QNbMOrF8vdktj5YM0dNnpeMiGsuivOybiWnWkTR
+        YRUvq0EI4Y8tsGmb1KfbsDt0lDnhbrsfsBeLv1hvqcIWy9fuvV+pxohCFU65Jaf3/rgAAAD//wMA
+        2eajuJUHAAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Thu, 22 Oct 2026 05:04:34 GMT
+      ncbi-phid:
+      - 1D3238309BD9AC750000790338E6669C.1.1.m_1
+      ncbi-sid:
+      - C6E2A0D3680B7F93_A5A9SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=20&retmode=json&term=Cognitive%5Bti%5D+AND+dysfunction%5Bti%5D+AND+in%5Bti%5D+AND+depression%5Bti%5D+AND+neurocircuitry%5Bti%5D+AND+and%5Bti%5D+AND+new%5Bti%5D+AND+therapeutic%5Bti%5D+AND+strategies%5Bti%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAGSQTW6DQAyF9z0F8hpFlbrLrmrXuUDEYsQYsAQeanuSIsTda9pCULuz3+e/5xk6
+        DBEFzjPYNCKcARWD1B2UcENRSuza8+kFlnJDgpp7W1vqlNlW7tWCNoTPR6IWZGMUe1JPrlUJJoG1
+        D+aTFX+1j4wyHYC3vaWWyeiGV6OqeL28F3HSJnO98l2jRxhx9MP0SBmzpJqkzmQy7XLgeCi577F1
+        KGHEbFTvmvpVhi2hrpJbQZEkP25mGDsJisrJGv9EdDNA7EW+AdxWQ9jHI638ifcgTNz+GUEtJ8G4
+        vSMZxv/DHaVsY7bBjYYWdV14SQUZDlp8V52gWpbl6QsAAP//AwDCCCz/2AEAAA==
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Thu, 22 Oct 2026 05:32:11 GMT
+      ncbi-phid:
+      - 1D33C9B11FD1F98500004421E3018674.1.1.m_1
+      ncbi-sid:
+      - AF22A40F5197D067_C8E3SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=20&retmode=json&term=Cognitive%5Bti%5D+AND+dysfunction%5Bti%5D+AND+depression%5Bti%5D+AND+neurocircuitry%5Bti%5D+AND+new%5Bti%5D+AND+therapeutic%5Bti%5D+AND+strategies%5Bti%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAGzOP2/CQAwF8L2fAnmOUFIQSGxVO3diIwynyyuxlF5S20cboXx3nKF/BN3uvZ/v
+        zhdqERoI7S5k4wDaERRBYksFnSHKffKuXK5oKr5JoLmz+Ursc/IDVT4tsPfw9RvUgsxWeuSmY/Vw
+        oMdqW66r7YaOBZmEpF0w/0Mxq3cfGTL+AX+gpuf+lNj4jJoOe7YOx8XT68uipmbUt5ziPHhHGHxP
+        /UcSsvSRJWY2Ge/187ayFhIGZON4S+qrGk4M/RGapocrAAAA//8DAD/SwH5XAQAA
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Thu, 22 Oct 2026 05:32:12 GMT
+      ncbi-phid:
+      - 1D33C9B11FD1F98500003921E4EA0177.1.1.m_1
+      ncbi-sid:
+      - AF22A40F5197D067_C8E3SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

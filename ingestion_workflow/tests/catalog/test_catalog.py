@@ -762,19 +762,25 @@ def test_code_older_than_the_catalog_refuses_to_open_it(tmp_path, monkeypatch):
     assert _version_and_dois(root)[0] == "3"
 
 
-def test_an_article_holding_two_pmids_presents_the_lower(catalog):
-    """Two PubMed records of one paper, merged on purpose; every stage asks PubMed
-    for the same one, whatever order the rows are read in."""
-    ref = catalog.register(Identifier(pmid="22387514"))
-    catalog._conn.execute(
-        "INSERT INTO aliases(kind, value, article_id) VALUES('pmid', '12671262', ?)", (ref.id,))
-    catalog._conn.execute(
-        "INSERT INTO aliases(kind, value, article_id) VALUES('pmid', '9999999999', ?)", (ref.id,))
+def test_a_paper_s_duplicate_pubmed_records_are_presented_beside_its_pmid(catalog):
+    """Two PubMed records of one paper, merged on purpose: the second is held as a
+    duplicate record's, and every stage that asks PubMed of the paper asks of both."""
+    ref = catalog.register(Identifier(pmid="12671262"))
+    catalog._conn.executemany(
+        "INSERT INTO aliases(kind, value, article_id) VALUES('duplicate_pmid', ?, ?)",
+        [("9999999999", ref.id), ("22387514", ref.id)])
     for presented in (catalog.identifier(ref.id), catalog.identifiers([ref.id])[ref.id]):
         assert presented.pmid == "12671262"
         assert presented.other_ids == {DUPLICATE_PUBMED_RECORDS: "22387514,9999999999"}
         assert presented.pmids == ["12671262", "22387514", "9999999999"]
     assert catalog.identifier(catalog.register(Identifier(pmid="7")).id).other_ids is None
+
+
+def test_an_article_holding_a_journal_and_a_preprint_doi_presents_the_journal_s(catalog):
+    ref = catalog.register(Identifier(doi="10.1101/2023.10.26.564245"))
+    catalog._conn.execute("INSERT INTO aliases(kind, value, article_id) VALUES('doi', ?, ?)",
+                          ("10.1038/s41593-024-01787-0", ref.id))
+    assert catalog.identifier(ref.id).doi == "10.1038/s41593-024-01787-0"
 
 
 

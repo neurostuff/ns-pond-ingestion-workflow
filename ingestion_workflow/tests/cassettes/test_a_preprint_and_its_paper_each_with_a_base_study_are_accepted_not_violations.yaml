@@ -1,0 +1,1296 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=42230985&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAKyT0UvDMBDG/5UjTwpljE5F99aJoN06ZfNNfMjacw2kSUkukzL83712c4K+GPAt
+        +e773ZfA3V7UKCt0YroX1LUopgJ9aBrpOpGIHTqvrGFxPJqIj0Q4LmrqzUFVXkxfxEWaTsY315fi
+        Nfk+H+qMnZREtGFTSeoD0nF6BVnYsog/1DwYSFn3NriyVx8MQQ6PG/RwtrCmOueiDFRb16fvhZFN
+        b1vXslXOQraYHQ3Hz2SDl7VSB0/ohlfxT07kkwwaOyjuIrnCWoeQF5HYvdQaFpHQmtCUCMtILLe1
+        8dbAOjZvyRMhA8zzSG6OWqODeWzeymrtYRYbd2udUZxXZJHgs8MtP1V6yFd/Qnm22U2HwfvdgBTp
+        gdaMYAV111qqpZaNKuEtmJJ4iaSG0hqDfNkp6kAZkJXV6Es05OFdUQ0eeeMQLI87W0bDIjj6ai//
+        t71IPgEAAP//jFbJbtswFLz3KwSfeqgsklqtnII2RQM0bdCgp54kik7YanEo0eiC/HuHpGxLVg0U
+        iBFxmffm7Vztu1pbj8QEK9n32iwyU63Fo0CFrWhGM59mLF0ZF7SPpuQF/sEjbd3oVj5rYZ1ECWVx
+        QknmBNmeEZLUJ3Fiql+4LRqliR9Hm9Q1BOf1b8hUrYwF12qQHLa+WX0ue6H2xWjZw6CrX0anErxT
+        FSIxaMPuXpd3cIgPayvxE1/bDulw8+7j7acbp+F4FeRMqJ0C17v+rGQ1xh03G1EZ6nYHVCm8U9TW
+        H8cmZlLoCGnk7H52uv/p9sPdA6ObkEV0jtk1/ALm/u4tDcMsJVm6gMwVxScQznxZ5d4EfNUUre65
+        krvBHk25XM0lV52cyg1PcilZUxJmQR/RMEl8NGb8KI18dsZNziRE/ycBYXyS/dBhwpgYTIOE8Aq5
+        t4GYTIWA0IDFHiE5IZbAFFJwLnbDEhIHjF2AKLGX/RIRXUYgN2rZinNEFlAgkpzEC8QxoWYA/IVG
+        RcQWAFSpEr//AWAeC/MoXWpA8JWoRdEveFnUaIktmi3KHhPEJT2Wx/H6BXP14Xnt2eH7XpQeYbnq
+        1+Fa9X6WbKJ4E649JEruIaKMMhIGZ8fBnpo+BaFjUnzdGS5etzUFaIokj2iSRhlFRbWdZWlZFcOg
+        ZKkHywpzsfeuYZwq+GAKHdZBJO90i9dGCuhW1/V31ybGLo6ngcBybBHjGfQe+pv3mhESmweDqDtu
+        79lOdTDnUoLCmR0fjeFysEDTiRVHgzWca2QvOINl2XU/Dt0ZVxBxqRv3jc/BPZ1cIwLoSagDkbPt
+        0SKnZQyldeoO7b/VTWkeaGan2BeyLspabFXXaFW73YNUnIhxCyYs2GLvJNtQP6nleD8NByVm5szf
+        ZSbVCR1Tyl3YSjUZiPP3195YxHVtuu3onJeXl1d/AQAA//8DABMmHM1sCgAA
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Fri, 23 Oct 2026 08:04:06 GMT
+      ncbi-phid:
+      - 1D3460167182AD950000316269105EA5.1.1.m_1
+      ncbi-sid:
+      - 869BFEB08D56D89D_793BSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=41674811&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAKyUS2/bMAyA/4qgs5P4EbtOdsoKDEW6FEGzW7GDYnOxAFly9eiQBfvvo+wsdhoU
+        mIGdTJP8SIoidaIVsBI0XZ6oPTZAlxSMq2umjzSgb6ANVxKV4TShvwOq0Sisd3a8NHT5QudRdjfP
+        o4h+D3q5syN20QS0cfuSWZ8gDuOMfIE9iVENH+iNcrrw2mcwZPeKGuZspbRPeqKS1d62q1jDtSKr
+        s/l8glXribpCOGNBt6Vg+Rduy5yAI9mMxDZKaSDrsdgDE4J8HQntLMgCyNNIbK0qaZQku5HcEw4B
+        c+RxJPYIQoAejT0rIQz5PJK6V1pyzLYZe93fNBywUGbI+p9IHGV0tt3A3fCWW9HCAgkoycOxUbZi
+        gtW8ID+cLCyuDBOkUFIC/rxxeyRcElYqAaYAaQ35yW1FDOB+AVF7MOgybYde27/h2Tl89X/C+21W
+        wrX9QJkb485iww5gOlEwefBLDfjBJkhRO8lfHbR9icLoLsvDJO1w2SHQSXG2SCZpGKXdpnf9fcFx
+        dNoXu9KWF3isgG41NJpL6+NrKJQusdHW+QK2br+BsgtwUSb+xjq6e3FOlJfn60O/ugU6DdYR4SmZ
+        aE92eXr8IPRIXQz9895/u7mP4jxf5El8g/CrJGkPoW3CyyUZwJ+u6VLxIZv0bBRO4ygOk5k202Sq
+        zSTPFvN0kcze3tfMr0LM+xDvyHZyK26swtfbd2rYyEuzBq/tLIxnUUzCbJmmbc4hgN6CS/iQyG4I
+        nD0Nv2jwBwAA//90VrtSwzAQ7PkKDVUyQ4JkJ8GYKiUMM1R8gKzIYJCtIEvp8u/syTIJeRQuLEt3
+        e6fd9V06sCzz8wPUPqeNlv2lNJxxXnIeq3K6BpnhiAMF8Pr3g3juPHthb6A5m7zabjOds/gnWYeP
+        pyWfFNNSFKKYiSJ7mDNcR8nQecHz4r5fiHy1mmEzHiEWs4xEiNip8e9bggRxESdbEsEiy3L+WIAB
+        nY1gIzjpvWuq4CM42H3P1qjRSRVZjiIRUtkA0pcrfndbB2O+BmGMfqh7LZ2CZn+CdNQLbaySpPQo
+        PTCgZCeXfajlKovQUqtSLarxMR65jFMwD4JswBVABsjK2u/RebAFd9+ENil80/hhCBikiUOf2o34
+        TpZTQUOWdKGxp1tYWxfaikYNWpE72RhZGV072wZnkgGlqPii0xJKOEOLtUNsgn5IqzAS+DEJ+en/
+        +YKIxbNErGFD3bgjrz8eKXZUjwqG/Ce1Zr/f3/wCAAD//wMAMLPRHTQJAAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Fri, 23 Oct 2026 08:04:07 GMT
+      ncbi-phid:
+      - 1D33ABE4FCD277E500004261EB53BA0F.1.1.m_1
+      ncbi-sid:
+      - 869BFEB08D56D89D_793BSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - pmc.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=replay%40example.com&format=json&ids=PMC12889832%2CPMC13387087&idtype=pmcid&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA21RTWuDQBD9K2UhnrJmP4yuglDIudB7yWHRTWOjjt01sSH43zurNEga2Mu8eTPv
+        zdsbcb3uz45kBE5kTaxxHbTO0FL3BkHBREw5o0K+sCjzL5lY32fjepLdyKBtW7WfuOBjvyYHsI1G
+        nHw5aJFYlf2183u6pqjKCfBM8v6240KpVEmBoK+kVAlTCcElptFVjTPWdLW+vpof3XS1CQtokNsD
+        +B5KooEKWjqAPR1qGLBniiNgb5rP5+lVxBbzwewv9+4CtJIvfKzEbuEjmJ3nk+/Ai+ZPJS/GOoR8
+        fi1g7Y4w6ApPnerRR1WAnY6+kRIqxDkLBRdMbqwLZWgdVXEabVO5uXBcMAeVPSTUNR6MeJxEivP7
+        B5iS/iOP64UQZ1JtXMRlHFP/k0xwHlHxoPOX/V1HCMlStX2q80ce9+MvFGIm9j0CAAA=
+    headers:
+      allow:
+      - GET, HEAD, OPTIONS
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json
+      cross-origin-opener-policy:
+      - same-origin
+      date:
+      - Fri, 23 Oct 2026 08:04:07 GMT
+      referrer-policy:
+      - same-origin
+      server:
+      - istio-envoy
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept,Accept-Encoding
+      via:
+      - 1.1 google
+      x-content-type-options:
+      - nosniff
+      - nosniff
+      x-envoy-upstream-service-time:
+      - '7'
+      x-frame-options:
+      - DENY
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.21203/rs.3.rs-8694593/v1?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"institution":[{"name":"Research
+        Square"}],"indexed":{"date-parts":[[2026,6,3]],"date-time":"2026-06-03T08:01:17Z","timestamp":1780473677689,"version":"3.54.1"},"posted":{"date-parts":[[2026,2,2]]},"group-title":"In
+        Review","reference-count":60,"publisher":"Springer Science and Business Media
+        LLC","license":[{"start":{"date-parts":[[2026,2,2]],"date-time":"2026-02-02T00:00:00Z","timestamp":1769990400000},"content-version":"unspecified","delay-in-days":0,"URL":"https:\/\/creativecommons.org\/licenses\/by\/4.0\/"}],"content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"accepted":{"date-parts":[[2026,1,25]]},"abstract":"<title>Abstract<\/title>\n                <p>\n                  <italic>Background\/Objectives:<\/italic>\n                  Neurobiological
+        frameworks of obesity in youth have focused largely on non-homeostatic systems
+        (reward, salience, executive control), while the homeostatic system\u2014particularly
+        the hypothalamus\u2014is comparatively understudied. A clearer picture of
+        how these systems interact in adolescents with severe obesity is needed to
+        inform treatment. This study sought to test whether adolescents with severe
+        obesity exhibit altered hypothalamic functional connectivity, relative to
+        healthy-weight peers, across fasting and fed states.\n                  <italic>Subjects\/Methods:<\/italic>\n                  We
+        analyzed data from the Food and Adolescent Brain Study, a single-blinded randomized
+        cross-over trial (NCT04208256) of 13\u201318-year-old adolescents with severe
+        obesity (SO; body mass index [BMI] &gt;99\n                  <sup>th<\/sup>\n                  %ile;
+        n=30; mean [SD] age 14.6 years [1.5]) and with healthy weight (HW; BMI &lt;85\n                  <sup>th<\/sup>\n                  %ile;
+        n=26; 15.5 years [1.6]).\n                  <italic>Interventions\/Methods:<\/italic>\n                  Participants
+        completed resting-state functional magnetic resonance scans during fasting
+        and after ingesting a 75-gram glucose drink (1 255.8 kJ [300 kcal]) to induce
+        a fed state. Multivariate general linear models were run in seed-to-voxel
+        analyses to estimate functional connectivity, setting the hypothalamus as
+        the seed region. All models were adjusted for age and sex, with significance
+        determined via cluster-forming voxel-level p&lt;0.005 and false discovery
+        rate-corrected cluster-level p&lt;0.05.\n                  <italic>Results<\/italic>\n                  :
+        In adolescents with SO,\n                  <italic\/>\n                  during
+        fasting, hypothalamic connectivity in adolescents with SO was weaker to the
+        bilateral cerebellum and left(L) middle occipital gyrus, and stronger to the
+        right(R) postcentral\/supramarginal gyri, compared to the HW group. During
+        the fed state, hypothalamic connectivity increased to the bilateral middle
+        frontal gyri and R putamen and decreased to the R caudate and L superior frontal
+        gyrus in adolescents with SO, relative to the HW group.\n                  <italic>Conclusion:<\/italic>\n                  Severe
+        obesity in adolescence is associated with altered communication between homeostatic
+        (hypothalamus) and non-homeostatic brain structures, evident across fasting
+        and fed states. Findings underscore the need to incorporate homeostatic circuitry
+        into pediatric obesity frameworks.\n                <\/p>","DOI":"10.21203\/rs.3.rs-8694593\/v1","type":"posted-content","created":{"date-parts":[[2026,2,2]],"date-time":"2026-02-02T10:41:43Z","timestamp":1770028903000},"source":"Crossref","is-referenced-by-count":0,"title":["Altered
+        Hypothalamic functional connectivity in adolescents with severe obesity"],"prefix":"10.21203","author":[{"ORCID":"https:\/\/orcid.org\/0000-0001-8334-974X","authenticated-orcid":false,"given":"Allison","family":"Shapiro","sequence":"first","affiliation":[{"name":"University
+        of Colorado Anschutz"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Meghan","family":"Pauley","sequence":"additional","affiliation":[{"name":"University
+        of Colorado Anschutz"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Jaime
+        M.","family":"Moore","sequence":"additional","affiliation":[{"name":"University
+        of Colorado School of Medicine"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Lucy","family":"Hall","sequence":"additional","affiliation":[{"name":"University
+        of Colorado Anschutz"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Nicholas","family":"Stence","sequence":"additional","affiliation":[{"name":"University
+        of Colorado Anschutz"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Susan","family":"Johnson","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Kristen","family":"Nadeau","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Kathleen","family":"Keller","sequence":"additional","affiliation":[{"name":"The
+        Pennsylvania State University"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"ORCID":"https:\/\/orcid.org\/0000-0003-2374-1517","authenticated-orcid":false,"given":"Barbara","family":"Rolls","sequence":"additional","affiliation":[{"name":"The
+        Pennsylvania State University"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Marc-Andre","family":"Cornier","sequence":"additional","affiliation":[{"name":"Medical
+        University of South Carolina"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Jason","family":"Tregellas","sequence":"additional","affiliation":[{"name":"University
+        of Colorado, Anschutz Medical Campus"}],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"297","reference":[{"issue":"5","key":"ref1","doi-asserted-by":"crossref","first-page":"551","DOI":"10.1038\/nn0505-551","article-title":"Neurobiology
+        of obesity","volume":"8","author":"Markus A","year":"2005","unstructured":"Markus
+        A. Neurobiology of obesity. Nat Neurosci. 2005;8(5):551.","journal-title":"Nat
+        Neurosci"},{"key":"ref2","doi-asserted-by":"crossref","first-page":"38","DOI":"10.1016\/j.cpr.2018.12.002","article-title":"Neural
+        vulnerability factors for obesity","volume":"68","author":"Stice E","year":"2019","unstructured":"Stice
+        E, Burger K. Neural vulnerability factors for obesity. Clin Psychol Rev. 2019;68:38\u201353.","journal-title":"Clin
+        Psychol Rev"},{"issue":"10","key":"ref3","doi-asserted-by":"crossref","first-page":"1157","DOI":"10.1093\/scan\/nsz085","article-title":"A
+        review of the relationship between eating behavior, obesity and functional
+        brain network organization","volume":"15","author":"Donofry SD","year":"2020","unstructured":"Donofry
+        SD, Stillman CM, Erickson KI. A review of the relationship between eating
+        behavior, obesity and functional brain network organization. Social Cognitive
+        and Affective Neuroscience. 2020;15(10):1157\u201381.","journal-title":"Social
+        Cognitive and Affective Neuroscience"},{"issue":"Suppl 5","key":"ref4","first-page":"197s-200s","article-title":"Homeostatic
+        and non-homeostatic pathways involved in the control of food intake and energy
+        balance","volume":"14","author":"Berthoud HR","year":"2006","unstructured":"Berthoud
+        HR. Homeostatic and non-homeostatic pathways involved in the control of food
+        intake and energy balance. Obesity (Silver Spring, Md). 2006;14 Suppl 5:197s-200s.","journal-title":"Obesity
+        (Silver Spring, Md)"},{"key":"ref5","article-title":"Homeostatic and non-homeostatic
+        controls of feeding behavior: Distinct vs. common neural systems","author":"Liu
+        CM","year":"2018","unstructured":"Liu CM, Kanoski SE. Homeostatic and non-homeostatic
+        controls of feeding behavior: Distinct vs. common neural systems. Physiol
+        Behav. 2018.","journal-title":"Physiol Behav"},{"issue":"3\u20133","key":"ref6","doi-asserted-by":"crossref","first-page":"1313","DOI":"10.1016\/j.neuroimage.2009.12.109","article-title":"The
+        role of the right inferior frontal gyrus: inhibition and attentional control","volume":"50","author":"Hampshire
+        A","year":"2010","unstructured":"Hampshire A, Chamberlain SR, Monti MM, Duncan
+        J, Owen AM. The role of the right inferior frontal gyrus: inhibition and attentional
+        control. NeuroImage. 2010;50(3\u20133):1313\u20139.","journal-title":"NeuroImage"},{"issue":"50","key":"ref7","doi-asserted-by":"crossref","first-page":"12688","DOI":"10.1523\/JNEUROSCI.1175-16.2016","article-title":"The
+        Right Superior Frontal Gyrus and Individual Variation in Proactive Control
+        of Impulsive Response","volume":"36","author":"Hu S","year":"2016","unstructured":"Hu
+        S, Ide JS, Zhang S, Li CR. The Right Superior Frontal Gyrus and Individual
+        Variation in Proactive Control of Impulsive Response. The Journal of neuroscience:
+        the official journal of the Society for Neuroscience. 2016;36(50):12688\u201396.","journal-title":"The
+        Journal of neuroscience: the official journal of the Society for Neuroscience"},{"issue":"5","key":"ref8","doi-asserted-by":"crossref","first-page":"e0124797","DOI":"10.1371\/journal.pone.0124797","article-title":"Organization
+        of the Human Frontal Pole Revealed by Large-Scale DTI-Based Connectivity:
+        Implications for Control of Behavior","volume":"10","author":"Orr JM","year":"2015","unstructured":"Orr
+        JM, Smolker HR, Banich MT. Organization of the Human Frontal Pole Revealed
+        by Large-Scale DTI-Based Connectivity: Implications for Control of Behavior.
+        PloS one. 2015;10(5):e0124797.","journal-title":"PloS one"},{"key":"ref9","doi-asserted-by":"crossref","first-page":"5","DOI":"10.1016\/B978-0-12-804593-0.00002-3","volume-title":"Chapter
+        2 - Anatomy of the Salience Network. Salience Network of the Human Brain","author":"Uddin
+        LQ","year":"2017","unstructured":"Uddin LQ. Chapter 2 - Anatomy of the Salience
+        Network. Salience Network of the Human Brain. San Diego: Academic Press; 2017.
+        p. 5\u201310."},{"issue":"4","key":"ref10","doi-asserted-by":"crossref","first-page":"681","DOI":"10.1016\/j.neubiorev.2013.02.002","article-title":"Processing
+        of primary and secondary rewards: a quantitative meta-analysis and review
+        of human functional neuroimaging studies","volume":"37","author":"Sescousse
+        G","year":"2013","unstructured":"Sescousse G, Caldu X, Segura B, Dreher JC.
+        Processing of primary and secondary rewards: a quantitative meta-analysis
+        and review of human functional neuroimaging studies. Neuroscience and biobehavioral
+        reviews. 2013;37(4):681\u201396.","journal-title":"Neuroscience and biobehavioral
+        reviews"},{"key":"ref11","doi-asserted-by":"crossref","first-page":"90","DOI":"10.1016\/j.nlm.2014.05.002","article-title":"A
+        universal role of the ventral striatum in reward-based learning: evidence
+        from human studies","volume":"114","author":"Daniel R","year":"2014","unstructured":"Daniel
+        R, Pollmann S. A universal role of the ventral striatum in reward-based learning:
+        evidence from human studies. Neurobiol Learn Mem. 2014;114:90\u2013100.","journal-title":"Neurobiol
+        Learn Mem"},{"key":"ref12","doi-asserted-by":"crossref","first-page":"271","DOI":"10.1016\/j.neubiorev.2015.08.017","article-title":"The
+        basolateral amygdala in reward learning and addiction","volume":"57","author":"Wassum
+        KM","year":"2015","unstructured":"Wassum KM, Izquierdo A. The basolateral
+        amygdala in reward learning and addiction. Neuroscience and biobehavioral
+        reviews. 2015;57:271\u201383.","journal-title":"Neuroscience and biobehavioral
+        reviews"},{"issue":"5","key":"ref13","doi-asserted-by":"crossref","first-page":"1052","DOI":"10.1002\/hbm.21268","article-title":"The
+        obese brain: association of body mass index and insulin sensitivity with resting
+        state network functional connectivity","volume":"33","author":"Kullmann S","year":"2012","unstructured":"Kullmann
+        S, Heni M, Veit R, Ketterer C, Schick F, Haring HU, et al. The obese brain:
+        association of body mass index and insulin sensitivity with resting state
+        network functional connectivity. Human brain mapping. 2012;33(5):1052\u201361.","journal-title":"Human
+        brain mapping"},{"key":"ref14","doi-asserted-by":"crossref","first-page":"127","DOI":"10.1016\/j.bbr.2015.03.016","article-title":"Obesity
+        is marked by distinct functional connectivity in brain networks involved in
+        food reward and salience","volume":"287","author":"Wijngaarden MA","year":"2015","unstructured":"Wijngaarden
+        MA, Veer IM, Rombouts SA, van Buchem MA, Willems van Dijk K, Pijl H, et al.
+        Obesity is marked by distinct functional connectivity in brain networks involved
+        in food reward and salience. Behavioural brain research. 2015;287:127\u201334.","journal-title":"Behavioural
+        brain research"},{"issue":"10","key":"ref15","doi-asserted-by":"crossref","first-page":"1494","DOI":"10.1038\/ijo.2010.84","article-title":"Obese
+        children show hyperactivation to food pictures in brain networks linked to
+        motivation, reward and cognitive control","volume":"34","author":"Bruce AS","year":"2010","unstructured":"Bruce
+        AS, Holsen LM, Chambers RJ, Martin LE, Brooks WM, Zarcone JR, et al. Obese
+        children show hyperactivation to food pictures in brain networks linked to
+        motivation, reward and cognitive control. Int J Obes (Lond). 2010;34(10):1494\u2013500.","journal-title":"Int
+        J Obes (Lond)"},{"issue":"1","key":"ref16","doi-asserted-by":"crossref","first-page":"94","DOI":"10.1038\/ijo.2009.193","article-title":"Increased
+        dorsolateral prefrontal cortex activation in obese children during observation
+        of food stimuli","volume":"34","author":"Davids S","year":"2010","unstructured":"Davids
+        S, Lauffer H, Thoms K, Jagdhuhn M, Hirschfeld H, Domin M, et al. Increased
+        dorsolateral prefrontal cortex activation in obese children during observation
+        of food stimuli. Int J Obes (Lond). 2010;34(1):94\u2013104.","journal-title":"Int
+        J Obes (Lond)"},{"issue":"4","key":"ref17","doi-asserted-by":"crossref","first-page":"620","DOI":"10.1038\/ijo.2014.206","article-title":"Increased
+        brain response to appetitive tastes in the insula and amygdala in obese compared
+        with healthy weight children when sated","volume":"39","author":"Boutelle
+        KN","year":"2015","unstructured":"Boutelle KN, Wierenga CE, Bischoff-Grethe
+        A, Melrose AJ, Grenesko-Stevens E, Paulus MP, et al. Increased brain response
+        to appetitive tastes in the insula and amygdala in obese compared with healthy
+        weight children when sated. Int J Obes (Lond). 2015;39(4):620\u20138.","journal-title":"Int
+        J Obes (Lond)"},{"issue":"1","key":"ref18","doi-asserted-by":"crossref","first-page":"23891","DOI":"10.1038\/srep23891","article-title":"Functional
+        brain networks associated with eating behaviors in obesity","volume":"6","author":"Park
+        B-y","year":"2016","unstructured":"Park B-y, Seo J, Park H. Functional brain
+        networks associated with eating behaviors in obesity. Scientific Reports.
+        2016;6(1):23891.","journal-title":"Scientific Reports"},{"issue":"6","key":"ref19","doi-asserted-by":"crossref","first-page":"982","DOI":"10.1038\/ijo.2016.28","article-title":"Brain
+        regulation of food craving: relationships with weight status and eating behavior","volume":"40","author":"Dietrich
+        A","year":"2016","unstructured":"Dietrich A, Hollmann M, Mathar D, Villringer
+        A, Horstmann A. Brain regulation of food craving: relationships with weight
+        status and eating behavior. International Journal of Obesity. 2016;40(6):982\u20139.","journal-title":"International
+        Journal of Obesity"},{"key":"ref20","doi-asserted-by":"crossref","first-page":"167","DOI":"10.1016\/j.appet.2018.06.014","article-title":"Is
+        brain response to food rewards related to overeating? A test of the reward
+        surfeit model of overeating in children","volume":"128","author":"Adise S","year":"2018","unstructured":"Adise
+        S, Geier CF, Roberts NJ, White CN, Keller KL. Is brain response to food rewards
+        related to overeating? A test of the reward surfeit model of overeating in
+        children. Appetite. 2018;128:167\u201379.","journal-title":"Appetite"},{"issue":"10","key":"ref21","doi-asserted-by":"crossref","first-page":"2547","DOI":"10.2337\/db07-0193","article-title":"Glucose
+        ingestion fails to inhibit hypothalamic neuronal activity in patients with
+        type 2 diabetes","volume":"56","author":"Vidarsdottir S","year":"2007","unstructured":"Vidarsdottir
+        S, Smeets PA, Eichelsheim DL, van Osch MJ, Viergever MA, Romijn JA, et al.
+        Glucose ingestion fails to inhibit hypothalamic neuronal activity in patients
+        with type 2 diabetes. Diabetes. 2007;56(10):2547\u201350.","journal-title":"Diabetes"},{"issue":"7","key":"ref22","doi-asserted-by":"crossref","first-page":"1929","DOI":"10.2337\/db15-1216","article-title":"Altered
+        Brain Response to Drinking Glucose and Fructose in Obese Adolescents","volume":"65","author":"Jastreboff
+        AM","year":"2016","unstructured":"Jastreboff AM, Sinha R, Arora J, Giannini
+        C, Kubat J, Malik S, et al. Altered Brain Response to Drinking Glucose and
+        Fructose in Obese Adolescents. Diabetes. 2016;65(7):1929\u201339.","journal-title":"Diabetes"},{"key":"ref23","doi-asserted-by":"crossref","first-page":"760914","DOI":"10.3389\/fnut.2021.760914","article-title":"The
+        Role of the Human Hypothalamus in Food Intake Networks: An MRI Perspective","volume":"8","author":"Roger
+        C","year":"2021","unstructured":"Roger C, Lasbleiz A, Guye M, Dutour A, Gaborit
+        B, Ranjeva JP. The Role of the Human Hypothalamus in Food Intake Networks:
+        An MRI Perspective. Front Nutr. 2021;8:760914.","journal-title":"Front Nutr"},{"issue":"4","key":"ref24","doi-asserted-by":"crossref","first-page":"1316","DOI":"10.1162\/netn_a_00266","article-title":"Hypothalamic
+        effective connectivity at rest is associated with body weight and energy homeostasis","volume":"6","author":"Voigt
+        K","year":"2022","unstructured":"Voigt K, Andrews ZB, Harding IH, Razi A,
+        Verdejo-Garc\u00eda A. Hypothalamic effective connectivity at rest is associated
+        with body weight and energy homeostasis. Netw Neurosci. 2022;6(4):1316\u201333.","journal-title":"Netw
+        Neurosci"},{"issue":"12","key":"ref25","doi-asserted-by":"crossref","first-page":"6088","DOI":"10.1002\/hbm.22607","article-title":"Resting-state
+        functional connectivity of the human hypothalamus","volume":"35","author":"Kullmann
+        S","year":"2014","unstructured":"Kullmann S, Heni M, Linder K, Zipfel S, H\u00e4ring
+        HU, Veit R, et al. Resting-state functional connectivity of the human hypothalamus.
+        Hum Brain Mapp. 2014;35(12):6088\u201396.","journal-title":"Hum Brain Mapp"},{"key":"ref26","author":"National
+        Health and Nutrition Examination","year":"2021","unstructured":"National Health
+        and Nutrition Examination Survey 2017\u2013March 2020 Prepandemic Data Files
+        -- Development of Files and Prevalence Estimates for Selected Health Outcomes,
+        (2021)."},{"issue":"3","key":"ref27","doi-asserted-by":"crossref","DOI":"10.1542\/peds.2017-3459","article-title":"Prevalence
+        of Obesity and Severe Obesity in US Children, 1999\u20132016","volume":"141","author":"Skinner
+        AC","year":"2018","unstructured":"Skinner AC, Ravanbakht SN, Skelton JA, Perrin
+        EM, Armstrong SC. Prevalence of Obesity and Severe Obesity in US Children,
+        1999\u20132016. Pediatrics. 2018;141(3).","journal-title":"Pediatrics"},{"issue":"6","key":"ref28","doi-asserted-by":"crossref","first-page":"1699","DOI":"10.2337\/db10-1614","article-title":"Partial
+        reversibility of hypothalamic dysfunction and changes in brain activity after
+        body mass reduction in obese subjects","volume":"60","author":"Sande-Lee S","year":"2011","unstructured":"van
+        de Sande-Lee S, Pereira FR, Cintra DE, Fernandes PT, Cardoso AR, Garlipp CR,
+        et al. Partial reversibility of hypothalamic dysfunction and changes in brain
+        activity after body mass reduction in obese subjects. Diabetes. 2011;60(6):1699\u2013704.","journal-title":"Diabetes"},{"issue":"2","key":"ref29","article-title":"Clinical
+        Practice Guideline for the Evaluation and Treatment of Children and Adolescents
+        With Obesity","volume":"151","author":"Hampl SE","year":"2023","unstructured":"Hampl
+        SE, Hassink SG, Skinner AC, Armstrong SC, Barlow SE, Bolling CF, et al. Clinical
+        Practice Guideline for the Evaluation and Treatment of Children and Adolescents
+        With Obesity. Pediatrics. 2023;151(2).","journal-title":"Pediatrics"},{"issue":"1","key":"ref30","doi-asserted-by":"crossref","DOI":"10.1210\/endocr\/bqaa209","article-title":"A
+        Sensitive Window of Hypothalamic Development and Plasticity","volume":"162","author":"Naul\u00e9
+        L","year":"2021","unstructured":"Naul\u00e9 L, Maione L, Kaiser UB. Puberty,
+        A Sensitive Window of Hypothalamic Development and Plasticity. Endocrinology.
+        2021;162(1).","journal-title":"Endocrinology"},{"key":"ref31","doi-asserted-by":"crossref","first-page":"100764","DOI":"10.1016\/j.dcn.2020.100764","article-title":"Mechanisms
+        of learning and plasticity in childhood and adolescence","volume":"42","author":"Fandakova
+        Y","year":"2020","unstructured":"Fandakova Y, Hartley CA. Mechanisms of learning
+        and plasticity in childhood and adolescence. Dev Cogn Neurosci. 2020;42:100764.","journal-title":"Dev
+        Cogn Neurosci"},{"key":"ref32","doi-asserted-by":"crossref","first-page":"106834","DOI":"10.1016\/j.ntt.2019.106834","article-title":"Experience
+        during adolescence shapes brain development: From synapses and networks to
+        normal and pathological behavior","volume":"76","author":"Dow-Edwards D","year":"2019","unstructured":"Dow-Edwards
+        D, MacMaster FP, Peterson BS, Niesink R, Andersen S, Braams BR. Experience
+        during adolescence shapes brain development: From synapses and networks to
+        normal and pathological behavior. Neurotoxicol Teratol. 2019;76:106834.","journal-title":"Neurotoxicol
+        Teratol"},{"issue":"2","key":"ref33","doi-asserted-by":"crossref","first-page":"117","DOI":"10.1007\/BF01537962","article-title":"A
+        self-report measure of pubertal status: Reliability, validity, and initial
+        norms","volume":"17","author":"Petersen AC","year":"1988","unstructured":"Petersen
+        AC, Crockett L, Richards M, Boxer A. A self-report measure of pubertal status:
+        Reliability, validity, and initial norms. J Youth Adolesc. 1988;17(2):117\u201333.","journal-title":"J
+        Youth Adolesc"},{"issue":"5","key":"ref34","doi-asserted-by":"crossref","first-page":"379","DOI":"10.1080\/87565641.2012.688900","article-title":"Age-specific
+        MRI templates for pediatric neuroimaging","volume":"37","author":"Sanchez
+        CE","year":"2012","unstructured":"Sanchez CE, Richards JE, Almli CR. Age-specific
+        MRI templates for pediatric neuroimaging. Dev Neuropsychol. 2012;37(5):379\u201399.","journal-title":"Dev
+        Neuropsychol"},{"issue":"1","key":"ref35","doi-asserted-by":"crossref","DOI":"10.1542\/peds.2022-057998","article-title":"Eliminating
+        Race-Based Medicine","volume":"150","author":"Wright JL","year":"2022","unstructured":"Wright
+        JL, Davis WS, Joseph MM, Ellison AM, Heard-Garris NJ, Johnson TL. Eliminating
+        Race-Based Medicine. Pediatrics. 2022;150(1).","journal-title":"Pediatrics"},{"issue":"5","key":"ref36","doi-asserted-by":"crossref","first-page":"1097","DOI":"10.1038\/s41366-019-0496-8","article-title":"The
+        interrelationship of body mass index with gray matter volume and resting-state
+        functional connectivity of the hypothalamus","volume":"44","author":"Le TM","year":"2020","unstructured":"Le
+        TM, Liao DL, Ide J, Zhang S, Zhornitsky S, Wang W, et al. The interrelationship
+        of body mass index with gray matter volume and resting-state functional connectivity
+        of the hypothalamus. Int J Obes (Lond). 2020;44(5):1097\u2013107.","journal-title":"Int
+        J Obes (Lond)"},{"key":"ref37","doi-asserted-by":"crossref","first-page":"119744","DOI":"10.1016\/j.neuroimage.2022.119744","article-title":"Hypothalamic
+        interaction with reward-related regions during subjective evaluation of foods","volume":"264","author":"Ogawa
+        A","year":"2022","unstructured":"Ogawa A, Osada T, Tanaka M, Suda A, Nakajima
+        K, Oka S, et al. Hypothalamic interaction with reward-related regions during
+        subjective evaluation of foods. NeuroImage. 2022;264:119744.","journal-title":"NeuroImage"},{"issue":"5","key":"ref38","doi-asserted-by":"crossref","first-page":"1002","DOI":"10.1007\/s12311-022-01476-3","article-title":"Cerebellar
+        Prediction and Feeding Behaviour","volume":"22","author":"Iosif CI","year":"2023","unstructured":"Iosif
+        CI, Bashir ZI, Apps R, Pickford J. Cerebellar Prediction and Feeding Behaviour.
+        Cerebellum. 2023;22(5):1002\u201319.","journal-title":"Cerebellum"},{"issue":"2","key":"ref39","doi-asserted-by":"crossref","first-page":"e12436","DOI":"10.1111\/ijpo.12436","article-title":"Increased
+        brain and behavioural susceptibility to portion size in children with loss
+        of control eating","volume":"14","author":"English LK","year":"2019","unstructured":"English
+        LK, Masterson TD, Fearnbach SN, Tanofsky-Kraff M, Fisher J, Wilson SJ, et
+        al. Increased brain and behavioural susceptibility to portion size in children
+        with loss of control eating. Pediatr Obes. 2019;14(2):e12436.","journal-title":"Pediatr
+        Obes"},{"issue":"5","key":"ref40","doi-asserted-by":"crossref","DOI":"10.3390\/nu16050738","article-title":"The
+        Cerebellar Response to Visual Portion Size Cues Is Associated with the Portion
+        Size Effect in Children","volume":"16","author":"Fuchs BA","year":"2024","unstructured":"Fuchs
+        BA, Pearce AL, Rolls BJ, Wilson SJ, Rose EJ, Geier CF, et al. The Cerebellar
+        Response to Visual Portion Size Cues Is Associated with the Portion Size Effect
+        in Children. Nutrients. 2024;16(5).","journal-title":"Nutrients"},{"issue":"2","key":"ref41","doi-asserted-by":"crossref","first-page":"211","DOI":"10.1016\/j.jaac.2018.06.039","article-title":"Hypothalamic
+        Networks in Adolescents With Excess Weight: Stress-Related Connectivity and
+        Associations With Emotional Eating","volume":"58","author":"Mart\u00edn-P\u00e9rez
+        C","year":"2019","unstructured":"Mart\u00edn-P\u00e9rez C, Contreras-Rodr\u00edguez
+        O, Vilar-L\u00f3pez R, Verdejo-Garc\u00eda A. Hypothalamic Networks in Adolescents
+        With Excess Weight: Stress-Related Connectivity and Associations With Emotional
+        Eating. J Am Acad Child Adolesc Psychiatry. 2019;58(2):211\u2009\u2013\u200920.e5.","journal-title":"J
+        Am Acad Child Adolesc Psychiatry"},{"issue":"11","key":"ref42","doi-asserted-by":"crossref","first-page":"1421","DOI":"10.1002\/eat.23776","article-title":"The
+        neurobiological reward system and binge eating: A critical systematic review
+        of neuroimaging studies","volume":"55","author":"Leenaerts N","year":"2022","unstructured":"Leenaerts
+        N, Jongen D, Ceccarini J, Van Oudenhove L, Vrieze E. The neurobiological reward
+        system and binge eating: A critical systematic review of neuroimaging studies.
+        International Journal of Eating Disorders. 2022;55(11):1421\u201358.","journal-title":"International
+        Journal of Eating Disorders"},{"issue":"Pt 12","key":"ref43","doi-asserted-by":"crossref","first-page":"3315","DOI":"10.1093\/brain\/awl244","article-title":"Functions
+        of the left superior frontal gyrus in humans: a lesion study","volume":"129","author":"Boisgueheneuc
+        F","year":"2006","unstructured":"du Boisgueheneuc F, Levy R, Volle E, Seassau
+        M, Duffau H, Kinkingnehun S, et al. Functions of the left superior frontal
+        gyrus in humans: a lesion study. Brain. 2006;129(Pt 12):3315\u201328.","journal-title":"Brain"},{"issue":"7","key":"ref44","doi-asserted-by":"crossref","first-page":"1907","DOI":"10.1073\/pnas.1507610113","article-title":"Regional
+        specialization within the human striatum for diverse psychological functions","volume":"113","author":"Pauli
+        WM","year":"2016","unstructured":"Pauli WM, O''Reilly RC, Yarkoni T, Wager
+        TD. Regional specialization within the human striatum for diverse psychological
+        functions. Proc Natl Acad Sci U S A. 2016;113(7):1907\u201312.","journal-title":"Proc
+        Natl Acad Sci U S A"},{"issue":"1","key":"ref45","doi-asserted-by":"crossref","first-page":"nsaa113","DOI":"10.1093\/scan\/nsaa113","article-title":"Is
+        obesity related to enhanced neural reactivity to visual food cues? A review
+        and meta-analysis","volume":"18","author":"Morys F","year":"2023","unstructured":"Morys
+        F, Garc\u00eda-Garc\u00eda I, Dagher A. Is obesity related to enhanced neural
+        reactivity to visual food cues? A review and meta-analysis. Social Cognitive
+        and Affective Neuroscience. 2023;18(1):nsaa113.","journal-title":"Social Cognitive
+        and Affective Neuroscience"},{"key":"ref46","doi-asserted-by":"crossref","first-page":"51","DOI":"10.1016\/j.drugalcdep.2014.05.002","article-title":"Left
+        middle frontal gyrus response to inhibitory errors in children prospectively
+        predicts early problem substance use","volume":"141","author":"Heitzeg MM","year":"2014","unstructured":"Heitzeg
+        MM, Nigg JT, Hardee JE, Soules M, Steinberg D, Zubieta JK, et al. Left middle
+        frontal gyrus response to inhibitory errors in children prospectively predicts
+        early problem substance use. Drug Alcohol Depend. 2014;141:51\u20137.","journal-title":"Drug
+        Alcohol Depend"},{"issue":"4","key":"ref47","doi-asserted-by":"crossref","first-page":"2224","DOI":"10.1152\/jn.00708.2015","article-title":"Frontal
+        and motor cortex contributions to response inhibition: evidence from electrocorticography","volume":"115","author":"Fonken
+        YM","year":"2016","unstructured":"Fonken YM, Rieger JW, Tzvi E, Crone NE,
+        Chang E, Parvizi J, et al. Frontal and motor cortex contributions to response
+        inhibition: evidence from electrocorticography. J Neurophysiol. 2016;115(4):2224\u201336.","journal-title":"J
+        Neurophysiol"},{"issue":"10","key":"ref48","doi-asserted-by":"crossref","first-page":"1231","DOI":"10.1097\/00004583-200210000-00013","article-title":"Maturation
+        of Brain Function Associated With Response Inhibition","volume":"41","author":"Tamm
+        L","year":"2002","unstructured":"Tamm L, Menon V, Reiss AL. Maturation of
+        Brain Function Associated With Response Inhibition. Journal of the American
+        Academy of Child & Adolescent Psychiatry. 2002;41(10):1231\u20138.","journal-title":"Journal
+        of the American Academy of Child & Adolescent Psychiatry"},{"issue":"5","key":"ref49","doi-asserted-by":"crossref","first-page":"429","DOI":"10.1080\/1028415X.2022.2053406","article-title":"Inhibitory
+        control as a potential treatment target for obesity","volume":"26","author":"Klerk
+        MT","year":"2023","unstructured":"de Klerk MT, Smeets PAM, la Fleur SE. Inhibitory
+        control as a potential treatment target for obesity. Nutritional Neuroscience.
+        2023;26(5):429\u201344.","journal-title":"Nutritional Neuroscience"},{"issue":"9","key":"ref50","doi-asserted-by":"crossref","first-page":"2493","DOI":"10.1007\/s00429-023-02687-y","article-title":"The
+        role of middle frontal gyrus in working memory retrieval by the effect of
+        target detection tasks: a simultaneous EEG-fMRI study","volume":"229","author":"Xu
+        P","year":"2024","unstructured":"Xu P, Wang M, Zhang T, Zhang J, Jin Z, Li
+        L. The role of middle frontal gyrus in working memory retrieval by the effect
+        of target detection tasks: a simultaneous EEG-fMRI study. Brain Struct Funct.
+        2024;229(9):2493\u2013508.","journal-title":"Brain Struct Funct"},{"issue":"12","key":"ref51","doi-asserted-by":"crossref","first-page":"1455","DOI":"10.1038\/ijo.2011.56","article-title":"Altered
+        hypothalamic function in diet-induced obesity","volume":"35","author":"Velloso
+        LA","year":"2011","unstructured":"Velloso LA, Schwartz MW. Altered hypothalamic
+        function in diet-induced obesity. Int J Obes (Lond). 2011;35(12):1455\u201365.","journal-title":"Int
+        J Obes (Lond)"},{"issue":"5","key":"ref52","doi-asserted-by":"crossref","first-page":"925","DOI":"10.1038\/s12276-025-01451-y","article-title":"Lateral
+        hypothalamus and eating: cell types, molecular identity, anatomy, temporal
+        dynamics and functional roles","volume":"57","author":"Cheon D-H","year":"2025","unstructured":"Cheon
+        D-H, Park S, Park J, Koo M, Kim H-H, Han S, et al. Lateral hypothalamus and
+        eating: cell types, molecular identity, anatomy, temporal dynamics and functional
+        roles. Experimental & Molecular Medicine. 2025;57(5):925\u201337.","journal-title":"Experimental
+        & Molecular Medicine"},{"key":"ref53","doi-asserted-by":"crossref","first-page":"120947","DOI":"10.1016\/j.lfs.2022.120947","article-title":"Modulation
+        of hypothalamic AMPK and hypothalamic neuropeptides in the control of eating
+        behavior: A systematic review","volume":"309","author":"Neves LdS","year":"2022","unstructured":"Neves
+        LdS, Oliveira RKG, dos Santos LS, Ribeiro IO, Barreto-Medeiros JMB, Matos
+        RJB. Modulation of hypothalamic AMPK and hypothalamic neuropeptides in the
+        control of eating behavior: A systematic review. Life Sciences. 2022;309:120947.","journal-title":"Life
+        Sciences"},{"issue":"3","key":"ref54","doi-asserted-by":"crossref","first-page":"1313","DOI":"10.1016\/j.neuroimage.2009.12.109","article-title":"The
+        role of the right inferior frontal gyrus: inhibition and attentional control","volume":"50","author":"Hampshire
+        A","year":"2010","unstructured":"Hampshire A, Chamberlain SR, Monti MM, Duncan
+        J, Owen AM. The role of the right inferior frontal gyrus: inhibition and attentional
+        control. Neuroimage. 2010;50(3):1313\u20139.","journal-title":"Neuroimage"},{"issue":"2","key":"ref55","doi-asserted-by":"crossref","first-page":"195","DOI":"10.1037\/0033-295X.99.2.195","article-title":"Memory
+        and the hippocampus: a synthesis from findings with rats, monkeys, and humans","volume":"99","author":"Squire
+        LR","year":"1992","unstructured":"Squire LR. Memory and the hippocampus: a
+        synthesis from findings with rats, monkeys, and humans. Psychol Rev. 1992;99(2):195\u2013231.","journal-title":"Psychol
+        Rev"},{"issue":"6","key":"ref56","doi-asserted-by":"crossref","first-page":"1439","DOI":"10.1002\/oby.20659","article-title":"Neural
+        bases of food perception: coordinate-based meta-analyses of neuroimaging studies
+        in multiple modalities","volume":"22","author":"Huerta CI","year":"2014","unstructured":"Huerta
+        CI, Sarkar PR, Duong TQ, Laird AR, Fox PT. Neural bases of food perception:
+        coordinate-based meta-analyses of neuroimaging studies in multiple modalities.
+        Obesity (Silver Spring). 2014;22(6):1439\u201346.","journal-title":"Obesity
+        (Silver Spring)"},{"issue":"8","key":"ref57","doi-asserted-by":"crossref","first-page":"767","DOI":"10.1037\/hea0000405","article-title":"The
+        role of attentional bias in obesity and addiction","volume":"35","author":"Field
+        M","year":"2016","unstructured":"Field M, Werthmann J, Franken I, Hofmann
+        W, Hogarth L, Roefs A. The role of attentional bias in obesity and addiction.
+        Health Psychology. 2016;35(8):767\u201380.","journal-title":"Health Psychology"},{"key":"ref58","doi-asserted-by":"crossref","first-page":"391","DOI":"10.1016\/B978-0-12-398335-0.00039-X","volume-title":"Biological
+        Research on Addiction","author":"Robinson MJF","year":"2013","unstructured":"Robinson
+        MJF, Robinson TE, Berridge KC. Chapter 39 - Incentive Salience and the Transition
+        to Addiction. In: Miller PM, editor. Biological Research on Addiction. San
+        Diego: Academic Press; 2013. p. 391\u20139."},{"issue":"8077","key":"ref59","doi-asserted-by":"crossref","first-page":"731","DOI":"10.1038\/s41586-025-09250-1","article-title":"Longer
+        scans boost prediction and cut costs in brain-wide association studies","volume":"644","author":"Ooi
+        LQR","year":"2025","unstructured":"Ooi LQR, Orban C, Zhang S, Nichols TE,
+        Tan TWK, Kong R, et al. Longer scans boost prediction and cut costs in brain-wide
+        association studies. Nature. 2025;644(8077):731\u201340.","journal-title":"Nature"},{"issue":"3","key":"ref60","doi-asserted-by":"crossref","first-page":"333","DOI":"10.4093\/dmj.2025.0106","article-title":"Glucagon-Like
+        Peptide-1 and Hypothalamic Regulation of Satiation: Cognitive and Neural Insights
+        from Human and Animal Studies","volume":"49","author":"Park JS","year":"2025","unstructured":"Park
+        JS, Kim KS, Choi HJ. Glucagon-Like Peptide-1 and Hypothalamic Regulation of
+        Satiation: Cognitive and Neural Insights from Human and Animal Studies. Diabetes
+        Metab J. 2025;49(3):333\u201347.","journal-title":"Diabetes Metab J"}],"container-title":[],"original-title":[],"link":[{"URL":"https:\/\/www.researchsquare.com\/article\/rs-8694593\/v1","content-type":"text\/html","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/www.researchsquare.com\/article\/rs-8694593\/v1.html","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2026,6,3]],"date-time":"2026-06-03T07:06:32Z","timestamp":1780470392000},"score":1,"resource":{"primary":{"URL":"https:\/\/www.researchsquare.com\/article\/rs-8694593\/v1"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2026,2,2]]},"references-count":60,"URL":"https:\/\/doi.org\/10.21203\/rs.3.rs-8694593\/v1","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.1038\/s41366-026-02114-2","asserted-by":"subject"}]},"subject":[],"published":{"date-parts":[[2026,2,2]]},"subtype":"preprint"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '10287'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 08:04:08 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.21203%2Frs.3.rs-8694593%2Fv1%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTc4MDQxMDM4NzAwMCwxMC4xMDM4JTJGczQxMzY2LTAyNi0wMjExNC0y","total-results":1,"items":[{"DOI":"10.1038\/s41366-026-02114-2","relation":{"has-preprint":[{"id-type":"doi","id":"10.21203\/rs.3.rs-8694593\/v1","asserted-by":"object"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 08:04:08 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=20&retmode=json&term=Altered%5Bti%5D+AND+Hypothalamic%5Bti%5D+AND+functional%5Bti%5D+AND+connectivity%5Bti%5D+AND+in%5Bti%5D+AND+adolescents%5Bti%5D+AND+with%5Bti%5D+AND+severe%5Bti%5D+AND+obesity%5Bti%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAGRQu27DMAzc+xUGZyMo0C1bgA6d8gOBB9VibAIy5ZJ0UiPwv5duYzVoN92DJ9zd
+        oMcQUWB/A5tHhD2gYpC2hxouKEqZnXvevcBSb5KgTsnWkzZPbKvubkEbwucvUAuyaRQTqYNTU4NJ
+        YE3BPFnxzn1MKPOD4GeHZCgYT0ZNdTi+Vm/zmK0PKQzUFvI8cbv6QypUm5nRyQvZXEji8gwxJ9QW
+        2bRwV7K+AEXvjQXmd9R7lBdBkSw/XW4w9hIUlbOdfYfoVYDYTWsceKszYYqPcuMbXoMwcfcngzrO
+        3nZbIxvG/+ku5cnGyQZUDR3q+uMxV2Q4aPXt2kGzLMvTFwAAAP//AwC8wfpt1wEAAA==
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Fri, 23 Oct 2026 08:04:08 GMT
+      ncbi-phid:
+      - 1D33ABE4FCD277E500004D61EDF2C8BC.1.1.m_1
+      ncbi-sid:
+      - 869BFEB08D56D89D_793BSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=20&retmode=json&term=Altered%5Bti%5D+AND+Hypothalamic%5Bti%5D+AND+functional%5Bti%5D+AND+connectivity%5Bti%5D+AND+adolescents%5Bti%5D+AND+severe%5Bti%5D+AND+obesity%5Bti%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAFyQMWvDQAyF9/6KoNkU23HbNFsgQ6dM2eIM6vkVH1zu0pMcaoL/e+WhNHjTe997
+        EuhOPbhDpu2ddLyCtgQBZ9dTQTdk8SmaVz6vaSr+UIYMQeeKS0O0gWpLZ+iFf/6FKOeZlSZ9F7yY
+        OFFT1+vyffNiZlO9vjWbqqJzQZo5SmC1c4I5aN73gDw+ANvV0i4oMrqWTkevAefV7rBftfQxXpP2
+        HPji3ZJ9DdHNfQ5L4lKMMHbzOi4ZdylAHKLKEgnsM1i66RPyuIem6ekXAAD//wMA7shp+V8BAAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Fri, 23 Oct 2026 08:04:08 GMT
+      ncbi-phid:
+      - 1D33ABE4FCD277E500002361EEA4BA06.1.1.m_1
+      ncbi-sid:
+      - 869BFEB08D56D89D_793BSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1038/s41366-026-02114-2?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,8,11]],"date-time":"2026-08-11T18:39:01Z","timestamp":1786473541980,"version":"build-2736575974"},"reference-count":71,"publisher":"Springer
+        Science and Business Media LLC","issue":"8","license":[{"start":{"date-parts":[[2026,6,2]],"date-time":"2026-06-02T00:00:00Z","timestamp":1780358400000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/creativecommons.org\/licenses\/by-nc-nd\/4.0"},{"start":{"date-parts":[[2026,6,2]],"date-time":"2026-06-02T00:00:00Z","timestamp":1780358400000},"content-version":"vor","delay-in-days":0,"URL":"https:\/\/creativecommons.org\/licenses\/by-nc-nd\/4.0"}],"content-domain":{"domain":["link.springer.com"],"crossmark-restriction":false},"short-container-title":["Int
+        J Obes"],"published-print":{"date-parts":[[2026,8]]},"DOI":"10.1038\/s41366-026-02114-2","type":"journal-article","created":{"date-parts":[[2026,6,2]],"date-time":"2026-06-02T14:26:27Z","timestamp":1780410387000},"page":"1818-1827","update-policy":"https:\/\/doi.org\/10.1007\/springer_crossmark_policy","source":"Crossref","is-referenced-by-count":0,"title":["Altered
+        hypothalamic functional connectivity in adolescents with severe obesity"],"prefix":"10.1038","volume":"50","author":[{"ORCID":"https:\/\/orcid.org\/0000-0001-8334-974X","authenticated-orcid":false,"given":"Allison
+        L. B.","family":"Shapiro","sequence":"first","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"ORCID":"https:\/\/orcid.org\/0000-0002-5699-7108","authenticated-orcid":false,"given":"Meghan
+        E.","family":"Pauley","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Jaime
+        M.","family":"Moore","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Lucy","family":"Hall","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Nicholas","family":"Stence","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Susan
+        L.","family":"Johnson","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Kristen
+        J.","family":"Nadeau","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Kathleen
+        L.","family":"Keller","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"ORCID":"https:\/\/orcid.org\/0000-0003-2374-1517","authenticated-orcid":false,"given":"Barbara
+        J.","family":"Rolls","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Marc-Andre","family":"Cornier","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Jason
+        R.","family":"Tregellas","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"297","published-online":{"date-parts":[[2026,6,2]]},"reference":[{"key":"2114_CR1","doi-asserted-by":"publisher","first-page":"551","DOI":"10.1038\/nn0505-551","volume":"8","author":"A
+        Markus","year":"2005","unstructured":"Markus A. Neurobiology of obesity. Nat
+        Neurosci. 2005;8:551.","journal-title":"Nat Neurosci"},{"key":"2114_CR2","doi-asserted-by":"publisher","first-page":"38","DOI":"10.1016\/j.cpr.2018.12.002","volume":"68","author":"E
+        Stice","year":"2019","unstructured":"Stice E, Burger K. Neural vulnerability
+        factors for obesity. Clin Psychol Rev. 2019;68:38\u201353.","journal-title":"Clin
+        Psychol Rev"},{"key":"2114_CR3","doi-asserted-by":"publisher","first-page":"1157","DOI":"10.1093\/scan\/nsz085","volume":"15","author":"SD
+        Donofry","year":"2020","unstructured":"Donofry SD, Stillman CM, Erickson KI.
+        A review of the relationship between eating behavior, obesity and functional
+        brain network organization. Soc Cogn Affect Neurosci. 2020;15:1157\u201381.","journal-title":"Soc
+        Cogn Affect Neurosci"},{"key":"2114_CR4","doi-asserted-by":"publisher","first-page":"197s","DOI":"10.1038\/oby.2006.308","volume":"14","author":"HR
+        Berthoud","year":"2006","unstructured":"Berthoud HR. Homeostatic and non-homeostatic
+        pathways involved in the control of food intake and energy balance. Obesity.
+        2006;14:197s\u2013200s.","journal-title":"Obesity"},{"key":"2114_CR5","doi-asserted-by":"crossref","unstructured":"Liu
+        CM, Kanoski SE. Homeostatic and non-homeostatic controls of feeding behavior:
+        distinct vs. common neural systems. Physiol Behav. 2018;193:223\u2013231.","DOI":"10.1016\/j.physbeh.2018.02.011"},{"key":"2114_CR6","doi-asserted-by":"publisher","first-page":"1313","DOI":"10.1016\/j.neuroimage.2009.12.109","volume":"50","author":"A
+        Hampshire","year":"2010","unstructured":"Hampshire A, Chamberlain SR, Monti
+        MM, Duncan J, Owen AM. The role of the right inferior frontal gyrus: inhibition
+        and attentional control. NeuroImage. 2010;50:1313\u20139.","journal-title":"NeuroImage"},{"key":"2114_CR7","doi-asserted-by":"publisher","first-page":"12688","DOI":"10.1523\/JNEUROSCI.1175-16.2016","volume":"36","author":"S
+        Hu","year":"2016","unstructured":"Hu S, Ide JS, Zhang S, Li CR. The right
+        superior frontal gyrus and individual variation in proactive control of impulsive
+        response. J Neurosci. 2016;36:12688\u201396.","journal-title":"J Neurosci"},{"key":"2114_CR8","doi-asserted-by":"publisher","first-page":"e0124797","DOI":"10.1371\/journal.pone.0124797","volume":"10","author":"JM
+        Orr","year":"2015","unstructured":"Orr JM, Smolker HR, Banich MT. Organization
+        of the human frontal pole revealed by large-scale DTI-based connectivity:
+        implications for control of behavior. PloS one. 2015;10:e0124797.","journal-title":"PloS
+        one"},{"key":"2114_CR9","doi-asserted-by":"crossref","unstructured":"Uddin
+        LQ. Chapter 2 - Anatomy of the Salience Network. Salience Network of the Human
+        Brain. San Diego: Academic Press; 2017. pp. 5\u201310.","DOI":"10.1016\/B978-0-12-804593-0.00002-3"},{"key":"2114_CR10","doi-asserted-by":"publisher","first-page":"681","DOI":"10.1016\/j.neubiorev.2013.02.002","volume":"37","author":"G
+        Sescousse","year":"2013","unstructured":"Sescousse G, Caldu X, Segura B, Dreher
+        JC. Processing of primary and secondary rewards: a quantitative meta-analysis
+        and review of human functional neuroimaging studies. Neurosci Biobehav Rev.
+        2013;37:681\u201396.","journal-title":"Neurosci Biobehav Rev"},{"key":"2114_CR11","doi-asserted-by":"publisher","first-page":"90","DOI":"10.1016\/j.nlm.2014.05.002","volume":"114","author":"R
+        Daniel","year":"2014","unstructured":"Daniel R, Pollmann S. A universal role
+        of the ventral striatum in reward-based learning: evidence from human studies.
+        Neurobiol Learn Mem. 2014;114:90\u2013100.","journal-title":"Neurobiol Learn
+        Mem"},{"key":"2114_CR12","doi-asserted-by":"publisher","first-page":"271","DOI":"10.1016\/j.neubiorev.2015.08.017","volume":"57","author":"KM
+        Wassum","year":"2015","unstructured":"Wassum KM, Izquierdo A. The basolateral
+        amygdala in reward learning and addiction. Neurosci Biobehav Rev. 2015;57:271\u201383.","journal-title":"Neurosci
+        Biobehav Rev"},{"key":"2114_CR13","doi-asserted-by":"publisher","first-page":"1052","DOI":"10.1002\/hbm.21268","volume":"33","author":"S
+        Kullmann","year":"2012","unstructured":"Kullmann S, Heni M, Veit R, Ketterer
+        C, Schick F, Haring HU, et al. The obese brain: association of body mass index
+        and insulin sensitivity with resting state network functional connectivity.
+        Hum Brain Mapp. 2012;33:1052\u201361.","journal-title":"Hum Brain Mapp"},{"key":"2114_CR14","doi-asserted-by":"publisher","first-page":"127","DOI":"10.1016\/j.bbr.2015.03.016","volume":"287","author":"MA
+        Wijngaarden","year":"2015","unstructured":"Wijngaarden MA, Veer IM, Rombouts
+        SA, van Buchem MA, Willems van Dijk K, Pijl H, et al. Obesity is marked by
+        distinct functional connectivity in brain networks involved in food reward
+        and salience. Behav Brain Res. 2015;287:127\u201334.","journal-title":"Behav
+        Brain Res"},{"key":"2114_CR15","doi-asserted-by":"publisher","first-page":"1494","DOI":"10.1038\/ijo.2010.84","volume":"34","author":"AS
+        Bruce","year":"2010","unstructured":"Bruce AS, Holsen LM, Chambers RJ, Martin
+        LE, Brooks WM, Zarcone JR, et al. Obese children show hyperactivation to food
+        pictures in brain networks linked to motivation, reward and cognitive control.
+        Int J Obes. 2010;34:1494\u2013500.","journal-title":"Int J Obes"},{"key":"2114_CR16","doi-asserted-by":"publisher","first-page":"94","DOI":"10.1038\/ijo.2009.193","volume":"34","author":"S
+        Davids","year":"2010","unstructured":"Davids S, Lauffer H, Thoms K, Jagdhuhn
+        M, Hirschfeld H, Domin M, et al. Increased dorsolateral prefrontal cortex
+        activation in obese children during observation of food stimuli. Int J Obes.
+        2010;34:94\u2013104.","journal-title":"Int J Obes"},{"key":"2114_CR17","doi-asserted-by":"publisher","first-page":"620","DOI":"10.1038\/ijo.2014.206","volume":"39","author":"KN
+        Boutelle","year":"2015","unstructured":"Boutelle KN, Wierenga CE, Bischoff-Grethe
+        A, Melrose AJ, Grenesko-Stevens E, Paulus MP, et al. Increased brain response
+        to appetitive tastes in the insula and amygdala in obese compared with healthy
+        weight children when sated. Int J Obes. 2015;39:620\u20138.","journal-title":"Int
+        J Obes"},{"key":"2114_CR18","doi-asserted-by":"publisher","first-page":"4360","DOI":"10.1523\/JNEUROSCI.6604-10.2011","volume":"31","author":"E
+        Stice","year":"2011","unstructured":"Stice E, Yokum S, Burger KS, Epstein
+        LH, Small DM. Youth at risk for obesity show greater activation of striatal
+        and somatosensory regions to food. J Neurosci. 2011;31:4360\u20136.","journal-title":"J
+        Neurosci"},{"key":"2114_CR19","doi-asserted-by":"publisher","DOI":"10.1038\/srep23891","volume":"6","author":"B-y
+        Park","year":"2016","unstructured":"Park B-y, Seo J, Park H. Functional brain
+        networks associated with eating behaviors in obesity. Sci Rep. 2016;6:23891.","journal-title":"Sci
+        Rep"},{"key":"2114_CR20","doi-asserted-by":"publisher","first-page":"982","DOI":"10.1038\/ijo.2016.28","volume":"40","author":"A
+        Dietrich","year":"2016","unstructured":"Dietrich A, Hollmann M, Mathar D,
+        Villringer A, Horstmann A. Brain regulation of food craving: relationships
+        with weight status and eating behavior. Int J Obes. 2016;40:982\u20139.","journal-title":"Int
+        J Obes"},{"key":"2114_CR21","doi-asserted-by":"publisher","first-page":"167","DOI":"10.1016\/j.appet.2018.06.014","volume":"128","author":"S
+        Adise","year":"2018","unstructured":"Adise S, Geier CF, Roberts NJ, White
+        CN, Keller KL. Is brain response to food rewards related to overeating? A
+        test of the reward surfeit model of overeating in children. Appetite. 2018;128:167\u201379.","journal-title":"Appetite"},{"key":"2114_CR22","doi-asserted-by":"publisher","first-page":"2547","DOI":"10.2337\/db07-0193","volume":"56","author":"S
+        Vidarsdottir","year":"2007","unstructured":"Vidarsdottir S, Smeets PA, Eichelsheim
+        DL, van Osch MJ, Viergever MA, Romijn JA, et al. Glucose ingestion fails to
+        inhibit hypothalamic neuronal activity in patients with type 2 diabetes. Diabetes.
+        2007;56:2547\u201350.","journal-title":"Diabetes"},{"key":"2114_CR23","doi-asserted-by":"publisher","first-page":"1929","DOI":"10.2337\/db15-1216","volume":"65","author":"AM
+        Jastreboff","year":"2016","unstructured":"Jastreboff AM, Sinha R, Arora J,
+        Giannini C, Kubat J, Malik S, et al. Altered brain response to drinking glucose
+        and fructose in obese adolescents. Diabetes. 2016;65:1929\u201339.","journal-title":"Diabetes"},{"key":"2114_CR24","doi-asserted-by":"publisher","DOI":"10.3389\/fnut.2021.760914","volume":"8","author":"C
+        Roger","year":"2021","unstructured":"Roger C, Lasbleiz A, Guye M, Dutour A,
+        Gaborit B, Ranjeva JP. The role of the human hypothalamus in food intake networks:
+        an MRI perspective. Front Nutr. 2021;8:760914.","journal-title":"Front Nutr"},{"key":"2114_CR25","doi-asserted-by":"publisher","first-page":"1316","DOI":"10.1162\/netn_a_00266","volume":"6","author":"K
+        Voigt","year":"2022","unstructured":"Voigt K, Andrews ZB, Harding IH, Razi
+        A, Verdejo-Garc\u00eda A. Hypothalamic effective connectivity at rest is associated
+        with body weight and energy homeostasis. Netw Neurosci. 2022;6:1316\u201333.","journal-title":"Netw
+        Neurosci"},{"key":"2114_CR26","doi-asserted-by":"publisher","first-page":"6088","DOI":"10.1002\/hbm.22607","volume":"35","author":"S
+        Kullmann","year":"2014","unstructured":"Kullmann S, Heni M, Linder K, Zipfel
+        S, H\u00e4ring HU, Veit R, et al. Resting-state functional connectivity of
+        the human hypothalamus. Hum Brain Mapp. 2014;35:6088\u201396.","journal-title":"Hum
+        Brain Mapp"},{"key":"2114_CR27","doi-asserted-by":"publisher","unstructured":"Stierman
+        B, Afful J, Carroll MD, Chen TC, Davy O, Fink S, et al. National health and
+        nutrition examination survey 2017\u2013March 2020 prepandemic data files-Development
+        of files and prevalence estimates for selected health outcomes. Natl Health
+        Stat Report. 2021;158. https:\/\/doi.org\/10.15620\/cdc:106273.","DOI":"10.15620\/cdc:106273"},{"key":"2114_CR28","doi-asserted-by":"crossref","unstructured":"Skinner
+        AC, Ravanbakht SN, Skelton JA, Perrin EM, Armstrong SC. Prevalence of obesity
+        and severe obesity in US Children, 1999-2016. Pediatrics. 2018;141:e20173459.","DOI":"10.1542\/peds.2017-3459"},{"key":"2114_CR29","doi-asserted-by":"publisher","first-page":"1699","DOI":"10.2337\/db10-1614","volume":"60","author":"van
+        de Sande-Lee","year":"2011","unstructured":"van de Sande-Lee, Pereira S, Cintra
+        DE FR, Fernandes PT, Cardoso AR, Garlipp CR, et al. Partial reversibility
+        of hypothalamic dysfunction and changes in brain activity after body mass
+        reduction in obese subjects. Diabetes. 2011;60:1699\u2013704.","journal-title":"Diabetes"},{"key":"2114_CR30","doi-asserted-by":"crossref","unstructured":"Hampl
+        SE, Hassink SG, Skinner AC, Armstrong SC, Barlow SE, Bolling CF, et al. Clinical
+        practice guideline for the evaluation and treatment of children and adolescents
+        with obesity. Pediatrics. 2023;151:e2022060640.","DOI":"10.1542\/peds.2022-060640"},{"key":"2114_CR31","doi-asserted-by":"crossref","unstructured":"Naul\u00e9
+        L, Maione L, Kaiser UB. Puberty, a sensitive window of hypothalamic development
+        and plasticity. Endocrinology. 2021;162:bqaa209.","DOI":"10.1210\/endocr\/bqaa209"},{"key":"2114_CR32","doi-asserted-by":"publisher","DOI":"10.1016\/j.dcn.2020.100764","volume":"42","author":"Y
+        Fandakova","year":"2020","unstructured":"Fandakova Y, Hartley CA. Mechanisms
+        of learning and plasticity in childhood and adolescence. Dev Cogn Neurosci.
+        2020;42:100764.","journal-title":"Dev Cogn Neurosci"},{"key":"2114_CR33","doi-asserted-by":"publisher","DOI":"10.1016\/j.ntt.2019.106834","volume":"76","author":"D
+        Dow-Edwards","year":"2019","unstructured":"Dow-Edwards D, MacMaster FP, Peterson
+        BS, Niesink R, Andersen S, Braams BR. Experience during adolescence shapes
+        brain development: from synapses and networks to normal and pathological behavior.
+        Neurotoxicol Teratol. 2019;76:106834.","journal-title":"Neurotoxicol Teratol"},{"key":"2114_CR34","doi-asserted-by":"publisher","first-page":"697","DOI":"10.3945\/ajcn.2010.29812","volume":"92","author":"LB
+        Shomaker","year":"2010","unstructured":"Shomaker LB, Tanofsky-Kraff M, Zocca
+        JM, Courville A, Kozlosky M, Columbo KM, et al. Eating in the absence of hunger
+        in adolescents: intake after a large-array meal compared with that after a
+        standardized meal. Am J Clin Nutr. 2010;92:697\u2013703.","journal-title":"Am
+        J Clin Nutr"},{"key":"2114_CR35","doi-asserted-by":"publisher","first-page":"1024","DOI":"10.1176\/ajp.143.8.1024","volume":"143","author":"ME
+        Faulstich","year":"1986","unstructured":"Faulstich ME, Carey MP, Ruggiero
+        L, Enyart P, Gresham F. Assessment of depression in childhood and adolescence:
+        an evaluation of the Center for Epidemiological Studies Depression Scale for
+        Children (CES-DC). Am J psychiatry. 1986;143:1024\u20137.","journal-title":"Am
+        J psychiatry"},{"key":"2114_CR36","doi-asserted-by":"publisher","first-page":"1092","DOI":"10.1001\/archinte.166.10.1092","volume":"166","author":"RL
+        Spitzer","year":"2006","unstructured":"Spitzer RL, Kroenke K, Williams JB,
+        Lowe B. A brief measure for assessing generalized anxiety disorder: the GAD-7.
+        Arch Intern Med. 2006;166:1092\u20137.","journal-title":"Arch Intern Med"},{"key":"2114_CR37","doi-asserted-by":"publisher","first-page":"117","DOI":"10.1007\/BF01537962","volume":"17","author":"AC
+        Petersen","year":"1988","unstructured":"Petersen AC, Crockett L, Richards
+        M, Boxer A. A self-report measure of pubertal status: reliability, validity,
+        and initial norms. J Youth Adolesc. 1988;17:117\u201333.","journal-title":"J
+        Youth Adolesc"},{"key":"2114_CR38","doi-asserted-by":"publisher","first-page":"295","DOI":"10.1002\/1098-108X(198602)5:2<295::AID-EAT2260050209>3.0.CO;2-T","volume":"5","author":"T
+        van Strien","year":"1986","unstructured":"van Strien T, Frijters JER, Bergers
+        GPA, Defares PB. The Dutch Eating Behavior Questionnaire (DEBQ) for assessment
+        of restrained, emotional, and external eating behavior. Int J Eat Disord.
+        1986;5:295\u2013315.","journal-title":"Int J Eat Disord"},{"key":"2114_CR39","doi-asserted-by":"publisher","first-page":"130","DOI":"10.1186\/s12966-017-0587-7","volume":"14","author":"KM
+        Mallan","year":"2017","unstructured":"Mallan KM, Fildes A, de la Piedad Garcia
+        X, Drzezdzon J, Sampson M, Llewellyn C. Appetitive traits associated with
+        higher and lower body mass index: evaluating the validity of the adult eating
+        behaviour questionnaire in an Australian sample. Int J Behav Nutr Phys Act.
+        2017;14:130.","journal-title":"Int J Behav Nutr Phys Act"},{"key":"2114_CR40","doi-asserted-by":"publisher","first-page":"3060","DOI":"10.1017\/S1368980017002269","volume":"20","author":"AR
+        Hughes","year":"2017","unstructured":"Hughes AR, Summer SS, Ollberding NJ,
+        Benken LA, Kalkwarf HJ. Comparison of an interviewer-administered with an
+        automated self-administered 24 h (ASA24) dietary recall in adolescents. Public
+        Health Nutr. 2017;20:3060\u20137.","journal-title":"Public Health Nutr"},{"key":"2114_CR41","doi-asserted-by":"publisher","first-page":"550","DOI":"10.1016\/j.neuroimage.2013.05.099","volume":"83","author":"RM
+        Birn","year":"2013","unstructured":"Birn RM, Molloy EK, Patriat R, Parker
+        T, Meier TB, Kirk GR, et al. The effect of scan length on the reliability
+        of resting-state fMRI connectivity estimates. Neuroimage. 2013;83:550\u20138.","journal-title":"Neuroimage"},{"key":"2114_CR42","doi-asserted-by":"publisher","first-page":"379","DOI":"10.1080\/87565641.2012.688900","volume":"37","author":"CE
+        Sanchez","year":"2012","unstructured":"Sanchez CE, Richards JE, Almli CR.
+        Age-specific MRI templates for pediatric neuroimaging. Dev Neuropsychol. 2012;37:379\u201399.","journal-title":"Dev
+        Neuropsychol"},{"key":"2114_CR43","doi-asserted-by":"publisher","first-page":"99","DOI":"10.1007\/s00234-020-02523-8","volume":"63","author":"AAS
+        Alahmadi","year":"2021","unstructured":"Alahmadi AAS. Effects of different
+        smoothing on global and regional resting functional connectivity. Neuroradiology.
+        2021;63:99\u2013109.","journal-title":"Neuroradiology"},{"key":"2114_CR44","doi-asserted-by":"publisher","unstructured":"Nieto-Castanon
+        A, Whitfield-Gabrieli S. CONN functional connectivity toolbox: RRID SCR_009550,
+        release 22. 2022. https:\/\/doi.org\/10.56441\/hilbertpress.2246.5840.","DOI":"10.56441\/hilbertpress.2246.5840"},{"key":"2114_CR45","doi-asserted-by":"publisher","first-page":"125","DOI":"10.1089\/brain.2012.0073","volume":"2","author":"S
+        Whitfield-Gabrieli","year":"2012","unstructured":"Whitfield-Gabrieli S, Nieto-Castanon
+        A. Conn: a functional connectivity toolbox for correlated and anticorrelated
+        brain networks. Brain Connect. 2012;2:125\u201341.","journal-title":"Brain
+        Connect"},{"key":"2114_CR46","doi-asserted-by":"publisher","first-page":"1358","DOI":"10.1126\/science.1194144","volume":"329","author":"NU
+        Dosenbach","year":"2010","unstructured":"Dosenbach NU, Nardos B, Cohen AL,
+        Fair DA, Power JD, Church JA, et al. Prediction of individual brain maturity
+        using fMRI. Science. 2010;329:1358\u201361.","journal-title":"Science"},{"key":"2114_CR47","doi-asserted-by":"crossref","unstructured":"Wright
+        JL, Davis WS, Joseph MM, Ellison AM, Heard-Garris NJ, Johnson TL. Eliminating
+        race-based medicine. Pediatrics. 2022;150:e2022057998.","DOI":"10.1542\/peds.2022-057998"},{"key":"2114_CR48","doi-asserted-by":"publisher","first-page":"1097","DOI":"10.1038\/s41366-019-0496-8","volume":"44","author":"TM
+        Le","year":"2020","unstructured":"Le TM, Liao DL, Ide J, Zhang S, Zhornitsky
+        S, Wang W, et al. The interrelationship of body mass index with gray matter
+        volume and resting-state functional connectivity of the hypothalamus. Int
+        J Obes. 2020;44:1097\u2013107.","journal-title":"Int J Obes"},{"key":"2114_CR49","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2022.119744","volume":"264","author":"A
+        Ogawa","year":"2022","unstructured":"Ogawa A, Osada T, Tanaka M, Suda A, Nakajima
+        K, Oka S, et al. Hypothalamic interaction with reward-related regions during
+        subjective evaluation of foods. NeuroImage. 2022;264:119744.","journal-title":"NeuroImage"},{"key":"2114_CR50","doi-asserted-by":"publisher","first-page":"1002","DOI":"10.1007\/s12311-022-01476-3","volume":"22","author":"CI
+        Iosif","year":"2023","unstructured":"Iosif CI, Bashir ZI, Apps R, Pickford
+        J. Cerebellar prediction and feeding behaviour. Cerebellum. 2023;22:1002\u201319.","journal-title":"Cerebellum"},{"key":"2114_CR51","doi-asserted-by":"publisher","DOI":"10.1111\/ijpo.12436","volume":"14","author":"LK
+        English","year":"2019","unstructured":"English LK, Masterson TD, Fearnbach
+        SN, Tanofsky-Kraff M, Fisher J, Wilson SJ, et al. Increased brain and behavioural
+        susceptibility to portion size in children with loss of control eating. Pediatr
+        Obes. 2019;14:e12436.","journal-title":"Pediatr Obes"},{"key":"2114_CR52","doi-asserted-by":"crossref","unstructured":"Fuchs
+        BA, Pearce AL, Rolls BJ, Wilson SJ, Rose EJ, Geier CF, et al. The cerebellar
+        response to visual portion size cues is associated with the portion size effect
+        in children. Nutrients. 2024;16:738.","DOI":"10.3390\/nu16050738"},{"key":"2114_CR53","doi-asserted-by":"publisher","first-page":"211","DOI":"10.1016\/j.jaac.2018.06.039","volume":"58","author":"C
+        Mart\u00edn-P\u00e9rez","year":"2019","unstructured":"Mart\u00edn-P\u00e9rez
+        C, Contreras-Rodr\u00edguez O, Vilar-L\u00f3pez R, Verdejo-Garc\u00eda A.
+        Hypothalamic networks in adolescents with excess weight: stress-related connectivity
+        and associations with emotional eating. J Am Acad Child Adolesc Psychiatry.
+        2019;58:211\u201320.e5.","journal-title":"J Am Acad Child Adolesc Psychiatry"},{"key":"2114_CR54","doi-asserted-by":"publisher","first-page":"1421","DOI":"10.1002\/eat.23776","volume":"55","author":"N
+        Leenaerts","year":"2022","unstructured":"Leenaerts N, Jongen D, Ceccarini
+        J, Van Oudenhove L, Vrieze E. The neurobiological reward system and binge
+        eating: a critical systematic review of neuroimaging studies. Int J Eat Disord.
+        2022;55:1421\u201358.","journal-title":"Int J Eat Disord"},{"key":"2114_CR55","doi-asserted-by":"publisher","first-page":"3315","DOI":"10.1093\/brain\/awl244","volume":"129","author":"F
+        du Boisgueheneuc","year":"2006","unstructured":"du Boisgueheneuc F, Levy R,
+        Volle E, Seassau M, Duffau H, Kinkingnehun S, et al. Functions of the left
+        superior frontal gyrus in humans: a lesion study. Brain. 2006;129:3315\u201328.","journal-title":"Brain"},{"key":"2114_CR56","doi-asserted-by":"publisher","first-page":"1907","DOI":"10.1073\/pnas.1507610113","volume":"113","author":"WM
+        Pauli","year":"2016","unstructured":"Pauli WM, O\u2019Reilly RC, Yarkoni T,
+        Wager TD. Regional specialization within the human striatum for diverse psychological
+        functions. Proc Natl Acad Sci USA. 2016;113:1907\u201312.","journal-title":"Proc
+        Natl Acad Sci USA"},{"key":"2114_CR57","doi-asserted-by":"publisher","DOI":"10.1093\/scan\/nsaa113","volume":"18","author":"F
+        Morys","year":"2023","unstructured":"Morys F, Garc\u00eda-Garc\u00eda I, Dagher
+        A. Is obesity related to enhanced neural reactivity to visual food cues? A
+        review and meta-analysis. Soc Cogn Affect Neurosci. 2023;18:nsaa113.","journal-title":"Soc
+        Cogn Affect Neurosci"},{"key":"2114_CR58","doi-asserted-by":"publisher","first-page":"51","DOI":"10.1016\/j.drugalcdep.2014.05.002","volume":"141","author":"MM
+        Heitzeg","year":"2014","unstructured":"Heitzeg MM, Nigg JT, Hardee JE, Soules
+        M, Steinberg D, Zubieta JK, et al. Left middle frontal gyrus response to inhibitory
+        errors in children prospectively predicts early problem substance use. Drug
+        Alcohol Depend. 2014;141:51\u20137.","journal-title":"Drug Alcohol Depend"},{"key":"2114_CR59","doi-asserted-by":"publisher","first-page":"2224","DOI":"10.1152\/jn.00708.2015","volume":"115","author":"YM
+        Fonken","year":"2016","unstructured":"Fonken YM, Rieger JW, Tzvi E, Crone
+        NE, Chang E, Parvizi J, et al. Frontal and motor cortex contributions to response
+        inhibition: evidence from electrocorticography. J Neurophysiol. 2016;115:2224\u201336.","journal-title":"J
+        Neurophysiol"},{"key":"2114_CR60","doi-asserted-by":"publisher","first-page":"1231","DOI":"10.1097\/00004583-200210000-00013","volume":"41","author":"L
+        Tamm","year":"2002","unstructured":"Tamm L, Menon V, Reiss AL. Maturation
+        of brain function associated with response inhibition. J Am Acad Child Adolesc
+        Psychiatry. 2002;41:1231\u20138.","journal-title":"J Am Acad Child Adolesc
+        Psychiatry"},{"key":"2114_CR61","doi-asserted-by":"publisher","first-page":"429","DOI":"10.1080\/1028415X.2022.2053406","volume":"26","author":"MT
+        de Klerk","year":"2023","unstructured":"de Klerk MT, Smeets PAM, la Fleur
+        SE. Inhibitory control as a potential treatment target for obesity. Nutritional
+        Neurosci. 2023;26:429\u201344.","journal-title":"Nutritional Neurosci"},{"key":"2114_CR62","doi-asserted-by":"publisher","first-page":"2493","DOI":"10.1007\/s00429-023-02687-y","volume":"229","author":"P
+        Xu","year":"2024","unstructured":"Xu P, Wang M, Zhang T, Zhang J, Jin Z, Li
+        L. The role of middle frontal gyrus in working memory retrieval by the effect
+        of target detection tasks: a simultaneous EEG-fMRI study. Brain Struct Funct.
+        2024;229:2493\u2013508.","journal-title":"Brain Struct Funct"},{"key":"2114_CR63","doi-asserted-by":"publisher","first-page":"1455","DOI":"10.1038\/ijo.2011.56","volume":"35","author":"LA
+        Velloso","year":"2011","unstructured":"Velloso LA, Schwartz MW. Altered hypothalamic
+        function in diet-induced obesity. Int J Obes. 2011;35:1455\u201365.","journal-title":"Int
+        J Obes"},{"key":"2114_CR64","doi-asserted-by":"publisher","first-page":"925","DOI":"10.1038\/s12276-025-01451-y","volume":"57","author":"D-H
+        Cheon","year":"2025","unstructured":"Cheon D-H, Park S, Park J, Koo M, Kim
+        H-H, Han S, et al. Lateral hypothalamus and eating: cell types, molecular
+        identity, anatomy, temporal dynamics and functional roles. Exp Mol Med. 2025;57:925\u201337.","journal-title":"Exp
+        Mol Med"},{"key":"2114_CR65","doi-asserted-by":"publisher","DOI":"10.1016\/j.lfs.2022.120947","volume":"309","author":"LDS
+        Neves","year":"2022","unstructured":"Neves LDS, Oliveira RKG, dos Santos LS,
+        Ribeiro IO, Barreto-Medeiros JMB, Matos RJB. Modulation of hypothalamic AMPK
+        and hypothalamic neuropeptides in the control of eating behavior: a systematic
+        review. Life Sci. 2022;309:120947.","journal-title":"Life Sci"},{"key":"2114_CR66","doi-asserted-by":"publisher","first-page":"195","DOI":"10.1037\/0033-295X.99.2.195","volume":"99","author":"LR
+        Squire","year":"1992","unstructured":"Squire LR. Memory and the hippocampus:
+        a synthesis from findings with rats, monkeys, and humans. Psychol Rev. 1992;99:195\u2013231.","journal-title":"Psychol
+        Rev"},{"key":"2114_CR67","doi-asserted-by":"publisher","first-page":"1439","DOI":"10.1002\/oby.20659","volume":"22","author":"CI
+        Huerta","year":"2014","unstructured":"Huerta CI, Sarkar PR, Duong TQ, Laird
+        AR, Fox PT. Neural bases of food perception: coordinate-based meta-analyses
+        of neuroimaging studies in multiple modalities. Obesity. 2014;22:1439\u201346.","journal-title":"Obesity"},{"key":"2114_CR68","doi-asserted-by":"publisher","first-page":"767","DOI":"10.1037\/hea0000405","volume":"35","author":"M
+        Field","year":"2016","unstructured":"Field M, Werthmann J, Franken I, Hofmann
+        W, Hogarth L, Roefs A. The role of attentional bias in obesity and addiction.
+        Health Psychol. 2016;35:767\u201380.","journal-title":"Health Psychol"},{"key":"2114_CR69","doi-asserted-by":"crossref","unstructured":"Robinson
+        MJF, Robinson TE, Berridge KC. Chapter 39 - Incentive Salience and the Transition
+        to Addiction. In: Miller PM, editor. Biological Research on Addiction. San
+        Diego: Academic Press; 2013. pp. 391\u20139.","DOI":"10.1016\/B978-0-12-398335-0.00039-X"},{"key":"2114_CR70","doi-asserted-by":"publisher","first-page":"731","DOI":"10.1038\/s41586-025-09250-1","volume":"644","author":"LQR
+        Ooi","year":"2025","unstructured":"Ooi LQR, Orban C, Zhang S, Nichols TE,
+        Tan TWK, Kong R, et al. Longer scans boost prediction and cut costs in brain-wide
+        association studies. Nature. 2025;644:731\u201340.","journal-title":"Nature"},{"key":"2114_CR71","doi-asserted-by":"publisher","first-page":"333","DOI":"10.4093\/dmj.2025.0106","volume":"49","author":"JS
+        Park","year":"2025","unstructured":"Park JS, Kim KS, Choi HJ. Glucagon-like
+        peptide-1 and hypothalamic regulation of satiation: cognitive and neural insights
+        from human and animal studies. Diab Metab J. 2025;49:333\u201347.","journal-title":"Diab
+        Metab J"}],"container-title":["International Journal of Obesity"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/www.nature.com\/articles\/s41366-026-02114-2.pdf","content-type":"application\/pdf","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/www.nature.com\/articles\/s41366-026-02114-2","content-type":"text\/html","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/www.nature.com\/articles\/s41366-026-02114-2.pdf","content-type":"application\/pdf","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2026,8,11]],"date-time":"2026-08-11T18:02:50Z","timestamp":1786471370000},"score":1,"resource":{"primary":{"URL":"https:\/\/www.nature.com\/articles\/s41366-026-02114-2"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2026,6,2]]},"references-count":71,"journal-issue":{"issue":"8","published-print":{"date-parts":[[2026,8]]}},"alternative-id":["2114"],"URL":"https:\/\/doi.org\/10.1038\/s41366-026-02114-2","relation":{"has-preprint":[{"id-type":"doi","id":"10.21203\/rs.3.rs-8694593\/v1","asserted-by":"object"}]},"ISSN":["0307-0565","1476-5497"],"issn-type":[{"value":"0307-0565","type":"print"},{"value":"1476-5497","type":"electronic"}],"subject":[],"published":{"date-parts":[[2026,6,2]]},"assertion":[{"value":"25
+        January 2026","order":1,"name":"received","label":"Received","group":{"name":"ArticleHistory","label":"Article
+        History"}},{"value":"22 April 2026","order":2,"name":"revised","label":"Revised","group":{"name":"ArticleHistory","label":"Article
+        History"}},{"value":"22 May 2026","order":3,"name":"accepted","label":"Accepted","group":{"name":"ArticleHistory","label":"Article
+        History"}},{"value":"2 June 2026","order":4,"name":"first_online","label":"First
+        Online","group":{"name":"ArticleHistory","label":"Article History"}},{"value":"The
+        authors declare no competing interests.","order":1,"name":"Ethics","label":"Competing
+        interests","group":{"name":"EthicsHeading","label":"Ethics"}},{"value":"All
+        methods in this study were performed in accordance with the Declaration of
+        Helsinki. The ADOB protocol was approved by the Colorado Multiple Institutional
+        Review Board (#19-1171). All participants 18 years of age provided written
+        informed consent, with parents or guardians and participants providing written
+        consent and assent, respectively, for those younger than 18 years of age.","order":2,"name":"Ethics","label":"Ethics
+        approval and consent to participate","group":{"name":"EthicsHeading","label":"Ethics"}}]}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '10538'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 08:04:09 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1038%2Fs41366-026-02114-2%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTc3MDAyODkwMzAwMCwxMC4yMTIwMyUyRnJzLjMucnMtODY5NDU5MyUyRnYx","total-results":1,"items":[{"DOI":"10.21203\/rs.3.rs-8694593\/v1","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.1038\/s41366-026-02114-2","asserted-by":"subject"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 08:04:10 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=20&retmode=json&term=Altered%5Bti%5D+AND+hypothalamic%5Bti%5D+AND+functional%5Bti%5D+AND+connectivity%5Bti%5D+AND+in%5Bti%5D+AND+adolescents%5Bti%5D+AND+with%5Bti%5D+AND+severe%5Bti%5D+AND+obesity%5Bti%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAGRQy2rDQAy89yuMziEUesst0HN+oPigepVYsNa6kpzUBP975TbZhva289AsM1fo
+        CRMp7K7g80iwAzJC7XrYwJnUuEhwz9sXWDZ3Scmm7OtJVybxVQ+3kg/4+QvMUe8ap8wW4K3dgCuK
+        ZfRINrpxHxPp/CDE2T47KaU357bZH16bfh6L95hx4K6Sx0m61Y+5Ul0RoSDP7HMlWeoTU8lkHYlb
+        5S7sfQVG0ZsqLO9kt6goQqpFf7pcYewVjUyKH2OHFFWAJUxrHESrI1NOj3IbG15QheX0J4NPUqLt
+        fY3ilP6nh1QmHycfyAxPZOuPh9Kw02DNt2sL7bIsT18AAAD//wMAojUqv9cBAAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Fri, 23 Oct 2026 08:04:10 GMT
+      ncbi-phid:
+      - 1D32B8BB86A02F150000174ACDE027D6.1.1.m_1
+      ncbi-sid:
+      - 869BFEB08D56D89D_793BSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=20&retmode=json&term=Altered%5Bti%5D+AND+hypothalamic%5Bti%5D+AND+functional%5Bti%5D+AND+connectivity%5Bti%5D+AND+adolescents%5Bti%5D+AND+severe%5Bti%5D+AND+obesity%5Bti%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAFyQMU/DQAyFd35F5TlCSRqgdKvEzMTWdDCXh3LS9a6cnYqoyn/HGRDVbX7ve8+W
+        fKMRPCDT/kY6X0B7goCzG6miK7L4FM2rH7e0VH8oQ6aga8WlKdpAraUz9Mw//0KU88pqk34IXkwc
+        qWvbbf26ezKza55ful3T0KkizRwlsNo5wRo073tCnu+A7erpEBQZQ0/HD68Bp83h/W3T0zhfko4c
+        +Oxdyb6m6NY+h5K4FCOMXb3OJeMhBYhDVCmRwD6D0k2fkPs9tCwPvwAAAP//AwAWn/WsXwEAAA==
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Fri, 23 Oct 2026 08:04:10 GMT
+      ncbi-phid:
+      - 1D33ABE4FCD277E500005E61F1DD8FF8.1.1.m_1
+      ncbi-sid:
+      - 869BFEB08D56D89D_793BSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

@@ -1,0 +1,139 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=17134483&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAJRTTXPbIBD9KwxnyRGWbNnqKU0OGWfS8a2HTA5Y2ka0CBI+3PF4/N+7gGrLaXvo
+        BaHdfbzd9+BIe+AdGNocqTu8AW0oWD8M3BxoRvdgrNAKg8WspKeMGkxKF4q96CxtnimrWVlVq5K+
+        ZJd9yiPsHMnom9913AWCeVEsyRe9J/M1xuFfCau9aUN4Qz4LPUBH7oVtMXunpeQ7rODe9dqENo5U
+        8SHUbo3YGT6Qx4cxPw51G0sx1kpvHZjYHT1h05Jblw76CHfCyYD92nNHBv4DLK6K9B7XhrheGHfI
+        lVCuJxtkt+TWuN4bIqF13gDRCouAwF5L71BGor/FQDyAII9QGWHrupjFaY37TfjzL4QjH0l83yMf
+        /2++SBeMxZKoF8MfYa0P+2ASfwUbwsExydVrsBjwg0IpOXgl3j0kZws2X6yKRZUOUAkPacfqqs4X
+        ZTn6njx4pht0VHEZdBItTvoSLlSrTYcOOB94t373BF1CnYPhFJ4g6dIdqehGX7FuiIAUQXKG03EZ
+        BzrfvlM2hQzttH51qd8+3bF6uS7Xyz8Q4opjccFgLhddQy7YT9fgTosptJy0V8wYWy1vzmrlLGcf
+        mxVX6Go63DUKxeyFdRofblBoKiCKDGIfZZq8tJviFwAAAP//lFXBboMwDL3vKxDnSYQeunVfsH/Y
+        KRijZgtJ5SaVNol/r52Etoxx2A0bPz8ntl9eG3WolHpTKpE+QjQAnsIK0rbNbgtya8UCsGtUW6nD
+        XwCOtsbhJqJdIdAFwp9/UEh3CC3q84rm8SRpEAckdCDj/8G2DoG1IIZk1++at5vTkoYgY8t5GQA+
+        OhbDl/1zPURrP/N4FyWah52XsEvyZYCtPkkY0nelXV9BUjJPWtZV1sd6SN9ZnrhiD2UQwIQ56kwA
+        3kl5lhuey+28/5rlg0OELo5lJ3sTsojnvWLQEWlm+uUuxWeWcl+13M6J9cnFsZOnQjz6og3XbnEg
+        P0ay2Ttn5T9ob0dYVcu+e24p/U4LR81zV0hEFJfPw6JvOWAwtKXgFzkQRCvqUe5mmqanKwAAAP//
+        AwDul0Ly9QYAAA==
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Wed, 21 Oct 2026 12:30:10 GMT
+      ncbi-phid:
+      - 1D33E73F2DDD1E75000047E7DF1EF2D6.1.1.m_1
+      ncbi-sid:
+      - EADAEC7450F73924_7A40SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - pmc.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=replay%40example.com&format=json&ids=PMC1769396&idtype=pmcid&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA21QQWrDMBD8ShHUpyjVWq7tGAyFngu9lxyErSRqbK0rOXWD8d+7kqENpcedndmZ
+        nZn5UY0XzyqGZ7ZhTvsBrde8VaMmMBVpzkHwFO5EWUlRAUTWx0X7kVUzm5Szxh7pwNt+ww7oekU4
+        e/doiWja8TqEO0PfmDYCgcleX56hyHdylzNS6V6ZjkhOD526Pukv1Q+d3jbYk2JEDDvyIEeDlk/o
+        zocOJ9rp5oS0i/p6Vd9n4kafrIHqECch7/rXOFmz1TFZElzqfz0+tfMEhYYs0uxPOClDz8R5CWU0
+        6OJbM2vREA5iC1DmD1BkBX+UUnLgIEm7tlDdvh/AgEEBMstK+VOubvlf7rJfvgEK7LnxsAEAAA==
+    headers:
+      allow:
+      - GET, HEAD, OPTIONS
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json
+      cross-origin-opener-policy:
+      - same-origin
+      date:
+      - Wed, 21 Oct 2026 12:30:11 GMT
+      referrer-policy:
+      - same-origin
+      server:
+      - istio-envoy
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept,Accept-Encoding
+      via:
+      - 1.1 google
+      x-content-type-options:
+      - nosniff
+      - nosniff
+      x-envoy-upstream-service-time:
+      - '6'
+      x-frame-options:
+      - DENY
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

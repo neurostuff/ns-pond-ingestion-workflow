@@ -1,0 +1,847 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=10000&retmode=json&term=%2210.1016%2Fj.biopsych.2011.09.005%22%5Bdoi%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAEyQQU/DMAyF7/yKyOcqJEND2s5cuCGuWw9ZY9pMXVLsZFBV/e+4ZRPk5Ocvec/O
+        BB06jwT7CfI4IOwBGR01HVRwReKQovSMfoK5uiNCLn1enjSpRCnAym3CfHHff4Kzo4UZkcH3gUUc
+        YLMxdmuthbqCTC5y77JkMC5Uep8FafwHxOAI1mhr7PPjWZ9CGnhsOi02VpudNmZ7hMNbOUlAh6Re
+        X2rJ+3IUQ2x/QycYOnKMHNqYCP09KGX0NxJT/pBVbiiVPJR8QWbXIi9TvyNnCs06qXJNF/CKXqt1
+        ReWiV+tHKOfPhcVV5aRMpXZyoJ7n+eEHAAD//wMAgACkO2cBAAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Fri, 23 Oct 2026 08:07:51 GMT
+      ncbi-phid:
+      - 1D32B8BB86A02F150000564CAC4B70BD.1.1.m_1
+      ncbi-sid:
+      - F1E744DA9D7C6D4B_D9DDSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=22015111&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAKxU23LTMBD9FY1egJnYkewkbfJWSim3lk4z8NLhQbG3iUCWjC6BkOHfWcmp23CZ
+        aWZ4srXao6M9OrtbugJRg6WzLfWbFuiMggtNI+yGDugarJNGY5DlJf05oBY3lY/JQdaOzm5oUTA+
+        5pzTT4P7/24fYX1kQNuwqIWPBBgryBuhSQzDXpyT95UnfIobzgRbxfBzaRS5cptqJYVP1xLBr4yN
+        9FuqRROTTldCe6nCFyBvdxm7ck5SMsYqFZwHm+6FtfTQV0IJK8n1gbC5bGRFLg5EXSEV3hTI6eHI
+        VtSmNUEZR04OBJ9L0bQSvDXk44HQ67CQ4pGiogeUcL57nz2sl15F4EtrtDeZ8ygDfiuwsACFD0Dq
+        jbOwDEp4dByRmmC1ClwF2jvyTfoVqaFF/0VDkjpYqZekMV6u0Tw1Ed5jIm7lyTrW3xHeJkKyIyT/
+        nzC2iVEhaXUUHS2dC3GRTC+WgD6l42k2OaJRHb2MXQP4QbG0aoKWXwMk/VjBy2Iy6o5ITcfYJCuL
+        oox90oX48VGZFSNWdB3VPccNfYPNooUiJ9bLCuse0GtwIGy1IvPQtqjHgFwanX3I5zk5N+snPtJb
+        qIyt8b18iJe8CosLrCxDLWr4jn+3xpKLsxfvXl+edXR9ajGeREN0bN0k2FJZ79yBmQ3UsY4UwXtz
+        FEmoJEs/EqLHekht5MP88j6fs5wzPhl+zhfStHEM5HFQ5GyaMzbeP6WVe6eM7k+Z91o+5fwZY8fT
+        UXacDLuSzhscK7GChyWiOCDXqYwH82nIRsOCE8ZmjCXufchauj8R0yEb/wMhqgpafxAEXWfhx28A
+        zoZFQdjkb4D+NR4LwGwlNewhiiErhyW/QyTz3GIv6Sr6+wbX2BBWLoLH9S8AAAD//4RVQRKCMAy8
+        +wqHszN69gV+I2SKVFvKVMqNv7tpWkE8eOssbbIJmw0EeSOYFEJG4iy10TMecEjDJE5xarrk3ENV
+        W4xGfD7cLUPG49btjQucZzQPCYRyPf7RBIgHLpJgO1EZ01dkhhmApcM/V9ZtCM9qFbiC0m3yesZx
+        0uWn4sej3sRKZgeXGjRLaVsjTZLZG5JvZcUKQjNZR60zMCafolO0RsUXUyCU8MMW2BpbqK9puScI
+        qSQRA/zet+cLVFV1qxc6GzdWvVugs5TEMMf46c6yLIc3AAAA//8DAAZDBIkvCAAA
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Fri, 23 Oct 2026 08:07:51 GMT
+      ncbi-phid:
+      - 1D32B8BB86A02F1500005F4CACFF01C0.1.1.m_1
+      ncbi-sid:
+      - F1E744DA9D7C6D4B_D9DDSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1016/j.biopsych.2011.09.005?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,8,17]],"date-time":"2026-08-17T16:47:41Z","timestamp":1786985261991,"version":"build-2736575974"},"reference-count":117,"publisher":"Elsevier
+        BV","issue":"1","license":[{"start":{"date-parts":[[2012,1,1]],"date-time":"2012-01-01T00:00:00Z","timestamp":1325376000000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/tdm\/userlicense\/1.0\/"}],"funder":[{"name":"PPP
+        Foundation","award":["1206\/1140"],"award-info":[{"award-number":["1206\/1140"]}]},{"name":"Eli
+        Lilly"}],"content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":["Biological
+        Psychiatry"],"published-print":{"date-parts":[[2012,1]]},"DOI":"10.1016\/j.biopsych.2011.09.005","type":"journal-article","created":{"date-parts":[[2011,10,22]],"date-time":"2011-10-22T04:42:48Z","timestamp":1319258568000},"page":"59-67","source":"Crossref","is-referenced-by-count":87,"title":["Fronto-Striato-Cerebellar
+        Dysregulation in Adolescents with Depression During Motivated Attention"],"prefix":"10.1016","volume":"71","author":[{"given":"Kaylita","family":"Chantiluke","sequence":"first","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Rozmin","family":"Halari","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Mima","family":"Simic","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Carmine
+        M.","family":"Pariante","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Andrew","family":"Papadopoulos","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Vincent","family":"Giampietro","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Katya","family":"Rubia","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"78","reference":[{"key":"10.1016\/j.biopsych.2011.09.005_bib1","series-title":"Diagnostic
+        and Statistical Manual of Mental Disorders","year":"1994"},{"key":"10.1016\/j.biopsych.2011.09.005_bib2","doi-asserted-by":"crossref","first-page":"45","DOI":"10.31887\/DCNS.2009.11.1\/urao","article-title":"Characteristics,
+        correlates, and outcomes of childhood and adolescent depressive disorders","volume":"11","author":"Rao","year":"2009","journal-title":"Dialogues
+        Clin Neurosci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib3","doi-asserted-by":"crossref","first-page":"588","DOI":"10.1176\/ajp.142.5.588","article-title":"Depressive
+        symptoms and suicidal behavior in adolescents","volume":"142","author":"Robbins","year":"1985","journal-title":"Am
+        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib4","doi-asserted-by":"crossref","first-page":"854","DOI":"10.1001\/archpsyc.1987.01800220016003","article-title":"The
+        clinical picture of major depression in children and adolescents","volume":"44","author":"Ryan","year":"1987","journal-title":"Arch
+        Gen Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib5","doi-asserted-by":"crossref","first-page":"735","DOI":"10.1097\/00005053-200111000-00001","article-title":"Anhedonia
+        in depression and schizophrenia: A reexamination","volume":"189","author":"Romney","year":"2001","journal-title":"J
+        Nerv Ment Dis"},{"key":"10.1016\/j.biopsych.2011.09.005_bib6","doi-asserted-by":"crossref","first-page":"843","DOI":"10.1016\/j.biopsych.2005.05.019","article-title":"The
+        neural correlates of anhedonia in major depressive disorder","volume":"58","author":"Keedwell","year":"2005","journal-title":"Biol
+        Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib7","doi-asserted-by":"crossref","first-page":"633","DOI":"10.1016\/j.biopsych.2006.05.026","article-title":"Alterations
+        in reward-related decision making in boys with recent and future depression","volume":"61","author":"Forbes","year":"2007","journal-title":"Biol
+        Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib8","doi-asserted-by":"crossref","first-page":"209","DOI":"10.1016\/j.jad.2005.12.005","article-title":"Sensitivity
+        to reward and punishment and the prefrontal cortex in major depression","volume":"90","author":"Must","year":"2006","journal-title":"J
+        Affect Disord"},{"key":"10.1016\/j.biopsych.2011.09.005_bib9","doi-asserted-by":"crossref","first-page":"76","DOI":"10.1016\/j.jpsychires.2008.03.001","article-title":"Reduced
+        hedonic capacity in major depressive disorder: Evidence from a probabilistic
+        reward task","volume":"43","author":"Pizzagalli","year":"2008","journal-title":"J
+        Psychiatr Res"},{"key":"10.1016\/j.biopsych.2011.09.005_bib10","doi-asserted-by":"crossref","first-page":"711","DOI":"10.1080\/02699930050117684","article-title":"Decreased
+        responsiveness to reward in depression","volume":"14","author":"Henriques","year":"2000","journal-title":"Cogn
+        Emot"},{"key":"10.1016\/j.biopsych.2011.09.005_bib11","doi-asserted-by":"crossref","first-page":"187","DOI":"10.2307\/1423272","article-title":"Effects
+        of memory demand and motivation on sustained attention in young and older
+        adults","volume":"109","author":"Tomporowski","year":"1996","journal-title":"Am
+        J Psychol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib12","doi-asserted-by":"crossref","first-page":"1009","DOI":"10.1017\/S0033291700035339","article-title":"Impaired
+        attention in depressive states: A non-specific deficit?","volume":"26","author":"Mialet","year":"1996","journal-title":"Psychol
+        Med"},{"key":"10.1016\/j.biopsych.2011.09.005_bib13","doi-asserted-by":"crossref","first-page":"391","DOI":"10.1016\/S0022-3956(02)00026-2","article-title":"CPT
+        performance in major depressive disorder before and after treatment with imipramine
+        or fluvoxamine","volume":"36","author":"Koetsier","year":"2002","journal-title":"J
+        Psychiatr Res"},{"key":"10.1016\/j.biopsych.2011.09.005_bib14","doi-asserted-by":"crossref","first-page":"123","DOI":"10.1016\/j.psychres.2004.12.012","article-title":"Impulsivity
+        in depressed children and adolescents: A comparison between behavioral and
+        neuropsychological data","volume":"136","author":"Cataldo","year":"2005","journal-title":"Psychiatry
+        Res"},{"key":"10.1016\/j.biopsych.2011.09.005_bib15","doi-asserted-by":"crossref","first-page":"21","DOI":"10.1016\/0165-0327(92)90089-O","article-title":"Cognitive
+        function in major depression","volume":"25","author":"Austin","year":"1992","journal-title":"J
+        Affect Disord"},{"key":"10.1016\/j.biopsych.2011.09.005_bib16","doi-asserted-by":"crossref","first-page":"65","DOI":"10.1016\/0165-1781(89)90188-1","article-title":"The
+        continuous performance test, identical pairs version: II","volume":"29","author":"Cornblatt","year":"1989","journal-title":"Psychiatry
+        Res"},{"key":"10.1016\/j.biopsych.2011.09.005_bib17","doi-asserted-by":"crossref","first-page":"1095","DOI":"10.1176\/appi.ajp.157.7.1095","article-title":"Neuropsychological
+        deficits in psychotic versus nonpsychotic major depression and no mental illness","volume":"157","author":"Schatzberg","year":"2000","journal-title":"Am
+        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib18","doi-asserted-by":"crossref","first-page":"396","DOI":"10.1037\/0022-006X.57.3.396","article-title":"Motivational
+        effects on neuropsychological functioning: Comparison of depressed versus
+        nondepressed individuals","volume":"57","author":"Richards","year":"1989","journal-title":"J
+        Consult Clin Psychol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib19","doi-asserted-by":"crossref","first-page":"214","DOI":"10.1192\/bjp.182.3.214","article-title":"Neurocognitive
+        impairment in drug-free patients with major depressive disorder","volume":"182","author":"Porter","year":"2003","journal-title":"Br
+        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib20","doi-asserted-by":"crossref","first-page":"217","DOI":"10.1176\/jnp.2006.18.2.217","article-title":"Neurocognition
+        in depression: Patients on and off medication versus healthy comparison subjects","volume":"18","author":"Gualtieri","year":"2006","journal-title":"J
+        Neuropsychiatry Clin Neurosci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib21","doi-asserted-by":"crossref","first-page":"200","DOI":"10.1192\/bjp.178.3.200","article-title":"Cognitive
+        deficits in depression: Possible implications for functional neuropathology","volume":"178","author":"Austin","year":"2001","journal-title":"Br
+        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib22","doi-asserted-by":"crossref","first-page":"446","DOI":"10.1111\/j.1469-7610.2006.01722.x","article-title":"Incentive-related
+        modulation of cognitive control in healthy, anxious, and depressed adolescents:
+        Development and psychopathology related differences","volume":"48","author":"Hardin","year":"2007","journal-title":"J
+        Child Psychol Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib23","doi-asserted-by":"crossref","first-page":"189","DOI":"10.1007\/s10608-006-9115-9","article-title":"Neurophysiology
+        of motivated learning: Adaptive mechanisms underlying cognitive bias in depression","volume":"31","author":"Tucker","year":"2007","journal-title":"Cognit
+        Ther Res"},{"key":"10.1016\/j.biopsych.2011.09.005_bib24","doi-asserted-by":"crossref","DOI":"10.1016\/j.nlm.2011.06.006","article-title":"Cognitive
+        dysfunction in depression: Neurocircuitry and new therapeutic strategies [published
+        online ahead of print June 16]","author":"Murrough","year":"2011","journal-title":"Neurobiol
+        Learn Mem"},{"key":"10.1016\/j.biopsych.2011.09.005_bib25","doi-asserted-by":"crossref","first-page":"173","DOI":"10.1001\/archpsyc.59.2.173","article-title":"Prefrontal
+        cortical volume in childhood-onset major depression: Preliminary findings","volume":"59","author":"Nolan","year":"2002","journal-title":"Arch
+        Gen Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib26","doi-asserted-by":"crossref","first-page":"121","DOI":"10.1089\/cap.2007.0026","article-title":"Striatal
+        volume abnormalities in treatment-na\u00efve patients diagnosed with pediatric
+        major depressive disorder","volume":"18","author":"Matsuo","year":"2008","journal-title":"J
+        Child Adolesc Psychopharmacol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib27","doi-asserted-by":"crossref","first-page":"21","DOI":"10.1016\/j.biopsych.2004.10.027","article-title":"Amygdala
+        and hippocampus volumes in pediatric major depression","volume":"57","author":"Rosso","year":"2005","journal-title":"Biol
+        Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib28","doi-asserted-by":"crossref","first-page":"385","DOI":"10.1016\/j.biopsych.2007.05.005","article-title":"Amygdala
+        and hippocampal volumes in familial early onset major depressive disorder","volume":"63","author":"MacMaster","year":"2008","journal-title":"Biol
+        Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib29","doi-asserted-by":"crossref","first-page":"142","DOI":"10.1016\/j.neulet.2007.06.014","article-title":"Medial
+        temporal lobe abnormalities in pediatric unipolar depression","volume":"427","author":"Caetano","year":"2007","journal-title":"Neurosci
+        Lett"},{"key":"10.1016\/j.biopsych.2011.09.005_bib30","doi-asserted-by":"crossref","first-page":"65","DOI":"10.1089\/104454603321666207","article-title":"Increased
+        amygdala: Hippocampal volume ratios associated with severity of anxiety in
+        pediatric major depression","volume":"13","author":"MacMillan","year":"2003","journal-title":"J
+        Child Adolesc Psychopharmacol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib31","doi-asserted-by":"crossref","first-page":"862","DOI":"10.1016\/j.biopsych.2006.04.013","article-title":"Pituitary
+        volume in treatment-na\u00efve pediatric major depressive disorder","volume":"60","author":"MacMaster","year":"2006","journal-title":"Biol
+        Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib32","doi-asserted-by":"crossref","first-page":"1031","DOI":"10.1111\/j.1469-7610.2006.01673.x","article-title":"Reward-related
+        decision-making in pediatric major depressive disorder: An fMRI study","volume":"47","author":"Forbes","year":"2006","journal-title":"J
+        Child Psychol Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib33","doi-asserted-by":"crossref","first-page":"64","DOI":"10.1176\/appi.ajp.2008.07081336","article-title":"Altered
+        striatal activation predicting real-world positive affect in adolescent major
+        depressive disorder","volume":"166","author":"Forbes","year":"2009","journal-title":"Am
+        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib34","doi-asserted-by":"crossref","first-page":"307","DOI":"10.1111\/j.1469-7610.2008.01972.x","article-title":"Reduced
+        activation in lateral prefrontal cortex and anterior cingulate during attention
+        and cognitive control functions in medication-naive adolescents with depression
+        compared to controls","volume":"50","author":"Halari","year":"2009","journal-title":"J
+        Child Psychol Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib35","doi-asserted-by":"crossref","first-page":"702","DOI":"10.1176\/appi.ajp.2008.08081201","article-title":"Reduced
+        caudate and nucleus accumbens response to rewards in unmedicated individuals
+        with major depressive disorder","volume":"166","author":"Pizzagalli","year":"2009","journal-title":"Am
+        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib36","doi-asserted-by":"crossref","first-page":"651","DOI":"10.1016\/S0006-3223(01)01263-X","article-title":"Increased
+        amygdala response to masked emotional faces in depressed subjects resolves
+        with antidepressant treatment: An fMRI study","volume":"50","author":"Sheline","year":"2001","journal-title":"Biol
+        Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib37","doi-asserted-by":"crossref","first-page":"877","DOI":"10.1001\/archpsyc.61.9.877","article-title":"Attenuation
+        of the neural response to sad faces in major depression by antidepressant
+        treatment: A prospective, event-related functional magnetic resonance imaging
+        study","volume":"61","author":"Fu","year":"2004","journal-title":"Arch Gen
+        Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib38","doi-asserted-by":"crossref","first-page":"206","DOI":"10.1016\/j.jad.2008.04.027","article-title":"Antidepressant
+        treatment normalizes hypoactivity in dorsolateral prefrontal cortex during
+        emotional interference processing in major depression","volume":"112","author":"Fales","year":"2009","journal-title":"J
+        Affect Disord"},{"key":"10.1016\/j.biopsych.2011.09.005_bib39","doi-asserted-by":"crossref","first-page":"64","DOI":"10.1176\/appi.ajp.160.1.64","article-title":"The
+        neural substrates of affective processing in depressed patients treated with
+        venlafaxine","volume":"160","author":"Davidson","year":"2003","journal-title":"Am
+        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib40","doi-asserted-by":"crossref","first-page":"788","DOI":"10.1038\/nrn2345","article-title":"Cognitive
+        therapy versus medication for depression: Treatment outcomes and neural mechanisms","volume":"9","author":"DeRubeis","year":"2008","journal-title":"Nat
+        Rev Neurosci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib41","doi-asserted-by":"crossref","first-page":"1990","DOI":"10.2174\/138161210791293051","article-title":"Using
+        functional neuroimaging to investigate the mechanisms of action of selective
+        serotonin reuptake inhibitors (SSRIs)","volume":"16","author":"Murphy","year":"2010","journal-title":"Curr
+        Pharm Des"},{"key":"10.1016\/j.biopsych.2011.09.005_bib42","doi-asserted-by":"crossref","first-page":"1057","DOI":"10.1001\/archpsyc.58.11.1057","article-title":"Amygdala
+        response to fearful faces in anxious and depressed children","volume":"58","author":"Thomas","year":"2001","journal-title":"Arch
+        Gen Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib43","doi-asserted-by":"crossref","first-page":"1476","DOI":"10.1176\/appi.ajp.2007.07030504","article-title":"Functional
+        neuroimaging of anxiety: A meta-analysis of emotional processing in PTSD,
+        social anxiety disorder, and specific phobia","volume":"164","author":"Etkin","year":"2007","journal-title":"Am
+        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib44","doi-asserted-by":"crossref","first-page":"1855","DOI":"10.1093\/cercor\/bhi063","article-title":"Monetary
+        incentives enhance processing in brain regions mediating top-down control
+        of attention","volume":"15","author":"Small","year":"2005","journal-title":"Cereb
+        Cortex"},{"key":"10.1016\/j.biopsych.2011.09.005_bib45","doi-asserted-by":"crossref","first-page":"668","DOI":"10.1037\/1528-3542.7.3.668","article-title":"Motivation
+        sharpens exogenous spatial attention","volume":"7","author":"Engelmann","year":"2007","journal-title":"Emotion"},{"key":"10.1016\/j.biopsych.2011.09.005_bib46","doi-asserted-by":"crossref","first-page":"5669","DOI":"10.1073\/pnas.082111099","article-title":"The
+        neural system that bridges reward and cognition in humans: An fMRI study","volume":"99","author":"Pochon","year":"2002","journal-title":"Proc
+        Natl Acad Sci U S A"},{"key":"10.1016\/j.biopsych.2011.09.005_bib47","doi-asserted-by":"crossref","first-page":"2604","DOI":"10.1093\/cercor\/bhn021","article-title":"The
+        spatial attention network interacts with limbic and monoaminergic systems
+        to modulate motivation-induced attention shifts","volume":"18","author":"Mohanty","year":"2008","journal-title":"Cereb
+        Cortex"},{"key":"10.1016\/j.biopsych.2011.09.005_bib48","doi-asserted-by":"crossref","first-page":"168","DOI":"10.1016\/j.brainres.2007.01.052","article-title":"Reward
+        modulation of prefrontal and visual association cortex during an incentive
+        working memory task","volume":"1141","author":"Krawczyk","year":"2007","journal-title":"Brain
+        Res"},{"key":"10.1016\/j.biopsych.2011.09.005_bib49","doi-asserted-by":"crossref","first-page":"640","DOI":"10.1016\/j.neuropharm.2009.08.013","article-title":"Methylphenidate
+        normalises activation and functional connectivity deficits in attention and
+        motivation networks in medication-na\u00efve children with ADHD during a rewarded
+        continuous performance task","volume":"57","author":"Rubia","year":"2009","journal-title":"Neuropharmacology"},{"key":"10.1016\/j.biopsych.2011.09.005_bib50","doi-asserted-by":"crossref","first-page":"83","DOI":"10.1176\/appi.ajp.2008.08020212","article-title":"Disorder-specific
+        dissociation of orbitofrontal dysfunction in boys with pure conduct disorder
+        during reward and ventrolateral prefrontal dysfunction in boys with pure ADHD
+        during sustained attention","volume":"166","author":"Rubia","year":"2009","journal-title":"Am
+        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib51","doi-asserted-by":"crossref","first-page":"287","DOI":"10.1002\/hbm.20975","article-title":"Disorder-specific
+        dysfunction in right inferior prefrontal cortex during two inhibition tasks
+        in boys with attention-deficit hyperactivity disorder compared to boys with
+        obsessive-compulsive disorder","volume":"31","author":"Rubia","year":"2010","journal-title":"Hum
+        Brain Mapp"},{"key":"10.1016\/j.biopsych.2011.09.005_bib52","doi-asserted-by":"crossref","first-page":"1693","DOI":"10.1016\/j.neuroimage.2011.01.072","article-title":"Developmental
+        effects of reward on sustained attention networks","volume":"56","author":"Smith","year":"2011","journal-title":"Neuroimage"},{"key":"10.1016\/j.biopsych.2011.09.005_bib53","doi-asserted-by":"crossref","first-page":"118","DOI":"10.1016\/j.ijpsycho.2010.09.009","article-title":"The
+        scanner as a stressor: Evidence from subjective and neuroendocrine stress
+        parameters in the time course of a functional magnetic resonance imaging session","volume":"79","author":"Muehlhan","year":"2011","journal-title":"Int
+        J Psychophysiol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib54","doi-asserted-by":"crossref","first-page":"1248","DOI":"10.1001\/archpsyc.60.12.1248","article-title":"Alterations
+        in stress cortisol reactivity in depressed preschoolers relative to psychiatric
+        and no-disorder comparison groups","volume":"60","author":"Luby","year":"2003","journal-title":"Arch
+        Gen Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib55","doi-asserted-by":"crossref","first-page":"313","DOI":"10.1016\/0306-4530(94)90013-2","article-title":"Salivary
+        cortisol in psychoneuroendocrine research: Recent developments and applications","volume":"19","author":"Kirschbaum","year":"1994","journal-title":"Psychoneuroendocrinology"},{"key":"10.1016\/j.biopsych.2011.09.005_bib56","doi-asserted-by":"crossref","first-page":"97","DOI":"10.1016\/0028-3932(71)90067-4","article-title":"The
+        assessment and analysis of handedness: The Edinburgh Inventory","volume":"9","author":"Oldfield","year":"1971","journal-title":"Neuropsychologia"},{"key":"10.1016\/j.biopsych.2011.09.005_bib57","doi-asserted-by":"crossref","first-page":"1208","DOI":"10.1097\/00004583-200010000-00002","article-title":"K-SADS-PL","volume":"39","author":"Kaufman","year":"2000","journal-title":"J
+        Am Acad Child Adolesc Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib58","series-title":"Manual
+        for the Beck Depression Inventory","author":"Beck","year":"1996"},{"key":"10.1016\/j.biopsych.2011.09.005_bib59","series-title":"Integrative
+        Guide to the 1991 CBCL\/4-18, YSR and TRF Profiles","author":"Achenbach","year":"1991"},{"key":"10.1016\/j.biopsych.2011.09.005_bib60","series-title":"Society
+        and the Adolescent Self-Image","author":"Rosenberg","year":"1989"},{"key":"10.1016\/j.biopsych.2011.09.005_bib61","doi-asserted-by":"crossref","first-page":"571","DOI":"10.1089\/cap.2005.15.571","article-title":"Stressful
+        life events in anxious and depressed children","volume":"15","author":"Williamson","year":"2005","journal-title":"J
+        Child Adolesc Psychopharmacol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib62","series-title":"Guide
+        to the Standard Progressive Matrices","author":"Raven","year":"1960"},{"key":"10.1016\/j.biopsych.2011.09.005_bib63","doi-asserted-by":"crossref","first-page":"922","DOI":"10.1016\/S0006-3223(01)01314-2","article-title":"A
+        novel prednisolone suppression test for the hypothalamic-pituitary-adrenal
+        axis","volume":"51","author":"Pariante","year":"2002","journal-title":"Biol
+        Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib64","series-title":"The
+        Conners Continuous Performance Test","author":"Conners","year":"1993"},{"key":"10.1016\/j.biopsych.2011.09.005_bib65","doi-asserted-by":"crossref","first-page":"19","DOI":"10.1192\/bjp.bp.107.036921","article-title":"Neural
+        correlates of reward in autism","volume":"192","author":"Schmitz","year":"2008","journal-title":"Br
+        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib66","doi-asserted-by":"crossref","first-page":"207","DOI":"10.1080\/87565649109540488","article-title":"Subtype
+        analysis of commission errors on the continuous performance-test in children","volume":"7","author":"Halperin","year":"1991","journal-title":"Dev
+        Neuropsychol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib67","doi-asserted-by":"crossref","first-page":"326","DOI":"10.1097\/00004583-198805000-00010","article-title":"Differential
+        assessment of attention and impulsivity in children","volume":"27","author":"Halperin","year":"1988","journal-title":"J
+        Am Acad Child Adolesc Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib68","doi-asserted-by":"crossref","first-page":"487","DOI":"10.1007\/BF00917077","article-title":"The
+        computerized continuous performance task: A new measure of inattention","volume":"11","author":"Klee","year":"1983","journal-title":"J
+        Abnorm Child Psychol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib69","doi-asserted-by":"crossref","first-page":"543","DOI":"10.1023\/A:1025405216339","article-title":"Relations
+        between Continuous Performance Test performance measures and ADHD behaviors","volume":"31","author":"Epstein","year":"2003","journal-title":"J
+        Abnorm Child Psychol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib70","doi-asserted-by":"crossref","first-page":"763","DOI":"10.1016\/S0730-725X(97)00135-5","article-title":"Generic
+        brain activation mapping in functional magnetic resonance imaging: A nonparametric
+        approach","volume":"15","author":"Brammer","year":"1997","journal-title":"Magn
+        Reson Imaging"},{"key":"10.1016\/j.biopsych.2011.09.005_bib71","doi-asserted-by":"crossref","first-page":"105","DOI":"10.1016\/j.neuroimage.2006.11.054","article-title":"Analysis
+        of a large fMRI cohort: Statistical and methodological issues for group analyses","volume":"35","author":"Thirion","year":"2007","journal-title":"Neuroimage"},{"key":"10.1016\/j.biopsych.2011.09.005_bib72","doi-asserted-by":"crossref","first-page":"38","DOI":"10.1002\/(SICI)1097-0193(1999)7:1<38::AID-HBM4>3.0.CO;2-Q","article-title":"Methods
+        for diagnosis and treatment of stimulus-correlated motion in generic brain
+        activation studies using fMRI","volume":"7","author":"Bullmore","year":"1999","journal-title":"Hum
+        Brain Mapp"},{"key":"10.1016\/j.biopsych.2011.09.005_bib73","doi-asserted-by":"crossref","first-page":"32","DOI":"10.1109\/42.750253","article-title":"Global,
+        voxel, and cluster tests, by theory and permutation, for a difference between
+        two groups of structural MR images of the brain","volume":"18","author":"Bullmore","year":"1999","journal-title":"IEEE
+        Trans Med Imaging"},{"key":"10.1016\/j.biopsych.2011.09.005_bib74","doi-asserted-by":"crossref","first-page":"1119","DOI":"10.1176\/appi.ajp.159.7.1119","article-title":"Executive
+        dysfunction in geriatric depression","volume":"159","author":"Lockwood","year":"2002","journal-title":"Am
+        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib75","doi-asserted-by":"crossref","first-page":"842","DOI":"10.1016\/j.neuroimage.2006.04.177","article-title":"Neuroanatomical
+        dissociation between bottom-up and top-down processes of visuospatial selective
+        attention","volume":"32","author":"Hahn","year":"2006","journal-title":"Neuroimage"},{"key":"10.1016\/j.biopsych.2011.09.005_bib76","doi-asserted-by":"crossref","first-page":"142","DOI":"10.1016\/j.brainres.2006.12.031","article-title":"Neural
+        correlates of covert orienting of visual spatial attention along vertical
+        and horizontal dimensions","volume":"1136","author":"Mao","year":"2007","journal-title":"Brain
+        Res"},{"key":"10.1016\/j.biopsych.2011.09.005_bib77","doi-asserted-by":"crossref","first-page":"108","DOI":"10.1162\/jocn.2008.20008","article-title":"Dissociable
+        roles of the superior temporal sulcus and the intraparietal sulcus in joint
+        attention: A functional magnetic resonance imaging study","volume":"20","author":"Materna","year":"2008","journal-title":"J
+        Cogn Neurosci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib78","doi-asserted-by":"crossref","first-page":"1535","DOI":"10.1152\/jn.1998.79.3.1535","article-title":"4
+        T-fMRI study of nonspatial shifting of selective attention: Cerebellar and
+        parietal contributions","volume":"79","author":"Le","year":"1998","journal-title":"J
+        Neurophysiol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib79","doi-asserted-by":"crossref","first-page":"1028","DOI":"10.1162\/089892903770007416","article-title":"Multiple
+        neuronal networks mediate sustained attention","volume":"15","author":"Lawrence","year":"2003","journal-title":"J
+        Cogn Neurosci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib80","doi-asserted-by":"crossref","first-page":"329213","DOI":"10.1155\/2010\/329213","article-title":"Exploring
+        cortical attentional system by using fMRI during a Continuous Performance
+        Test","volume":"2010","author":"Tana","year":"2010","journal-title":"Comput
+        Intell Neurosci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib81","doi-asserted-by":"crossref","first-page":"273","DOI":"10.1523\/JNEUROSCI.2967-05.2006","article-title":"Listening
+        in silence activates auditory areas: A functional magnetic resonance imaging
+        study","volume":"26","author":"Voisin","year":"2006","journal-title":"J Neurosci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib82","doi-asserted-by":"crossref","first-page":"440","DOI":"10.1097\/WNR.0b013e3283262e10","article-title":"Depressed
+        adolescents demonstrate greater subgenual anterior cingulate activity","volume":"20","author":"Yang","year":"2009","journal-title":"Neuroreport"},{"key":"10.1016\/j.biopsych.2011.09.005_bib83","doi-asserted-by":"crossref","first-page":"69","DOI":"10.1016\/j.jad.2009.01.034","article-title":"fMRI
+        of alterations in reward selection, anticipation, and feedback in major depressive
+        disorder","volume":"118","author":"Smoski","year":"2009","journal-title":"J
+        Affect Disord"},{"key":"10.1016\/j.biopsych.2011.09.005_bib84","doi-asserted-by":"crossref","first-page":"683","DOI":"10.1002\/hbm.20426","article-title":"A
+        meta-analytic study of changes in brain activation in depression","volume":"29","author":"Fitzgerald","year":"2008","journal-title":"Hum
+        Brain Mapp"},{"key":"10.1016\/j.biopsych.2011.09.005_bib85","doi-asserted-by":"crossref","first-page":"33","DOI":"10.1016\/j.pscychresns.2006.04.006","article-title":"An
+        analysis of functional neuroimaging studies of dorsolateral prefrontal cortical
+        activity in depression","volume":"148","author":"Fitzgerald","year":"2006","journal-title":"Psychiatry
+        Res"},{"key":"10.1016\/j.biopsych.2011.09.005_bib86","doi-asserted-by":"crossref","first-page":"223","DOI":"10.1016\/j.neuroimage.2009.06.070","article-title":"Sex-dependent
+        age modulation of frontostriatal and temporo-parietal activation during cognitive
+        control","volume":"48","author":"Christakou","year":"2009","journal-title":"Neuroimage"},{"key":"10.1016\/j.biopsych.2011.09.005_bib87","doi-asserted-by":"crossref","first-page":"817","DOI":"10.1016\/j.neuroimage.2010.02.058","article-title":"Effects
+        of age and sex on developmental neural networks of visual-spatial attention
+        allocation","volume":"51","author":"Rubia","year":"2010","journal-title":"Neuroimage"},{"key":"10.1016\/j.biopsych.2011.09.005_bib88","doi-asserted-by":"crossref","first-page":"1344","DOI":"10.1016\/j.neuroimage.2010.08.067","article-title":"Maturation
+        of limbic corticostriatal activation and connectivity associated with developmental
+        changes in temporal discounting","volume":"54","author":"Christakou","year":"2011","journal-title":"Neuroimage"},{"key":"10.1016\/j.biopsych.2011.09.005_bib89","doi-asserted-by":"crossref","first-page":"3276","DOI":"10.1016\/j.neuroimage.2009.10.089","article-title":"Dissociation
+        of neural networks for anticipation and consumption of monetary and social
+        rewards","volume":"49","author":"Rademacher","year":"2010","journal-title":"Neuroimage"},{"key":"10.1016\/j.biopsych.2011.09.005_bib90","doi-asserted-by":"crossref","first-page":"8650","DOI":"10.1523\/JNEUROSCI.2431-05.2005","article-title":"The
+        role of ventral frontostriatal circuitry in reward-based learning in humans","volume":"25","author":"Galvan","year":"2005","journal-title":"J
+        Neurosci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib91","doi-asserted-by":"crossref","first-page":"69","DOI":"10.1016\/j.brainresbull.2008.09.013","article-title":"The
+        cortico-basal ganglia integrative network: The role of the thalamus","volume":"78","author":"Haber","year":"2009","journal-title":"Brain
+        Res Bull"},{"key":"10.1016\/j.biopsych.2011.09.005_bib92","doi-asserted-by":"crossref","first-page":"6159","DOI":"10.1523\/JNEUROSCI.20-16-06159.2000","article-title":"Dissociable
+        neural responses in human reward systems","volume":"20","author":"Elliott","year":"2000","journal-title":"J
+        Neurosci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib93","doi-asserted-by":"crossref","first-page":"141","DOI":"10.1016\/j.pneurobio.2008.09.004","article-title":"The
+        cognitive functions of the caudate nucleus","volume":"86","author":"Grahn","year":"2008","journal-title":"Prog
+        Neurobiol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib94","doi-asserted-by":"crossref","first-page":"1022","DOI":"10.1093\/cercor\/bhh062","article-title":"Motivation-dependent
+        responses in the human caudate nucleus","volume":"14","author":"Delgado","year":"2004","journal-title":"Cereb
+        Cortex"},{"key":"10.1016\/j.biopsych.2011.09.005_bib95","doi-asserted-by":"crossref","first-page":"1041","DOI":"10.1176\/appi.ajp.160.6.1041","article-title":"Developmental
+        neurocircuitry of motivation in adolescence: A critical period of addiction
+        vulnerability","volume":"160","author":"Chambers","year":"2003","journal-title":"Am
+        J Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib96","doi-asserted-by":"crossref","first-page":"194","DOI":"10.1016\/j.neuroimage.2007.06.038","article-title":"Anticipation
+        of novelty recruits reward system and hippocampus while promoting recollection","volume":"38","author":"Wittmann","year":"2007","journal-title":"Neuroimage"},{"key":"10.1016\/j.biopsych.2011.09.005_bib97","doi-asserted-by":"crossref","first-page":"14311","DOI":"10.1523\/JNEUROSCI.2058-08.2008","article-title":"Mesolimbic
+        functional magnetic resonance imaging activations during reward anticipation
+        correlate with reward-related ventral striatal dopamine release","volume":"28","author":"Schott","year":"2008","journal-title":"J
+        Neurosci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib98","doi-asserted-by":"crossref","first-page":"72","DOI":"10.1016\/j.neures.2010.01.003","article-title":"Effects
+        of emotion and reward motivation on neural correlates of episodic memory encoding:
+        A PET study","volume":"67","author":"Shigemune","year":"2010","journal-title":"Neurosci
+        Res"},{"key":"10.1016\/j.biopsych.2011.09.005_bib99","doi-asserted-by":"crossref","first-page":"471","DOI":"10.1176\/jnp.9.3.471","article-title":"Limbic-cortical
+        dysregulation: A proposed model of depression","volume":"9","author":"Mayberg","year":"1997","journal-title":"J
+        Neuropsychiatry Clin Neurosci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib100","doi-asserted-by":"crossref","first-page":"13","DOI":"10.1016\/S0896-6273(02)00653-0","article-title":"Neurobiology
+        of depression","volume":"34","author":"Nestler","year":"2002","journal-title":"Neuron"},{"key":"10.1016\/j.biopsych.2011.09.005_bib101","doi-asserted-by":"crossref","first-page":"205","DOI":"10.1007\/s004220050518","article-title":"Selective
+        visual attention in a neurocomputational model of phase oscillators","volume":"80","author":"Wu","year":"1999","journal-title":"Biological
+        Cybernetics"},{"key":"10.1016\/j.biopsych.2011.09.005_bib102","doi-asserted-by":"crossref","first-page":"523","DOI":"10.1073\/pnas.012470999","article-title":"Dorsal
+        anterior cingulate cortex: A role in reward-based decision making","volume":"99","author":"Bush","year":"2002","journal-title":"Proc
+        Natl Acad Sci U S A"},{"key":"10.1016\/j.biopsych.2011.09.005_bib103","doi-asserted-by":"crossref","first-page":"215","DOI":"10.1016\/S1364-6613(00)01483-2","article-title":"Cognitive
+        and emotional influences in anterior cingulate cortex","volume":"4","author":"Bush","year":"2000","journal-title":"Trends
+        Cogn Sci"},{"key":"10.1016\/j.biopsych.2011.09.005_bib104","doi-asserted-by":"crossref","first-page":"129","DOI":"10.1016\/j.bandc.2004.09.016","article-title":"Neurocognitive
+        mechanisms of cognitive control: The role of prefrontal cortex in action selection,
+        response inhibition, performance monitoring, and reward-based learning","volume":"56","author":"Ridderinkhof","year":"2004","journal-title":"Brain
+        Cogn"},{"key":"10.1016\/j.biopsych.2011.09.005_bib105","doi-asserted-by":"crossref","first-page":"1","DOI":"10.1016\/j.neubiorev.2007.04.016","article-title":"The
+        emergence of depression in adolescence: Development of the prefrontal cortex
+        and the representation of reward","volume":"32","author":"Davey","year":"2008","journal-title":"Neurosci
+        Biobehav Rev"},{"key":"10.1016\/j.biopsych.2011.09.005_bib106","doi-asserted-by":"crossref","first-page":"827","DOI":"10.1017\/S095457940505039X","article-title":"Neural
+        systems of positive affect: Relevance to understanding child and adolescent
+        depression?","volume":"17","author":"Forbes","year":"2005","journal-title":"Dev
+        Psychopathol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib107","author":"Cubillo","year":"2011","journal-title":"Cortex"},{"key":"10.1016\/j.biopsych.2011.09.005_bib108","doi-asserted-by":"crossref","first-page":"791","DOI":"10.1007\/s00213-004-2116-z","article-title":"Tryptophan
+        depletion reduces right inferior prefrontal activation during response inhibition
+        in fast, event-related fMRI","volume":"179","author":"Rubia","year":"2005","journal-title":"Psychopharmacology
+        (Berl)"},{"key":"10.1016\/j.biopsych.2011.09.005_bib109","doi-asserted-by":"crossref","first-page":"1135","DOI":"10.1016\/j.neurobiolaging.2007.09.013","article-title":"5-HT,
+        prefrontal function and aging: fMRI of inhibition and acute tryptophan depletion","volume":"30","author":"Lamar","year":"2009","journal-title":"Neurobiol
+        Aging"},{"key":"10.1016\/j.biopsych.2011.09.005_bib110","unstructured":"Arnsten
+        A, Rubia K (in press): Neurobiological circuits regulating attention, movement
+        and emotion and their disruptions in pediatric neuropsychiatric disorders.
+        J Am Acad Child Adolesc Psychiatry."},{"key":"10.1016\/j.biopsych.2011.09.005_bib111","doi-asserted-by":"crossref","first-page":"237","DOI":"10.1080\/14734220701344507","article-title":"The
+        cerebellum in cognitive processes: Supporting studies in children","volume":"6","author":"Steinlin","year":"2007","journal-title":"Cerebellum"},{"key":"10.1016\/j.biopsych.2011.09.005_bib112","doi-asserted-by":"crossref","first-page":"39","DOI":"10.1016\/j.neuroimage.2005.06.013","article-title":"Magnetic
+        resonance imaging of cerebellar-prefrontal and cerebellar-parietal functional
+        connectivity","volume":"28","author":"Allen","year":"2005","journal-title":"Neuroimage"},{"key":"10.1016\/j.biopsych.2011.09.005_bib113","doi-asserted-by":"crossref","first-page":"1133","DOI":"10.1002\/hbm.20575","article-title":"Differential
+        cerebellar and cortical involvement according to various attentional load:
+        Role of educational level","volume":"30","author":"Bonnet","year":"2009","journal-title":"Hum
+        Brain Mapp"},{"key":"10.1016\/j.biopsych.2011.09.005_bib114","doi-asserted-by":"crossref","first-page":"e69","DOI":"10.1016\/j.biopsych.2010.09.023","article-title":"\u201cCool\u201d
+        inferior frontostriatal dysfunction in attention-deficit\/hyperactivity disorder
+        versus \u201chot\u201d ventromedial orbitofrontal-limbic dysfunction in conduct
+        disorder: A review","volume":"69","author":"Rubia","year":"2011","journal-title":"Biol
+        Psychiatry"},{"key":"10.1016\/j.biopsych.2011.09.005_bib115","doi-asserted-by":"crossref","first-page":"276","DOI":"10.1080\/09297040600770761","article-title":"Performance
+        of children with attention deficit hyperactivity disorder (ADHD) on a test
+        battery of impulsiveness","volume":"13","author":"Rubia","year":"2007","journal-title":"Child
+        Neuropsychol"},{"key":"10.1016\/j.biopsych.2011.09.005_bib116","doi-asserted-by":"crossref","first-page":"737","DOI":"10.1016\/j.psyneuen.2010.10.009","article-title":"Cortisol
+        responses to serial MRI scans in healthy adults and in depression","volume":"36","author":"Peters","year":"2011","journal-title":"Psychoneuroendocrinology"},{"key":"10.1016\/j.biopsych.2011.09.005_bib117","series-title":"The
+        Wechsler Intelligence Scale for Children","author":"Wechsler","year":"2004"}],"container-title":["Biological
+        Psychiatry"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S0006322311008948?httpAccept=text\/xml","content-type":"text\/xml","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S0006322311008948?httpAccept=text\/plain","content-type":"text\/plain","content-version":"vor","intended-application":"text-mining"}],"deposited":{"date-parts":[[2021,12,12]],"date-time":"2021-12-12T02:33:24Z","timestamp":1639276404000},"score":1,"resource":{"primary":{"URL":"https:\/\/linkinghub.elsevier.com\/retrieve\/pii\/S0006322311008948"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2012,1]]},"references-count":117,"journal-issue":{"issue":"1","published-print":{"date-parts":[[2012,1]]}},"alternative-id":["S0006322311008948"],"URL":"https:\/\/doi.org\/10.1016\/j.biopsych.2011.09.005","relation":{},"ISSN":["0006-3223"],"issn-type":[{"value":"0006-3223","type":"print"}],"subject":[],"published":{"date-parts":[[2012,1]]}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '9520'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 08:07:52 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1016%2Fj.biopsych.2011.09.005%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 08:07:52 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=20&retmode=json&term=Fronto%5Bti%5D+AND+striato%5Bti%5D+AND+cerebellar%5Bti%5D+AND+dysregulation%5Bti%5D+AND+in%5Bti%5D+AND+adolescents%5Bti%5D+AND+with%5Bti%5D+AND+depression%5Bti%5D+AND+during%5Bti%5D+AND+motivated%5Bti%5D+AND+attention%5Bti%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAGRQQWrDQAy89xVG5xAKveVWKD3mA8EHxavYgvWuK2mThuC/V24S27QnWzOj0c7c
+        oCMMJLC7gV0Hgh2QEkrTwQbOJMo5Ofa6fYNx86SEtESbVppckk28q4Wsx+9lUEN5chwiqw+HegMm
+        mDSiubPSA/sqJNcV4WufkpPlg3Fdve8/KjVhXM0NCR0pRpQZClcVasvdYUZ5+cWQI2lDyXTGLmzd
+        4kCDZ9P1eijCqZ3HPhuf0SgspmZu+FjxqCSS5Z72BkMnqKQp28mbCh4WOLlouuqfuzl4ASemGNa6
+        2uu+oCTn/5hxm7JQeBaX/TH/zziViw3Fes+DLel0ep8rNuq1+lVtoR7H8eUHAAD//wMAoOj8jwIC
+        AAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Fri, 23 Oct 2026 08:07:52 GMT
+      ncbi-phid:
+      - 1D3460167182AD9500005E641C71F998.1.1.m_1
+      ncbi-sid:
+      - F1E744DA9D7C6D4B_D9DDSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=20&retmode=json&term=Fronto%5Bti%5D+AND+striato%5Bti%5D+AND+cerebellar%5Bti%5D+AND+dysregulation%5Bti%5D+AND+adolescents%5Bti%5D+AND+depression%5Bti%5D+AND+motivated%5Bti%5D+AND+attention%5Bti%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAGyPMWvDQAyF9/6KoNkUX0qXbIXSsVO3OIPiezQHl7tUkkNN8H+PTCkNcTe99+k9
+        oQsdwBFCmwvZeAJtCAqW/kANnSGaanGvfXyiqflFAh2yzZG+DsUHCr4tsCN//wk1lpm1LlPMSV1s
+        ab1uw3MIgXYNmXDRzOY3FDN172uAjDfACzp6k1qsdrT9SJaxW728v646UpPES7uHYI+cWe5JHFXw
+        OfwU30OONUN7FNNFDid/Wf8JHaulMxvios3Mm24TNE0PVwAAAP//AwDqVx1mbgEAAA==
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Fri, 23 Oct 2026 08:07:52 GMT
+      ncbi-phid:
+      - 1D32B8BB86A02F150000534CAFFB1414.1.1.m_1
+      ncbi-sid:
+      - F1E744DA9D7C6D4B_D9DDSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=21704176&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAJRTTW/bMAz9K4LOTmEndrz4li09NGiCYQO2Q7GDYjG2AFnK9JHOCPbfR9qpO6yH
+        LifLT4/kI/l04S0ICY5XFx76E/CKg49dJ1zPE34G55U1CKZ3C/474Q4vdSByVNLz6onPszLNs3LJ
+        fySv5/EewyYk4ad4kCJQgXmaZWxvzwjCP+g2GpYR29voaoL3EJ09KKvZIwhn2A46vBYxtNaRgAs3
+        oiPiLjpnY9Oy7fcr4drPeuAiVuvoA7hBGDYzRT6I2p4VaG3ZxxtDUV0Hiq7Y+sbQTy22Az3bfL1V
+        rvXqCL6ObPPtv0JxM1r4MM7sbYKggh4E2caooM7AZO+P0dQBV8+UYRJOuHcyQsUMraNWro4quJ4J
+        IxF6ZqEFJ04Qg6qZDw432ijwd8MiXXipUL9f4bYCZFGr4zCWFdlGeR/pJyfDiQYZFS+KxWy54DQE
+        05BlAT84E6O7aNTPCMOYVkX6IVtec5Djs7TMZ2U+L8mmL9CqmK2KZT7aeZz6E9+iV43QbO1QHTaa
+        8C+AfnqmIg5q6yQOP0TS8jkediDZDJuW8AtPR+vY7n7z+LC/H5NO1HlBYsSYc3xsF67kddXI7ECS
+        2gFBdRnOQuih++nVkWumEGnV3/xFwv8AAAD//4xVsU7DMBDd+YqoE0gQnwOkqBsbOyOTYzmtW8eO
+        XLsSSP137uykaVoqIWVILn7nu/N7z+N6DiUHXrNtiTMpSYgl1CXARYJezxK8TAk+T8O65/wBMMHy
+        iSfibVAcDr2Eij/vDueikAjUwaR/YLxiz1AArADS3nPIQe8vEJzBK4PqBkJIqfpwDanxuQFRNnj1
+        cw2o3gqo/wKcDuK/AFxttFUzRMVgySoYEYk3rfLKSmLwF36LELxuYkjfiw+xL94b0oEMxLK+kwiQ
+        LtpAin9ctNGYbabl5FTZR936u3BtYchNtV0nhXWqc8nwlXFSkCqTJpAxq+I2ObADJwduSB0SjhTv
+        pXSWyjV4+Ln8xrnd6AK4BGegY5ff8TXkOyYLAEGo9bGOi/DQTN5lmN+CptWjzdjYNXSTUUQchDai
+        Mar1rove5OiYFf+oIYQtXFWLsSk3lT5tKzcCGTVsQt42v8AYHT4fuJUXtNqfee/8ljpQRzIaUvkw
+        nOPxePcLAAD//wMA2eajuJUHAAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Fri, 23 Oct 2026 08:07:53 GMT
+      ncbi-phid:
+      - 1D32B8BB86A02F150000474CB0E0D6E9.1.1.m_1
+      ncbi-sid:
+      - F1E744DA9D7C6D4B_D9DDSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=10000&retmode=json&term=%2210.1016%2Fj.biopsych.2011.09.005%22%5Bdoi%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
+        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
+    headers:
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json
+      date:
+      - Fri, 23 Oct 2026 08:07:53 GMT
+      referrer-policy:
+      - origin-when-cross-origin
+      retry-after:
+      - '2'
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 429
+      message: Too Many Requests
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&email=replay%40example.com&retmax=10000&retmode=json&term=%2210.1016%2Fj.biopsych.2011.09.005%22%5Bdoi%5D&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAEyQQU/DMAyF7/yKyOcqJEND2s5cuCGuWw9ZY9pMXVLsZFBV/e+4ZRPk5Ocvec/O
+        BB06jwT7CfI4IOwBGR01HVRwReKQovSMfoK5uiNCLn1enjSpRCnAym3CfHHff4Kzo4UZkcH3gUUc
+        YLMxdmuthbqCTC5y77JkMC5Uep8FafwHxOAI1mhr7PPjWZ9CGnhsOi02VpudNmZ7hMNbOUlAh6Re
+        X2rJ+3IUQ2x/QycYOnKMHNqYCP09KGX0NxJT/pBVbiiVPJR8QWbXIi9TvyNnCs06qXJNF/CKXqt1
+        ReWiV+tHKOfPhcVV5aRMpXZyoJ7n+eEHAAD//wMAgACkO2cBAAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Fri, 23 Oct 2026 08:07:54 GMT
+      ncbi-phid:
+      - 1D32B8BB86A02F150000504CB44B8497.1.1.m_1
+      ncbi-sid:
+      - F1E744DA9D7C6D4B_D9DDSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

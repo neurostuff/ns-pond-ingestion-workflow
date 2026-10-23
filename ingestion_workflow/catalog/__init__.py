@@ -12,7 +12,7 @@ from .models import (
     Status,
     utcnow,
 )
-from .store import Catalog, is_retryable
+from .store import Catalog, IdentityError, is_retryable
 
 __all__ = [
     "ALIAS_KINDS",
@@ -20,6 +20,7 @@ __all__ = [
     "Artifact",
     "BlobStore",
     "Catalog",
+    "IdentityError",
     "NO_SOURCE",
     "Outcome",
     "Status",

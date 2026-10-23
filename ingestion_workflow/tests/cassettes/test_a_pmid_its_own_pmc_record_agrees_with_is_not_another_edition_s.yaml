@@ -1,0 +1,422 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=32962948&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAJSUyW7bMBBAf2XAUwNYNiWvck+OkwJJ6zZwglyCHBiRsdlSpMvFaGz0Y/oB/Yr8
+        WIdS6iULEJ9EcebNDGdbk7lgXFgyXBP/sBBkSIQLZcnsA2mQpbBOGo2XtNkmvxvEolD5qBwkd2R4
+        Q9pZ3svyzoDcNrbnWo7Y5qZBFuGOMx8dZDRL4ZzpZMIsCsSehMIozCDLUeBMsEW8noolXDj5M0jm
+        LVwyFThMhPbw4VTPFJzyI9Rmwc+NjTGtiWZl5I6ZYnr1+Cc68o9/tVjB9ZPm01tHFYR3hQrOC1sF
+        jQ/dmPjMFsVKavdDwqcDUS5gtBJLwQ2MmeXGGbg60MTIS6FXLEH+zmihFBwfaGFqHIPR9EBqYjyD
+        8/GB1ImAY6MlTN8XJDaMYs7XdXuOe+lVZK/mAphzwrkyFtzcg5L3wvkHJaCYMz0TDniwUs/Ao+r4
+        2/XZSZLmsGCai1IWEFyUMSixbyWXaCV2NFPgCqZEs2oz6/+7O8BVYZaSw/tdxXEyKlSZSjv4J50L
+        1U8cDobW47mXZD0SE6NncboEfjDCBYvjpVUZNE6BqBKY0rTf6eQZrU3FIY3DVJ+ytN9OurRL68Gr
+        C3FDznGiYkAj62WBId3GiS6M5VgGH2IAF+FuIjgkIPFRv/B0byxMTk++nH09rW1tVLNujJTVpupt
+        sCaSPxUdNUvBY2zVDQaVYgJwdMXuWojds0XKYld/sNW/mIxTSnsDmvVfIHLPSXcLoSyRfAg78Md9
+        mhu5y7a3bEqbmN9e63vTLlzZjHupSftNStvP/Ms9C52thct0MBgk+SBPP2T0qE1p3k+6VdPPpfMG
+        12tM124+sRJCLquc7azDFu22sg5QOqS08r2PLKV7SfRbKX2DYEUhFv5VpP0GsqnkHpBXUfVeA8p/
+        AAAA//98VrtOxDAQ7PmKKDVSEgINHR3/QLXxOcKwsU+OfRJI+Xdm/eA4wiG58dr79M6s9YGN1Rca
+        Q9ffdcNwRQN48/rzDxdjUnjYx4S39Zo1rTs3Yzd+J5/6e9ZeWyXwesGeQvBmiiHt22damyeY9aSC
+        oAF2oaBctBhy9/1tO0fmt4yayqhSc9Aj6P1YZ5Kh5qNZ01wS7iAWJLJTFEAACa1otcfmn65CEk6V
+        plImJEVBvlfKWYmY4TRnMDn3XvkKV1BtE5eC/oMJeV5nrELpVfsayC9xySd7KSVspWBHEKKNyyS/
+        ApHQiQzTxHr2bomes7RaxYkuIqSwixays20J/ewWpIpWLE6EhS+/CF0vqzxlvjAb/2NgXBnvJ0lN
+        RRZmKlXatu3mCwAA//8DAFJWWhTqCAAA
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Thu, 22 Oct 2026 06:58:15 GMT
+      ncbi-phid:
+      - 1D3238309BD9AC7500004732D47A0F59.1.1.m_1
+      ncbi-sid:
+      - DBA603C8CE70A94C_E06BSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=38620670&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAJSU224aMRBAf8XyUyux4L3BQp8IUaWmQo1IlJcoD856Am53beoLUkD9mHxAvyI/
+        1vEu5RJaKUhIrGfmzIzn4g1dABdg6GhD3fMS6IiC9XXNzTPt0BUYK7VCIeum9FeHGlRWLhh7KSwd
+        3dO06CesP2D0obP/bvWI7SQduvSPgrsQIGFJTK64iqbcoAKONIyM/ZwkQ1RY7U0ZxDNYkWsrf3rJ
+        nSE3vPKCTEE5tOHeLbQJmWyo4nWwvuAVV+vXl+Devf5WsCZ3W8vtDccNhLKy8taBaVLF6+1cfOXL
+        ci2V/SHJ5zNRAWS8hhUITSbcCG01uT3TxdhJUGseIf+oFVQVuTjTw0xbTsazM6mpdpxcTc6kLoFc
+        aCXJ7H1J4phU3Lq2b29xJ10V2NsFEG4tWFtjm4l+IpV8AuueKyDlgqs5WCK8kWpOHJpOvt19uYzi
+        IVlyJaCWJfE26DipcVqlkOglzDGviC15Bd1muIz7G+6MUKVeSUHeHyoska58U6k4w5O01jeHsBIc
+        vYfvfpT0aSiMmoedAvzDOqmq9gqnHprSxSzOk6LI49ZJWMq4KIpoWAyDCLYiPEZZn203ru3FPb3C
+        VQo5jY2TJWb1EFa51EZgJ5wPOVz7xymIltoJkzykxVuoXfgNlWLbYbSsG6SVYPgYb4vbCYebH0Zl
+        j9TloX2xt7+eTgZZ3k9ZfkLIoxj5nkFdJMWI7NlPx7DQ8hBN92jMuljQfu971yxt3Q0PT5cNuoyl
+        b8LLIw/Z3sPNrvofEvYxZWw4iPJmvhfSOo3vZyjWYTWx4iBXTcUO3rsey3tJRhgbsbZYhwgvS1i6
+        U2TQi9P/INiSSio4IuIeC7+GiE+IXR//DZyGwEUxsD4Csh7LenFO4myUpX8AAAD//3xVu07EMBDs
+        +QorNRIIUcB1dPwD1WblCMMmPm3sSFfk35n1Q8fdCTp7be/LszO3EfBR6sXT6q8reXl4eu1hCion
+        r35hm4sP7CklDWNOZT+80+re4FaJk2EYfvGAY4YWHJ4f74cpi3xVrHcq9Bu+gxx4+dglJJA7ubXI
+        iA09ic2PRKaEyS3DBuAc3D8YQRGRG0Q4pPLQSEWZ42IZC4LWCsYYvzvR4Ao6HfJc11imKq917vDo
+        02tP5Mrc6qlRWgsHa9gRTLbkeTQRNwttFIRG8ZPGOatUa/eKE99MKOEmW9jOvi31c1iwIaDYghh9
+        Xir6BWLqhSnoL6b/Q5c3K42zGMu0Lu37fvcDAAD//wMAfLBE8ZkIAAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Thu, 22 Oct 2026 06:58:15 GMT
+      ncbi-phid:
+      - 1D3238309BD9AC7500005A32D53F02A5.1.1.m_1
+      ncbi-sid:
+      - DBA603C8CE70A94C_E06BSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - pmc.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=replay%40example.com&format=json&ids=PMC10068027&idtype=pmcid&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA21Q0WrDMAz8lWFYnppM9to0DQQGex7sffTBJOrqNrE8O11WQv59cgKjY3vU6U53
+        ulGEXveXIEpBZ7ESHoMjGzBtdI8MKlB5KiFV6g5UuSlKuZlZHxcMvShHMWhvjX3nA2/7lTiQ7zTj
+        4hTIMtE0/dXFO66rTTMDkSleX54lQF6A2gqWYadNyyyPrtXXJ/zSnWsxq6ljSU8Ud2zCloZsOpA/
+        H1oaeIf1kXg366tFfb+GG32yJKpinoTNqxvnZElXzdmSaFP9a/KJPjAUO7LEczjSoA2/M89TrKMm
+        Pz82ioYM4xIyCTJ/OGXehQ5txj1CBtsMIPa3tFH+qiGiEXxUu1zt1sVPy9ikf8jTfvoGi7ABpboB
+        AAA=
+    headers:
+      allow:
+      - GET, HEAD, OPTIONS
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json
+      cross-origin-opener-policy:
+      - same-origin
+      date:
+      - Thu, 22 Oct 2026 06:58:15 GMT
+      referrer-policy:
+      - same-origin
+      server:
+      - istio-envoy
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept,Accept-Encoding
+      via:
+      - 1.1 google
+      x-content-type-options:
+      - nosniff
+      - nosniff
+      x-envoy-upstream-service-time:
+      - '8'
+      x-frame-options:
+      - DENY
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.1016/j.rpsm.2020.07.003
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://api.crossref.org/v1/works/10.1016%2Fj.rpsm.2020.07.003/transform">https://api.crossref.org/v1/works/10.1016%2Fj.rpsm.2020.07.003/transform</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4e69cd0dd4e4403-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Thu, 22 Oct 2026 06:58:15 GMT
+      expires:
+      - Thu, 22 Oct 2026 07:35:38 GMT
+      link:
+      - <https://dul.usage.elsevier.com/doi/>; rel=dul
+      - <https://dul.usage.elsevier.com/doi/>; rel=dul
+      location:
+      - https://api.crossref.org/v1/works/10.1016%2Fj.rpsm.2020.07.003/transform
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=qFP9gFv5jtC1dlbwv0iLDyLFQATARtQ22Xdgz5jv8lleT6du7tUPMsItBDHqMEhXJ4ll4at5Ih5o89OsMkNHIbZnvw%2B25v2K3u89jEsUKQQXDxunIf2fkio%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/v1/works/10.1016%2Fj.rpsm.2020.07.003/transform
+  response:
+    body:
+      string: !!binary |
+        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
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-length:
+      - '5068'
+      content-type:
+      - application/vnd.citationstyles.csl+json
+      date:
+      - Thu, 22 Oct 2026 06:58:15 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept, Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+version: 1

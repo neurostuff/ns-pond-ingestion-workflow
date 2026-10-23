@@ -1,0 +1,92 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=24993959%2C25398234&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        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
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Thu, 22 Oct 2026 20:27:13 GMT
+      ncbi-phid:
+      - 1D3238309BD9AC7500006D9C61CD6CCA.1.1.m_1
+      ncbi-sid:
+      - 5BA09B4195CD2BD8_9DD9SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

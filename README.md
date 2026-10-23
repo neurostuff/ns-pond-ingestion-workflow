@@ -171,6 +171,75 @@ To undo a take-back: once the article has text again, the next run makes
 everything again from it and uploads the new parse; a moved corpus directory can
 be moved back from `-retracted/`.
 
+## When an article holds another paper's identifiers
+
+An article is one paper. Registration (`ingest add`, `ingest run --manifest`,
+`ingest migrate`) checks what it adds against PubMed and the DOI registries, so
+these commands need `pubmed_email`. Two records are one work when their titles are
+alike and their first authors, years and journals agree; an erratum, a reply or a
+retraction is never the work it is about, a meeting abstract in a supplement issue
+is never its paper, and a book chapter or a conference paper is never an article
+(`catalog/evidence.py`, `same_work`). A PubMed record and the registry's record of
+the DOI it gives are held to less: they may differ in a word's spelling, a series'
+part, the type and whether the issue is a supplement. doi.org is asked with no contact email, and a
+DOI it sends to an agency over plain HTTP is one the registry cannot be read for.
+
+- A PMID that arrives with other ids is not added in two cases. One is when its
+  PubMed record gives a DOI another article holds, and the registry gives that DOI
+  the record's work. The other is when the registry cannot be read for the DOI.
+- A second journal DOI is kept as an alternate DOI when the registry gives both DOIs
+  one work (a publisher's new DOI, an alias spelling). Otherwise it is refused.
+
+Each refused id is printed at the end of the command and kept, once, in the
+catalog's `refusals` table.
+
+An article holds one of each id kind. Beside them it may hold:
+
+- a preprint's PMID and PMCID (`preprint_pmid`, `preprint_pmcid`);
+- other DOIs of the paper (`alternate_doi`);
+- the PMIDs and PMCIDs of duplicate PubMed and PMC records (`duplicate_pmid`,
+  `duplicate_pmcid`).
+
+Each of these finds the article. An article presents its journal DOI, not an
+alternate or a preprint's.
+
+`ingest repair-identity PLAN` repairs articles that already hold another paper's ids.
+`PLAN` is a reviewed plan: JSON lines, one operation each (add, reassign, remove,
+rekind, split, merge, move, swap or forget artifacts). The file format is in
+`catalog/identity_plan.py`.
+
+- The whole plan runs in one transaction. Each operation is checked against the
+  catalog as the ones before it left it.
+- The plan's scope is then checked against the catalog's invariants
+  (`catalog/invariants.py`), before the plan and after it. The scope is:
+  - every article the plan touched;
+  - every article NCBI, Crossref or a download links to one of those;
+  - every article holding two of a kind.
+
+  The first run reads the ids every download names into the catalog. This takes a
+  while once.
+- The default is a dry run that lists every refusal, every violation the plan makes,
+  and the violations that were there before. It writes nothing.
+- `--apply --backup <path> --manifest <path>` commits only if there is no refusal
+  and the plan makes no violation. It runs the plan as a dry run first, and only a
+  plan that would commit is run again behind the backup; a plan that would not
+  writes no backup. A violation that
+  was there before, such as an article holding two base studies, which neurostore
+  must decide, is listed and does not block. A preprint and its paper whose articles
+  each hold a base study are listed as accepted: they stay apart until neurostore can
+  make one base study a version of the other. A plan that breaks such a pair makes a
+  violation.
+- A plan in which an identifier comes back to an article and kind it left, or to no
+  article after it was held, is refused whole.
+- An article left with no extraction has its passages taken back. Then run, as the
+  command prints:
+
+  ```bash
+  ingest run -s metadata --refresh metadata -s triage --refresh triage \
+    -s prose --refresh prose --manifest touched.jsonl
+  ingest run --manifest touched.jsonl   # takes back what was made from the old text
+  ```
+
 ## Wiley's PDFs
 
 The `wiley` download source fetches an article's PDF from Wiley's Text and Data

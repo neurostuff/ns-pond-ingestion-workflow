@@ -391,6 +391,7 @@ def test_add_pdfs_registers_attaches_and_reports(tmp_path, monkeypatch):
                 "ns_pond_root": str(tmp_path / "pond"),
                 "log_to_file": False,
                 "show_progress": False,
+                "pubmed_email": "replay@example.com",
             }
         )
     )

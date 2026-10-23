@@ -1,0 +1,408 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.1007/bf03337758
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://api.crossref.org/v1/works/10.1007%2Fbf03337758/transform">https://api.crossref.org/v1/works/10.1007%2Fbf03337758/transform</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4ef3d873c5c2c87-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Fri, 23 Oct 2026 08:06:04 GMT
+      expires:
+      - Fri, 23 Oct 2026 08:25:34 GMT
+      location:
+      - https://api.crossref.org/v1/works/10.1007%2Fbf03337758/transform
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=a234cDvj7rMEaAFuBZvOYnftXc3KrfhJ8xfjisAv6VBWK26DplbUKm%2FOFEg5U8XQAzK2lUcE6sxUmq%2FZfCHGIFdpucV7ib2ncls0f3xgYuwTWFDJqyHfQJc%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/v1/works/10.1007%2Fbf03337758/transform
+  response:
+    body:
+      string: !!binary |
+        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
+        Sa8KNikSAAA=
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-length:
+      - '1832'
+      content-type:
+      - application/vnd.citationstyles.csl+json
+      date:
+      - Fri, 23 Oct 2026 08:06:04 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept, Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.3275/7271
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://data.medra.org/10.3275%2F7271">https://data.medra.org/10.3275%2F7271</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4ef3d884ce12c87-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Fri, 23 Oct 2026 08:06:04 GMT
+      expires:
+      - Fri, 23 Oct 2026 08:37:53 GMT
+      location:
+      - https://data.medra.org/10.3275%2F7271
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=UMpF%2FS5TCYz9RYpftgL8EWVWIogqJ198TMTRjZF0qpv8shDCOjj1IKQmDTo3VAY78V%2BsmewkOljjXMqFo57btZhaUw74UnSOZNvDWAKySRmy5D8HRsnGcOQ%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - data.medra.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://data.medra.org/10.3275%2F7271
+  response:
+    body:
+      string: "{\"type\":\"article-journal\",\"language\":\"eng\",\"author\":[{\"literal\":\"Malcolm
+        Wells\"},{\"literal\":\"Rebekah Jacques\"},{\"literal\":\"Manuel Montero Odasso\"}],\"issued\":{\"date-parts\":[[2011,8]]},\"abstract\":\"An
+        84 year old woman with history of moderate Alzheimer\u2019s disease, depression,
+        and an anxiety disorder presented to our emergency room at Victoria Hospital,
+        London, Ontario in an \u2018unresponsive\u2019 state. The patient was akinetic
+        with mutism, and clonic perseveration induced in the upper limbs was evident
+        while she was examined. Heart attack, massive stroke, or intracranial bleed
+        were ruled out, and an electroencephalogram showed no epileptiform activity.
+        Despite a normal CT, a magnetic resonance scan was ordered and showed bilateral
+        acute paramedian thalamogeniculate infarction arising from occlusion of the
+        artery of Percheron. Bilateral thalamic infarcts can cause sudden onset of
+        akinetic mutism with clonic perseveration, which may be confused with coma
+        and seizures due to life threatening conditions such as a massive stroke.
+        Thorough clinical assessment and early use of MRI scanning will assist physicians
+        with a more accurate diagnosis of older adults with this kind of presentation.\",\"container-title\":\"Aging
+        Clinical and Experimental Research\",\"DOI\":\"10.3275\\/7271\",\"issue\":\"4\",\"publisher\":\"Editrice
+        Kurtis srl\",\"publisher-place\":\"IT\",\"title\":\"Thalamic infarct presenting
+        as catastrophic life-threatening event in an older adult\",\"URL\":\"https:\\/\\/doi.org\\/10.3275\\/7271\",\"volume\":\"23\"}"
+    headers:
+      access-control-allow-origin:
+      - '*'
+      cache-control:
+      - no-transform, max-age=60
+      connection:
+      - keep-alive
+      content-length:
+      - '1501'
+      content-type:
+      - application/vnd.citationstyles.csl+json;charset=UTF-8
+      date:
+      - Fri, 23 Oct 2026 08:06:05 GMT
+      server:
+      - Apache/2.4.59 (Debian)
+      vary:
+      - Accept
+    status:
+      code: 200
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1101/2023.10.21.563317?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"institution":[{"name":"bioRxiv"}],"indexed":{"date-parts":[[2026,5,10]],"date-time":"2026-05-10T16:11:01Z","timestamp":1778429461326,"version":"3.51.4"},"posted":{"date-parts":[[2023,10,23]]},"group-title":"Neuroscience","reference-count":117,"publisher":"openRxiv","license":[{"start":{"date-parts":[[2023,10,23]],"date-time":"2023-10-23T00:00:00Z","timestamp":1698019200000},"content-version":"vor","delay-in-days":0,"URL":"http:\/\/creativecommons.org\/licenses\/by\/4.0\/"}],"content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"accepted":{"date-parts":[[2025,3,7]]},"abstract":"<jats:title>Abstract<\/jats:title>\n                <jats:p>Explore-exploit
+        research faces challenges in generalizability due to a limited theoretical
+        basis for exploration and exploitation. Neuroimaging can help identify whether
+        explore-exploit decisions involve an opponent processing system to address
+        this issue. Thus, we conducted a coordinate-based meta-analysis (N=23 studies)
+        finding activation in the dorsal lateral prefrontal cortex, anterior insula,
+        and anterior cingulate cortex during exploration versus exploitation, which
+        provides some evidence for opponent processing. However, the conjunction of
+        explore-exploit decisions was associated with activation in the dorsal anterior
+        cingulate cortex and dorsal medial prefrontal cortex, suggesting that these
+        brain regions do not engage in opponent processing. Furthermore, exploratory
+        analyses revealed heterogeneity in brain responses between task types during
+        exploration and exploitation respectively. Coupled with results suggesting
+        that activation during exploration and exploitation decisions is generally
+        more similar than it is different suggests that there remain significant challenges
+        in characterizing explore-exploit decision making. Nonetheless, dorsal lateral
+        prefrontal cortex, anterior insula, and dorsal anterior cingulate cortex activation
+        differentiate explore and exploit decisions and identifying these responses
+        can aid in targeted interventions aimed at manipulating these decisions.<\/jats:p>\n                <jats:sec>\n                  <jats:title>Abstract
+        Figure<\/jats:title>\n                  <jats:fig id=\"ufig1\" position=\"float\"
+        orientation=\"portrait\" fig-type=\"figure\">\n                    <jats:label>Graphical
+        Abstract<\/jats:label>\n                    <jats:caption>\n                      <jats:title>We
+        conducted a coordinate-based meta-analysis (N=23 studies) where we found activation
+        in the dorsal lateral prefrontal cortex, anterior insula, and the anterior
+        cingulate cortex during exploration versus exploitation.<\/jats:title>\n                      <jats:p>However,
+        the conjunction of explore-exploit decisions was associated with activation
+        in the dorsal medial prefrontal cortex, and the insula, suggesting that these
+        brain regions do not engage in opponent processing. Nonetheless, activation
+        that differentiates explore and exploit decisions and can help in targeted
+        interventions aimed at manipulating these decisions.<\/jats:p>\n                    <\/jats:caption>\n                    <jats:graphic
+        xmlns:xlink=\"http:\/\/www.w3.org\/1999\/xlink\" xlink:href=\"563317v4_ufig1\"
+        position=\"float\" orientation=\"portrait\"\/>\n                  <\/jats:fig>\n                <\/jats:sec>","DOI":"10.1101\/2023.10.21.563317","type":"posted-content","created":{"date-parts":[[2023,10,24]],"date-time":"2023-10-24T00:20:45Z","timestamp":1698106845000},"source":"Crossref","is-referenced-by-count":1,"title":["Meta-Analysis
+        Reveals That Explore-Exploit Decisions are Dissociable by Activation in the
+        Dorsal Lateral Prefrontal Cortex, Anterior Insula, and the Dorsal Anterior
+        Cingulate Cortex"],"prefix":"10.64898","author":[{"ORCID":"https:\/\/orcid.org\/0000-0002-3497-1388","authenticated-orcid":false,"given":"Daniel","family":"Sazhin","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Abraham","family":"Dachs","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0001-5754-9633","authenticated-orcid":false,"given":"David
+        V.","family":"Smith","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"54368","reference":[{"key":"2025031112400981000_2023.10.21.563317v4.1","doi-asserted-by":"publisher","DOI":"10.3389\/fnbeh.2022.1041566"},{"key":"2025031112400981000_2023.10.21.563317v4.2","doi-asserted-by":"publisher","DOI":"10.3758\/s13415-019-00733-z"},{"key":"2025031112400981000_2023.10.21.563317v4.3","doi-asserted-by":"publisher","DOI":"10.1038\/npp.2017.108"},{"key":"2025031112400981000_2023.10.21.563317v4.4","doi-asserted-by":"publisher","DOI":"10.1007\/s00213-011-2404-3"},{"key":"2025031112400981000_2023.10.21.563317v4.5","doi-asserted-by":"publisher","DOI":"10.1016\/j.pscychresns.2014.10.014"},{"key":"2025031112400981000_2023.10.21.563317v4.6","doi-asserted-by":"publisher","DOI":"10.1037\/bne0000082"},{"key":"2025031112400981000_2023.10.21.563317v4.7","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2018.01.077"},{"key":"2025031112400981000_2023.10.21.563317v4.8","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2012.06.023"},{"key":"2025031112400981000_2023.10.21.563317v4.9","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pcbi.1004164"},{"key":"2025031112400981000_2023.10.21.563317v4.10","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2011.12.025"},{"key":"2025031112400981000_2023.10.21.563317v4.11","doi-asserted-by":"publisher","DOI":"10.1038\/s41386-019-0583-5"},{"key":"2025031112400981000_2023.10.21.563317v4.12","doi-asserted-by":"publisher","DOI":"10.1007\/s10539-024-09939-z"},{"key":"2025031112400981000_2023.10.21.563317v4.13","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2013.02.063"},{"key":"2025031112400981000_2023.10.21.563317v4.14","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.43.8.749"},{"key":"2025031112400981000_2023.10.21.563317v4.15","doi-asserted-by":"publisher","DOI":"10.2307\/5108"},{"key":"2025031112400981000_2023.10.21.563317v4.16","doi-asserted-by":"publisher","DOI":"10.3758\/s13415-017-0556-2"},{"key":"2025031112400981000_2023.10.21.563317v4.17","doi-asserted-by":"publisher","DOI":"10.1037\/xge0000133"},{"key":"2025031112400981000_2023.10.21.563317v4.18","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.3022-12.2013"},{"key":"2025031112400981000_2023.10.21.563317v4.19","doi-asserted-by":"publisher","DOI":"10.7554\/eLife.51260"},{"key":"2025031112400981000_2023.10.21.563317v4.20","doi-asserted-by":"publisher","DOI":"10.1016\/j.jesp.2021.104254"},{"key":"2025031112400981000_2023.10.21.563317v4.21","doi-asserted-by":"publisher","DOI":"10.1016\/0040-5809(76)90040-X"},{"key":"2025031112400981000_2023.10.21.563317v4.22","doi-asserted-by":"publisher","DOI":"10.1037\/xge0000546"},{"key":"2025031112400981000_2023.10.21.563317v4.23","doi-asserted-by":"publisher","DOI":"10.1038\/s41598-017-17237-w"},{"key":"2025031112400981000_2023.10.21.563317v4.24","doi-asserted-by":"publisher","DOI":"10.1098\/rstb.2007.2098"},{"key":"2025031112400981000_2023.10.21.563317v4.25","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2019.05.017"},{"key":"2025031112400981000_2023.10.21.563317v4.26","doi-asserted-by":"publisher","DOI":"10.1038\/nature04766"},{"key":"2025031112400981000_2023.10.21.563317v4.27","doi-asserted-by":"publisher","DOI":"10.1002\/wcs.1589"},{"key":"2025031112400981000_2023.10.21.563317v4.28","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2006.01.021"},{"key":"2025031112400981000_2023.10.21.563317v4.29","doi-asserted-by":"publisher","DOI":"10.1126\/science.1252254"},{"key":"2025031112400981000_2023.10.21.563317v4.30","doi-asserted-by":"publisher","DOI":"10.3758\/s13415-021-00917-6"},{"key":"2025031112400981000_2023.10.21.563317v4.31","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.4010-11.2012"},{"key":"2025031112400981000_2023.10.21.563317v4.32","doi-asserted-by":"publisher","DOI":"10.1152\/jn.00046.2016"},{"key":"2025031112400981000_2023.10.21.563317v4.33","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.0504136102"},{"key":"2025031112400981000_2023.10.21.563317v4.34","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.25898"},{"key":"2025031112400981000_2023.10.21.563317v4.35","doi-asserted-by":"publisher","DOI":"10.1038\/nn.2342"},{"key":"2025031112400981000_2023.10.21.563317v4.36","doi-asserted-by":"publisher","DOI":"10.2307\/1402748"},{"key":"2025031112400981000_2023.10.21.563317v4.37","doi-asserted-by":"publisher","DOI":"10.1038\/s41386-021-01132-0"},{"key":"2025031112400981000_2023.10.21.563317v4.38","doi-asserted-by":"publisher","DOI":"10.1089\/brain.2011.0008"},{"key":"2025031112400981000_2023.10.21.563317v4.39","doi-asserted-by":"publisher","DOI":"10.1038\/nrn3119"},{"key":"2025031112400981000_2023.10.21.563317v4.40","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.0007-22.2023"},{"key":"2025031112400981000_2023.10.21.563317v4.41","doi-asserted-by":"publisher","DOI":"10.1038\/nn.2856"},{"key":"2025031112400981000_2023.10.21.563317v4.42","doi-asserted-by":"publisher","DOI":"10.1037\/ebs0000121"},{"key":"2025031112400981000_2023.10.21.563317v4.43","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2022.03.014"},{"key":"2025031112400981000_2023.10.21.563317v4.44","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2010.06.027"},{"key":"2025031112400981000_2023.10.21.563317v4.45","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pbio.3001985"},{"key":"2025031112400981000_2023.10.21.563317v4.46","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.1940-21.2022"},{"key":"2025031112400981000_2023.10.21.563317v4.47","doi-asserted-by":"publisher","DOI":"10.1162\/jocn_a_00896"},{"key":"2025031112400981000_2023.10.21.563317v4.48","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.21020"},{"key":"2025031112400981000_2023.10.21.563317v4.49","doi-asserted-by":"publisher","DOI":"10.1126\/science.1216930"},{"key":"2025031112400981000_2023.10.21.563317v4.50","doi-asserted-by":"publisher","DOI":"10.1016\/j.cobeha.2018.06.017"},{"key":"2025031112400981000_2023.10.21.563317v4.51","doi-asserted-by":"publisher","DOI":"10.1287\/moor.1080.0371"},{"key":"2025031112400981000_2023.10.21.563317v4.52","unstructured":"Kuleshov,
+        Volodymyr , and Doina Precup . 2000. \u201cAlgorithms for Multi-Armed Bandit
+        Problems.\u201d Journal of Machine Learning Research, no. 1\u201348 (October).
+        https:\/\/www.semanticscholar.org\/paper\/Algorithms-for-multi-armed-bandit-problems-Kuleshov-Precup\/bae1cec84407412a610fa8d11db063c71a3bf6a2."},{"key":"2025031112400981000_2023.10.21.563317v4.53","doi-asserted-by":"publisher","DOI":"10.1002\/smj.2221"},{"key":"2025031112400981000_2023.10.21.563317v4.54","doi-asserted-by":"publisher","DOI":"10.3389\/fnhum.2013.00927"},{"key":"2025031112400981000_2023.10.21.563317v4.55","doi-asserted-by":"publisher","DOI":"10.7554\/Elife.63282"},{"key":"2025031112400981000_2023.10.21.563317v4.56","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.3618-16.2017"},{"key":"2025031112400981000_2023.10.21.563317v4.57","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pone.0000103"},{"key":"2025031112400981000_2023.10.21.563317v4.58","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.2109373119"},{"key":"2025031112400981000_2023.10.21.563317v4.59","doi-asserted-by":"publisher","DOI":"10.1038\/nrn.2017.111"},{"key":"2025031112400981000_2023.10.21.563317v4.60","doi-asserted-by":"publisher","DOI":"10.31887\/DCNS.2018.20.2\/smarek"},{"key":"2025031112400981000_2023.10.21.563317v4.61","doi-asserted-by":"publisher","DOI":"10.1007\/s10548-021-00824-6"},{"key":"2025031112400981000_2023.10.21.563317v4.62","doi-asserted-by":"publisher","DOI":"10.1006\/nimg.1995.1012"},{"key":"2025031112400981000_2023.10.21.563317v4.63","doi-asserted-by":"publisher","DOI":"10.1002\/bdm.2226"},{"key":"2025031112400981000_2023.10.21.563317v4.64","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.2238-12.2013"},{"key":"2025031112400981000_2023.10.21.563317v4.65","doi-asserted-by":"publisher","DOI":"10.1038\/s41583-018-0010-7"},{"key":"2025031112400981000_2023.10.21.563317v4.66","doi-asserted-by":"publisher","DOI":"10.7326\/0003-4819-151-4-200908180-00135"},{"key":"2025031112400981000_2023.10.21.563317v4.67","doi-asserted-by":"publisher","DOI":"10.1038\/npp.2015.208"},{"key":"2025031112400981000_2023.10.21.563317v4.68","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pone.0121699"},{"key":"2025031112400981000_2023.10.21.563317v4.69","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.3116-08.2008"},{"key":"2025031112400981000_2023.10.21.563317v4.70","doi-asserted-by":"publisher","DOI":"10.1016\/j.cogpsych.2016.01.001"},{"key":"2025031112400981000_2023.10.21.563317v4.71","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroscience.2020.12.035"},{"key":"2025031112400981000_2023.10.21.563317v4.72","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroscience.2013.04.050"},{"key":"2025031112400981000_2023.10.21.563317v4.73","doi-asserted-by":"publisher","DOI":"10.1016\/j.neunet.2021.05.030"},{"key":"2025031112400981000_2023.10.21.563317v4.74","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2013.04.037"},{"key":"2025031112400981000_2023.10.21.563317v4.75","doi-asserted-by":"publisher","DOI":"10.3389\/fnins.2011.00115"},{"key":"2025031112400981000_2023.10.21.563317v4.76","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhu213"},{"key":"2025031112400981000_2023.10.21.563317v4.77","doi-asserted-by":"publisher","DOI":"10.1016\/j.eurpsy.2011.04.001"},{"key":"2025031112400981000_2023.10.21.563317v4.78","doi-asserted-by":"publisher","DOI":"10.1001\/archgenpsychiatry.2010.70"},{"key":"2025031112400981000_2023.10.21.563317v4.79","doi-asserted-by":"publisher","DOI":"10.1192\/bjp.bp.108.055046"},{"key":"2025031112400981000_2023.10.21.563317v4.80","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.2322-15.2015"},{"key":"2025031112400981000_2023.10.21.563317v4.81","doi-asserted-by":"publisher","DOI":"10.1177\/2398212818817932"},{"key":"2025031112400981000_2023.10.21.563317v4.82","doi-asserted-by":"publisher","DOI":"10.1038\/nrn2357"},{"key":"2025031112400981000_2023.10.21.563317v4.83","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2012.10.056"},{"key":"2025031112400981000_2023.10.21.563317v4.84","doi-asserted-by":"publisher","DOI":"10.1038\/s41598-020-60576-4"},{"key":"2025031112400981000_2023.10.21.563317v4.85","doi-asserted-by":"publisher","DOI":"10.20900\/jpbs.20200024"},{"key":"2025031112400981000_2023.10.21.563317v4.86","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.0053-12.2012"},{"key":"2025031112400981000_2023.10.21.563317v4.87","doi-asserted-by":"publisher","DOI":"10.1097\/MD.0000000000021374"},{"key":"2025031112400981000_2023.10.21.563317v4.88","doi-asserted-by":"publisher","DOI":"10.1038\/nn.3771"},{"key":"2025031112400981000_2023.10.21.563317v4.89","doi-asserted-by":"publisher","DOI":"10.1159\/000358918"},{"key":"2025031112400981000_2023.10.21.563317v4.90","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.22804"},{"key":"2025031112400981000_2023.10.21.563317v4.91","doi-asserted-by":"publisher","DOI":"10.3389\/fpsyt.2021.782136"},{"key":"2025031112400981000_2023.10.21.563317v4.92","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2008.03.061"},{"key":"2025031112400981000_2023.10.21.563317v4.93","doi-asserted-by":"publisher","DOI":"10.1016\/j.tins.2023.02.001"},{"key":"2025031112400981000_2023.10.21.563317v4.94","doi-asserted-by":"crossref","unstructured":"Stephens,
+        David W. , and John R. Krebs . 1986. Foraging Theory. Princeton University
+        Press.","DOI":"10.1515\/9780691206790"},{"key":"2025031112400981000_2023.10.21.563317v4.95","doi-asserted-by":"publisher","DOI":"10.1136\/bmj.d4002"},{"key":"2025031112400981000_2023.10.21.563317v4.96","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2021.118369"},{"key":"2025031112400981000_2023.10.21.563317v4.97","doi-asserted-by":"publisher","DOI":"10.1038\/s41467-020-15766-z"},{"key":"2025031112400981000_2023.10.21.563317v4.98","doi-asserted-by":"publisher","DOI":"10.1016\/j.cortex.2019.09.011"},{"key":"2025031112400981000_2023.10.21.563317v4.99","doi-asserted-by":"publisher","DOI":"10.1038\/s41562-020-0929-3"},{"key":"2025031112400981000_2023.10.21.563317v4.100","doi-asserted-by":"publisher","DOI":"10.1016\/j.tics.2011.02.001"},{"key":"2025031112400981000_2023.10.21.563317v4.101","doi-asserted-by":"publisher","DOI":"10.1523\/ENEURO.0084-17.2017"},{"key":"2025031112400981000_2023.10.21.563317v4.102","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.2130-19.2020"},{"key":"2025031112400981000_2023.10.21.563317v4.103","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2024.120838"},{"key":"2025031112400981000_2023.10.21.563317v4.104","unstructured":"Wagera,
+        Tor D. , Lauren Y. Atlasc , Matthew M. Botvinicke , Luke J. Changf , Robert
+        C. Coghillg , Karen Deborah Davish , Gian Domenico Iannettik , Russell A.
+        Poldrackl , and Alexander J. Shackmanm . 2016. \u201cThe Importance of Respecting
+        Variation in Cingulate Anatomy: Comment on Lieberman & Eisenberger 2015 and
+        Yarkoni.\u201d In. https:\/\/www.semanticscholar.org\/paper\/The-importance-of-respecting-variation-in-cingulate-Wagera-Atlasc\/1ba6e3ced94a01e1adfa43b5c68dacd210a8463e."},{"key":"2025031112400981000_2023.10.21.563317v4.105","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2014.04.028"},{"key":"2025031112400981000_2023.10.21.563317v4.106","doi-asserted-by":"publisher","DOI":"10.1016\/S1053-8119(03)00167-8"},{"key":"2025031112400981000_2023.10.21.563317v4.107","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.1607-20.2021"},{"key":"2025031112400981000_2023.10.21.563317v4.108","doi-asserted-by":"publisher","DOI":"10.1037\/a0038199"},{"key":"2025031112400981000_2023.10.21.563317v4.109","doi-asserted-by":"publisher","DOI":"10.1038\/ncomms12327"},{"key":"2025031112400981000_2023.10.21.563317v4.110","doi-asserted-by":"publisher","DOI":"10.1038\/ncomms6380"},{"key":"2025031112400981000_2023.10.21.563317v4.111","doi-asserted-by":"publisher","DOI":"10.3389\/fpsyg.2017.00056"},{"key":"2025031112400981000_2023.10.21.563317v4.112","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuropsychologia.2023.108740"},{"key":"2025031112400981000_2023.10.21.563317v4.113","doi-asserted-by":"publisher","DOI":"10.1101\/2023.01.17.524305"},{"key":"2025031112400981000_2023.10.21.563317v4.114","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.26177"},{"key":"2025031112400981000_2023.10.21.563317v4.115","doi-asserted-by":"publisher","DOI":"10.1093\/scan\/nsy057"},{"key":"2025031112400981000_2023.10.21.563317v4.116","doi-asserted-by":"publisher","DOI":"10.7554\/eLife.27430"},{"key":"2025031112400981000_2023.10.21.563317v4.117","doi-asserted-by":"publisher","DOI":"10.1007\/s00429-021-02389-3"}],"container-title":[],"original-title":[],"link":[{"URL":"https:\/\/syndication.highwire.org\/content\/doi\/10.1101\/2023.10.21.563317","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2026,1,15]],"date-time":"2026-01-15T05:25:33Z","timestamp":1768454733000},"score":1,"resource":{"primary":{"URL":"http:\/\/biorxiv.org\/lookup\/doi\/10.1101\/2023.10.21.563317"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2023,10,23]]},"references-count":117,"URL":"https:\/\/doi.org\/10.1101\/2023.10.21.563317","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.1111\/ejn.70081","asserted-by":"subject"}]},"subject":[],"published":{"date-parts":[[2023,10,23]]},"subtype":"preprint"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '4236'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 08:06:05 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1101%2F2023.10.21.563317%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTc0Mjg1NzAyOTAwMCwxMC4xMTExJTJGZWpuLjcwMDgx","total-results":1,"items":[{"DOI":"10.1111\/ejn.70081","relation":{"has-review":[{"id-type":"doi","id":"10.1111\/EJN.70081\/v1\/review2","asserted-by":"object"},{"id-type":"doi","id":"10.1111\/EJN.70081\/v1\/review1","asserted-by":"object"},{"id-type":"doi","id":"10.1111\/EJN.70081\/v3\/decision1","asserted-by":"object"},{"id-type":"doi","id":"10.1111\/EJN.70081\/v2\/review1","asserted-by":"object"},{"id-type":"doi","id":"10.1111\/EJN.70081\/v3\/response1","asserted-by":"object"},{"id-type":"doi","id":"10.1111\/EJN.70081\/v2\/decision1","asserted-by":"object"},{"id-type":"doi","id":"10.1111\/EJN.70081\/v1\/decision1","asserted-by":"object"},{"id-type":"doi","id":"10.1111\/EJN.70081\/v2\/response1","asserted-by":"object"}],"has-preprint":[{"id-type":"doi","id":"10.1101\/2023.10.21.563317","asserted-by":"object"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '362'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 08:06:07 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+version: 1

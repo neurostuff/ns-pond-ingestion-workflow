@@ -1,0 +1,292 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.137/journal.pone.0066241
+  response:
+    body:
+      string: !!binary |
+        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
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4e7ae6f1cfd6bb9-DFW
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Thu, 22 Oct 2026 10:05:03 GMT
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=sS7XIpFwV%2B47HSsS1KIQl%2F4cVi2%2BL1Kx%2FPZq%2FBoC6wkszhj2i0LDySEJ3IPW7yZCOKvww1ZI6IF9JgAfYulHKB5SwJVmjvcQEVjqgD51rbttQQHbvk2uYnY%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - accept-encoding
+    status:
+      code: 404
+      message: Not Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.14670/hh-25-014
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://data.medra.org/10.14670%2Fhh-25-014">https://data.medra.org/10.14670%2Fhh-25-014</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4e7ae6fad4c6bb9-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Thu, 22 Oct 2026 10:05:03 GMT
+      expires:
+      - Thu, 22 Oct 2026 10:34:57 GMT
+      location:
+      - https://data.medra.org/10.14670%2Fhh-25-014
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=kUGoBzYn8iZGICS2d13QiOa8s%2F0A8iHpHAH3yU4pQeUd8DWaDTJoCoPOrWuLLIQKASX%2BTrv2%2F%2ByGWWtOmvqUCd%2FO7bi2iIlKvX4ZFxrqQriKaVGY%2FUH2b5g%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - data.medra.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://data.medra.org/10.14670%2Fhh-25-014
+  response:
+    body:
+      string: "{\"type\":\"article-journal\",\"language\":\"eng\",\"issued\":{\"date-parts\":[[2025]]},\"container-title\":\"Histology
+        and Histopathology\",\"DOI\":\"10.14670\\/HH-25-014\",\"ISSN\":\"0213-3911,
+        1699-5848\",\"issue\":\"05\",\"medium\":\"JB\",\"page\":\"765\u2013795\",\"publisher\":\"Sercrisma
+        International S.L\",\"publisher-place\":\"ES\",\"title\":\"Ocular adnexal
+        lymphomas: A comprehensive review with emphasis on histopathologic and magnetic
+        resonance imaging appearance\",\"URL\":\"https:\\/\\/doi.org\\/10.14670\\/HH-25-014\",\"volume\":\"41\"}"
+    headers:
+      access-control-allow-origin:
+      - '*'
+      cache-control:
+      - no-transform, max-age=60
+      connection:
+      - keep-alive
+      content-length:
+      - '489'
+      content-type:
+      - application/vnd.citationstyles.csl+json;charset=UTF-8
+      date:
+      - Thu, 22 Oct 2026 10:05:03 GMT
+      server:
+      - Apache/2.4.59 (Debian)
+      vary:
+      - Accept
+    status:
+      code: 200
+      message: ''
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.7507/1001-5515.201511032
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="http://122.115.55.36:8000/doi/10.7507%2F1001-5515.201511032">http://122.115.55.36:8000/doi/10.7507%2F1001-5515.201511032</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4e7ae73bfd46bb9-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Thu, 22 Oct 2026 10:05:04 GMT
+      expires:
+      - Thu, 22 Oct 2026 10:16:41 GMT
+      location:
+      - http://122.115.55.36:8000/doi/10.7507%2F1001-5515.201511032
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=Kv4fwnigfuIrWpAuR%2B%2FgStlOni7je8cYxOA0fJhA5yWlgKTrqNAQoj4ByYHQ99SeYPDfYWw3P2TlGpwg%2FXbo2W8hpwHZri48qbnXyFa7KDYU4%2BVGecYrfq8%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - 122.115.55.36:8000
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: http://122.115.55.36:8000/doi/10.7507%2F1001-5515.201511032
+  response:
+    body:
+      string: "{\"status\": \"error\", \"message\": \"\u672A\u67E5\u8BE2\u5230 DOI
+        \u5BF9\u5E94\u7684\u5143\u6570\u636E\u6216\u89E3\u6790\u5931\u8D25\uFF08DOI\uFF1A10.7507/1001-5515.201511032\uFF09\"}"
+    headers:
+      connection:
+      - close
+      content-length:
+      - '123'
+      content-type:
+      - application/json; charset=utf-8
+      date:
+      - Thu, 22 Oct 2026 10:05:04 GMT
+      server:
+      - Werkzeug/3.1.6 Python/3.13.5
+    status:
+      code: 404
+      message: NOT FOUND
+version: 1

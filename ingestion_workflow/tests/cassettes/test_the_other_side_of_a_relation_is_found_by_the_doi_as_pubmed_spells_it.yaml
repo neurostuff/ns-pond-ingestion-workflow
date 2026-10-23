@@ -1,0 +1,369 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=41330636&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAJSTTW/bMAyG/wqhyy5OYDteuuXmrd2woAmKtd2l2EGxmVitLGX6SBcE/e+jpMTt
+        hg7YThZIveZD8tWBdchbNGx2YG6/RTZjaH3fc7NnGduhsUIrCubjCXvKmKGkdOGyF61lsztWFZNJ
+        Pp1M2ffs+ZzyJBsiGdv6VctdKFDm5RTmXEFRURz/lrDamyaE57BEb7RtBEW5d502ofSBKd7HPBcK
+        ro65YxN1vEaxRnrr0EQa6mAQ1Q8dhaH+T9kHrtDcI/6jkIYiuXUJ+k+5E04G7SejleMSvnlJWb4S
+        Urg9hNl7CzfYb7Wh7Fe0lEDVIDwK11HLrkP4qA3CJVcbzzdIc3KP2jzM0sBGje63qCx32uxhgU3H
+        lbC9hVtFG5dCIZyL9RoNKieowvCbeiPUBm4Mv8eGtALtOO7DuBPy+oi8ew3ZnZDNq8hNQJanWioh
+        05eI4Tfi/pnYD8TtS+LhLzwSuxfEwb1a+ri0KvhPWOujyYIXSWPDgsJ61Cb4GOlD21Ky90r88BgX
+        +K7Iy6LKkzo+g/IsH02rs2jcFCrelu9HZZUXyePJD3dsTu5VhFgbJxqaWcZogchN08G139J8XAZL
+        rUa34+sxfNa7Ny6UN0jTackwzge+K79aYAsjENT/TzqttYHFxfnll+VFKjdcnQQ/plrpZR6YaI/m
+        pHs9tqGLGCHqgqbD5S8AAAD//4RVy07DMBC88xVRz9DYadNHOKEKCZAoiMKJk+MmqotbozTpAan/
+        zqzj1klDxS2xd/Yx3p21fJxGlLrcQzayaT/x9q/PMx5N2HQU8w5EtYLEHoS7G7VMggb4to1eGtXE
+        DjyWsz44HoRP8/uPt5fF7LHPJgNQHvehF/FZDqrlZei9XEKD9JXaUb9ZzpqU4jEytbfEeYGKQzYM
+        o2nAWMKYDd6G7NWug+As5KMLCCFl9l12ITxk/AIEb0mj0EKMYB7yccCGCRt3EKcGaIWIQjYIGE/4
+        qAPAfBXZzx+AKIhYEkfdCHjgItOZ2HXyGod8eKzEtridX0kD+Il/UZaFSqvS/vcexC64g9tCSDsQ
+        8AuANNUWW4fH0+teXmm9rofLafI7ROU4biavlQTLwupOYiXH5LmSJBhrb0bnCwMzCBeN1bwBo+nW
+        RooSy88KAbozCf5pRJRtpOtDqUoLJtkspIRYokaNPqtrTo35OkopTPA2qtrU3/gs65VbDzhAK0if
+        S+bs2BFQR3Gk94hi0pdttUlpsdOJ2AulRaozCPemKrTTPucVN5k7QgmdbHHmfVPqPiwEGs3rgtCC
+        aC9z25THx68NclU09uFpde+pGFlpkjDHy+FwuPoFAAD//wMAoOuqmZ8IAAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Fri, 23 Oct 2026 08:03:27 GMT
+      ncbi-phid:
+      - 1D3460167182AD9500004F620FAD4C9A.1.1.m_1
+      ncbi-sid:
+      - 54C4F49A879588BE_F814SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1523/jneurosci.0839-25.2025?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,8,24]],"date-time":"2026-08-24T19:04:58Z","timestamp":1787598298979,"version":"build-2736575974"},"reference-count":159,"publisher":"Society
+        for Neuroscience","issue":"2","license":[{"start":{"date-parts":[[2026,7,14]],"date-time":"2026-07-14T00:00:00Z","timestamp":1783987200000},"content-version":"vor","delay-in-days":224,"URL":"https:\/\/creativecommons.org\/licenses\/by-nc-sa\/4.0\/"}],"funder":[{"DOI":"10.13039\/501100001407","name":"Department
+        of Biotechnology, Ministry of Science and Technology, India","doi-asserted-by":"publisher","award":["BT\/HRD\/DEMENTIA\/2017"],"award-info":[{"award-number":["BT\/HRD\/DEMENTIA\/2017"]}],"id":[{"id":"10.13039\/501100001407","id-type":"DOI","asserted-by":"publisher"}]}],"content-domain":{"domain":["jneurosci.org"],"crossmark-restriction":true},"short-container-title":["J.
+        Neurosci."],"accepted":{"date-parts":[[2025,11,1]]},"published-print":{"date-parts":[[2026,1,14]]},"abstract":"<jats:p>\n                    Age-related
+        decline underlies cognitive functions such as sensorimotor control, executive
+        functioning, memory, and language production (LP), whereas language comprehension
+        (LC) tends to remain intact or improve across healthy adult lifespan. This
+        preservation likely stems from structural and functional integrity within
+        core language network (cLAN) regions. To investigate this hypothesis, we analyzed
+        the relationships among brain\u2019s resting-state functional connectivity
+        (FC), structural connectivity (SC), and language behavior (LC and LP) using
+        a cross-sectional cohort of healthy adults (\n                    <jats:italic>N<\/jats:italic>\n                    \u2009=\u2009652;
+        M\/F\u2009=\u2009322\/330; aged 18\u201388) from the Cambridge Centre for
+        Ageing and Neuroscience (CamCAN) dataset. Six cognitive tasks assessing LC
+        and LP were employed, with neuroimaging measures focused on region-specific
+        connections within the cLAN. Using generalized additive mixed models (GAMMs),
+        complex brain-behavior interactions were identified. Behavioral analyses revealed
+        established age-related dichotomy, LC abilities in vocabulary and proverb
+        comprehension improved, and in syntactic and semantic comprehension remained
+        stable, whereas LP tasks, e.g., verbal fluency, picture priming, and tip of
+        tongue, exhibited significant decline across the lifespan. SC exhibited decline
+        in both intra- and interhemispheric frontotemporal and frontal lobe connections,
+        contrasted by preserved or enhanced temporal lobe connectivity, supporting
+        a pattern of frontal vulnerability concomitant with temporal resilience. Age-related
+        FC patterns demonstrated overall preservation, reflecting compensatory mechanisms
+        to sustain functional integrity despite structural degradation. GAMM analyses
+        revealed complex relationships between brain connectivity and language performance
+        across age. Thus, integrating knowledge of brain structure, function, and
+        language abilities, we identified the brain network mechanisms associated
+        with dichotomous language behavior along lifespan.\n                  <\/jats:p>","DOI":"10.1523\/jneurosci.0839-25.2025","type":"journal-article","created":{"date-parts":[[2025,12,2]],"date-time":"2025-12-02T18:50:15Z","timestamp":1764701415000},"page":"e0839252025","update-policy":"https:\/\/doi.org\/10.1523\/jneurosci.crossmarkpolicy","source":"Crossref","is-referenced-by-count":4,"title":["Frontal
+        Vulnerability versus Temporal Resilience within the Core Language Network:
+        Neuro-compensatory Mechanisms Underline Differential Language Aging Trajectories"],"prefix":"10.1523","volume":"46","author":[{"ORCID":"https:\/\/orcid.org\/0009-0008-9892-7459","authenticated-orcid":false,"given":"Partika","family":"Jain","sequence":"first","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Azman","family":"Akhter","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"ORCID":"https:\/\/orcid.org\/0000-0002-3725-0463","authenticated-orcid":false,"given":"Arpan","family":"Banerjee","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"393","published-online":{"date-parts":[[2025,12,2]]},"reference":[{"key":"2026021111111042000_46.2.e0839252025.1","doi-asserted-by":"publisher","DOI":"10.1006\/nimg.2001.0746"},{"key":"2026021111111042000_46.2.e0839252025.2","doi-asserted-by":"publisher","DOI":"10.1016\/S1053-8119(03)00336-7"},{"key":"2026021111111042000_46.2.e0839252025.3","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2016.06.058"},{"key":"2026021111111042000_46.2.e0839252025.4","doi-asserted-by":"crossref","first-page":"513","DOI":"10.1016\/j.neuroimage.2013.07.018","article-title":"Functional
+        and structural syntax networks in aging","volume":"83","author":"Antonenko","year":"2013","journal-title":"Neuroimage"},{"key":"2026021111111042000_46.2.e0839252025.5","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2005.02.018"},{"key":"2026021111111042000_46.2.e0839252025.6","doi-asserted-by":"crossref","first-page":"1725","DOI":"10.1007\/s11357-021-00367-5","article-title":"Strategies
+        and cognitive reserve to preserve lexical production in aging","volume":"43","author":"Baciu","year":"2021","journal-title":"GeroScience"},{"key":"2026021111111042000_46.2.e0839252025.7","doi-asserted-by":"publisher","DOI":"10.1111\/j.2044-8260.1993.tb01027.x"},{"key":"2026021111111042000_46.2.e0839252025.8","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2010.02.036"},{"key":"2026021111111042000_46.2.e0839252025.9","doi-asserted-by":"publisher","DOI":"10.18637\/jss.v067.i0"},{"key":"2026021111111042000_46.2.e0839252025.10","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2007.04.042"},{"key":"2026021111111042000_46.2.e0839252025.11","doi-asserted-by":"publisher","DOI":"10.1177\/0748730414553029"},{"key":"2026021111111042000_46.2.e0839252025.12","doi-asserted-by":"crossref","unstructured":"Billot
+        A , Jhingan N , Varkanitsa M , Blank I , Ryskin R , Kiran S , Fedorenko E
+        (2024) The language network ages well: preserved selectivity, lateralization,
+        and within-network functional synchronization in older brains. bioRxiv, 2024.10.23.619954.
+        https:\/\/doi.org\/10.1101\/2024.10.23.619954","DOI":"10.1101\/2024.10.23.619954"},{"key":"2026021111111042000_46.2.e0839252025.13","doi-asserted-by":"crossref","unstructured":"Bolognini
+        M , Martin DC (2023) Characterization of age-related changes in sentence processing
+        abilities and the resting-state language network. PsyArXiv. https:\/\/doi.org\/10.31234\/osf.io\/x85ak","DOI":"10.31234\/osf.io\/x85ak"},{"key":"2026021111111042000_46.2.e0839252025.14","doi-asserted-by":"crossref","first-page":"1228952","DOI":"10.3389\/fnins.2023.1228952","article-title":"Evaluation
+        of tractography-based myelin-weighted connectivity across the lifespan","volume":"17","author":"Bosticardo","year":"2024","journal-title":"Front
+        Neurosci"},{"key":"2026021111111042000_46.2.e0839252025.15","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.24821"},{"key":"2026021111111042000_46.2.e0839252025.16","doi-asserted-by":"crossref","first-page":"e3046","DOI":"10.1002\/brb3.3046","article-title":"Domain-general
+        and domain-specific functional networks of Broca\u2019s area underlying language
+        processing","volume":"13","author":"Bulut","year":"2023","journal-title":"Brain
+        Behav"},{"key":"2026021111111042000_46.2.e0839252025.17","doi-asserted-by":"publisher","DOI":"10.1111\/j.0956-7976.2004.01503004.x"},{"key":"2026021111111042000_46.2.e0839252025.18","doi-asserted-by":"publisher","DOI":"10.1111\/j.0963-7214.2004.01301006.x"},{"key":"2026021111111042000_46.2.e0839252025.19","doi-asserted-by":"crossref","unstructured":"Burnham
+        KP , Anderson DR (2002) Model selection and inference: a practical information-theoretic
+        approach, Ed 2. New York: Springer-Verlag. http:\/\/doi.org\/10.1007\/b97636","DOI":"10.1007\/b97636"},{"key":"2026021111111042000_46.2.e0839252025.20","doi-asserted-by":"publisher","DOI":"10.1016\/J.NEUROIMAGE.2016.12.018"},{"key":"2026021111111042000_46.2.e0839252025.21","doi-asserted-by":"publisher","DOI":"10.1037\/0882-7974.17.1.85"},{"key":"2026021111111042000_46.2.e0839252025.22","doi-asserted-by":"publisher","DOI":"10.1006\/nimg.2002.1280"},{"key":"2026021111111042000_46.2.e0839252025.23","doi-asserted-by":"publisher","DOI":"10.1038\/s41583-018-0068-2."},{"key":"2026021111111042000_46.2.e0839252025.24","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.4561-15.2016"},{"key":"2026021111111042000_46.2.e0839252025.25","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2011.08.048"},{"key":"2026021111111042000_46.2.e0839252025.26","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.2406-16.2017"},{"key":"2026021111111042000_46.2.e0839252025.27","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2013.01.047"},{"key":"2026021111111042000_46.2.e0839252025.28","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2014.06.027"},{"key":"2026021111111042000_46.2.e0839252025.29","doi-asserted-by":"crossref","first-page":"606","DOI":"10.1016\/j.nicl.2015.06.009","article-title":"Handling
+        changes in MRI acquisition parameters in modeling whole brain lesion volume
+        and atrophy data in multiple sclerosis subjects: comparison of linear mixed-effect
+        models","volume":"8","author":"Chua","year":"2015","journal-title":"NeuroImage
+        Clin"},{"key":"2026021111111042000_46.2.e0839252025.30","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2014.05.014"},{"key":"2026021111111042000_46.2.e0839252025.31","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2017.01.077"},{"key":"2026021111111042000_46.2.e0839252025.32","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhm155"},{"key":"2026021111111042000_46.2.e0839252025.33","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2009.01.068"},{"key":"2026021111111042000_46.2.e0839252025.34","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2009.01.068"},{"key":"2026021111111042000_46.2.e0839252025.35","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.23339"},{"key":"2026021111111042000_46.2.e0839252025.36","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.24514"},{"key":"2026021111111042000_46.2.e0839252025.37","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2006.01.021"},{"key":"2026021111111042000_46.2.e0839252025.38","doi-asserted-by":"publisher","DOI":"10.1162\/jocn_a_00665"},{"key":"2026021111111042000_46.2.e0839252025.39","doi-asserted-by":"crossref","first-page":"314","DOI":"10.1111\/lnc3.12199","article-title":"The
+        neural language systems that support healthy aging: integrating function,
+        structure, and behavior","volume":"10","author":"Diaz","year":"2016","journal-title":"Lang
+        Linguist Compass"},{"key":"2026021111111042000_46.2.e0839252025.40","unstructured":"Dhollander
+        T , Mito R , Raffelt D , Connelly A (2019) Improved white matter response
+        function estimation for 3-tissue constrained spherical deconvolution. In:
+        Proceedings of the 27th annual meeting of the international society for magnetic
+        resonance in medicine (Abstract 0555). Available at: https:\/\/archive.ismrm.org\/2019\/0555.html
+        ."},{"key":"2026021111111042000_46.2.e0839252025.41","doi-asserted-by":"publisher","DOI":"10.3171\/2013.2.JNS121294"},{"key":"2026021111111042000_46.2.e0839252025.42","doi-asserted-by":"crossref","first-page":"270","DOI":"10.1016\/j.tics.2020.01.001","article-title":"Broca\u2019s
+        area is not a natural kind","volume":"24","author":"Fedorenko","year":"2020","journal-title":"Trends
+        Cogn Sci (Regul Ed)"},{"key":"2026021111111042000_46.2.e0839252025.43","doi-asserted-by":"publisher","DOI":"10.1038\/s41583-024-00802-4"},{"key":"2026021111111042000_46.2.e0839252025.44","doi-asserted-by":"crossref","first-page":"949","DOI":"10.1080\/23273798.2019.1608072","article-title":"Resting-state
+        and vocabulary tasks distinctively inform on age-related differences in the
+        functional brain connectome","volume":"34","author":"Ferr\u00e9","year":"2019","journal-title":"Lang
+        Cogn Neurosci"},{"key":"2026021111111042000_46.2.e0839252025.45","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2012.01.021"},{"key":"2026021111111042000_46.2.e0839252025.46","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhg087"},{"key":"2026021111111042000_46.2.e0839252025.47","doi-asserted-by":"publisher","DOI":"10.1017\/S1355617719000274"},{"key":"2026021111111042000_46.2.e0839252025.48","doi-asserted-by":"publisher","DOI":"10.1037\/neu0000447"},{"key":"2026021111111042000_46.2.e0839252025.49","doi-asserted-by":"publisher","DOI":"10.1152\/physrev.00006.2011"},{"key":"2026021111111042000_46.2.e0839252025.50","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2006.11.020"},{"key":"2026021111111042000_46.2.e0839252025.51","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.0362-10.2010"},{"key":"2026021111111042000_46.2.e0839252025.52","doi-asserted-by":"publisher","DOI":"10.1016\/j.bandl.2020.104771"},{"key":"2026021111111042000_46.2.e0839252025.53","doi-asserted-by":"publisher","DOI":"10.1162\/jocn_a_00278"},{"key":"2026021111111042000_46.2.e0839252025.54","doi-asserted-by":"publisher","DOI":"10.1037\/0033-2909.118.1.133"},{"key":"2026021111111042000_46.2.e0839252025.55","unstructured":"Goldstein
+        A , Covington BP , Mahabadi N , Mesfin FB (2025) Neuroanatomy, corpus callosum.
+        In: StatPearls. Treasure Island, FL: StatPearls Publishing. http:\/\/www.ncbi.nlm.nih.gov\/books\/NBK448209\/"},{"key":"2026021111111042000_46.2.e0839252025.56","doi-asserted-by":"publisher","DOI":"10.1080\/0361073X.2011.619858"},{"key":"2026021111111042000_46.2.e0839252025.57","doi-asserted-by":"publisher","DOI":"10.1017\/S1355617700666092"},{"key":"2026021111111042000_46.2.e0839252025.58","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2009.06.060"},{"key":"2026021111111042000_46.2.e0839252025.59","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pbio.0060159"},{"key":"2026021111111042000_46.2.e0839252025.60","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2013.05.116"},{"key":"2026021111111042000_46.2.e0839252025.61","first-page":"1","article-title":"Unique
+        information from common diffusion MRI models about white-matter differences
+        across the human adult lifespan","volume":"1","author":"Henriques","year":"2023","journal-title":"Imag
+        Neurosci"},{"key":"2026021111111042000_46.2.e0839252025.62","doi-asserted-by":"publisher","DOI":"10.1006\/nimg.1999.0462"},{"key":"2026021111111042000_46.2.e0839252025.63","doi-asserted-by":"publisher","DOI":"10.1016\/j.neubiorev.2017.11.010"},{"key":"2026021111111042000_46.2.e0839252025.64","doi-asserted-by":"publisher","DOI":"10.1016\/j.neurobiolaging.2011.10.017"},{"key":"2026021111111042000_46.2.e0839252025.65","doi-asserted-by":"crossref","first-page":"1185","DOI":"10.3389\/fnins.2019.01185","article-title":"White
+        matter language pathways and language performance in healthy adults across
+        ages","volume":"13","author":"Houston","year":"2019","journal-title":"Front
+        Neurosci"},{"key":"2026021111111042000_46.2.e0839252025.66","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2005.01.019"},{"key":"2026021111111042000_46.2.e0839252025.67","doi-asserted-by":"crossref","first-page":"826","DOI":"10.3390\/e22080826","article-title":"Alteration
+        of the intra- and inter-lobe connectivity of the brain structural network
+        in normal aging","volume":"22","author":"Jao","year":"2020","journal-title":"Entropy"},{"key":"2026021111111042000_46.2.e0839252025.68","doi-asserted-by":"publisher","DOI":"10.1016\/j.bandl.2022.105146"},{"key":"2026021111111042000_46.2.e0839252025.69","doi-asserted-by":"publisher","DOI":"10.1016\/S1053-8119(02)91132-8"},{"key":"2026021111111042000_46.2.e0839252025.70","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2014.07.061"},{"key":"2026021111111042000_46.2.e0839252025.71","doi-asserted-by":"crossref","first-page":"2201621","DOI":"10.1002\/advs.202201621","article-title":"A
+        neuroimaging signature of cognitive aging from whole-brain functional connectivity","volume":"9","author":"Jiang","year":"2022","journal-title":"Adv
+        Sci"},{"key":"2026021111111042000_46.2.e0839252025.72","doi-asserted-by":"crossref","first-page":"171","DOI":"10.1016\/j.nicl.2013.08.001","article-title":"Quantification
+        of multiple-sclerosis-related brain atrophy in two heterogeneous MRI datasets
+        using mixed-effects modeling","volume":"3","author":"Jones","year":"2013","journal-title":"NeuroImage
+        Clin"},{"key":"2026021111111042000_46.2.e0839252025.73","doi-asserted-by":"publisher","DOI":"10.1002\/mrm.26054"},{"key":"2026021111111042000_46.2.e0839252025.74","doi-asserted-by":"crossref","first-page":"P220","DOI":"10.1093\/geronb\/59.5.P220","article-title":"Sentence
+        production by young and older adults in controlled contexts","volume":"59","author":"Kemper","year":"2004","journal-title":"J
+        Gerontol Ser B"},{"key":"2026021111111042000_46.2.e0839252025.75","doi-asserted-by":"crossref","first-page":"100105","DOI":"10.1016\/j.nbas.2023.100105","article-title":"Age-related
+        differences in structural and resting-state functional brain network organization
+        across the adult lifespan: a cross-sectional study","volume":"5","author":"Khalilian","year":"2024","journal-title":"Aging
+        Brain"},{"key":"2026021111111042000_46.2.e0839252025.76","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.20833"},{"key":"2026021111111042000_46.2.e0839252025.77","doi-asserted-by":"publisher","DOI":"10.1093\/brain\/123.12.2512"},{"key":"2026021111111042000_46.2.e0839252025.78","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2006.12.021"},{"key":"2026021111111042000_46.2.e0839252025.79","doi-asserted-by":"publisher","DOI":"10.1002\/mrm.1240"},{"key":"2026021111111042000_46.2.e0839252025.80","doi-asserted-by":"publisher","DOI":"10.18637\/jss.v082.i13"},{"key":"2026021111111042000_46.2.e0839252025.81","unstructured":"Lezak
+        MD (1995) Neuropsychological assessment, Ed 3. New York: Oxford University
+        Press."},{"key":"2026021111111042000_46.2.e0839252025.82","doi-asserted-by":"crossref","first-page":"479","DOI":"10.1016\/S1364-6613(00)01769-1","article-title":"Aging
+        cognition: from neuromodulation to representation","volume":"5","author":"Li","year":"2001","journal-title":"Trends
+        Cogn Sci (Regul Ed)"},{"key":"2026021111111042000_46.2.e0839252025.83","doi-asserted-by":"crossref","first-page":"381","DOI":"10.1111\/1467-9868.00183","article-title":"Inference
+        in generalized additive mixed models by using smoothing splines","volume":"61","author":"Lin","year":"1999","journal-title":"J
+        R Stat Soc Ser B: Stat Methodol"},{"key":"2026021111111042000_46.2.e0839252025.84","doi-asserted-by":"crossref","first-page":"529","DOI":"10.1038\/s41597-022-01645-3","article-title":"Probabilistic
+        atlas for the language network based on precision fMRI data from >800 individuals","volume":"9","author":"Lipkin","year":"2022","journal-title":"Sci
+        Data"},{"key":"2026021111111042000_46.2.e0839252025.85","doi-asserted-by":"publisher","DOI":"10.1016\/j.acra.2005.10.018"},{"key":"2026021111111042000_46.2.e0839252025.86","doi-asserted-by":"publisher","DOI":"10.1016\/j.bbadis.2011.08.003"},{"key":"2026021111111042000_46.2.e0839252025.87","doi-asserted-by":"publisher","DOI":"10.1016\/j.neurobiolaging.2020.09.010"},{"key":"2026021111111042000_46.2.e0839252025.88","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2005.12.057"},{"key":"2026021111111042000_46.2.e0839252025.89","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhab252"},{"key":"2026021111111042000_46.2.e0839252025.90","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroscience.2017.11.030"},{"key":"2026021111111042000_46.2.e0839252025.91","doi-asserted-by":"publisher","DOI":"10.1016\/j.jml.2020.104092"},{"key":"2026021111111042000_46.2.e0839252025.92","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2014.03.028"},{"key":"2026021111111042000_46.2.e0839252025.93","doi-asserted-by":"publisher","DOI":"10.1016\/j.bandl.2011.07.005"},{"key":"2026021111111042000_46.2.e0839252025.94","doi-asserted-by":"crossref","first-page":"509","DOI":"10.1016\/j.tics.2017.04.007","article-title":"Metastability
+        in senescence","volume":"21","author":"Naik","year":"2017","journal-title":"Trends
+        Cogn Sci (Regul Ed)"},{"key":"2026021111111042000_46.2.e0839252025.95","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuropsychologia.2017.04.006"},{"key":"2026021111111042000_46.2.e0839252025.96","doi-asserted-by":"publisher","DOI":"10.1017\/S0142716400005865"},{"key":"2026021111111042000_46.2.e0839252025.97","doi-asserted-by":"publisher","DOI":"10.1162\/jocn_a_01147"},{"key":"2026021111111042000_46.2.e0839252025.98","doi-asserted-by":"publisher","DOI":"10.1146\/annurev.psych.59.103006.093656"},{"key":"2026021111111042000_46.2.e0839252025.99","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhp142"},{"key":"2026021111111042000_46.2.e0839252025.100","doi-asserted-by":"crossref","first-page":"46","DOI":"10.3389\/fnagi.2013.00046","article-title":"Age-related
+        vulnerability in the neural systems supporting semantic processing","volume":"5","author":"Peelle","year":"2013","journal-title":"Front
+        Aging Neurosci"},{"key":"2026021111111042000_46.2.e0839252025.101","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2005.02.034"},{"key":"2026021111111042000_46.2.e0839252025.102","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2005.02.034"},{"key":"2026021111111042000_46.2.e0839252025.103","doi-asserted-by":"publisher","DOI":"10.1016\/j.neurobiolaging.2020.09.015"},{"key":"2026021111111042000_46.2.e0839252025.104","doi-asserted-by":"publisher","DOI":"10.1111\/j.1749-6632.2010.05444.x"},{"key":"2026021111111042000_46.2.e0839252025.105","doi-asserted-by":"publisher","DOI":"10.1016\/j.dcn.2019.100704"},{"key":"2026021111111042000_46.2.e0839252025.106","doi-asserted-by":"crossref","first-page":"959405","DOI":"10.3389\/fnagi.2022.959405","article-title":"The
+        functional connectivity of language network across the life span: disentangling
+        the effects of typical aging from Alzheimer\u2019s disease","volume":"14","author":"Rafiq","year":"2022","journal-title":"Front
+        Aging Neurosci"},{"key":"2026021111111042000_46.2.e0839252025.107","doi-asserted-by":"publisher","DOI":"10.1111\/j.1467-8721.2008.00570.x"},{"key":"2026021111111042000_46.2.e0839252025.108","doi-asserted-by":"publisher","DOI":"10.1007\/s10548-020-00772-7"},{"key":"2026021111111042000_46.2.e0839252025.109","doi-asserted-by":"publisher","DOI":"10.1097\/WNR.0000000000000597"},{"key":"2026021111111042000_46.2.e0839252025.110","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhi009"},{"key":"2026021111111042000_46.2.e0839252025.111","doi-asserted-by":"crossref","unstructured":"Roger
+        E , Labache L , Hamlin N , Kruse J , Baciu M , Doucet GE (2023) When age tips
+        the balance: a dual mechanism affecting hemispheric specialization for language.
+        bioRxiv, 2023.12.04.569978. https:\/\/doi.org\/10.1101\/2023.12.04.569978","DOI":"10.1101\/2023.12.04.569978"},{"key":"2026021111111042000_46.2.e0839252025.112","doi-asserted-by":"publisher","DOI":"10.1016\/j.neurobiolaging.2004.09.017"},{"key":"2026021111111042000_46.2.e0839252025.113","doi-asserted-by":"publisher","DOI":"10.1016\/j.intell.2014.05.009"},{"key":"2026021111111042000_46.2.e0839252025.114","doi-asserted-by":"crossref","unstructured":"Scandola
+        M , Tidoni E (2021) Reliability and feasibility of linear mixed models in
+        fully crossed experimental designs. https:\/\/doi.org\/10.31234\/osf.io\/kfhgv","DOI":"10.31234\/osf.io\/kfhgv"},{"key":"2026021111111042000_46.2.e0839252025.115","doi-asserted-by":"crossref","first-page":"132","DOI":"10.3389\/fpsyt.2014.00132","article-title":"Attempted
+        and successful compensation in preclinical and early manifest neurodegeneration
+        \u2013 a review of task fMRI studies","volume":"5","author":"Scheller","year":"2014","journal-title":"Front
+        Psychiatry"},{"key":"2026021111111042000_46.2.e0839252025.116","doi-asserted-by":"crossref","first-page":"1141","DOI":"10.1111\/2041-210X.13434","article-title":"Robustness
+        of linear mixed-effects models to violations of distributional assumptions","volume":"11","author":"Schielzeth","year":"2020","journal-title":"Meth
+        Ecol Evol"},{"key":"2026021111111042000_46.2.e0839252025.117","doi-asserted-by":"publisher","DOI":"10.1162\/jocn.2007.19.12.2060"},{"key":"2026021111111042000_46.2.e0839252025.118","doi-asserted-by":"publisher","DOI":"10.1186\/s12883-014-0204-1"},{"key":"2026021111111042000_46.2.e0839252025.119","doi-asserted-by":"publisher","DOI":"10.1177\/0898264319878095"},{"key":"2026021111111042000_46.2.e0839252025.120","doi-asserted-by":"publisher","DOI":"10.1126\/science.1254404"},{"key":"2026021111111042000_46.2.e0839252025.121","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2012.06.005"},{"key":"2026021111111042000_46.2.e0839252025.122","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2015.06.092"},{"key":"2026021111111042000_46.2.e0839252025.123","doi-asserted-by":"crossref","first-page":"1","DOI":"10.52294\/ApertureNeuro.2022.2.NEOD9565","article-title":"Quantitative
+        streamlines tractography: methods and inter-subject normalisation","volume":"2","author":"Smith","year":"2022","journal-title":"Aperture
+        Neuro"},{"key":"2026021111111042000_46.2.e0839252025.124","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2004.07.051"},{"key":"2026021111111042000_46.2.e0839252025.125","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2010.08.063"},{"key":"2026021111111042000_46.2.e0839252025.126","doi-asserted-by":"publisher","DOI":"10.1097\/AUD.0b013e3182234cf6"},{"key":"2026021111111042000_46.2.e0839252025.127","doi-asserted-by":"crossref","first-page":"117416","DOI":"10.1016\/j.neuroimage.2020.117416","article-title":"Meta-analysis
+        of generalized additive models in neuroimaging studies","volume":"224","author":"S\u00f8rensen","year":"2021","journal-title":"Neuroimage"},{"key":"2026021111111042000_46.2.e0839252025.128","doi-asserted-by":"crossref","first-page":"117596","DOI":"10.1016\/j.neuroimage.2020.117596","article-title":"A
+        recipe for accurate estimation of lifespan brain trajectories, distinguishing
+        longitudinal and cohort effects","volume":"226","author":"S\u00f8rensen","year":"2021","journal-title":"Neuroimage"},{"key":"2026021111111042000_46.2.e0839252025.129","doi-asserted-by":"publisher","DOI":"10.1016\/j.neurobiolaging.2008.04.007"},{"key":"2026021111111042000_46.2.e0839252025.130","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2015.09.018"},{"key":"2026021111111042000_46.2.e0839252025.131","doi-asserted-by":"crossref","first-page":"119040","DOI":"10.1016\/j.neuroimage.2022.119040","article-title":"Large-scale
+        differences in functional organization of left- and right-handed individuals
+        using whole-brain, data-driven analysis of connectivity","volume":"252","author":"Tejavibulya","year":"2022","journal-title":"Neuroimage"},{"key":"2026021111111042000_46.2.e0839252025.132","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2008.05.002"},{"key":"2026021111111042000_46.2.e0839252025.133","doi-asserted-by":"publisher","DOI":"10.1016\/J.NEUROIMAGE.2019.116137"},{"key":"2026021111111042000_46.2.e0839252025.134","unstructured":"Tournier
+        J-D , Calamante F , Connelly A (2010) Improved probabilistic streamlines tractography
+        by 2nd order integration over fibre orientation distributions. In: Proceedings
+        of the 18th annual meeting of the international society for magnetic resonance
+        in medicine (Abstract 1670). International Society for Magnetic Resonance
+        in Medicine. Available at: https:\/\/archive.ismrm.org\/2010\/1670.html ."},{"key":"2026021111111042000_46.2.e0839252025.135","doi-asserted-by":"publisher","DOI":"10.1109\/TMI.2010.2046908"},{"key":"2026021111111042000_46.2.e0839252025.136","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhp105"},{"key":"2026021111111042000_46.2.e0839252025.137","doi-asserted-by":"publisher","DOI":"10.1162\/jocn_a_00419"},{"key":"2026021111111042000_46.2.e0839252025.138","doi-asserted-by":"publisher","DOI":"10.1038\/s41583-021-00428-w"},{"key":"2026021111111042000_46.2.e0839252025.139","doi-asserted-by":"crossref","first-page":"e12430","DOI":"10.1111\/lnc3.12430","article-title":"Sentence
+        comprehension in ageing and Alzheimer\u2019s disease","volume":"15","author":"van
+        Boxtel","year":"2021","journal-title":"Lang Linguist Compass"},{"key":"2026021111111042000_46.2.e0839252025.140","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2016.08.016"},{"key":"2026021111111042000_46.2.e0839252025.141","doi-asserted-by":"publisher","DOI":"10.1017\/S1355617712001178"},{"key":"2026021111111042000_46.2.e0839252025.142","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhz311"},{"key":"2026021111111042000_46.2.e0839252025.143","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhp280"},{"key":"2026021111111042000_46.2.e0839252025.144","doi-asserted-by":"publisher","DOI":"10.1089\/brain.2012.0073"},{"key":"2026021111111042000_46.2.e0839252025.145","doi-asserted-by":"crossref","unstructured":"Wickham
+        H (2016) Programming with ggplot2. In: ggplot2: elegant graphics for data
+        analysis ( Wickham H , ed), pp 241\u2013253. Cham, Switzerland: Springer.
+        https:\/\/doi.org\/10.1007\/978-3-319-24277-4_12","DOI":"10.1007\/978-3-319-24277-4_12"},{"key":"2026021111111042000_46.2.e0839252025.146","doi-asserted-by":"publisher","DOI":"10.1016\/j.neurobiolaging.2006.10.024"},{"key":"2026021111111042000_46.2.e0839252025.147","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2011.09.014"},{"key":"2026021111111042000_46.2.e0839252025.148","doi-asserted-by":"publisher","DOI":"10.1111\/J.1467-9868.2010.00749.X"},{"key":"2026021111111042000_46.2.e0839252025.149","doi-asserted-by":"crossref","unstructured":"Wood
+        SN (2017) Generalized additive models: an introduction with R, Ed 2. Boca
+        Raton, FL: Chapman and Hall\/CRC https:\/\/doi.org\/10.1201\/9781315370279","DOI":"10.1201\/9781315370279"},{"key":"2026021111111042000_46.2.e0839252025.150","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2008.10.055"},{"key":"2026021111111042000_46.2.e0839252025.151","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pone.0068910"},{"key":"2026021111111042000_46.2.e0839252025.152","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pone.0108077"},{"key":"2026021111111042000_46.2.e0839252025.153","doi-asserted-by":"crossref","first-page":"750621","DOI":"10.3389\/fnagi.2021.750621","article-title":"Differences
+        in diffusion tensor imaging white matter integrity related to verbal fluency
+        between young and old adults","volume":"13","author":"Yeske","year":"2021","journal-title":"Front
+        Aging Neurosci"},{"key":"2026021111111042000_46.2.e0839252025.154","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2012.02.001"},{"key":"2026021111111042000_46.2.e0839252025.155","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pone.0108807"},{"key":"2026021111111042000_46.2.e0839252025.156","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuropsychologia.2021.107784"},{"key":"2026021111111042000_46.2.e0839252025.157","doi-asserted-by":"crossref","first-page":"382","DOI":"10.1162\/nol_a_00106","article-title":"Resting
+        state network segregation modulates age-related differences in language production","volume":"4","author":"Zhang","year":"2023","journal-title":"Neurobiol
+        Lang"},{"key":"2026021111111042000_46.2.e0839252025.158","doi-asserted-by":"publisher","DOI":"10.1016\/j.bandl.2023.105263"},{"key":"2026021111111042000_46.2.e0839252025.159","doi-asserted-by":"crossref","first-page":"1016807","DOI":"10.3389\/fpsyt.2022.1016807","article-title":"Individual
+        prediction of hemispheric similarity of functional connectivity during normal
+        aging","volume":"13","author":"Zhang","year":"2022","journal-title":"Front
+        Psychiatry"}],"container-title":["The Journal of Neuroscience"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/syndication.highwire.org\/content\/doi\/10.1523\/JNEUROSCI.0839-25.2025","content-type":"unspecified","content-version":"vor","intended-application":"syndication"},{"URL":"https:\/\/syndication.highwire.org\/content\/doi\/10.1523\/JNEUROSCI.0839-25.2025","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2026,2,16]],"date-time":"2026-02-16T09:17:24Z","timestamp":1771233444000},"score":1,"resource":{"primary":{"URL":"https:\/\/www.jneurosci.org\/lookup\/doi\/10.1523\/JNEUROSCI.0839-25.2025"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2025,12,2]]},"references-count":159,"journal-issue":{"issue":"2","published-online":{"date-parts":[[2026,1,14]]},"published-print":{"date-parts":[[2026,1,14]]}},"alternative-id":["10.1523\/JNEUROSCI.0839-25.2025"],"URL":"https:\/\/doi.org\/10.1523\/jneurosci.0839-25.2025","relation":{},"ISSN":["0270-6474","1529-2401"],"issn-type":[{"value":"0270-6474","type":"print"},{"value":"1529-2401","type":"electronic"}],"subject":[],"published":{"date-parts":[[2025,12,2]]}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '7798'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 08:03:27 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1523%2FJNEUROSCI.0839-25.2025%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTc0NjUxNjkyMjAwMCwxMC4xMTAxJTJGMjAyNS4wNC4yOS42NTEyOTM=","total-results":1,"items":[{"DOI":"10.1101\/2025.04.29.651293","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.1523\/JNEUROSCI.0839-25.2025","asserted-by":"subject"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 08:03:28 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1523%2Fjneurosci.0839-25.2025%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 08:03:29 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+version: 1

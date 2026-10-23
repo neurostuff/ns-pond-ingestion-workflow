@@ -1,0 +1,329 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=20885123&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAJRU224TMRD9FcsvvOTi3W2aNG+hlEtFAbUgHioeHO8ka/Dai9euWiL+nZn15lZA
+        aqVI8R7PmesZb3gFsgTP5xseHhrgcw5trGvpH/iA34FvtbMIilHBfw+4x0sTyDjqsuXzW56L2WyS
+        5QX/Ntif0z3SdsiAN3FZygAdmGVsEdcIwhEq2A00rBB40broFcGLtbZrdm60ZRf3DbuGFm9lDJXz
+        FH/DrazJ7isY07Kr/rIvZdHZIaZMbAP4LiesY8e6lOpnhJZdP5N35SzCjn0sZdu6J4bFDhnZhpT8
+        v50EHQx5+FxJI2utmLYr6VVgDXYebKBeyJYpGdCRd02FJkavYBgqD9hHSwZwh5bIZNIyZ3C4TJY4
+        tVHXVh+2McIzY7AnxCDNOBO7HnVT120b6eOEFCDXOL05L3IxzDk1w65JQoB/2Btr6mg1jqNrV4Yi
+        KfKzs0lyQhrMJmcnQ3F6OiXhJCjpKrX9lp/LFlAhDRZJKrlEDVlp2MIHrbDkAUf1AJZasZvYkNWA
+        fXB2+GV0M2Jv3N2LQGl4UM6XOKYQKdlPcXkFJRtirSXc42nlPLu6ePX+3YeLFH1nmk9OSQcpWlqP
+        DddlLwq0rKGkajoEs8+wWdJEONwT0tiOUjp9aF/s7TMxyoSYjl++FkVRTKeT2TGz0UfMkz1zmk+z
+        ToqVboPDLackD6vAuXr4heyDvRzjT+RMnM6F6AIdEnaFPSZM/kNAa1xnOGLk6H8ssi2jm8MKPFhF
+        krnFbxmC18sYum/+FhW6QJdeqm5qTa2QoFy0IcliFY35ngTQ72x6SRSG1gpVIW3J4L7B7ayxZAR8
+        Lw5Sl3Eof3z50uZiok71nVU6dDe0TF4pXGHMymAvU5ZL535sFwxNsFQd63TGY0iPadINkirw20iP
+        4D7nFKVvE6emkGxtrJf0ZBMi76Q2cmlg5V0dvUno1ivegNmV8Fe2iO19U+r7sKqSTdgGoWfj+P0e
+        i1k3LkHjSgYr7fvH7Q8AAAD//ypCKY/LQL5JLs0BZQxowNTW1nIBAAAA//8DAPHtsdp6BgAA
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Thu, 22 Oct 2026 10:05:24 GMT
+      ncbi-phid:
+      - 1D3238309BD9AC750000538AB6C10B59.1.1.m_1
+      ncbi-sid:
+      - 43169AF429B97B1B_588DSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.1007/bf03337758
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://api.crossref.org/v1/works/10.1007%2Fbf03337758/transform">https://api.crossref.org/v1/works/10.1007%2Fbf03337758/transform</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4e7aef97f87143c-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Thu, 22 Oct 2026 10:05:25 GMT
+      expires:
+      - Thu, 22 Oct 2026 10:27:30 GMT
+      location:
+      - https://api.crossref.org/v1/works/10.1007%2Fbf03337758/transform
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=VYvMNsQRhl3Y5Gj%2FXF0jnwSDbRIv3A4O2Xd9y6mu%2BAUWtdzu5KFpP9pCI%2Bo%2FtWoBeMAtBkSPrdnWbRckhyiLD009EKx9FFjg4Bau6aQvGNULKjVrrYjQjrQ%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/v1/works/10.1007%2Fbf03337758/transform
+  response:
+    body:
+      string: !!binary |
+        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
+        Sa8KNikSAAA=
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-length:
+      - '1832'
+      content-type:
+      - application/vnd.citationstyles.csl+json
+      date:
+      - Thu, 22 Oct 2026 10:05:25 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept, Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.3275/7271
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://data.medra.org/10.3275%2F7271">https://data.medra.org/10.3275%2F7271</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4e7aefa9824143c-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Thu, 22 Oct 2026 10:05:25 GMT
+      expires:
+      - Thu, 22 Oct 2026 10:19:40 GMT
+      location:
+      - https://data.medra.org/10.3275%2F7271
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=A5ib8Fkh6Y3%2BamvvR1uCJSKokwd3xZdKsP3bitwfIenaQH7agv1hpK7%2Bpi48lAcGK1SgRXbv%2B67z40zCHbAkyFGLEIlBpcGfehv1qh18UE%2FgjPFIybW3ZmA%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - data.medra.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://data.medra.org/10.3275%2F7271
+  response:
+    body:
+      string: "{\"type\":\"article-journal\",\"language\":\"eng\",\"author\":[{\"literal\":\"Malcolm
+        Wells\"},{\"literal\":\"Rebekah Jacques\"},{\"literal\":\"Manuel Montero Odasso\"}],\"issued\":{\"date-parts\":[[2011,8]]},\"abstract\":\"An
+        84 year old woman with history of moderate Alzheimer\u2019s disease, depression,
+        and an anxiety disorder presented to our emergency room at Victoria Hospital,
+        London, Ontario in an \u2018unresponsive\u2019 state. The patient was akinetic
+        with mutism, and clonic perseveration induced in the upper limbs was evident
+        while she was examined. Heart attack, massive stroke, or intracranial bleed
+        were ruled out, and an electroencephalogram showed no epileptiform activity.
+        Despite a normal CT, a magnetic resonance scan was ordered and showed bilateral
+        acute paramedian thalamogeniculate infarction arising from occlusion of the
+        artery of Percheron. Bilateral thalamic infarcts can cause sudden onset of
+        akinetic mutism with clonic perseveration, which may be confused with coma
+        and seizures due to life threatening conditions such as a massive stroke.
+        Thorough clinical assessment and early use of MRI scanning will assist physicians
+        with a more accurate diagnosis of older adults with this kind of presentation.\",\"container-title\":\"Aging
+        Clinical and Experimental Research\",\"DOI\":\"10.3275\\/7271\",\"issue\":\"4\",\"publisher\":\"Editrice
+        Kurtis srl\",\"publisher-place\":\"IT\",\"title\":\"Thalamic infarct presenting
+        as catastrophic life-threatening event in an older adult\",\"URL\":\"https:\\/\\/doi.org\\/10.3275\\/7271\",\"volume\":\"23\"}"
+    headers:
+      access-control-allow-origin:
+      - '*'
+      cache-control:
+      - no-transform, max-age=60
+      connection:
+      - keep-alive
+      content-length:
+      - '1501'
+      content-type:
+      - application/vnd.citationstyles.csl+json;charset=UTF-8
+      date:
+      - Thu, 22 Oct 2026 10:05:26 GMT
+      server:
+      - Apache/2.4.59 (Debian)
+      vary:
+      - Accept
+    status:
+      code: 200
+      message: ''
+version: 1
