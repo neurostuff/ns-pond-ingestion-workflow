@@ -13,9 +13,9 @@ from pathlib import Path
 import pytest
 import yaml
 from ingestion_workflow.clients.openalex import _metadata_from
+from ingestion_workflow.models.metadata import CorrespondingAuthor
 from ingestion_workflow.services import corresponding_authors as ca
 from lxml import etree
-from study_schema.models.paper_parse import CorrespondingAuthor
 
 DATA = Path(__file__).parents[1] / "data"
 FIXTURES = DATA / "corresponding_authors"

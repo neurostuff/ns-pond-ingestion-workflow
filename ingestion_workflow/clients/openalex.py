@@ -10,6 +10,7 @@ from typing import Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 from urllib.parse import quote, urljoin
 
 import requests
+from study_schema.models import paper_parse as pp
 from study_schema.models.paper_parse import MetadataSource
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
@@ -17,6 +18,8 @@ from ingestion_workflow.models import Identifier, Identifiers
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
 from ingestion_workflow.models.notices import PartialAnswer
 from ingestion_workflow.services import corresponding_authors
+from ingestion_workflow.services.corresponding_authors.common import words
+from ingestion_workflow.utils import authors as author_ids
 from ingestion_workflow.utils.doi import normalize_doi
 from ingestion_workflow.utils.http import transient
 
@@ -66,11 +69,7 @@ def _metadata_from(work: Dict) -> ArticleMetadata:
     source = ((work.get("primary_location") or {}).get("source") or {})
     return ArticleMetadata(
         title=str(work.get("display_name") or ""),
-        authors=[
-            Author(name=str(authorship["author"]["display_name"]))
-            for authorship in work.get("authorships", []) or []
-            if (authorship.get("author") or {}).get("display_name")
-        ],
+        authors=_authors_from(work),
         abstract=_abstract(work.get("abstract_inverted_index")),
         journal=source.get("display_name"),
         publication_year=work.get("publication_year"),
@@ -78,6 +77,93 @@ def _metadata_from(work: Dict) -> ArticleMetadata:
         raw_metadata={"openalex": {name: work.get(name) for name in _RAW_FIELDS}},
         corresponding_authors=corresponding_authors.from_openalex(work),
     )
+
+
+def _authors_from(work: Dict) -> List[Author]:
+    """Each authorship as an Author: the name the paper printed, its affiliations with the
+    ROR institutions OpenAlex ties each to, and OpenAlex's ids for the person.
+
+    OpenAlex's ids come from its own disambiguation, and it sometimes gives a printed name
+    another author's identity ("Nan Lang" as Ning Zhang): an id is kept only when the
+    printed name and OpenAlex's name for the person share a surname. An authorship
+    repeating one already listed is merged into it: the same printed name with the same
+    id, or straight after it with either id missing. A text without OpenAlex's tie to
+    institutions takes the authorship's institutions only when it is the authorship's one
+    text.
+    """
+    found: List[Author] = []
+    seen: Dict[Tuple[str, str], Author] = {}
+    for authorship in work.get("authorships") or []:
+        person = authorship.get("author") or {}
+        shown = person.get("display_name") or ""
+        name = _printed(authorship.get("raw_author_name")) or shown
+        if not name:
+            continue
+        same_person = _same_surname(name, shown)
+        openalex_id = author_ids.openalex_author(person.get("id")) if same_person else None
+        affiliations = _affiliations(authorship)
+        repeat = seen.get((openalex_id, name)) if openalex_id else None
+        if repeat is None and found and found[-1].name == name and not (
+                openalex_id and found[-1].openalex_id):
+            repeat = found[-1]
+        if repeat is not None:
+            repeat.affiliations += [a for a in affiliations if a not in repeat.affiliations]
+            if openalex_id and not repeat.openalex_id:
+                repeat.openalex_id = openalex_id
+                repeat.orcid = author_ids.orcid(person.get("orcid"))
+            continue
+        author = Author(name=name, affiliations=affiliations, openalex_id=openalex_id,
+                        orcid=author_ids.orcid(person.get("orcid")) if same_person else None)
+        if openalex_id:
+            seen[(openalex_id, name)] = author
+        found.append(author)
+    return found
+
+
+def _printed(raw: Optional[str]) -> Optional[str]:
+    """OpenAlex's `raw_author_name`, given name first: it can be "Tang, Jerry", or UTF-8
+    read as Latin-1 ("BrÃ¼gger")."""
+    if not raw or not raw.strip():
+        return None
+    try:
+        raw = raw.encode("latin-1").decode("utf-8")
+    except UnicodeError:
+        pass
+    family, comma, given = raw.strip().partition(", ")
+    return f"{given} {family}".strip() if comma and given else raw.strip()
+
+
+def _same_surname(printed: str, shown: str) -> bool:
+    """Whether two names of one author slot share a surname, either way round ("Li Yao",
+    "Yao Li") or written apart ("Debroucker", "de Broucker"), and so name one person."""
+    a, b = words(printed), words(shown)
+    if not (a and b):
+        return False
+    return (a[-1] in b or b[-1] in a
+            or len(a[-1]) > 3 and a[-1] in "".join(b) or len(b[-1]) > 3 and b[-1] in "".join(a))
+
+
+def _affiliations(authorship: Dict) -> List[pp.Affiliation]:
+    by_id = {i.get("id"): i for i in authorship.get("institutions") or []}
+    texts = authorship.get("raw_affiliation_strings") or []
+    listed = authorship.get("affiliations") or [
+        {"raw_affiliation_string": text,
+         "institution_ids": list(by_id) if len(texts) == 1 else []}
+        for text in texts]
+    affiliations = []
+    for affiliation in listed:
+        text = author_ids.affiliation_text(affiliation.get("raw_affiliation_string"))
+        if not text:
+            continue
+        institutions = [
+            pp.Institution(ror=author_ids.ror(institution.get("ror")),
+                           name=institution.get("display_name"),
+                           country=institution.get("country_code"))
+            for institution_id in affiliation.get("institution_ids") or []
+            for institution in [by_id.get(institution_id) or {}]
+            if author_ids.ror(institution.get("ror"))]
+        affiliations.append(pp.Affiliation(text=text, institutions=institutions or None))
+    return affiliations
 
 
 def _cited_work(work: Dict) -> Dict:

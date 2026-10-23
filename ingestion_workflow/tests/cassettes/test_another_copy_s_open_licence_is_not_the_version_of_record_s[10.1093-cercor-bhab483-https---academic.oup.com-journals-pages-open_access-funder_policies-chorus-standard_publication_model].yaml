@@ -400,4 +400,62 @@ interactions:
     status:
       code: 200
       message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://pub.orcid.org/v3.0/0000-0001-9359-8950/email
+  response:
+    body:
+      string: '{"last-modified-date":null,"email":[],"path":"/0000-0001-9359-8950/email"}'
+    headers:
+      CF-RAY:
+      - a4f445e1bcaae96a-DFW
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Cf-Apo-Via:
+      - origin,host
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 23 Oct 2026 22:45:35 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-origin:
+      - '*'
+      cf-cache-status:
+      - DYNAMIC
+      expires:
+      - '0'
+      pragma:
+      - no-cache
+      strict-transport-security:
+      - max-age=31536000 ; includeSubDomains
+      x-content-type-options:
+      - nosniff
+      x-frame-options:
+      - DENY
+      x-target:
+      - reg-prod-papi-use2-b1
+      x-via:
+      - a2-newvpc
+      x-xss-protection:
+      - '0'
+    status:
+      code: 200
+      message: OK
 version: 1

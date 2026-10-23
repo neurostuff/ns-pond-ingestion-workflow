@@ -15,11 +15,13 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 import httpx
 import xmltodict
+from study_schema.models.paper_parse import Affiliation
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 from ingestion_workflow.models import Identifier, Identifiers
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
 from ingestion_workflow.models.notices import Correction, PartialAnswer, corrections_from_pubmed
+from ingestion_workflow.utils import authors as author_ids
 from ingestion_workflow.utils.pmcid import normalize_pmcid
 
 logger = logging.getLogger(__name__)
@@ -786,16 +788,17 @@ class PubMedClient:
             if not name:
                 continue
 
-            affiliation = None
-            affiliation_info = entry.get("AffiliationInfo")
-            if affiliation_info:
-                info_entry = self._ensure_list(affiliation_info)[0]
-                if isinstance(info_entry, Mapping):
-                    affiliation = info_entry.get("Affiliation")
-                elif isinstance(info_entry, str):
-                    affiliation = info_entry
-
-            authors.append(Author(name=name, affiliation=affiliation))
+            affiliations = []
+            for info in self._ensure_list(entry.get("AffiliationInfo")):
+                text = info.get("Affiliation") if isinstance(info, Mapping) else info
+                text = author_ids.affiliation_text(self._text_from(text))
+                if text:
+                    affiliations.append(Affiliation(text=text))
+            orcid = next((author_ids.orcid(self._text_from(identifier))
+                          for identifier in self._ensure_list(entry.get("Identifier"))
+                          if isinstance(identifier, Mapping)
+                          and identifier.get("@Source") == "ORCID"), None)
+            authors.append(Author(name=name, affiliations=affiliations, orcid=orcid))
         return authors
 
     def _parse_abstract(self, abstract_section: Any) -> Optional[str]:

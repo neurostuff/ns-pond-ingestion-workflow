@@ -9,22 +9,25 @@ with an email speaks for the paper; without one, the first to name any (`decide`
 
 from __future__ import annotations
 
+import dataclasses
+import re
 from pathlib import Path
 from typing import Iterable, List, Optional, Sequence
 
 from lxml import etree
-from study_schema.models.paper_parse import CorrespondingAuthor
+
+from ingestion_workflow.models.metadata import CorrespondingAuthor
 
 from .ace import from_page
-from .common import fold, surname
+from .common import _spelt_by, fold, surname, words
 from .elsevier import from_elsevier
 from .jats import from_jats
 from .openalex import from_openalex
 from .pdf import from_pdf_text
 from .pubmed import from_pubmed
 
-__all__ = ["decide", "from_held", "from_jats", "from_elsevier", "from_page",
-           "from_pdf_text", "from_pubmed", "from_openalex"]
+__all__ = ["decide", "mark_corresponding", "from_held", "from_jats", "from_elsevier",
+           "from_page", "from_pdf_text", "from_pubmed", "from_openalex"]
 
 #: Sources whose copy is a PDF, read from the text its extraction gave.
 PDF_SOURCES = ("pdf", "wiley")
@@ -64,6 +67,63 @@ def decide(stated: Sequence[List[CorrespondingAuthor]],
 
 
 def _as_listed(name: str, authors: Sequence[str]) -> str:
+    """The one listed author sharing `name`'s surname and first initial; else the one whose
+    surname is a word of `name` ("Garcia Lopez" for "Maria Garcia"), sharing its first
+    initial or with their names either way round ("Wang Zheng", "Zheng Wang")."""
     key = (surname(name), fold(name)[:1])
     same = [listed for listed in authors if (surname(listed), fold(listed)[:1]) == key]
-    return same[0] if len(same) == 1 else name
+    if not same:
+        named = words(name)
+        same = [listed for listed in authors if surname(listed) in named and (
+            fold(listed)[:1] == fold(name)[:1] or surname(name) in words(listed))]
+    return same[0] if len(set(same)) == 1 else name
+
+
+def mark_corresponding(authors: Sequence, decided: Sequence[CorrespondingAuthor]):
+    """`authors` with the corresponding ones marked and given their addresses, and the
+    addresses that belong to none of them.
+
+    A decided author is the listed one their name names (`_as_listed`); an address with
+    no name is the listed one it spells (`_owner`). Once any source has said who
+    corresponds, every other author is not a corresponding one, unless a named one could
+    not be placed on the list; until then none is marked either way.
+    """
+    folded = [dataclasses.replace(a, corresponding=None, emails=list(a.emails))
+              for a in authors]
+    names = [a.name for a in folded]
+    unpaired: List[str] = []
+    placed_all = True
+    for entry in decided:
+        listed = _as_listed(entry.name, names) if entry.name else None
+        if listed not in names and entry.email:
+            listed = _owner(entry.email, names)
+        if listed in names and names.count(listed) == 1:
+            author = folded[names.index(listed)]
+            author.corresponding = True
+            if entry.email and entry.email not in author.emails:
+                author.emails.append(entry.email)
+            continue
+        placed_all = placed_all and not entry.name
+        if entry.email and entry.email not in unpaired:
+            unpaired.append(entry.email)
+    if decided and placed_all:
+        for author in folded:
+            author.corresponding = author.corresponding or False
+    return folded, unpaired
+
+
+def _owner(email: str, names: Sequence[str]) -> Optional[str]:
+    """The one listed author an address spells: by surname, else by given name ("fumiko@"),
+    else by initials and surname either way round ("wuyh@", "yhwu@")."""
+    spelt = _spelt_by(email, names)
+    if spelt:
+        return spelt
+    local = re.sub(r"[^a-z]", "", fold(email.split("@")[0]))
+    found = []
+    for name in names:
+        given, last = words(name)[:-1], surname(name)
+        initials = "".join(w[0] for w in given)
+        if (given and len(given[0]) > 3 and given[0] in local) or (
+                initials and last and local in (last + initials, initials + last)):
+            found.append(name)
+    return found[0] if len(found) == 1 else None

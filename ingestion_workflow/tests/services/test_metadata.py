@@ -246,7 +246,8 @@ class TestMetadataService:
 
     def test_openalex_is_asked_about_a_filled_record_and_fills_nothing(self, tmp_path):
         """OpenAlex is asked about every article, for the copies it lists and their
-        licences; a record the others filled keeps their fields."""
+        licences; a record the others filled keeps their fields, but for the author list,
+        which is OpenAlex's for its ids and affiliations."""
         service = _with_openalex(tmp_path)
         service._s2_client = SemanticScholarClient("test_s2_key")
         identifier = Identifier(pmid="12345678")
@@ -271,8 +272,10 @@ class TestMetadataService:
         ):
             merged = _enrich(service, [extracted])[extracted.slug]
         asked.assert_called_once()
-        assert (merged.journal, merged.abstract, merged.abstract_provider, len(merged.authors)) \
-            == ("J", "What it found.", "semantic_scholar", 1)
+        assert (merged.journal, merged.abstract, merged.abstract_provider) == (
+            "J", "What it found.", "semantic_scholar")
+        assert ([a.name for a in merged.authors], merged.authors_provider) == (
+            ["A", "B"], "openalex")
 
     def test_get_elsevier_fallback(self, metadata_service):
         """Test fallback metadata extraction from Elsevier files."""
