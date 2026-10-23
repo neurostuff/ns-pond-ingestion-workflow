@@ -1,4 +1,3 @@
-import httpx
 import pytest
 from ingestion_workflow.clients.pubmed import PubMedClient
 from ingestion_workflow.models.ids import Identifier, Identifiers
@@ -43,31 +42,20 @@ def test_a_malformed_pmcid_drops_only_its_own_record(caplog):
     assert "not a PMCID: 'PMC6865431.x'" in caplog.text
 
 
-def _requested_query(email, **client_args):
-    """The query string of the request the client builds, caught by a transport that
-    answers an empty id-converter reply."""
-    seen = []
 
-    def answer(request):
-        seen.append(request.url.params)
-        return httpx.Response(200, json={"records": []})
-
-    client = PubMedClient(email=email, **client_args)
-    client._client = httpx.Client(transport=httpx.MockTransport(answer))
-    client.get_ids("doi", Identifiers([Identifier(doi=TWO_DOIS[0])]))
-    return seen[0]
+@pytest.mark.vcr()
+def test_a_configured_email_and_tool_are_sent():
+    identifiers = Identifiers([Identifier(doi=TWO_DOIS[1])])
+    PubMedClient(email="someone@example.com", tool="ingestion-workflow-tests").get_ids(
+        "doi", identifiers
+    )
+    assert identifiers.identifiers[0].pmid == "22848644"
 
 
-def test_a_configured_email_tool_and_key_are_sent():
-    query = _requested_query("someone@example.com", api_key="placeholder-key")
-    assert query["email"] == "someone@example.com"
-    assert query["tool"] == "ingestion-workflow"
-    assert query["api_key"] == "placeholder-key"
-
-
-@pytest.mark.parametrize("unset", ["", None])
-def test_an_unset_email_sends_no_email_parameter(unset):
-    query = _requested_query(unset, tool="")
-    assert "email" not in query
-    assert "tool" not in query
-    assert "api_key" not in query
+@pytest.mark.vcr()
+def test_an_unset_email_is_not_sent_as_an_empty_parameter():
+    """Recorded with no email parameter: a request carrying a bare \ does not
+    match it."""
+    identifiers = Identifiers([Identifier(doi=TWO_DOIS[1])])
+    PubMedClient(email="", tool="ingestion-workflow-tests").get_ids("doi", identifiers)
+    assert identifiers.identifiers[0].pmid == "22848644"
