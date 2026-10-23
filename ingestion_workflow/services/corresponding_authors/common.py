@@ -6,7 +6,9 @@ import re
 import unicodedata
 from typing import Iterable, List, Optional, Sequence, Tuple
 
-from study_schema.models.paper_parse import CorrespondingAuthor, MetadataSource
+from study_schema.models.paper_parse import MetadataSource
+
+from ingestion_workflow.models.metadata import CorrespondingAuthor
 
 #: (name, email): one corresponding author as an extractor reads them, either part absent.
 Found = Tuple[Optional[str], Optional[str]]

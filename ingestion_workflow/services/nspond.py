@@ -181,8 +181,8 @@ def _write_metadata(
         "title": metadata.title,
         "authors": authors,
         "corresponding_authors": [
-            author.model_dump(mode="json", include={"name", "email"}, exclude_none=True)
-            for author in metadata.corresponding_authors
+            {"name": author.name, "emails": author.emails or None}
+            for author in metadata.authors if author.corresponding
         ] or None,
         "journal": metadata.journal,
         "keywords": metadata.keywords or None,

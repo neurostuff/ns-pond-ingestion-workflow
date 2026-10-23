@@ -6,7 +6,19 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from study_schema.models.paper_parse import CorrespondingAuthor, License, ReportedCopy
+from pydantic import BaseModel, ConfigDict
+from study_schema.models.paper_parse import Affiliation, License, MetadataSource, ReportedCopy
+
+
+class CorrespondingAuthor(BaseModel):
+    """One source's statement that the paper names someone to correspond with: a name,
+    an email, or both. The metadata service folds the deciding source's onto `authors`."""
+
+    model_config = ConfigDict(frozen=True)
+
+    name: Optional[str] = None
+    email: Optional[str] = None
+    stated_by: MetadataSource
 
 
 @dataclass
@@ -15,21 +27,32 @@ class Author:
     Author information for an article.
     """
 
-    # Author's full name
+    # Author's full name, as the author list prints it
     name: str
 
-    # Author's affiliation
-    affiliation: Optional[str] = None
+    # Where the author was for this paper: each text as printed, with its ROR institutions
+    affiliations: List[Affiliation] = field(default_factory=list)
 
-    # ORCID identifier
+    # ORCID iD, bare
     orcid: Optional[str] = None
+
+    # OpenAlex's author id, bare (`A5054079188`)
+    openalex_id: Optional[str] = None
+
+    # Whether they are a corresponding author of this paper (None: no source said who),
+    # and the addresses it prints for them
+    corresponding: Optional[bool] = None
+    emails: List[str] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert Author to dictionary."""
         return {
             "name": self.name,
-            "affiliation": self.affiliation,
+            "affiliations": [_dumped(a) for a in self.affiliations],
             "orcid": self.orcid,
+            "openalex_id": self.openalex_id,
+            "corresponding": self.corresponding,
+            "emails": list(self.emails),
         }
 
     @classmethod
@@ -37,8 +60,11 @@ class Author:
         """Create Author from dictionary."""
         return cls(
             name=str(data["name"]),
-            affiliation=data.get("affiliation"),
+            affiliations=[Affiliation.model_validate(a) for a in data.get("affiliations") or []],
             orcid=data.get("orcid"),
+            openalex_id=data.get("openalex_id"),
+            corresponding=data.get("corresponding"),
+            emails=list(data.get("emails") or []),
         )
 
 
@@ -99,6 +125,12 @@ class ArticleMetadata:
     # Whom the paper names to correspond with: a provider's own list, until the metadata
     # service decides the paper's from every source
     corresponding_authors: List[CorrespondingAuthor] = field(default_factory=list)
+
+    # The provider whose list `authors` is, once the metadata service has decided it
+    authors_provider: Optional[str] = None
+
+    # Correspondence addresses the paper prints that belong to no author in `authors`
+    correspondence_emails: List[str] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         if self.abstract and self.abstract_provider is None:
@@ -174,6 +206,8 @@ class ArticleMetadata:
             "license_embargo_until": (self.license_embargo_until.isoformat()
                                       if self.license_embargo_until else None),
             "corresponding_authors": [_dumped(author) for author in self.corresponding_authors],
+            "authors_provider": self.authors_provider,
+            "correspondence_emails": list(self.correspondence_emails),
         }
 
     @classmethod
@@ -202,6 +236,8 @@ class ArticleMetadata:
                                    if data.get("license_embargo_until") else None),
             corresponding_authors=[CorrespondingAuthor.model_validate(author)
                                    for author in data.get("corresponding_authors") or []],
+            authors_provider=data.get("authors_provider"),
+            correspondence_emails=list(data.get("correspondence_emails") or []),
         )
 
     def to_neurostore_format(self) -> Dict[str, Any]:

@@ -10,6 +10,7 @@ from typing import Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 from urllib.parse import quote, urljoin
 
 import requests
+from study_schema.models import paper_parse as pp
 from study_schema.models.paper_parse import MetadataSource
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
@@ -17,6 +18,7 @@ from ingestion_workflow.models import Identifier, Identifiers
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
 from ingestion_workflow.models.notices import PartialAnswer
 from ingestion_workflow.services import corresponding_authors
+from ingestion_workflow.utils import authors as author_ids
 from ingestion_workflow.utils.doi import normalize_doi
 from ingestion_workflow.utils.http import transient
 
@@ -66,11 +68,7 @@ def _metadata_from(work: Dict) -> ArticleMetadata:
     source = ((work.get("primary_location") or {}).get("source") or {})
     return ArticleMetadata(
         title=str(work.get("display_name") or ""),
-        authors=[
-            Author(name=str(authorship["author"]["display_name"]))
-            for authorship in work.get("authorships", []) or []
-            if (authorship.get("author") or {}).get("display_name")
-        ],
+        authors=_authors_from(work),
         abstract=_abstract(work.get("abstract_inverted_index")),
         journal=source.get("display_name"),
         publication_year=work.get("publication_year"),
@@ -78,6 +76,40 @@ def _metadata_from(work: Dict) -> ArticleMetadata:
         raw_metadata={"openalex": {name: work.get(name) for name in _RAW_FIELDS}},
         corresponding_authors=corresponding_authors.from_openalex(work),
     )
+
+
+def _authors_from(work: Dict) -> List[Author]:
+    """Each authorship as an Author: its ids, and its affiliations as the paper prints them
+    with the ROR institutions OpenAlex ties each to. An authorship listing one affiliation
+    text without that tie gives the text all its institutions; with several, none."""
+    found = []
+    for authorship in work.get("authorships") or []:
+        person = authorship.get("author") or {}
+        if not person.get("display_name"):
+            continue
+        by_id = {i.get("id"): i for i in authorship.get("institutions") or []}
+        texts = authorship.get("raw_affiliation_strings") or []
+        listed = authorship.get("affiliations") or [
+            {"raw_affiliation_string": text,
+             "institution_ids": list(by_id) if len(texts) == 1 else []}
+            for text in texts]
+        affiliations = []
+        for affiliation in listed:
+            text = author_ids.affiliation_text(affiliation.get("raw_affiliation_string"))
+            if not text:
+                continue
+            institutions = [
+                pp.Institution(ror=author_ids.ror(institution.get("ror")),
+                               name=institution.get("display_name"),
+                               country=institution.get("country_code"))
+                for institution_id in affiliation.get("institution_ids") or []
+                for institution in [by_id.get(institution_id) or {}]
+                if author_ids.ror(institution.get("ror"))]
+            affiliations.append(pp.Affiliation(text=text, institutions=institutions or None))
+        found.append(Author(name=str(person["display_name"]), affiliations=affiliations,
+                            orcid=author_ids.orcid(person.get("orcid")),
+                            openalex_id=author_ids.openalex_author(person.get("id"))))
+    return found
 
 
 def _cited_work(work: Dict) -> Dict:

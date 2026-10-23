@@ -31,7 +31,7 @@ from .sync import _copy_of
 
 logger = logging.getLogger(__name__)
 
-METADATA_VERSION = 4
+METADATA_VERSION = 5
 
 #: Kept in the catalog row for display and for the upload stage.
 SUMMARY_FIELDS = ("title", "journal", "publication_year", "oa_status")
@@ -219,7 +219,7 @@ class MetadataStage:
                     name: getattr(metadata, name, None) for name in SUMMARY_FIELDS
                 } | _licenses(metadata)
                 | {"authors": len(metadata.authors),
-                   "corresponding_authors": len(metadata.corresponding_authors),
+                   "corresponding_authors": sum(1 for a in metadata.authors if a.corresponding),
                    "sufficient": is_sufficient(metadata),
                    "digests": metadata_digests(payload)},
             )

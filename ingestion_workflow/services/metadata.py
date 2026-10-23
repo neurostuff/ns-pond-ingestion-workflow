@@ -21,7 +21,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Mapping, Optional, Sequence, Set, Tuple
@@ -32,7 +32,6 @@ from pubget._utils import article_bucket_from_pmcid
 from study_schema.models.paper_parse import (
     CopyRoute,
     CopyVersion,
-    CorrespondingAuthor,
     License,
     MetadataSource,
     OaStatus,
@@ -51,10 +50,11 @@ from ingestion_workflow.extractors.utils import safe_hash_stem
 from ingestion_workflow.models.download import DownloadCopy, DownloadSource
 from ingestion_workflow.models.extract import ExtractedContent
 from ingestion_workflow.models.ids import Identifier
-from ingestion_workflow.models.metadata import ArticleMetadata, Author
+from ingestion_workflow.models.metadata import ArticleMetadata, Author, CorrespondingAuthor
 from ingestion_workflow.models.notices import PartialAnswer
 from ingestion_workflow.services import corresponding_authors
 from ingestion_workflow.services.citations import JATS_SOURCES
+from ingestion_workflow.services.corresponding_authors.common import surname
 from ingestion_workflow.services.licenses import (
     HELD,
     LICENSE_PROVIDERS,
@@ -319,8 +319,9 @@ class MetadataService:
                                  paper_work, answers.get(slug, {}), held.get(slug, ()), waiting, now)
             except Undecided as exc:
                 self.undecided[slug] = exc
-            metadata.corresponding_authors = _decide_corresponding(
-                metadata, held.get(slug, ()), openalex.get(main_ident.slug))
+            _decide_authors(metadata, answers.get(slug, {}), openalex.get(main_ident.slug),
+                            _decide_corresponding(metadata, held.get(slug, ()),
+                                                  openalex.get(main_ident.slug)))
         return results
 
     def require_licence_providers(self) -> None:
@@ -683,11 +684,14 @@ def _filled(metadata: Optional[ArticleMetadata]) -> bool:
 
 #: Each provider's cache under `<cache>/metadata/`. The cache holds parsed records, so a
 #: record that keeps more of the response (OpenAlex's locations) needs a directory of its own.
+#: Each provider's cache, named for what its records hold; a record that comes to hold more
+#: is cached anew under a new name. PubMed's and OpenAlex's hold structured authors: ids,
+#: every affiliation, OpenAlex's ROR institutions.
 PROVIDER_CACHE_DIRS = {
     MetadataSource.semantic_scholar.value: "semantic_scholar",
-    MetadataSource.pubmed.value: "pubmed",
+    MetadataSource.pubmed.value: "pubmed-authors",
     MetadataSource.crossref.value: "crossref-licenses",
-    MetadataSource.openalex.value: "openalex-locations",
+    MetadataSource.openalex.value: "openalex-authorships",
 }
 
 _LICENSE_PROVIDERS = {source.value for source in LICENSE_PROVIDERS}
@@ -741,6 +745,44 @@ def _listed(by: MetadataSource, url: str, doi: Optional[str], version: Optional[
             location_type: Optional[str], license: Optional[str]) -> _Listed:
     route, version, server = located(url, doi, version, location_type)
     return _Listed(by, url, route, version, server, stated(by, license))
+
+
+def _decide_authors(
+    metadata: ArticleMetadata,
+    replies: Mapping[str, ArticleMetadata],
+    openalex: Optional[ArticleMetadata],
+    corresponding: Sequence[CorrespondingAuthor],
+) -> None:
+    """Set the paper's author list, its source, who of them corresponds and the
+    correspondence addresses no author takes.
+
+    The list is OpenAlex's, which ties each author to their ids and each affiliation to
+    its ROR institutions, else PubMed's, else the merged record's. PubMed's ORCID iDs and
+    affiliations fill an author the list leaves without, matched by place and surname.
+    """
+    pubmed = replies.get(MetadataSource.pubmed.value)
+    chosen = next(((source, record.authors)
+                   for source, record in ((MetadataSource.openalex.value, openalex),
+                                          (MetadataSource.pubmed.value, pubmed))
+                   if record is not None and record.authors),
+                  (metadata.source, metadata.authors))
+    provider, listed = chosen
+    if pubmed is not None and provider != MetadataSource.pubmed.value:
+        listed = [_filled_from(author, pubmed.authors, place)
+                  for place, author in enumerate(listed)]
+    metadata.authors, metadata.correspondence_emails = (
+        corresponding_authors.mark_corresponding(listed, corresponding))
+    metadata.authors_provider = provider if metadata.authors else None
+
+
+def _filled_from(author: Author, others: Sequence[Author], place: int) -> Author:
+    """`author` with the ORCID iD and affiliations it lacks taken from the author at the
+    same place in `others`, when that one has the same surname."""
+    other = others[place] if place < len(others) else None
+    if other is None or surname(other.name) != surname(author.name):
+        return author
+    return replace(author, orcid=author.orcid or other.orcid,
+                   affiliations=author.affiliations or other.affiliations)
 
 
 def _decide_corresponding(

@@ -118,14 +118,21 @@ def test_the_corresponding_authors_are_decided_from_every_source(env):
 
     assert outcome.summary["corresponding_authors"] == 1
     stored = ArticleMetadata.from_dict(catalog.payload(catalog.artifact(ref.id, "metadata", "")))
-    assert [(a.name, a.email, a.stated_by) for a in stored.corresponding_authors] == [
-        ("Stephen Zicha", None, "openalex")]
+    assert stored.authors_provider == "openalex"
+    assert [a.name for a in stored.authors if a.corresponding] == ["Stephen Zicha"]
+    assert all(a.corresponding is False for a in stored.authors if a.name != "Stephen Zicha")
+    # OpenAlex's list carries the author ids it has (all but one of the 25 here) and the ROR
+    # institutions of each affiliation.
+    assert [a.name for a in stored.authors if not a.openalex_id] == [
+        "Emmanouil (Manos) Spanakis"]
+    assert any(i.ror for a in stored.authors for f in a.affiliations for i in f.institutions or [])
 
 
 def test_a_pdf_s_corresponding_authors_are_read_from_its_extracted_text(env, tmp_path):
     """The PDF's own record names the author with an address; OpenAlex only names one."""
+    from ingestion_workflow.models.metadata import CorrespondingAuthor
     from ingestion_workflow.services.metadata import HeldDownload, _decide_corresponding
-    from study_schema.models.paper_parse import CopyAccess, CopyRoute, CorrespondingAuthor
+    from study_schema.models.paper_parse import CopyAccess, CopyRoute
 
     text = tmp_path / "text.txt"
     text.write_text((Path(__file__).parents[1] / "data" / "corresponding_authors" /
