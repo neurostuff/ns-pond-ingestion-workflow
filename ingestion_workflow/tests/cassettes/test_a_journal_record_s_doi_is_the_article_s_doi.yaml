@@ -17,20 +17,20 @@ interactions:
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAAJRUTU8bMRD9K5YvveTDmyVQcqNAS1GDEKgn1IPXO0lcvHbqtaOmUf97Z+xkE0Cq
-        yGnt8cy+5zdvvOELkDV4PtnwsF4Cn3BoY9NIv+Y9vgLfamcxKAYl/9vjHg9NoOSo65ZPnnhRlOX4
-        TIz4j95+nc+xrIv0+DJWtQwEMBKiYFNJALCP4q510Staf/JSWwzIGBbOE86GW9nQ0aXXQS0MrNnN
-        1TZjy/siJWNMmdgG8IkAku5Kp2AaqNnD3ZF1n0GGBSoRnAV2fSwo1mrZssvbIwuvnJGWPbyvDMU3
-        sg1Zr5fFQQfTacqkCnqlw5rV0Ws7Z5V2M4C6kuqZeTDytwzY8AmTbBatorU0zEL0TjdyThXarqAN
-        ep4SB6lrPuxAqiNA3otBPnQmJlGK0QluddtG2t0HNiZnyTm0dChE2S/Ia3j5OZkT8IPSWNNEq39F
-        SGqJ8mw0Ls/yf5K3hTjtfzwfCzJkDmW/Zs2f+C36kjhe+KAV3rPHH6AF6dWCPcblEu/fY3fO9r8P
-        Hgfsi1t9CITqQTlfY1NCJHb3sZqi+/p4uRp+42rmPJteX337ened4bpUuqPMWHnKNlzXWwNgHpqY
-        yKcIki1QH2mSIN24kY+6ktrpw/zyIF8MCnFeDlPbhijuYDwgFZOhFhodj88AwR+y6xgcjPNQjIfi
-        hBViIkQCPyzAbKMtvK44HYpRqijeVIANHv78DyLpOwMPVlHvn3AvQ/C6iiHt+Q3O3AX+0aMZqRvL
-        RmGBctGG3N9ZNOZnbux24vKEkPe3ceZm2ZfGzdNrZZxKlsxTh/Sc2mqsdNiZtfVKOUtcDCqYuVXO
-        Pe9mBFNQER2bvMZlyG9sdgEW4WOzQ3oV3jLNKPuH0wOZ0MamopecInIltZGVgZl3TfQmR3d/xRMw
-        3RXesMXY/t9EfQ+rFnIZdiA0+S+f9dSk4h8AAAD//1IwAEcSREFaZhFSwYRWfJeBvJRcmgNK7dDQ
-        qa2t5QIAAAD//wMAD1GUzJYGAAA=
+        H4sIAAAAAAAAAJRTTW/bMAz9K4IuuziBHS/LllvXZB/FEhQpdip6oC3GFiZLmT6CBsH++0g7c9db
+        czJF8vmRT09n2SIo9HJ5lvF0QLmUGFLXgT/JTB7RB+0sJfNpKf9k0lPRRG5OWgW5fJRFUZbzRT6T
+        T9lLPNQJNmYyeUiVgsgEszwvxAaYAF+ydAou+Zrjzx60pQSk2DrPPGdpoePSrdexbg2exLfVpeMy
+        903fTLnapBDR9wPQ0CN0g6ZDJXbbK3FfEGJLSkRnUayvJSWshiBu764ErpwBK3Zvg5H4BkIc9HoN
+        jjqaUVMBddRHHU9CJa9tIyrt9oiqgvqX8GjgGSJd+FKA2CdbcwxGWEze6Q4aRmh7xBB10zdO+1vz
+        8R9JdQXJWznYh86kXpRi9p6OOoTEp/so5uwsaDBwMc/LScFeo+UbNifSh6SxpktW/07Yq5WXi9m8
+        XAz/6b2d5x8mHz/NczbkkBr8Omj+KO/IlzzjjY+6pj0zucOA4OtWPKTDgfbPxNbZyc/pw1R8dcd3
+        kVk91s4rupSYeLr7VG3IfRNaTuEzRXvnxWa9+vF9ux7oxlbeEQau4ZWdpVYXA1AfmZiH7zM0bEH6
+        gOkFGZ8b+2iEKKf/7y/H/r8AAAD//3xUwVLEIAy9+xUdP6Cl6jqjN2/7D55oBlw0hR2EPTjTfzch
+        sK3dGW8QCHm8vDxirB/Vy+NQ2jYQuf2hZxaLoE6OFE82wOW36K4INuM8qMOgnrpRvSpVim8T6DY6
+        b/YZz4N6KBnjTYbxKZqf/0oUfq2JxgP3/p32OqXoppzK/v5IM/dGL0YSI3fjPAMlQMg+SX9tRvyU
+        xtaJkwlh7dd4F6zoEsNHcSsMUCQpU0fwAlSOwaUm1u8IEDxjQWJQsE0hfLUZoSvEiMuzrGmZxGNF
+        BZREZtMq7cIVqVRZjTMaFqHP88ROzhF90Q71hMbGMOeIEm2v0onB6xdu0FJsfZuhr2XhpM+pFeHJ
+        /2vrpUljp0qT5IJ1cWNMO/u+8JcgI6u9srMsy90vAAAA//8DAA9RlMyWBgAA
     headers:
       access-control-allow-origin:
       - '*'
@@ -47,11 +47,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 23 Oct 2026 21:48:40 GMT
+      - Fri, 23 Oct 2026 22:54:11 GMT
       ncbi-phid:
-      - 1D33ABE4FCD277E500002A98BDEF2914.1.1.m_1
+      - 1D32B8BB86A02F1500006097F2D70112.1.1.m_1
       ncbi-sid:
-      - 324A0AF2A892BBA5_29FFSID
+      - 30544F0C71486DCC_88BASID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -99,15 +99,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4f3f2860e6a6902-DFW
+      - a4f4527f0ca870cc-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Fri, 23 Oct 2026 21:48:41 GMT
+      - Fri, 23 Oct 2026 22:54:12 GMT
       expires:
-      - Fri, 23 Oct 2026 21:53:09 GMT
+      - Fri, 23 Oct 2026 23:27:31 GMT
       location:
       - https://api.crossref.org/v1/works/10.1093%2Fbrain%2F124.5.1003/transform
       nel:
@@ -115,7 +115,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=pDVctbIHplVRSXgIft7YzZhXigXckVM0XECXAVzPS8aQwzaLbfhdf3c8dymZ3g4IXW%2BUbt7V7WE%2BPDrmKRGCu8i7jmhWe3JSBoc7IcaNHcL9UmfmhjvoK38%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=pQ8jb%2FSWnwUpgNTQfhNvVHX1QO%2F0zfTQc0vJFcooEiP3YiXXJuvm4QmaThH1Km%2Fn7xQSx%2B5NnBojNug2DgcKw8%2FjPvWakHV9ENpKI%2F%2BP9imQI3Rmcic9Eg4%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -177,7 +177,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Fri, 23 Oct 2026 21:48:41 GMT
+      - Fri, 23 Oct 2026 22:54:12 GMT
       permissions-policy:
       - interest-cohort=()
       server:
@@ -225,7 +225,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 21:48:41 GMT
+      - Fri, 23 Oct 2026 22:54:12 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -277,7 +277,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 21:48:41 GMT
+      - Fri, 23 Oct 2026 22:54:12 GMT
       Transfer-Encoding:
       - chunked
       access-control-allow-headers:

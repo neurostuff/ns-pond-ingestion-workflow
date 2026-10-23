@@ -1,0 +1,2137 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1186/s40352-024-00291-8?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,9,30]],"date-time":"2026-09-30T21:13:15Z","timestamp":1790802795269,"version":"4.1.0"},"reference-count":258,"publisher":"Springer
+        Science and Business Media LLC","issue":"1","license":[{"start":{"date-parts":[[2024,8,29]],"date-time":"2024-08-29T00:00:00Z","timestamp":1724889600000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/creativecommons.org\/licenses\/by-nc-nd\/4.0"},{"start":{"date-parts":[[2024,8,29]],"date-time":"2024-08-29T00:00:00Z","timestamp":1724889600000},"content-version":"vor","delay-in-days":0,"URL":"https:\/\/creativecommons.org\/licenses\/by-nc-nd\/4.0"}],"funder":[{"DOI":"10.13039\/100000026","name":"National
+        Institute on Drug Abuse","doi-asserted-by":"publisher","award":["UG1DA050065"],"award-info":[{"award-number":["UG1DA050065"]}],"id":[{"id":"10.13039\/100000026","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000026","name":"National
+        Institute on Drug Abuse","doi-asserted-by":"publisher","award":["U01DA050442"],"award-info":[{"award-number":["U01DA050442"]}],"id":[{"id":"10.13039\/100000026","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000026","name":"National
+        Institute on Drug Abuse","doi-asserted-by":"publisher","award":["UG1DA050069"],"award-info":[{"award-number":["UG1DA050069"]}],"id":[{"id":"10.13039\/100000026","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000026","name":"National
+        Institute on Drug Abuse","doi-asserted-by":"publisher","award":["R25DA037190"],"award-info":[{"award-number":["R25DA037190"]}],"id":[{"id":"10.13039\/100000026","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000026","name":"National
+        Institute on Drug Abuse","doi-asserted-by":"publisher","award":["L30DA056979"],"award-info":[{"award-number":["L30DA056979"]}],"id":[{"id":"10.13039\/100000026","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000026","name":"National
+        Institute on Drug Abuse","doi-asserted-by":"publisher","award":["K23DA048161"],"award-info":[{"award-number":["K23DA048161"]}],"id":[{"id":"10.13039\/100000026","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000026","name":"National
+        Institute on Drug Abuse","doi-asserted-by":"publisher","award":["R24DA051950"],"award-info":[{"award-number":["R24DA051950"]}],"id":[{"id":"10.13039\/100000026","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000026","name":"National
+        Institute on Drug Abuse","doi-asserted-by":"publisher","award":["DP1DA056106"],"award-info":[{"award-number":["DP1DA056106"]}],"id":[{"id":"10.13039\/100000026","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000026","name":"National
+        Institute on Drug Abuse","doi-asserted-by":"publisher","award":["K01DA053391"],"award-info":[{"award-number":["K01DA053391"]}],"id":[{"id":"10.13039\/100000026","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000026","name":"National
+        Institute on Drug Abuse","doi-asserted-by":"publisher","award":["L30DA056944"],"award-info":[{"award-number":["L30DA056944"]}],"id":[{"id":"10.13039\/100000026","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000026","name":"National
+        Institute on Drug Abuse","doi-asserted-by":"publisher","award":["K01DA056654"],"award-info":[{"award-number":["K01DA056654"]}],"id":[{"id":"10.13039\/100000026","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000102","name":"Health
+        Resources and Services Administration","doi-asserted-by":"publisher","award":["T32HP32520"],"award-info":[{"award-number":["T32HP32520"]}],"id":[{"id":"10.13039\/100000102","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000065","name":"National
+        Institute of Neurological Disorders and Stroke","doi-asserted-by":"publisher","award":["R24DA051946"],"award-info":[{"award-number":["R24DA051946"]}],"id":[{"id":"10.13039\/100000065","id-type":"DOI","asserted-by":"publisher"}]}],"content-domain":{"domain":["link.springer.com"],"crossmark-restriction":false},"short-container-title":["Health
+        Justice"],"DOI":"10.1186\/s40352-024-00291-8","type":"journal-article","created":{"date-parts":[[2024,8,29]],"date-time":"2024-08-29T08:02:16Z","timestamp":1724918536000},"update-policy":"https:\/\/doi.org\/10.1007\/springer_crossmark_policy","source":"Crossref","is-referenced-by-count":19,"title":["Linkage
+        facilitation for opioid use disorder in criminal legal system contexts: a
+        primer for researchers, clinicians, and legal practitioners"],"prefix":"10.1186","volume":"12","author":[{"ORCID":"https:\/\/orcid.org\/0000-0002-0685-8484","authenticated-orcid":false,"given":"Milan
+        F.","family":"Satcher","sequence":"first","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Steven","family":"Belenko","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Anthony","family":"Coetzer-Liversage","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Khirsten
+        J.","family":"Wilson","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Michael
+        R.","family":"McCart","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Tess
+        K.","family":"Drazdowski","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Amanda","family":"Fallin-Bennett","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Nickolas","family":"Zaller","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Alysse
+        M.","family":"Schultheis","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Aaron","family":"Hogue","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Noel","family":"Vest","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Ashli
+        J.","family":"Sheidow","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Brandon","family":"del
+        Pozo","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Dennis
+        P.","family":"Watson","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Patrick
+        F.","family":"Hibbard","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Randy","family":"Stevens","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"L.
+        A. R.","family":"Stein","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"297","published-online":{"date-parts":[[2024,8,29]]},"reference":[{"key":"291_CR256","doi-asserted-by":"publisher","unstructured":"Adams,
+        W. E., & Lincoln, A. K. (2021). Barriers to and facilitators of implementing
+        peer support services for criminal justice\u2013involved individuals. Psychiatric
+        Services, 72(6), 626\u2013632. https:\/\/doi.org\/10.1176\/appi.ps.201900627","DOI":"10.1176\/appi.ps.201900627"},{"key":"291_CR1","unstructured":"Administrative
+        Office of the U.S. Courts. (2016). Overview of probation and supervised release
+        conditions. https:\/\/www.uscourts.gov\/services-forms\/communicating-interacting-persons-engaged-criminal-activity-felons-probation-supervised-release-conditions"},{"key":"291_CR2","unstructured":"Ahmad,
+        F. B., Cisewski, J. A., Rossen, L. M., & Sutton, P. (2023). Provisional drug
+        overdose death counts [Dataset]. National Center for Health Statistics. https:\/\/www.cdc.gov\/nchs\/nvss\/vsrr\/drug-overdose-data.htm"},{"issue":"1","key":"291_CR3","doi-asserted-by":"publisher","first-page":"24","DOI":"10.1186\/s40352-022-00188-4","volume":"10","author":"FZ
+        Ahmed","year":"2022","unstructured":"Ahmed, F. Z., Andraka-Christou, B., Clark,
+        M. H., Totaram, R., Atkins, D. N., & del Pozo, B. (2022). Barriers to medications
+        for opioid use disorder in the court system: Provider availability, provider
+        trustworthiness, and cost. Health & Justice, 10(1), 24. https:\/\/doi.org\/10.1186\/s40352-022-00188-4","journal-title":"Health
+        & Justice"},{"issue":"1","key":"291_CR4","doi-asserted-by":"publisher","first-page":"52","DOI":"10.1080\/08964289.2018.1555129","volume":"46","author":"B
+        Allen","year":"2020","unstructured":"Allen, B., Harocopos, A., & Chernick,
+        R. (2020). Substance use stigma, primary care, and the New York state prescription
+        drug monitoring program. Behavioral Medicine, 46(1), 52\u201362. https:\/\/doi.org\/10.1080\/08964289.2018.1555129","journal-title":"Behavioral
+        Medicine"},{"key":"291_CR5","unstructured":"AllRise (2023). Adult treatment
+        court best practice standards: Definitive guidance for treatment court practitioners.
+        AllRise. https:\/\/allrise.org\/publications\/standards\/"},{"key":"291_CR6","unstructured":"Alper,
+        M., & Markman, J. (2018). 2018 update on prisoner recidivism: A 9-year follow-up
+        period (2005\u20132014). Bureau of Justice Statistics. https:\/\/bjs.ojp.gov\/library\/publications\/2018-update-prisoner-recidivism-9-year-follow-period-2005-2014"},{"issue":"9","key":"291_CR7","doi-asserted-by":"publisher","first-page":"847","DOI":"10.1056\/NEJMms2211252","volume":"388","author":"M
+        Alsan","year":"2023","unstructured":"Alsan, M., Yang, C. S., Jolin, J. R.,
+        Tu, L., & Rich, J. D. (2023). Health care in U.S. correctional facilities
+        \u2013 A limited and threatened constitutional right. The New England Journal
+        of Medicine, 388(9), 847\u2013852. https:\/\/doi.org\/10.1056\/NEJMms2211252","journal-title":"The
+        New England Journal of Medicine"},{"key":"291_CR8","unstructured":"American
+        Civil Liberties Union (2021). Over-jailed and un-treated [Report]. https:\/\/www.aclu.org\/wp-content\/uploads\/publications\/20210625-mat-prison_1.pdf"},{"key":"291_CR9","unstructured":"American
+        Civil Liberties Union, American Oversight, & Physicians for Human Rights.
+        (2024). Deadly failures: Preventable deaths in U.S. immigration detention
+        [Report]. https:\/\/www.aclu.org\/publications\/deadly-failures-preventable-deaths-in-us-immigrant-detention"},{"key":"291_CR10","doi-asserted-by":"publisher","first-page":"103521","DOI":"10.1016\/j.drugpo.2021.103521","volume":"100","author":"E
+        Anderson","year":"2022","unstructured":"Anderson, E., Shefner, R., Koppel,
+        R., Megerian, C., & Frasso, M. (2022). Experiences with the Philadelphia police
+        assisted diversion program: A qualitative study. International Journal of
+        Drug Policy, 100, 103521. https:\/\/doi.org\/10.1016\/j.drugpo.2021.103521","journal-title":"International
+        Journal of Drug Policy"},{"key":"291_CR11","unstructured":"Andraka-Christou,
+        B. (2017). What is treatment for opioid addiction in problem-solving courts?
+        A study of 20 Indiana drug and veterans courts. Stanford Journal of Civil
+        Rights and Civil Liberties, 189(13). https:\/\/law.stanford.edu\/wp-content\/uploads\/2017\/12\/anraka-christou.pdf"},{"key":"291_CR12","doi-asserted-by":"publisher","first-page":"72","DOI":"10.1016\/j.jsat.2019.06.011","volume":"104","author":"B
+        Andraka-Christou","year":"2019","unstructured":"Andraka-Christou, B., Gabriel,
+        M., Madeira, J., & Silverman, R. D. (2019). Court personnel attitudes towards
+        medication-assisted treatment: A state-wide survey. Journal of Substance Abuse
+        Treatment, 104, 72\u201382. https:\/\/doi.org\/10.1016\/j.jsat.2019.06.011","journal-title":"Journal
+        of Substance Abuse Treatment"},{"issue":"1","key":"291_CR13","doi-asserted-by":"publisher","first-page":"14","DOI":"10.1186\/s40352-022-00178-6","volume":"10","author":"B
+        Andraka-Christou","year":"2022","unstructured":"Andraka-Christou, B., Randall-Kosich,
+        O., Golan, M., Totaram, R., Saloner, B., Gordon, A. J., & Stein, B. D. (2022).
+        A national survey of state laws regarding medications for opioid use disorder
+        in problem-solving courts. Health & Justice, 10(1), 14. https:\/\/doi.org\/10.1186\/s40352-022-00178-6","journal-title":"Health
+        & Justice"},{"issue":"2","key":"291_CR14","doi-asserted-by":"publisher","first-page":"168","DOI":"10.1177\/0093854899026002002","volume":"26","author":"MD
+        Anglin","year":"1999","unstructured":"Anglin, M. D., Longshore, D., & Turner,
+        S. (1999). Treatment alternatives to street crime: An evaluation of five programs.
+        Criminal Justice Behavior, 26(2), 168\u2013195. https:\/\/doi.org\/10.1177\/0093854899026002002","journal-title":"Criminal
+        Justice Behavior"},{"issue":"1","key":"291_CR15","doi-asserted-by":"publisher","first-page":"243","DOI":"10.1007\/s40614-016-0081-6","volume":"40","author":"AB
+        Apel","year":"2016","unstructured":"Apel, A. B., & Diller, J. W. (2016). Prison
+        as punishment: A Behavior-Analytic evaluation of incarceration. The Behavior
+        Analyst, 40(1), 243\u2013256. https:\/\/doi.org\/10.1007\/s40614-016-0081-6","journal-title":"The
+        Behavior Analyst"},{"issue":"1","key":"291_CR16","doi-asserted-by":"publisher","first-page":"25","DOI":"10.1186\/s40352-024-00279-4","volume":"12","author":"DN
+        Atkins","year":"2024","unstructured":"Atkins, D. N., del Pozo, B., Clark,
+        M. H., Andraka-Christou, B., O\u2019Donnell, D., & Ray, B. (2024). Disparities
+        in the accuracy of reporting opioid overdoses to 9-1-1 by race and sex of
+        overdose victim, Marion County, Indiana, 2011\u20132020. Health & Justice,
+        12(1), 25. https:\/\/doi.org\/10.1186\/s40352-024-00279-4","journal-title":"Health
+        & Justice"},{"issue":"3","key":"291_CR17","doi-asserted-by":"publisher","first-page":"339","DOI":"10.1080\/02791072.2010.10400696","volume":"42","author":"E
+        Awgu","year":"2010","unstructured":"Awgu, E., Magura, S., & Rosenblum, A.
+        (2010). Heroin-dependent inmates\u2019 experiences with buprenorphine or methadone
+        maintenance. Journal of Psychoactive Drugs, 42(3), 339\u2013346.","journal-title":"Journal
+        of Psychoactive Drugs"},{"key":"291_CR18","doi-asserted-by":"crossref","unstructured":"Azbel,
+        L., Rozanova, J., Michels, I., Altice, F. L., & St\u00f6ver, H. (2017). A
+        qualitative assessment of an abstinence-oriented therapeutic community for
+        prisoners with substance use disorders in Kyrgyzstan. Harm Reduction Journal,
+        14(1), Article 43.","DOI":"10.1186\/s12954-017-0168-8"},{"key":"291_CR19","doi-asserted-by":"publisher","unstructured":"Bagnall,
+        A., South, J., Hulme, C., Woodall, J., Vinall-Collier, K., Raine, G., Kinsella,
+        K., Dixey, R., Harris, L., & Wright, N. M. (2015). A systematic review of
+        the effectiveness and cost-effectiveness of peer education and peer support
+        in prisons. BMC Public Health, 15, Article 290. https:\/\/doi.org\/10.1186\/s12889-015-1584-x","DOI":"10.1186\/s12889-015-1584-x"},{"key":"291_CR20","doi-asserted-by":"publisher","unstructured":"Bailey,
+        A., Harrington, C., & Evans, E. A. (2023). A scoping review of community-based
+        post-opioid overdose intervention programs: Implications of program structure
+        and outcomes. Health & Justice, 11., Article 3. https:\/\/doi.org\/10.1186\/S40352-022-00201-W","DOI":"10.1186\/S40352-022-00201-W"},{"key":"291_CR21","doi-asserted-by":"publisher","unstructured":"Baker,
+        P., Beletsky, L., Garfein, R., Pitpitan, E., Oren, E., Strathdee, S. A., &
+        Cepeda, J. A. (2022). Impact of SHIELD police training on knowledge of syringe
+        possession laws and related arrests in Tijuana, Mexico. American Journal of
+        Public Health, 112(6), 860\u2013864. https:\/\/doi.org\/10.2105\/ajph.2021.306702","DOI":"10.2105\/ajph.2021.306702"},{"key":"291_CR257","doi-asserted-by":"publisher","unstructured":"Ball,
+        J. C., & Ross, A. (1991). Reduction of Crime Through Methadone Maintenance
+        Treatment. In: The Effectiveness of Methadone Maintenance Treatment. Springer,
+        New York, NY. https:\/\/doi.org\/10.1007\/978-1-4613-9089-3_10","DOI":"10.1007\/978-1-4613-9089-3_10"},{"key":"291_CR22","doi-asserted-by":"publisher","unstructured":"Bandura,
+        A. (2012). Social cognitive theory. In P. A. M. Van Lange, A. W. Kruglanski,
+        & E. T. Higgins (Eds.), Handbook of theories of social psychology (pp.349\u2013373).
+        Sage Publications Ltd. https:\/\/doi.org\/10.4135\/9781446249215.n18","DOI":"10.4135\/9781446249215.n18"},{"issue":"6","key":"291_CR23","doi-asserted-by":"publisher","first-page":"e557","DOI":"10.1016\/S2468-2667(22)00093-7","volume":"7","author":"G
+        Baranyi","year":"2022","unstructured":"Baranyi, G., Fazel, S., Langerfeldt,
+        S. D., & Mundt, A. P. (2022). The prevalence of comorbid serious mental illnesses
+        and substance use disorders in prison populations: A systematic review and
+        meta-analysis. The Lancet Public Health, 7(6), e557\u2013e568. https:\/\/doi.org\/10.1016\/S2468-2667(22)00093-7","journal-title":"The
+        Lancet Public Health"},{"issue":"4","key":"291_CR24","doi-asserted-by":"publisher","first-page":"703","DOI":"10.1177\/0022042619861273","volume":"49","author":"D
+        Barberi","year":"2019","unstructured":"Barberi, D., & Taxman, F. S. (2019).
+        Diversion and alternatives to arrest: A qualitative understanding of police
+        and substance users\u2019 perspective. Journal of Drug Issues, 49(4), 703\u2013717.
+        https:\/\/doi.org\/10.1177\/0022042619861273","journal-title":"Journal of
+        Drug Issues"},{"issue":"19","key":"291_CR25","doi-asserted-by":"publisher","first-page":"1779","DOI":"10.1056\/NEJMsa2212412","volume":"388","author":"ML
+        Barnett","year":"2023","unstructured":"Barnett, M. L., Meara, E., Lewinson,
+        T., Hardy, B., Chyn, D., Onsando, M., Huskamp, H. A., Mehrotra, A., & Morden,
+        N. E. (2023). Racial inequality in receipt of medications for opioid use disorder.
+        The New England Journal of Medicine, 388(19), 1779\u20131789. https:\/\/doi.org\/10.1056\/NEJMsa2212412","journal-title":"The
+        New England Journal of Medicine"},{"key":"291_CR26","doi-asserted-by":"publisher","first-page":"1","DOI":"10.1016\/j.jsat.2016.01.003","volume":"63","author":"EL
+        Bassuk","year":"2016","unstructured":"Bassuk, E. L., Hanson, J., Greene, R.
+        N., Richard, M., & Laudet, A. (2016). Peer-delivered recovery support services
+        for addictions in the United States: A systematic review. Journal of Substance
+        Abuse Treatment, 63, 1\u20139. https:\/\/doi.org\/10.1016\/j.jsat.2016.01.003","journal-title":"Journal
+        of Substance Abuse Treatment"},{"key":"291_CR27","unstructured":"Belenko,
+        S. (2000). The challenges of integrating drug treatment into the criminal
+        justice process. Albany Law Review, 63(3). https:\/\/link.gale.com\/apps\/doc\/A62365844\/AONE?u=anon~e2c79e80&sid=googleScholar&xid=14f59788"},{"issue":"1","key":"291_CR29","doi-asserted-by":"publisher","first-page":"3","DOI":"10.1080\/16066359.2018.1524882","volume":"27","author":"S
+        Belenko","year":"2019","unstructured":"Belenko, S. (2019). The role of drug
+        courts in promoting desistance and recovery: A merging of therapy and accountability.
+        Addiction Research & Theory, 27(1), 3\u201315. https:\/\/doi.org\/10.1080\/16066359.2018.1524882","journal-title":"Addiction
+        Research & Theory"},{"key":"291_CR31","doi-asserted-by":"publisher","first-page":"Article
+        108829","DOI":"10.1016\/j.jsat.2022.108829","volume":"140","author":"S Belenko","year":"2022","unstructured":"Belenko,
+        S., Dembo, R., Knight, D. K., Elkington, K. S., Wasserman, G. A., Robertson,
+        A. A., Welsh, W. N., Schmeidler, J., Joe, G. W., & Wiley, T. (2022). Using
+        structured implementation interventions to improve referral to substance use
+        treatment among justice-involved youth: Findings from a multisite cluster
+        randomized trial. Journal of Substance Abuse Treatment, 140, Article 108829.
+        https:\/\/doi.org\/10.1016\/j.jsat.2022.108829","journal-title":"Journal of
+        Substance Abuse Treatment"},{"key":"291_CR28","doi-asserted-by":"publisher","unstructured":"Belenko,
+        S., Hiller, M., & Hamilton, L. (2013). Treating substance use disorders in
+        the criminal justice system. Current Psychiatry Reports, 15., Article 414.
+        https:\/\/doi.org\/10.1007\/s11920-013-0414-z","DOI":"10.1007\/s11920-013-0414-z"},{"key":"291_CR30","doi-asserted-by":"publisher","first-page":"108581","DOI":"10.1016\/j.jsat.2021.108581","volume":"131","author":"S
+        Belenko","year":"2021","unstructured":"Belenko, S., LaPollo, A. B., Gesser,
+        N., Weiland, D., Perron, L., & Johnson, I. D. (2021). Augmenting substance
+        use treatment in the drug court: A pilot randomized trial of peer recovery
+        support. Journal of Substance Abuse Treatment, 131, 108581. https:\/\/doi.org\/10.1016\/j.jsat.2021.108581","journal-title":"Journal
+        of Substance Abuse Treatment"},{"key":"291_CR32","unstructured":"Benjamin,
+        R. (2019). Race after technology: Abolitionist tools for the new Jim code.
+        Polity."},{"issue":"2","key":"291_CR33","doi-asserted-by":"publisher","first-page":"97","DOI":"10.7326\/0003-4819-155-2-201107190-00005","volume":"155","author":"ND
+        Berkman","year":"2011","unstructured":"Berkman, N. D., Sheridan, S. L., Donahue,
+        K. E., Halpern, D. J., & Crotty, K. (2011). Low health literacy and health
+        outcomes: An updated systematic review. Annals of Internal Medicine, 155(2),
+        97\u2013107. https:\/\/doi.org\/10.7326\/0003-4819-155-2-201107190-00005","journal-title":"Annals
+        of Internal Medicine"},{"issue":"2","key":"291_CR34","doi-asserted-by":"publisher","first-page":"157","DOI":"10.1056\/NEJMsa064115","volume":"356","author":"IA
+        Binswanger","year":"2007","unstructured":"Binswanger, I. A., Stern, M. F.,
+        Deyo, R. A., Heagerty, P. J., Cheadle, A., Elmore, J. G., & Koepsell, T. D.
+        (2007). Release from prison\u2014A high risk of death for former inmates.
+        The New England Journal of Medicine, 356(2), 157\u2013165. https:\/\/doi.org\/10.1056\/NEJMsa064115","journal-title":"The
+        New England Journal of Medicine"},{"key":"291_CR35","doi-asserted-by":"publisher","first-page":"103697","DOI":"10.1016\/j.drugpo.2022.103697","volume":"105","author":"E
+        Blais","year":"2022","unstructured":"Blais, E., Brisson, J., Gagnon, F., &
+        Lemay, S. A. (2022). Diverting people who use drugs from the criminal justice
+        system: A systematic review of police-based diversion measures. The International
+        Journal on drug Policy, 105, 103697. https:\/\/doi.org\/10.1016\/j.drugpo.2022.103697","journal-title":"The
+        International Journal on drug Policy"},{"key":"291_CR36","doi-asserted-by":"publisher","unstructured":"Booty,
+        M. D., Harp, K., Batty, E., Knudsen, H. K., Staton, M., & Oser, C. B. (2023).
+        Barriers and facilitators to the use of medication for opioid use disorder
+        within the criminal justice system: Perspectives from clinicians. Journal
+        of Substance Use & Addiction Treatment, 149, Article 209051. https:\/\/doi.org\/10.1016\/j.josat.2023.209051","DOI":"10.1016\/j.josat.2023.209051"},{"key":"291_CR37","doi-asserted-by":"publisher","first-page":"108712","DOI":"10.1016\/j.jsat.2021.108712","volume":"137","author":"JK
+        Boulger","year":"2022","unstructured":"Boulger, J. K., Hinami, K., Lyons,
+        T., & Konchak, J. N. (2022). Prevalence and risk factors for opioid related
+        mortality among probation clients in an American city. Journal of Substance
+        Abuse Treatment, 137, 108712. https:\/\/doi.org\/10.1016\/j.jsat.2021.108712","journal-title":"Journal
+        of Substance Abuse Treatment"},{"key":"291_CR38","doi-asserted-by":"publisher","unstructured":"Bovell-Ammon,
+        B. J., Yan, S., Dunn, D., Evans, E. A., Friedmann, P. D., Walley, A. Y., &
+        LaRochelle, M. R. (2024). Prison buprenorphine implementation and postrelease
+        opioid use disorder outcomes. JAMA Network Open, 7(3). https:\/\/doi.org\/10.1001\/jamanetworkopen.2024.2732.
+        Article e242732.","DOI":"10.1001\/jamanetworkopen.2024.2732"},{"key":"291_CR39","doi-asserted-by":"publisher","first-page":"104","DOI":"10.1016\/j.addbeh.2018.02.024","volume":"86","author":"L
+        Brinkley-Rubenstein","year":"2018","unstructured":"Brinkley-Rubenstein, L.,
+        Zaller, N., Martino, S., Cloud, D. H., McCauley, E., Heise, A., & Seal, D.
+        (2018). Criminal justice continuum for opioid users at risk for overdose.
+        Addictive Behaviors, 86, 104\u2013110. https:\/\/doi.org\/10.1016\/j.addbeh.2018.02.024","journal-title":"Addictive
+        Behaviors"},{"key":"291_CR40","doi-asserted-by":"publisher","first-page":"23","DOI":"10.1186\/s13722-018-0124-2","volume":"13","author":"AM
+        Bunting","year":"2018","unstructured":"Bunting, A. M., Oser, C. B., Staton,
+        M., Eddens, K. S., &\u00a0Knudsen, H. (2018). Clinician identified barriers
+        to treatment for individuals in Appalachia with opioid use disorder following
+        release from prison: A social ecological approach. Addiction Science & Clinical
+        Practice, 13, 23. https:\/\/doi.org\/10.1186\/s13722-018-0124-2","journal-title":"Addiction
+        Science & Clinical Practice"},{"key":"291_CR258","unstructured":"Bureau of
+        Justice Assistance. (2022). Managing substance withdrawals in jails: a legal
+        brief [Report]. U.S. Department of Justice. https:\/\/bja.ojp.gov\/doc\/managing-substance-withdrawal-in-jails.pdf"},{"key":"291_CR41","unstructured":"California
+        Department of Health Care Services (2023, January 26). California set to become
+        first state in nation to expand Medicaid services for justice-involved individuals
+        [Press Release]. https:\/\/www.dhcs.ca.gov\/formsandpubs\/publications\/oc\/Documents\/2023\/23-02-Justice-Involved-Initiative-1-26-23.pdf"},{"key":"291_CR42","doi-asserted-by":"publisher","first-page":"104160","DOI":"10.1016\/j.drugpo.2023.104160","volume":"120","author":"JJ
+        Carroll","year":"2023","unstructured":"Carroll, J. J., Cummins, E. R., Formica,
+        S. W., Green, T. C., Bagley, S. M., Beletsky, L., Rosenbloom, D., Xuan, Z.,
+        & Walley, A. Y. (2023). The police paradox: A qualitative study of post-overdose
+        outreach program implementation through public health-public safety partnerships
+        in Massachusetts. International Journal of Drug Policy, 120, 104160. https:\/\/doi.org\/10.1016\/j.drugpo.2023.104160","journal-title":"International
+        Journal of Drug Policy"},{"key":"291_CR43","doi-asserted-by":"publisher","unstructured":"Cates,
+        L., & Brown, A. R. (2023). Medications for opioid use disorder during incarceration
+        and post-release outcomes. Health & Justice, 11., Article 4. https:\/\/doi.org\/10.1186\/s40352-023-00209-w","DOI":"10.1186\/s40352-023-00209-w"},{"key":"291_CR44","unstructured":"Centers
+        for Disease Control and Prevention (2022). Linking people with opioid se disorder
+        to medication treatment: A technical package of policy, programs, and practices.
+        www.cdc.gov\/drugoverdose\/pdf\/pubs\/linkage-to-care_edited-pdf_508-3-15-2022.pdf"},{"key":"291_CR45","doi-asserted-by":"crossref","unstructured":"Chan,
+        B., Gean, E., Arkhipova-Jenkins, I., Gilbert, J., Hilgart, J., Fiordalisi,
+        C., Hubbard, K., Brandt, I., Stoeger, E., Paynter, R., Korthius, P. T, & Guise,
+        J. (2021). Retention strategies for medications for opioid use disorder in
+        adults: A rapid evidence review. Journal of Addiction Medicine, 15(1), 74\u201384.
+        https:\/\/doi.org\/gj7skj","DOI":"10.1097\/ADM.0000000000000739"},{"key":"291_CR46","doi-asserted-by":"publisher","unstructured":"Chatterjee,
+        A., Weitz, M., Savinkina, A., Macmadu, A., Madushani, R. W. M. A., Potee,
+        R. A., Ryan, D., Murphy, S. M., Walley, A. Y., & Linas, B. P. (2023). Estimated
+        costs and outcomes associated with use and nonuse of medications for opioid
+        use disorder during incarceration and at release in Massachusetts. JAMA Network
+        Open, 6(4). https:\/\/doi.org\/10.1001\/jamanetworkopen.2023.7036. Article
+        e237036.","DOI":"10.1001\/jamanetworkopen.2023.7036"},{"key":"291_CR47","doi-asserted-by":"publisher","first-page":"108146","DOI":"10.1016\/j.jsat.2020.108146","volume":"119","author":"K
+        Cioe","year":"2020","unstructured":"Cioe, K., Biondi, B. E., Easly, R., Simard,
+        A., Zheng, X., & Springer, S. A. (2020). A systematic review of patients\u2019
+        and providers\u2019 perspectives of medications for treatment of opioid use
+        disorder. Journal of Substance Abuse Treatment, 119, 108146. https:\/\/doi.org\/10.1016\/j.jsat.2020.108146","journal-title":"Journal
+        of Substance Abuse Treatment"},{"key":"291_CR48","doi-asserted-by":"publisher","unstructured":"Cioffi,
+        C. C., Hibbard, P. F., Hagaman, A., Tillson, M., & Vest, N. (2023). Perspectives
+        of researchers with lived experience in implementation science research: Opportunities
+        to close the research-to-practice gap in substance use systems of care. Implementation
+        Research and Practice, 4. https:\/\/doi.org\/10.1177\/26334895231180635","DOI":"10.1177\/26334895231180635"},{"key":"291_CR50","unstructured":"Civil
+        Rights Division. (2022). The americans with Disabilities Act and the opioid
+        crisis: Combating discrimination against people in treatment or recovery.
+        U.S. Department of Justice. https:\/\/archive.ada.gov\/opioid_guidance.pdf"},{"issue":"12","key":"291_CR51","doi-asserted-by":"publisher","first-page":"1736","DOI":"10.1016\/j.addbeh.2014.07.011","volume":"39","author":"CB
+        Clark","year":"2014","unstructured":"Clark, C. B., Hendricks, P. S., Lane,
+        P. S., Trent, L., & Cropsey, K. L. (2014). Methadone maintenance treatment
+        may improve completion rates and delay opioid relapse for opioid dependent
+        individuals under community corrections supervision. Addictive Behaviors,
+        39(12), 1736\u20131740. https:\/\/doi.org\/10.1016\/j.addbeh.2014.07.011","journal-title":"Addictive
+        Behaviors"},{"issue":"4","key":"291_CR52","doi-asserted-by":"publisher","first-page":"429","DOI":"10.1177\/0011128716687550","volume":"63","author":"SL
+        Clifasefi","year":"2017","unstructured":"Clifasefi, S. L., Lonczak, H. S.,
+        & Collins, S. E. (2017). Seattle\u2019s Law Enforcement assisted diversion
+        (LEAD) program: Within-subjects changes on housing, employment, and income\/benefits
+        outcomes and associations with recidivism. Crime & Delinquency, 63(4), 429\u2013445.
+        https:\/\/doi.org\/10.1177\/0011128716687550","journal-title":"Crime & Delinquency"},{"issue":"6","key":"291_CR53","doi-asserted-by":"publisher","first-page":"682","DOI":"10.1080\/15332985.2018.1483463","volume":"16","author":"L
+        Clossey","year":"2018","unstructured":"Clossey, L., Solomon, P., Hu, C., Gillen,
+        J., & Zinn, M. (2018). Predicting job satisfaction of mental health peer support
+        workers (PSWs). Social Work in Mental Health, 16(6), 682\u2013695. https:\/\/doi.org\/10.1080\/15332985.2018.1483463","journal-title":"Social
+        Work in Mental Health"},{"key":"291_CR54","doi-asserted-by":"publisher","first-page":"49","DOI":"10.1016\/j.evalprogplan.2017.05.008","volume":"64","author":"SE
+        Collins","year":"2017","unstructured":"Collins, S. E., Lonczak, H. S., & Clifasefi,
+        S. L. (2017). Seattle\u2019s Law Enforcement assisted diversion (LEAD): Program
+        effects on recidivism outcomes. Evaluation and Program Planning, 64, 49\u201356.
+        https:\/\/doi.org\/10.1016\/j.evalprogplan.2017.05.008","journal-title":"Evaluation
+        and Program Planning"},{"key":"291_CR55","unstructured":"Confidentiality of
+        Substance Use Disorder (SUD) Patient Records, 42\u00a0C.F.R. pt. 2 (2024).
+        https:\/\/www.ecfr.gov\/current\/title-42\/chapter-I\/subchapter-A\/part-2"},{"issue":"4","key":"291_CR56","doi-asserted-by":"publisher","first-page":"338","DOI":"10.1001\/jamapsychiatry.2023.5138","volume":"81","author":"NA
+        Cooperman","year":"2024","unstructured":"Cooperman, N. A., Lu, S. E., Hanley,
+        A. W., Puvananayagam, T., Dooley-Budsock, P., Kline, A., & Garland, E. L.
+        (2024). Telehealth mindfulness-oriented recovery enhancement vs usual care
+        in individuals with opioid use disorder and pain: A randomized clinical trial.
+        JAMA Psychiatry, 81(4), 338\u2013346. https:\/\/doi.org\/10.1001\/jamapsychiatry.2023.5138","journal-title":"JAMA
+        Psychiatry"},{"issue":"2","key":"291_CR57","doi-asserted-by":"publisher","first-page":"99","DOI":"10.1097\/adm.0000000000000635","volume":"14","author":"K
+        Crotty","year":"2020","unstructured":"Crotty, K., Freedman, K. I., & Kampman,
+        K. M. (2020). Executive summary of the focused update of the ASAM National
+        Practice Guideline for the treatment of opioid use disorder. Journal of Addiction
+        Medicine, 14(2), 99\u2013112. https:\/\/doi.org\/10.1097\/adm.0000000000000635","journal-title":"Journal
+        of Addiction Medicine"},{"key":"291_CR58","unstructured":"Davis, A. J. (2019).
+        Reimagining prosecution: A growing progressive movement. UCLA Criminal Justice
+        Law Review, 3(1)."},{"issue":"4","key":"291_CR59","doi-asserted-by":"publisher","first-page":"1078","DOI":"10.1017\/S0003055419000443","volume":"113","author":"J
+        De Benedictis-Kessner","year":"2019","unstructured":"De Benedictis-Kessner,
+        J., & Hankinson, M. (2019). Concentrated burdens: How self-interest and partisanship
+        shape opinion on opioid treatment policy. American Political Science Review,
+        113(4), 1078\u20131084. https:\/\/doi.org\/10.1017\/S0003055419000443","journal-title":"American
+        Political Science Review"},{"key":"291_CR60","doi-asserted-by":"publisher","unstructured":"Deci,
+        E. L., & Ryan, R. M. (1985). Intrinsic motivation and self-determination in
+        human behavior. Springer. https:\/\/doi.org\/10.1007\/978-1-4899-2271-7","DOI":"10.1007\/978-1-4899-2271-7"},{"key":"291_CR62","first-page":"3019","volume":"15","author":"JR
+        DeFlavio","year":"2015","unstructured":"DeFlavio, J. R., Rolin, S. A., Nordstrom,
+        B. R., & Kazal, L. A. Jr (2015). Analysis of barriers to adoption of buprenorphine
+        maintenance therapy by family physicians. Rural and Remote Health, 15, 3019.","journal-title":"Rural
+        and Remote Health"},{"issue":"7","key":"291_CR63","doi-asserted-by":"publisher","first-page":"1827","DOI":"10.1111\/add.15800","volume":"117","author":"T
+        DeFries","year":"2022","unstructured":"DeFries, T., Kelley, J., Martin, M.,
+        & Kimball, S. L. (2022). Immigration status matters: The intersectional risk
+        of immigration vulnerability and substance use disorder. Addiction, 117(7),
+        1827\u20131829. https:\/\/doi.org\/10.1111\/add.15800","journal-title":"Addiction"},{"key":"291_CR64","doi-asserted-by":"publisher","first-page":"701","DOI":"10.1111\/psj.12419","volume":"50","author":"RA
+        DeLeo","year":"2022","unstructured":"DeLeo, R. A., & Duarte, A. (2022). Does
+        data drive policymaking? A multiple streams perspective on the relationship
+        between indicators and agenda setting. Policy Studies Journal, 50, 701\u2013724.
+        https:\/\/doi.org\/10.1111\/psj.12419","journal-title":"Policy Studies Journal"},{"key":"291_CR61","doi-asserted-by":"publisher","first-page":"132","DOI":"10.1186\/s12954-021-00583-4","volume":"18","author":"B
+        del Pozo","year":"2021","unstructured":"del Pozo, B., Sightes, E., Goulka,
+        J., Ray, B., Wood, C. A., Siddiqui, S., & Beletsky, L. A. (2021). Police discretion
+        in encounters with people who use drugs: Operationalizing the theory of planned
+        behavior. Harm Reduction Journal, 18, 132. https:\/\/doi.org\/10.1186\/s12954-021-00583-4","journal-title":"Harm
+        Reduction Journal"},{"key":"291_CR65","unstructured":"DeVall, K., Lanier,
+        C., & Baker, L. J. (2022). Painting the current picture: A national report
+        on treatment courts in the United States. National Drug Court Resource Center.
+        https:\/\/ntcrc.org\/pcp\/"},{"key":"291_CR66","unstructured":"Dewey, J. M.,
+        Hibbard, P. F., Watson, D. P., & Nowinski Konchack, J. (Under review). A qualitative
+        investigation into the effectiveness of a housing navigator program linking
+        justice-involved clients with recovery housing. Health & Justice."},{"key":"291_CR67","doi-asserted-by":"publisher","unstructured":"Diaz,
+        C., Nwadiuko, J., Saadi, A., & Patler, C. (2023). Advancing research to address
+        the health impacts of structural racism in US immigration prisons. Health
+        Affairs, 40(10). https:\/\/doi.org\/10.1377\/hlthaff.2023.00479","DOI":"10.1377\/hlthaff.2023.00479"},{"issue":"3","key":"291_CR68","doi-asserted-by":"publisher","first-page":"359","DOI":"10.1177\/07340168221117109","volume":"48","author":"EA
+        Donnelly","year":"2023","unstructured":"Donnelly, E. A., Brown, C. L., McBride,
+        A., Beletsky, L., & Anderson, T. L. (2023). Emerging disparities in the placement
+        of law enforcement-based treatment referral and recovery programs. Criminal
+        Justice Review, 48(3), 359\u2013376.","journal-title":"Criminal Justice Review"},{"key":"291_CR69","unstructured":"Drugs,
+        Security, & Democracy Program. (2018). Drug courts in the Americas [Report].
+        Social Science Research Council. https:\/\/s3.amazonaws.com\/ssrc-cdn1\/crmuploads\/new_publication_3\/DSD_Drug+Courts_English_online+final.pdf"},{"key":"291_CR71","doi-asserted-by":"crossref","unstructured":"Dugosh,
+        K., Abraham, A., Seymour, B., McLoyd, K., Chalk, M., & Festinger, D. (2016).
+        A systematic review on the use of psychosocial interventions in conjunction
+        with medications for the treatment of opioid addiction. Journal of Addiction
+        Medicine, 10(2), 93\u2013103. https:\/\/doi.org\/f8nx77","DOI":"10.1097\/ADM.0000000000000193"},{"issue":"3","key":"291_CR70","doi-asserted-by":"publisher","first-page":"225","DOI":"10.1080\/14659891.2019.1677794","volume":"25","author":"C
+        du Plessis","year":"2020","unstructured":"du Plessis, C., Whitaker, L., &
+        Hurley, J. (2020). Peer support workers in substance abuse treatment services:
+        A systematic review of the literature. Journal of Substance Use, 25(3), 225\u2013230.
+        https:\/\/doi.org\/10.1080\/14659891.2019.1677794","journal-title":"Journal
+        of Substance Use"},{"key":"291_CR73","unstructured":"Ekelund, B., & Charlier,
+        J. (2019). Accessing substance use disorder and related treatment services
+        training for law enforcement (Issue Brief). Justice Programs Office School
+        of Public Affairs. https:\/\/ndcrc.org\/wp-content\/uploads\/2021\/10\/Accessing_Substance_Use_Disorder_and_Related_Treatment_Services_Training_for_Law_Enforcement.pdf"},{"key":"291_CR74","doi-asserted-by":"publisher","unstructured":"Elkington,
+        K. S., Nunes, E., Schachar, A., Ryan, M. E., Garcia, A., Van DeVelde, K.,
+        Reilly, D., O\u2019Grady, M., Williams, A. R., Tross, S., Wilson, P., Cohall,
+        R., Cohall, A., & Wainberg, M. (2021). Stepped-wedge randomized controlled
+        trial of a novel opioid court to improve identification of need and linkage
+        to medications for opioid use disorder treatment for court-involved adults.
+        Journal of Substance Abuse Treatment, 128, Article 108277. https:\/\/doi.org\/10.1016\/j.jsat.2021.108277","DOI":"10.1016\/j.jsat.2021.108277"},{"issue":"2","key":"291_CR75","doi-asserted-by":"publisher","first-page":"217","DOI":"10.1016\/j.apnu.2016.09.013","volume":"31","author":"H
+        Ellis","year":"2017","unstructured":"Ellis, H., & Alexander, V. (2017). The
+        mentally ill in jail: Contemporary clinical and practice perspectives for
+        psychiatric-mental health nursing. Archives of Psychiatric Nursing, 31(2),
+        217\u2013222. https:\/\/doi.org\/10.1016\/j.apnu.2016.09.013","journal-title":"Archives
+        of Psychiatric Nursing"},{"issue":"7","key":"291_CR76","doi-asserted-by":"publisher","first-page":"737","DOI":"10.1176\/appi.ps.20220310","volume":"74","author":"M
+        Enich","year":"2023","unstructured":"Enich, M., Treitler, P., Swarbrick, M.,
+        Belsky, L., Hillis, M., & Crystal, S. (2023). Peer health navigation experiences
+        before and after prison release among people with opioid use disorder. Psychiatric
+        Services, 74(7), 737\u2013745. https:\/\/doi.org\/10.1176\/appi.ps.20220310","journal-title":"Psychiatric
+        Services"},{"key":"291_CR77","doi-asserted-by":"publisher","first-page":"109254","DOI":"10.1016\/j.drugalcdep.2021.109254","volume":"231","author":"EA
+        Evans","year":"2022","unstructured":"Evans, E. A., Wilson, D., & Friedmann,
+        P. D. (2022). Recidivism and mortality after in-jail buprenorphine treatment
+        for opioid use disorder. Drug Alcohol Dependence, 231, 109254. https:\/\/doi.org\/10.1016\/j.drugalcdep.2021.109254","journal-title":"Drug
+        Alcohol Dependence"},{"issue":"8","key":"291_CR78","doi-asserted-by":"publisher","first-page":"1396","DOI":"10.1111\/add.14620","volume":"114","author":"EA
+        Evans","year":"2019","unstructured":"Evans, E. A., Zhu, Y., Yoo, C., Huang,
+        D., & Hser, Y. I. (2019). Criminal justice outcomes over 5 years after randomization
+        to buprenorphine-naloxone or methadone treatment for opioid use disorder.
+        Addiction, 114(8), 1396\u20131404. https:\/\/doi.org\/10.1111\/add.14620","journal-title":"Addiction"},{"key":"291_CR79","doi-asserted-by":"publisher","first-page":"108076","DOI":"10.1016\/j.jsat.2020.108076","volume":"117","author":"D
+        Farabee","year":"2020","unstructured":"Farabee, D., Condon, T., Hallgren,
+        K. A., & McCrady, B. (2020). A randomized comparison of extended-release naltrexone
+        with or without patient navigation vs enhanced treatment-as-usual for incarcerated
+        adults with opioid use disorder. Journal of Substance Abuse Treatment, 117,
+        108076. https:\/\/doi.org\/10.1016\/j.jsat.2020.108076","journal-title":"Journal
+        of Substance Abuse Treatment"},{"key":"291_CR80","unstructured":"Federal Bureau
+        of Investigation (2023). Crime in the United States, 2020: Table 29 Estimated
+        Number of Arrests. Crime Data Explorer. Retrieved November 27, 2023, from
+        https:\/\/cde.ucr.cjis.gov\/LATEST\/webapp\/#\/pages\/downloads"},{"issue":"3","key":"291_CR81","doi-asserted-by":"publisher","first-page":"178","DOI":"10.1080\/10509674.2019.1582573","volume":"58","author":"M
+        Fendrich","year":"2019","unstructured":"Fendrich, M., & LeBel, T. P. (2019).
+        Implementing access to medication assisted treatment in a drug treatment court:
+        Correlates, consequences, and obstacles. Journal of Offender Rehabilitation,
+        58(3), 178\u2013198. https:\/\/doi.org\/10.1080\/10509674.2019.1582573","journal-title":"Journal
+        of Offender Rehabilitation"},{"issue":"3","key":"291_CR82","doi-asserted-by":"publisher","first-page":"384","DOI":"10.2105\/AJPH.2016.303626","volume":"107","author":"K
+        Fiscella","year":"2017","unstructured":"Fiscella, K., Beletsky, L., & Wakeman,
+        S. E. (2017). The inmate exception and reform of correctional health care.
+        American Journal of Public Health, 107(3), 384\u2013385. https:\/\/doi.org\/10.2105\/AJPH.2016.303626","journal-title":"American
+        Journal of Public Health"},{"key":"291_CR83","doi-asserted-by":"publisher","first-page":"571","DOI":"10.1007\/s11126-022-09971-w","volume":"93","author":"KL
+        Fortuna","year":"2022","unstructured":"Fortuna, K. L., Solomon, P., & Rivera,
+        J. (2022). An update of peer support\/peer provided services underlying processes,
+        benefits, and critical ingredients. Psychiatric Quarterly, 93, 571\u2013586.
+        https:\/\/doi.org\/10.1007\/s11126-022-09971-w","journal-title":"Psychiatric
+        Quarterly"},{"issue":"1","key":"291_CR84","doi-asserted-by":"publisher","first-page":"81","DOI":"10.1186\/s12954-021-00515-2","volume":"18","author":"CY
+        Franco","year":"2021","unstructured":"Franco, C. Y., Lee-Winn, A. E., Brandspigel,
+        S., Alishahi, M. L., & Brooks-Russell, A. (2021). We\u2019re actually more
+        of a likely ally than an unlikely ally: Relationships between syringe services
+        programs and law enforcement. Harm Reduction Journal, 18(1), 81. https:\/\/doi.org\/10.1186\/s12954-021-00515-2","journal-title":"Harm
+        Reduction Journal"},{"key":"291_CR85","doi-asserted-by":"publisher","first-page":"Article6","DOI":"10.1186\/2194-7899-1-6","volume":"1","author":"PD
+        Friedmann","year":"2013","unstructured":"Friedmann, P. D., Ducharme, L. J.,
+        Welsh, W., Frisman, L., Knight, K., Kinlock, T., Mitchell, S. G., Hall, E.,
+        Urbine, T., Gordon, M., Abdel-Salam, S., O\u2019Connell, D., Albizu-Garcia,
+        C., Knudsen, H., Dubal, J., Fenster, J., & Pankow, J. (2013). A cluster randomized
+        trial of an organizational linkage intervention for offenders with substance
+        use disorders: Study protocol. Health and Justice, 1, Article6. https:\/\/doi.org\/10.1186\/2194-7899-1-6","journal-title":"Health
+        and Justice"},{"key":"291_CR87","doi-asserted-by":"publisher","first-page":"50","DOI":"10.1016\/j.jsat.2014.10.001","volume":"50","author":"PD
+        Friedmann","year":"2015","unstructured":"Friedmann, P. D., Wilson, D., Knudsen,
+        H. K., Ducharme, L. J., Welsh, W. N., Frisman, L., Knight, K., Lin, H-J.,
+        James, A., Albizu-Garcia, C. E., Pankow, J., Hall, E. A., Urbine, T. F., Abdel-Salam,
+        S., Duvall, J. L., & Vocci, F. J. (2015). Effect of an organizational linkage
+        intervention on staff perceptions of medication-assisted treatment and referral
+        intentions in community corrections. Journal of Substance Abuse Treatment,
+        50, 50\u201358. https:\/\/doi.org\/10.1016\/j.jsat.2014.10.001","journal-title":"Journal
+        of Substance Abuse Treatment"},{"issue":"2","key":"291_CR86","doi-asserted-by":"publisher","first-page":"344","DOI":"10.2105\/AJPH.2010.191759","volume":"101","author":"SR
+        Friedman","year":"2011","unstructured":"Friedman, S. R., Pouget, E. R., Chatterjee,
+        S., Cleland, C. M., Tempalski, B., Brady, J. E., & Cooper, H. L. F. (2011).
+        Drug arrests and injection drug deterrence. American Journal of Public Health,
+        101(2), 344\u2013349. https:\/\/doi.org\/10.2105\/AJPH.2010.191759","journal-title":"American
+        Journal of Public Health"},{"key":"291_CR88","first-page":"23","volume":"4","author":"N
+        Gesser","year":"2022","unstructured":"Gesser, N., LaPollo, A. B., Peters,
+        A. J., Doris, W., Belenko, S., & Perron, L. (2022). To be part of the fully
+        functional team, there needs to be clear roles: Peer recovery specialists
+        provide benefits to drug court despite role challenges. Journal for Advancing
+        Justice, 4, 23\u201351.","journal-title":"Journal for Advancing Justice"},{"key":"291_CR89","doi-asserted-by":"crossref","unstructured":"Gisev,
+        N., Larney, S., Kimber, J., Burns, L., Weatherburn, D., Gibson, A., Dobbins,
+        T., Mattick, R., Butler, T., & Degenhardt, L. (2015). Determining the impact
+        of opioid substitution therapy upon mortality and recidivism among prisoners:
+        A 22 year data linkage study. Trends & Issues in Crime and Criminal Justice,
+        498, 1\u20137. https:\/\/www.aic.gov.au\/publications\/tandi\/tandi498","DOI":"10.52922\/ti167031"},{"issue":"2","key":"291_CR90","doi-asserted-by":"publisher","first-page":"217","DOI":"10.1080\/08897077.2014.902787","volume":"36","author":"MS
+        Gordon","year":"2015","unstructured":"Gordon, M. S., Kinlock, T. W., Schwartz,
+        R. P., Couvillion, K. A., Sudec, L. J., O\u2019Grady, K. E., Vocci, F. J.,
+        & Shabazz, H. (2015). Buprenorphine treatment for probationers and parolees.
+        Substance Abuse and Addiction Journal, 36(2), 217\u2013225. https:\/\/doi.org\/10.1080\/08897077.2014.902787","journal-title":"Substance
+        Abuse and Addiction Journal"},{"key":"291_CR91","doi-asserted-by":"publisher","unstructured":"Gormley,
+        M. A., Pericot-Valverde, I., Diaz, L., Coleman, A., Lancaster, J., Ortiz,
+        E., Moschella, P., Heo, M., & Litwin, A. H. (2021). Effectiveness of peer
+        recovery support services on stages of the opioid use disorder treatment cascade:
+        A systematic review. Drug and Alcohol Dependence 229(Pt B), 109123. https:\/\/doi.org\/10.1016\/j.drugalcdep.2021.109123","DOI":"10.1016\/j.drugalcdep.2021.109123"},{"key":"291_CR92","unstructured":"Gotsch,
+        K., & Batsi, V. (2018). Capitalizing on Mass Incarceration. The Sentencing
+        Project. https:\/\/www.sentencingproject.org\/app\/uploads\/2022\/08\/Capitalizing-on-Mass-Incarceration.pdf"},{"issue":"2","key":"291_CR93","doi-asserted-by":"publisher","first-page":"91","DOI":"10.1111\/j.1471-1842.2009.00848.x","volume":"26","author":"MJ
+        Grant","year":"2009","unstructured":"Grant, M. J., & Booth, A. (2009). A typology
+        of reviews: An analysis of 14 review types and associated methodologies. Health
+        Information and Libraries Journal, 26(2), 91\u2013108. https:\/\/doi.org\/10.1111\/j.1471-1842.2009.00848.x","journal-title":"Health
+        Information and Libraries Journal"},{"issue":"4","key":"291_CR94","doi-asserted-by":"publisher","first-page":"405","DOI":"10.1001\/jamapsychiatry.2017.4614","volume":"75","author":"TC
+        Green","year":"2018","unstructured":"Green, T. C., Clarke, J., Brinkley-Rubinstein,
+        L., Marshall, B. D. L., Alexander-Scott, N., Boss, R., & Rich, J. D. (2018).
+        Postincarceration fatal overdoses after implementing medications for addiction
+        treatment in a statewide correctional system. JAMA Psychiatry, 75(4), 405\u2013407.
+        https:\/\/doi.org\/10.1001\/jamapsychiatry.2017.4614","journal-title":"JAMA
+        Psychiatry"},{"key":"291_CR95","doi-asserted-by":"publisher","first-page":"102768","DOI":"10.1016\/j.drugpo.2020.102768","volume":"81","author":"CE
+        Grella","year":"2020","unstructured":"Grella, C. E., Ostile, E., Scott, C.
+        K., Dennis, M., & Carnavale, J. (2020). A scoping review of barriers and facilitators
+        to implementation of medications for treatment of opioid use disorder within
+        the criminal justice system. The International Journal on Drug Policy, 81,
+        102768. https:\/\/doi.org\/10.1016\/j.drugpo.2020.102768","journal-title":"The
+        International Journal on Drug Policy"},{"key":"291_CR96","doi-asserted-by":"publisher","first-page":"108718","DOI":"10.1016\/j.jsat.2021.108718","volume":"138","author":"CE
+        Grella","year":"2022","unstructured":"Grella, C. E., Ostlie, E., Watson, D.
+        P., Scott, C. K., Carnevale, J., & Dennis, M. L. (2022). Scoping review of
+        interventions to link individuals to substance use services at discharge from
+        jail. Journal of Substance Abuse Treatment, 138, 108718. https:\/\/doi.org\/10.1016\/j.jsat.2021.108718","journal-title":"Journal
+        of Substance Abuse Treatment"},{"key":"291_CR97","doi-asserted-by":"publisher","first-page":"547","DOI":"10.1007\/s11524-018-0276-0","volume":"95","author":"KH
+        Hadden","year":"2018","unstructured":"Hadden, K. H., Puglisi, L., Prince,
+        L., Aminawung, J. A., Shavit, S., Pflaum, D., Calderon, J., Wang, E. A., &
+        Zaller, N. (2018). Health literacy among a formerly incarcerated population
+        using data from the Transitions Clinic Network. Journal of Urban Health, 95,
+        547\u2013555. https:\/\/doi.org\/10.1007\/s11524-018-0276-0","journal-title":"Journal
+        of Urban Health"},{"key":"291_CR98","doi-asserted-by":"publisher","unstructured":"Haffajee,
+        R. L., Lin, L. A., Bohnert, A. S. B., & Goldstick, J. E. (2019). Characteristics
+        of US counties with high overdose mortality and low capacity to deliver medications
+        for opioid use disorder. JAMA Network Open, 2(6). https:\/\/doi.org\/10.1001\/jamanetworkopen.2019.6373.
+        Article e196373.","DOI":"10.1001\/jamanetworkopen.2019.6373"},{"issue":"1","key":"291_CR100","doi-asserted-by":"publisher","first-page":"172","DOI":"10.1177\/00027162221119661","volume":"701","author":"LC
+        Hawks","year":"2022","unstructured":"Hawks, L. C., Horton, N., & Wang, E.
+        A. (2022). The health and health needs of people under community supervision.
+        The Annals of the American Academy of Political and Social Science, 701(1),
+        172\u2013190. https:\/\/doi.org\/10.1177\/00027162221119661","journal-title":"The
+        Annals of the American Academy of Political and Social Science"},{"issue":"9","key":"291_CR99","doi-asserted-by":"publisher","first-page":"1411","DOI":"10.2105\/AJPH.2020.305777","volume":"110","author":"L
+        Hawks","year":"2020","unstructured":"Hawks, L., Wang, E. A., Howell, B., Woolhandler,
+        S., Himmelstein, D. U., Bor, D., & McCormick, D. (2020). Health status and
+        health care utilization of US adults under probation: 2015\u20132018. American
+        Journal of Public Health, 110(9), 1411\u20131417. https:\/\/doi.org\/10.2105\/AJPH.2020.305777","journal-title":"American
+        Journal of Public Health"},{"key":"291_CR101","unstructured":"Health Information
+        Portability and Accountability Act (HIPAA) of (1996). 45\u00a0C.F.R. pts.
+        160, 162, & 164 (2013). https:\/\/www.hhs.gov\/sites\/default\/files\/hipaa-simplification-201303.pdf"},{"issue":"3","key":"291_CR102","doi-asserted-by":"publisher","first-page":"267","DOI":"10.1080\/1478601X.2018.1492387","volume":"31","author":"BF
+        Henry","year":"2018","unstructured":"Henry, B. F. (2018). Improving the quality
+        of drug court clinical screening: A call for performance measurement policy
+        reform. Criminal Justice Studies, 31(3), 267\u2013278. https:\/\/doi.org\/10.1080\/1478601X.2018.1492387","journal-title":"Criminal
+        Justice Studies"},{"key":"291_CR103","unstructured":"Hernandez, A. (2023,
+        November 13). Cash bail policies are under fresh scrutiny Stateline. https:\/\/stateline.org\/2023\/11\/13\/cash-bail-policies-are-under-fresh-scrutiny\/"},{"key":"291_CR104","doi-asserted-by":"publisher","DOI":"10.1080\/10550887.2022.2149233","author":"PF
+        Hibbard","year":"2022","unstructured":"Hibbard, P. F., & Sheidow, A. J. (2022).
+        Cooperation vs. affiliation: An exploratory qualitative study of alcoholics
+        anonymous\u2019 position within the recovery ecosystem. Journal of Addictive
+        Diseases. https:\/\/doi.org\/10.1080\/10550887.2022.2149233","journal-title":"Journal
+        of Addictive Diseases"},{"key":"291_CR105","doi-asserted-by":"publisher","first-page":"209217","DOI":"10.1016\/j.josat.2023.209217","volume":"157","author":"A
+        Hogue","year":"2024","unstructured":"Hogue, A., Satcher, M. F., Drazdowski,
+        T. K., Hagaman, A., Hibbard, P. F., Sheidow, A. J., Coetzer-Liversage, A.,
+        Mitchell, S. G., Watson, D. P., Wilson, K. J., Muench, F., Fishman, M., Wenzel,
+        K., de Castedo, S., & Stein, L. A. R. (2024). Linkage facilitation services
+        for opioid use disorder: Taxonomy of facilitation practitioners, goals, and
+        activities. Journal of Substance Abuse Treatment, 157, 209217. https:\/\/doi.org\/10.1016\/j.josat.2023.209217","journal-title":"Journal
+        of Substance Abuse Treatment"},{"key":"291_CR106","doi-asserted-by":"publisher","unstructured":"Hoover,
+        D. B., Korthuis, P. T., Waddell, E. N., Foot, C., Conway, C., Crane, H. M.,
+        Friedmann, P. D., Go, V. F., Nance, R. M., Pho, M. T., Satcher, M. F., Sibley,
+        A., Westergaard, R. P., Young, A. M., & Cook, R. (2023). Recent incarceration,
+        substance use, overdose, and service use among people who use drugs in rural
+        communities. JAMA Network Open, 6(11). https:\/\/doi.org\/10.1001\/jamanetworkopen.2023.42222.
+        Article e2342222.","DOI":"10.1001\/jamanetworkopen.2023.42222"},{"issue":"2","key":"291_CR107","first-page":"439","volume":"74","author":"PF
+        Hora","year":"1999","unstructured":"Hora, P. F., Schma, W. G., & Rosenthal,
+        J. T. A. (1999). Therapeutic jurisprudence and the drug treatment court movement:
+        Revolutionizing the criminal justice system\u2019s response to drug abuse
+        and crime in America. Notre Dame Law Review, 74(2), 439\u2013538.","journal-title":"Notre
+        Dame Law Review"},{"key":"291_CR108","doi-asserted-by":"publisher","unstructured":"Howell,
+        B. A., Puglisi, L., Clark, K., Albizu-Garcia, C., Ashkin, E., Booth, T., Brinkley-Rubinstein,
+        L., Fiellin, D. A., Fox, A. D., Maurer, K. F., Lin, H. J., McCollister, K.,
+        Murphy, S., Morse, D. S., Shavit, S., Wang, K., Winkelman, T., & Wang, E.
+        A. (2021). The Transitions Clinic Network: Post Incarceration Addiction Treatment,
+        Healthcare, and Social Support (TCN-PATHS): A hybrid type-1 effectiveness
+        trial of enhanced primary care to improve opioid use disorder treatment outcomes
+        following release from jail. Journal of Substance Abuse Treatment, 128, Article
+        108315. https:\/\/doi.org\/10.1016\/j.jsat.2021.108315","DOI":"10.1016\/j.jsat.2021.108315"},{"key":"291_CR109","unstructured":"Hughes,
+        T. A., & Wilson, D. J. (2004). Reentry Trends in the United States. US Department
+        of Justice, Bureau of Justice Statistics. Retrieved from https:\/\/bjs.ojp.gov\/content\/pub\/pdf\/reentry.pdf"},{"key":"291_CR110","doi-asserted-by":"crossref","unstructured":"Hunt,
+        P., Smart, R., Jonsson, L., & Tsang, F. (2018). Incentivizing employers to
+        hire ex-offenders: What policies are most effective? (Research brief 10003-RC).
+        RAND Corporation. https:\/\/www.rand.org\/pubs\/research_briefs\/RB10003.html","DOI":"10.7249\/RB10003"},{"key":"291_CR111","doi-asserted-by":"publisher","first-page":"285","DOI":"10.1007\/s00127-019-01739-1","volume":"55","author":"N
+        Ibrahim","year":"2020","unstructured":"Ibrahim, N., Thompson, D., Nixdorf,
+        R., Kalha, J., Mpango, R., Moran, G., Mueller-Stierlin, A., Ryan, G., Mahlke,
+        C., Shamba, D., Puschner, B., Repper, J., & Slade, M. (2020). A systematic
+        review of influences on implementation of peer support work for adults with
+        mental health problems. Social Psychiatry and Psychiatric Epidemiology, 55,
+        285\u2013293. https:\/\/doi.org\/10.1007\/s00127-019-01739-1","journal-title":"Social
+        Psychiatry and Psychiatric Epidemiology"},{"key":"291_CR113","doi-asserted-by":"publisher","unstructured":"Jennings,
+        L., Branson, C. F., Maxwell, A. M., Winkelman, T. N. A., & Shlafer, R. J.
+        (2021). Physicians\u2019 perspectives on continuity of care for patients involved
+        in the criminal justice system: A qualitative study. PloS One, 16(7). https:\/\/doi.org\/10.1371\/JOURNAL.PONE.0254578.
+        Article e0254578.","DOI":"10.1371\/JOURNAL.PONE.0254578"},{"key":"291_CR114","doi-asserted-by":"publisher","first-page":"108476","DOI":"10.1016\/j.jsat.2021.108476","volume":"129","author":"PJ
+        Joudrey","year":"2021","unstructured":"Joudrey, P. J., Nelson, C. R., Lawson,
+        K., Morford, K. L., Muley, D., Watson, C., Okafor, M., Wang, E. A., & Crusto,
+        C. (2021). Law enforcement assisted diversion: Qualitative evaluation of barriers
+        and facilitators of program implementation. Journal of Substance Abuse Treatment,
+        129, 108476. https:\/\/doi.org\/10.1016\/j.jsat.2021.108476","journal-title":"Journal
+        of Substance Abuse Treatment"},{"key":"291_CR112","unstructured":"Justice-involved
+        and Emerging Adult Populations Initiative (2023). https:\/\/www.jeapinitiative.org\/"},{"key":"291_CR115","unstructured":"Kaeble,
+        D. (2023). Probation and parole in the United States, 2021. U.S. Department
+        of Justice, Bureau of Justice Statistics. https:\/\/bjs.ojp.gov\/library\/publications\/probation-and-parole-united-states-2021"},{"key":"291_CR116","unstructured":"Kaiser
+        Family Foundation (2023). Medicaid waiver tracker: Approved and pending Section
+        1115 waivers by state. https:\/\/www.kff.org\/medicaid\/issue-brief\/medicaid-waiver-tracker-approved-and-pending-section-1115-waivers-by-state\/"},{"key":"291_CR117","doi-asserted-by":"publisher","unstructured":"Kammersgaard,
+        T. (2019). Harm reduction policing: From drug law enforcement to protection.
+        Contemporary Drug Problems, 46(4). 2019;46(4):345\u2013362. https:\/\/doi.org\/10.1177\/0091450919871313","DOI":"10.1177\/0091450919871313"},{"issue":"3","key":"291_CR118","doi-asserted-by":"publisher","first-page":"711","DOI":"10.1111\/ACER.14281","volume":"44","author":"JF
+        Kelly","year":"2020","unstructured":"Kelly, J. F., Stout, R. L., Jason, L.
+        A., Fallah-Sohy, N., Hoffman, L. A., & Hoeppner, B. B. (2020). One-stop shopping
+        for recovery: An investigation of participant characteristics and benefits
+        derived from U.S. recovery community centers. Alcoholism: Clinical and Experimental
+        Research, 44(3), 711\u2013721. https:\/\/doi.org\/10.1111\/ACER.14281","journal-title":"Alcoholism:
+        Clinical and Experimental Research"},{"issue":"4","key":"291_CR119","doi-asserted-by":"publisher","first-page":"337","DOI":"10.2975\/35.4.2012.337.340","volume":"35","author":"V
+        Kemp","year":"2012","unstructured":"Kemp, V., & Henderson, A. R. (2012). Challenges
+        faced by mental health peer support workers: Peer support from the peer supporter\u2019s
+        point of view. Psychiatric Rehabilitation Journal, 35(4), 337\u2013340. https:\/\/doi.org\/10.2975\/35.4.2012.337.340","journal-title":"Psychiatric
+        Rehabilitation Journal"},{"key":"291_CR260","doi-asserted-by":"publisher","unstructured":"Kendall,
+        S., Redshaw, S., Ward, S., Wayland, S., & Sullivan, E. (2018). Systematic
+        review of qualitative evaluations of reentry programs addressing problematic
+        drug use and mental health disorders amongst people transitioning from prison
+        to communities. Health & Justice, 6(1), 4. https:\/\/doi.org\/10.1186\/s40352-018-0063-8","DOI":"10.1186\/s40352-018-0063-8"},{"key":"291_CR120","doi-asserted-by":"crossref","unstructured":"Kinlock,
+        T. W., Gordon, M. S., Schwartz, R. P., & O\u2019Grady, K. E. (2008). A study
+        of methadone maintenance for male prisoners: 3-month post-release outcomes.
+        Criminal Justice and Behavior, 35(1), 34\u201347. https:\/\/journals.sagepub.com\/doi\/10.1177\/0093854807309111","DOI":"10.1177\/0093854807309111"},{"key":"291_CR123","doi-asserted-by":"publisher","first-page":"108290","DOI":"10.1016\/j.jsat.2021.108290","volume":"128","author":"D
+        Knight","year":"2021","unstructured":"Knight, D., Becan, J., Olson, D., Davis,
+        N. P., Jones, J., Wiese, A., Carey, P., Howell, D., & Knight, K. (2021). Justice
+        Community Opioid Innovation Network (JCOIN): The TCU research hub. Journal
+        of Substance Abuse Treatment, 128, 108290. https:\/\/doi.org\/10.1016\/j.jsat.2021.108290","journal-title":"Journal
+        of Substance Abuse Treatment"},{"key":"291_CR124","doi-asserted-by":"publisher","first-page":"Article1535","DOI":"10.1186\/s12913-022-08902-6","volume":"22","author":"DK
+        Knight","year":"2022","unstructured":"Knight, D. K., Belenko, S., Dennis,
+        M. L., Wasserman, G. A., Joe, G. W., Aarons, G. A., Bartkowski, J. P., Becan,
+        J. E., Elkington, K. S., Hogue, A., McReynolds, L. S., Robertson, A. A., Yang,
+        Y., & Wiley, T. R. A. (2022). The comparative effectiveness of Core versus
+        core\u2009+\u2009enhanced implementation strategies in a randomized controlled
+        trial to improve substance use treatment receipt among justice-involved youth.
+        BMC Health Services Research, 22, 1535. https:\/\/doi.org\/10.1186\/s12913-022-08902-6","journal-title":"BMC
+        Health Services Research"},{"issue":"47","key":"291_CR125","doi-asserted-by":"publisher","first-page":"4","DOI":"10.1002\/adaw.33969","volume":"35","author":"A
+        Knopf","year":"2023","unstructured":"Knopf, A. (2023). PAARI: Police helping,
+        not arresting, drug users and their families. Alcoholism & Drug Abuse Weekly,
+        35(47), 4\u20134.","journal-title":"Alcoholism & Drug Abuse Weekly"},{"key":"291_CR126","doi-asserted-by":"publisher","first-page":"115","DOI":"10.1016\/J.DRUGPO.2017.06.008","volume":"48","author":"S
+        Koester","year":"2017","unstructured":"Koester, S., Mueller, S. R., Raville,
+        L., Langegger, S., & Binswanger, I. A. (2017). Why are some people who have
+        received overdose education and naloxone reticent to call Emergency Medical
+        Services in the event of overdose? The International Journal of Drug Policy,
+        48, 115\u2013124. https:\/\/doi.org\/10.1016\/J.DRUGPO.2017.06.008","journal-title":"The
+        International Journal of Drug Policy"},{"key":"291_CR127","doi-asserted-by":"publisher","first-page":"177","DOI":"10.1007\/s11414-018-9620-0","volume":"46","author":"AM
+        Kopak","year":"2019","unstructured":"Kopak, A. M. (2019). An initial assessment
+        of Leon County Florida\u2019s pre-arrest adult civil citation program. The
+        Journal of Behavioral Health Services & Research, 46, 177\u2013186.","journal-title":"The
+        Journal of Behavioral Health Services & Research"},{"key":"291_CR128","doi-asserted-by":"publisher","unstructured":"Krawczyk,
+        N., Bandara, S., Merritt, S., Shah, H., Duncan, A., McEntee, B., Schiff, M.,
+        Ahmad, N. J., Whaley, S., Latimore, A., & Saloner, B. (2022). Jail-based treatment
+        for opioid use disorder in the era of bail reform: A qualitative study of
+        barriers and facilitators to implementation of a state-wide medication treatment
+        initiative. Addiction Science & Clinical Practice, 17, 30. https:\/\/doi.org\/10.1186\/s13722-022-00313-6","DOI":"10.1186\/s13722-022-00313-6"},{"key":"291_CR129","doi-asserted-by":"publisher","first-page":"108485","DOI":"10.1016\/j.jsat.2021.108485","volume":"131","author":"NE
+        Kruis","year":"2021","unstructured":"Kruis, N. E., McLean, K., & Perry, P.
+        (2021). Exploring first responders\u2019 perceptions of medication for addiction
+        treatment: Does stigma influence attitudes? Journal of Substance Abuse Treatment,
+        131, 108485. https:\/\/doi.org\/10.1016\/j.jsat.2021.108485","journal-title":"Journal
+        of Substance Abuse Treatment"},{"key":"291_CR130","doi-asserted-by":"publisher","DOI":"10.21203\/rs.3.rs-1765388\/v1","author":"MJ
+        Larson","year":"2022","unstructured":"Larson, M. J., Silcox, J., Olson, R.,
+        Cummins, E., Lopes-McCoy, V., Nong, T., & Green, T. (2022). Police-led Fentanyl
+        Test Strip distribution program in Maine and Massachusetts: An evaluation.
+        Research Square. https:\/\/doi.org\/10.21203\/rs.3.rs-1765388\/v1","journal-title":"Research
+        Square"},{"key":"291_CR131","doi-asserted-by":"publisher","first-page":"82","DOI":"10.1016\/J.DRUGPO.2017.09.010","volume":"50","author":"AD
+        Latimore","year":"2017","unstructured":"Latimore, A. D., & Bergstein, R. S.
+        (2017). Caught with a body yet protected by law? Calling 911 for opioid overdose
+        in the context of the Good Samaritan Law. The International Journal of Drug
+        Policy, 50, 82\u201389. https:\/\/doi.org\/10.1016\/J.DRUGPO.2017.09.010","journal-title":"The
+        International Journal of Drug Policy"},{"key":"291_CR132","unstructured":"Law
+        Enforcement Assisted Diversion Support Bureau (2023, July 1). Advance the
+        LEAD model to support communities. https:\/\/leadbureau.org\/what-we-do\/"},{"issue":"6","key":"291_CR133","doi-asserted-by":"publisher","first-page":"1008","DOI":"10.1111\/add.12894","volume":"110","author":"JD
+        Lee","year":"2015","unstructured":"Lee, J. D., McDonald, R., Grossman, E.,
+        McNeely, J., Laska, E., Rotrosen, J., & Gourevitch, M. N. (2015). Opioid treatment
+        at release from jail using extended-release naltrexone: A pilot proof-of-concept
+        randomized effectiveness trial. Addiction, 110(6), 1008\u20131014. https:\/\/doi.org\/10.1111\/add.12894","journal-title":"Addiction"},{"key":"291_CR134","unstructured":"Legislative
+        Analysis and Public Policy Association (2023). Good Samaritan fatal overdose
+        prevention and drug-induced homicide: Summary of state laws. https:\/\/legislativeanalysis.org\/good-samaritan-fatal-overdose-prevention-and-drug-induced-homicide-summary-of-state-laws\/"},{"key":"291_CR135","doi-asserted-by":"publisher","first-page":"38","DOI":"10.1186\/s13011-016-0082-1","volume":"11","author":"EJ
+        Liebling","year":"2016","unstructured":"Liebling, E. J., Yedinak, J. L., Green,
+        T. C., Hadland, S. E., Clark, M. A., & Marshall, B. D. L. (2016). Access to
+        substance use treatment among young adults who use prescription opioids non-medically.
+        Substance Abuse Treatment Prevention and Policy, 11, 38. https:\/\/doi.org\/10.1186\/s13011-016-0082-1","journal-title":"Substance
+        Abuse Treatment Prevention and Policy"},{"issue":"1","key":"291_CR136","doi-asserted-by":"publisher","first-page":"43","DOI":"10.1037\/a0026070","volume":"80","author":"JB
+        Luoma","year":"2012","unstructured":"Luoma, J. B., Kohlenberg, B. S., Hayes,
+        S. C., & Fletcher, L. (2012). Slow and steady wins the race: A randomized
+        clinical trial of acceptance and commitment therapy targeting shame in substance
+        use disorders. Journal of Consulting and Clinical Psychology, 80(1), 43\u201353.
+        https:\/\/doi.org\/10.1037\/a0026070","journal-title":"Journal of Consulting
+        and Clinical Psychology"},{"key":"291_CR137","doi-asserted-by":"publisher","first-page":"102841","DOI":"10.1016\/j.drugpo.2020.102841","volume":"91","author":"A
+        Macmadu","year":"2021","unstructured":"Macmadu, A., Adams, J. W., Bessey,
+        S. E., Brinkley-Rubinstein, L., Martin, R. A., Clarke, J. G., Green, T. C.,
+        Rich, J. D., & Marshall, B. D. L. (2021). Optimizing the impact of medications
+        for opioid use disorder at release from prison and jail settings: A microsimulation
+        modeling study. The International Journal on drug Policy, 91, 102841. https:\/\/doi.org\/10.1016\/j.drugpo.2020.102841","journal-title":"The
+        International Journal on drug Policy"},{"key":"291_CR138","doi-asserted-by":"publisher","unstructured":"Madras,
+        B. K., Ahmad, N. J., Wen, J., Sharfstein, J. S., & Recovery Working Group
+        of the Action Collaborative on Countering the U.S. Opioid Epidemic. (2020).
+        & the Prevention, Treatment, and. Improving access to evidence-based medical
+        treatment for opioid use disorder: Strategies to address key barriers within
+        the treatment system. NAM Perspectives. https:\/\/doi.org\/10.31478\/202004b","DOI":"10.31478\/202004b"},{"key":"291_CR139","doi-asserted-by":"publisher","unstructured":"Mamdani,
+        Z., McKenzie, S., Pauly, B., Cameron, F., Conway-Brown, J., Edwards, D., Howell,
+        A., Scott, T., Seguin, R., Woodrow, P., & Buxton, J. A. (2021). Running myself
+        ragged: Stressors faced by peer workers in overdose response settings. Harm
+        Reduction Journal, 18(1). https:\/\/doi.org\/10.1186\/s12954-020-00449-1.
+        Article 18.","DOI":"10.1186\/s12954-020-00449-1"},{"key":"291_CR140","doi-asserted-by":"publisher","first-page":"127","DOI":"10.1007\/s10597-017-0145-4","volume":"54","author":"MA
+        Mancini","year":"2018","unstructured":"Mancini, M. A. (2018). An exploration
+        of factors that effect the implementation of peer support services in community
+        mental health settings. Community Mental Health Journal, 54, 127\u2013137.
+        https:\/\/doi.org\/10.1007\/s10597-017-0145-4","journal-title":"Community
+        Mental Health Journal"},{"key":"291_CR141","doi-asserted-by":"publisher","first-page":"104188","DOI":"10.1016\/j.drugpo.2023.104188","volume":"121","author":"PL
+        Marotta","year":"2023","unstructured":"Marotta, P. L., del Pozo, B., Baker,
+        P., Abramovitz, D., Artamonova, I., Arredondo, J., McCreedy, K., Strathdee,
+        S. A., Cepeda, J., & Beletsky, L. (2023). Unlocking deflection: The role of
+        supervisor support in police officer willingness to refer people who inject
+        drugs to harm reduction services. The International Journal on drug Policy,
+        121, 104188. https:\/\/doi.org\/10.1016\/j.drugpo.2023.104188","journal-title":"The
+        International Journal on drug Policy"},{"key":"291_CR142","doi-asserted-by":"publisher","first-page":"108364","DOI":"10.1016\/j.jsat.2021.108364","volume":"128","author":"RA
+        Martin","year":"2021","unstructured":"Martin, R. A., Stein, L. A. R., Rohsenow,
+        D. J., Belenko, S., Hurley, L. E., Clarke, J. G., & Brinkley-Rubinstein, L.
+        (2021). Using implementation interventions and peer recovery support to improve
+        opioid treatment outcomes in community supervision: Protocol. Journal of Substance
+        Abuse Treatment, 128, 108364. https:\/\/doi.org\/10.1016\/j.jsat.2021.108364","journal-title":"Journal
+        of Substance Abuse Treatment"},{"key":"291_CR143","doi-asserted-by":"publisher","unstructured":"Matthews,
+        E. (2021). Peer-focused prison reentry programs: Which peer characteristics
+        matter most? Incarceration, 2(2). https:\/\/doi.org\/10.1177\/26326663211019958","DOI":"10.1177\/26326663211019958"},{"issue":"5","key":"291_CR144","doi-asserted-by":"publisher","first-page":"473","DOI":"10.1016\/j.jsat.2012.10.004","volume":"44","author":"H
+        Matusow","year":"2013","unstructured":"Matusow, H., Dickman, S. L., Rich,
+        J. D., Fong, C., Dumont, D. M., Hardin, C., Marlowe, D., & Rosenblum, A. (2013).
+        Medication-assisted treatment in U.S. drug courts: Results from a nationwide
+        survey of availability, barriers, and attitudes. Journal of Substance Abuse
+        Treatment, 44(5), 473\u2013480. https:\/\/doi.org\/10.1016\/j.jsat.2012.10.004","journal-title":"Journal
+        of Substance Abuse Treatment"},{"issue":"10","key":"291_CR145","doi-asserted-by":"publisher","first-page":"1439","DOI":"10.1080\/10826084.2021.1936045","volume":"56","author":"H
+        Matusow","year":"2021","unstructured":"Matusow, H., Rosenblum, A., & Fong,
+        C. (2021). Online medication assisted treatment education for court professionals:
+        Need, opportunities, and challenges. Substance Use & Misuse, 56(10), 1439\u20131447.
+        https:\/\/doi.org\/10.1080\/10826084.2021.1936045","journal-title":"Substance
+        Use & Misuse"},{"key":"291_CR146","doi-asserted-by":"publisher","unstructured":"Mauro,
+        P. M., Gutkind, S., Annunziato, E. M., & Samples, H. (2022). Use of medication
+        for opioid use disorder among U.S. adolescents and adults with need for opioid
+        treatment, 2019. JAMA Network Open, 5(3). https:\/\/doi.org\/10.1001\/jamanetworkopen.2022.3821.
+        Article e223821.","DOI":"10.1001\/jamanetworkopen.2022.3821"},{"issue":"2","key":"291_CR147","doi-asserted-by":"publisher","first-page":"160","DOI":"10.7326\/M19-3975","volume":"173","author":"EE
+        McGinty","year":"2020","unstructured":"McGinty, E. E., Stone, E. M., Kennedy-Hendricks,
+        A., Bachhuber, M. A., & Barry, C. L. (2020). Medication for opioid use disorder:
+        A national survey of primary care physicians. Annals of Internal Medicine,
+        173(2), 160\u2013162. https:\/\/doi.org\/10.7326\/M19-3975","journal-title":"Annals
+        of Internal Medicine"},{"key":"291_CR148","doi-asserted-by":"publisher","unstructured":"McIvor,
+        G. (2010). Beyond supervision: Judicial involvement in offender management.
+        In F. McNeill, P. Raynor, & C. Trotter (Eds.), Offender supervision: New directions
+        in theory, research, and practice (1st ed., pp. 215\u2013238). Willan Publishing.
+        https:\/\/doi.org\/10.4324\/9780203832974","DOI":"10.4324\/9780203832974"},{"issue":"1","key":"291_CR149","doi-asserted-by":"publisher","first-page":"19","DOI":"10.1080\/08897077.2011.609446","volume":"33","author":"M
+        McKenzie","year":"2012","unstructured":"McKenzie, M., Zaller, N., Dickman,
+        S. L., Green, T. C., Parihk, A., Friedmann, P. D., & Rich, J. D. (2012). A
+        randomized trial of methadone initiation prior to release from incarceration.
+        Substance Abuse, 33(1), 19\u201329. https:\/\/doi.org\/10.1080\/08897077.2011.609446","journal-title":"Substance
+        Abuse"},{"key":"291_CR150","doi-asserted-by":"publisher","first-page":"20","DOI":"10.1016\/j.jsat.2019.07.013","volume":"108","author":"GM
+        Miele","year":"2020","unstructured":"Miele, G. M., Caton, L., Freese, T. E.,
+        McGovern, M., Darfler, K., Antonini, V. P., Perez, M., & Rawson, R. (2020).
+        Implementation of the hub and spoke model for opioid use disorders in California:
+        Rationale, design and anticipated impact. Journal of Substance Abuse Treatment,
+        108, 20\u201325. https:\/\/doi.org\/10.1016\/j.jsat.2019.07.013","journal-title":"Journal
+        of Substance Abuse Treatment"},{"issue":"4","key":"291_CR151","doi-asserted-by":"publisher","first-page":"596","DOI":"10.1007\/s10488-021-01186-8","volume":"49","author":"E
+        Mirbahaeddin","year":"2022","unstructured":"Mirbahaeddin, E., & Chreim, S.
+        (2022). A narrative review of factors influencing peer support role implementation
+        in mental health systems: Implications for research, policy, and practice.
+        Administration and Policy in Mental Health and Mental Health Services Research,
+        49(4), 596\u2013612. https:\/\/doi.org\/10.1007\/s10488-021-01186-8","journal-title":"Administration
+        and Policy in Mental Health and Mental Health Services Research"},{"key":"291_CR153","doi-asserted-by":"publisher","first-page":"378","DOI":"10.1007\/s12117-018-9331-1","volume":"25","author":"MM
+        Mitchell","year":"2022","unstructured":"Mitchell, M. M., McCullough, K., Wu,
+        J., Pyrooz, D. C., & Decker, S. H. (2022). Survey research with gang and non-gang
+        members in prison: Operational lessons from the LoneStar Project. Trends in
+        Organized Crime, 25, 378\u2013406. https:\/\/doi.org\/10.1007\/s12117-018-9331-1","journal-title":"Trends
+        in Organized Crime"},{"key":"291_CR155","doi-asserted-by":"publisher","unstructured":"Mitchell,
+        O., Wilson, D. B., Eggers, A., & MacKenzie, D. L. (2012). Drug courts\u2019
+        effects on criminal offending for juveniles and adults. Campbell Systematic
+        Reviews, 8(1). https:\/\/doi.org\/10.4073\/csr.2012.4","DOI":"10.4073\/csr.2012.4"},{"key":"291_CR152","doi-asserted-by":"publisher","unstructured":"Mitchell,
+        S. G., Harmon-Darrow, C., Lertch, E., Monico, L. B., Kelly, S. M., Sorensen,
+        J. L., & Schwartz, R. P. (2021). Views of barriers and facilitators to continuing
+        methadone treatment upon release from jail among people receiving patient
+        navigation services. Journal of Substance Abuse Treatment, 127., Article 108351.
+        https:\/\/doi.org\/10.1016\/j.jsat.2021.108351","DOI":"10.1016\/j.jsat.2021.108351"},{"issue":"1","key":"291_CR154","doi-asserted-by":"publisher","first-page":"127","DOI":"10.1080\/08897077.2015.1129389","volume":"37","author":"SG
+        Mitchell","year":"2016","unstructured":"Mitchell, S. G., Willet, J., Monico,
+        L. B., James, A., Rudes, D. S., Viglione, J., Schwartz, R. P., Gordon, M.
+        S., & Friedmann, P. D. (2016). Community correctional agents\u2019 views of
+        medication-assisted treatment: Examining their influence on treatment referrals
+        and community supervision practices. Substance Abuse, 37(1), 127\u2013133.
+        https:\/\/doi.org\/10.1080\/08897077.2015.1129389","journal-title":"Substance
+        Abuse"},{"key":"291_CR156","unstructured":"M\u00f8llmann, M., & Mehta, C.
+        (2017). Neither justice nor treatment: Drug courts in the United States [Report].
+        Physicians for Human Rights."},{"issue":"3","key":"291_CR158","first-page":"38","volume":"79","author":"LB
+        Monico","year":"2015","unstructured":"Monico, L. B., Abdel-Salam, S., O\u2019Connell,
+        D., Visher, C. A., & Martin, S. (2015b). Using organizational strategies to
+        improve substance abuse treatment for probationers: A case study in Delaware.
+        Federal Probation, 79(3), 38\u201344.","journal-title":"Federal Probation"},{"key":"291_CR157","doi-asserted-by":"publisher","first-page":"89","DOI":"10.1016\/j.jsat.2015.05.005","volume":"57","author":"LB
+        Monico","year":"2015","unstructured":"Monico, L. B., Gryczynski, J., Mitchell,
+        S. G., Schwartz, R. P., O\u2019Grady, K. E., & Jaffe, J. H. (2015a). Buprenorphine
+        Treatment and 12-step meeting attendance: Conflicts, compatibilities, and
+        patient outcomes. Journal of Substance Abuse Treatment, 57, 89\u201395. https:\/\/doi.org\/10.1016\/j.jsat.2015.05.005","journal-title":"Journal
+        of Substance Abuse Treatment"},{"issue":"2","key":"291_CR159","doi-asserted-by":"publisher","first-page":"322","DOI":"10.1111\/josi.12219","volume":"73","author":"KE
+        Moore","year":"2017","unstructured":"Moore, K. E., & Tangney, J. P. (2017).
+        Managing the concealable stigma of criminal justice system involvement: A
+        longitudinal examination of anticipated stigma, social withdrawal, and post-release
+        adjustment. Journal of Social Issues, 73(2), 322\u2013340. https:\/\/doi.org\/10.1111\/josi.12219","journal-title":"Journal
+        of Social Issues"},{"key":"291_CR160","doi-asserted-by":"publisher","first-page":"25","DOI":"10.1186\/s40352-023-00225-w","volume":"11","author":"KE
+        Moore","year":"2023","unstructured":"Moore, K. E., Wyatt, J. P., Phillips,
+        S., Burke, C., Bellamy, C., & McKee, S. A. (2023). The role of substance use
+        treatment in reducing stigma after release from incarceration: A qualitative
+        analysis. Health & Justice, 11, 25. https:\/\/doi.org\/10.1186\/s40352-023-00225-w","journal-title":"Health
+        & Justice"},{"issue":"9","key":"291_CR161","doi-asserted-by":"publisher","first-page":"583","DOI":"10.15171\/ijhpm.2015.60","volume":"4","author":"G
+        Moradi","year":"2015","unstructured":"Moradi, G., Farnia, M., Shokoohi, M.,
+        Shahbazi, M., Moazen, B., & Rahmani, K. (2015). Methadone maintenance treatment
+        program in prisons from the perspective of medical and non-medical prison
+        staff: A qualitative study in Iran. International Journal of Health Policy
+        and Management, 4(9), 583\u2013589. https:\/\/doi.org\/10.15171\/ijhpm.2015.60","journal-title":"International
+        Journal of Health Policy and Management"},{"issue":"1","key":"291_CR162","doi-asserted-by":"publisher","first-page":"2","DOI":"10.29158\/JAAPL.003907-20","volume":"48","author":"NP
+        Morris","year":"2020","unstructured":"Morris, N. P., Hirschtritt, M. E., &
+        Tamburello, A. C. (2020). Drug formularies in correctional settings. The Journal
+        of the American Academy of Psychiatry and the Law, 48(1), 2\u20136. https:\/\/doi.org\/10.29158\/JAAPL.003907-20","journal-title":"The
+        Journal of the American Academy of Psychiatry and the Law"},{"issue":"4","key":"291_CR163","doi-asserted-by":"publisher","first-page":"544","DOI":"10.1176\/ps.2006.57.4.544","volume":"57","author":"MR
+        Munetz","year":"2006","unstructured":"Munetz, M. R., & Griffin, P. A. (2006).
+        Use of the sequential intercept model as an approach to decriminalization
+        of people with serious mental illness. Psychiatric Services, 57(4), 544\u2013549.
+        https:\/\/doi.org\/10.1176\/ps.2006.57.4.544","journal-title":"Psychiatric
+        Services"},{"key":"291_CR164","doi-asserted-by":"publisher","unstructured":"National
+        Academies of Sciences, Engineering, and Medicine (2019). Barriers to broader
+        use of medications to treat opioid use disorder. In M. Mancher & A. I. Leshner
+        (Eds.), Medications for opioid use disorder save lives (pp. 109\u2013136).
+        National Academies Press. https:\/\/doi.org\/10.17226\/25310","DOI":"10.17226\/25310"},{"key":"291_CR165","unstructured":"National
+        Association of Drug Court Professionals (2018a). Adult Drug Court Best Practice
+        Standards: Volume 1. National Association of Drug Court Professionals. https:\/\/www.nadcp.org\/wp-content\/uploads\/2018\/12\/Adult-Drug-Court-Best-Practice-Standards-Volume-I-Text-Revision-December-2018-1.pdf"},{"key":"291_CR166","unstructured":"National
+        Association of Drug Court Professionals (2018b). Adult Drug Court Best Practice
+        Standards: Volume 2. National Association of Drug Court Professionals. https:\/\/www.wicourts.gov\/courts\/programs\/problemsolving\/docs\/drugcourtstandardsvol2.pdf"},{"key":"291_CR500","unstructured":"National
+        Immigrant Justice Center. (2022). Fact sheet: Immigration prosecutions by
+        the numbers.https:\/\/immigrantjustice.org\/staff\/blog\/fact-sheet-immigration-prosecutions-numbers"},{"key":"291_CR168","unstructured":"National
+        Institute of Environmental Health Sciences. (2023). Recovery friendly workplace
+        landscape analysis. National Institutes of Health. https:\/\/tools.niehs.nih.gov\/wetp\/public\/hasl_get_blob.cfm?ID=14183file_name=WTP_RFW_Report_072423_508.pdf
+        Office of Disease Prevention."},{"key":"291_CR167","unstructured":"National
+        Institute on Drug Abuse (2020). Criminal Justice DrugFacts. U.S. Department
+        of Health and Human Services, National Institutes of Health. https:\/\/nida.nih.gov\/publications\/drugfacts\/criminal-justice"},{"key":"291_CR169","unstructured":"National
+        Institutes of Health (2023). HEAL Initiative: Justice Community Overdose Innovation
+        Network (JCOIN) \u2013 Phase II Methodology and Advanced Analytics Resource
+        Center (UM1 clinical trial not allowed). U.S. Department of Health and Human
+        Services. https:\/\/grants.nih.gov\/grants\/guide\/rfa-files\/RFA-DA-24-068.html"},{"issue":"7","key":"291_CR170","doi-asserted-by":"publisher","first-page":"1312","DOI":"10.1111\/j.1360-0443.2010.03000.x","volume":"105","author":"A
+        Nunn","year":"2010","unstructured":"Nunn, A., Zaller, N., Dickman, S., Nijhawan,
+        A., & Rich, J. D. (2010). Improving access to opiate addiction treatment for
+        prisoners. Addiction, 105(7), 1312\u20131313. https:\/\/doi.org\/10.1111\/j.1360-0443.2010.03000.x","journal-title":"Addiction"},{"key":"291_CR171","doi-asserted-by":"publisher","unstructured":"O\u2019Connell,
+        D. J., Visher, C. A., & Becker, P. (2020). Linking individuals on probation
+        to health care: A pilot randomized trial. Health & Justice, 8(1). https:\/\/doi.org\/10.1186\/s40352-020-00110-w","DOI":"10.1186\/s40352-020-00110-w"},{"key":"291_CR172","doi-asserted-by":"publisher","first-page":"109655","DOI":"10.1016\/j.drugalcdep.2022.109655","volume":"241","author":"AW
+        O\u2019Connor","year":"2022","unstructured":"O\u2019Connor, A. W., Sears,
+        J. M., & Fulton-Kehoe, D. (2022). Overdose and substance-related mortality
+        after release from prison in Washington State: 2014\u20132019. Drug and Alcohol
+        Dependence, 241, 109655. https:\/\/doi.org\/10.1016\/j.drugalcdep.2022.109655","journal-title":"Drug
+        and Alcohol Dependence"},{"issue":"6\u20137","key":"291_CR173","doi-asserted-by":"publisher","first-page":"736","DOI":"10.1177\/0887403417748721","volume":"29","author":"BJ
+        Ostrom","year":"2018","unstructured":"Ostrom, B. J., Hanson, R. A., & Kleiman,
+        M. (2018). Improving the Pace of Criminal Case Processing in State Trial courts.
+        Criminal Justice Policy Review, 29(6\u20137), 736\u2013760. https:\/\/doi.org\/10.1177\/0887403417748721","journal-title":"Criminal
+        Justice Policy Review"},{"key":"291_CR261","doi-asserted-by":"publisher","unstructured":"Paltrow,
+        L. M., & Flavin, J. (2013). Arrests of and forced interventions on pregnant
+        women in the United States, 1973-2005: implications for women\u2019s legal
+        status and public health. Journal of Health Politics, Policy and Law, 38(2),
+        299\u2013343. https:\/\/doi.org\/10.1215\/03616878-1966324","DOI":"10.1215\/03616878-1966324"},{"key":"291_CR174","doi-asserted-by":"publisher","unstructured":"Pasman,
+        E., Lee, G., Singer, S., Burson, N., Agius, E., & Resko, S. M. (2024). Attitudes
+        toward medications for opioid use disorder among peer recovery specialists.
+        The American journal of drug and alcohol abuse, 1\u201310. Advance online
+        publication. https:\/\/doi.org\/10.1080\/00952990.2024.2332597","DOI":"10.1080\/00952990.2024.2332597"},{"key":"291_CR175","unstructured":"Pew
+        Charitable Trusts (2018). More imprisonment does not reduce state drug problemshttps:\/\/www.pewtrusts.org\/-\/media\/assets\/2018\/03\/pspp_more_imprisonment_does_not_reduce_state_drug_problems.pdf"},{"key":"291_CR176","unstructured":"Pew
+        Charitable Trusts (2023). More than 1 in 9 adults with co-occurring mental
+        illness and substance use disorders are arrested annually [Issue Brief]. https:\/\/www.pewtrusts.org\/en\/research-and-analysis\/issue-briefs\/2023\/02\/over-1-in-9-people-with-co-occurring-mental-illness-and-substance-use-disorders-arrested-annually"},{"issue":"3","key":"291_CR177","doi-asserted-by":"publisher","first-page":"304","DOI":"10.1001\/jamapediatrics.2021.4606","volume":"176","author":"A
+        Pilarinos","year":"2022","unstructured":"Pilarinos, A., Bromberg, D. J., &
+        Karamouzian, M. (2022). Access to medications for opioid use disorder and
+        associated factors among adolescents and young adults: A systematic review.
+        JAMA Pediatrics, 176(3), 304\u2013311. https:\/\/doi.org\/10.1001\/jamapediatrics.2021.4606","journal-title":"JAMA
+        Pediatrics"},{"key":"291_CR178","doi-asserted-by":"publisher","first-page":"208950","DOI":"10.1016\/j.josat.2022.208950","volume":"147","author":"E
+        Pivovarova","year":"2023","unstructured":"Pivovarova, E., Taxman, F. S., Boland,
+        A. K., Smelson, D. A., Lemon, S. C., & Friedmann, P. D. (2023). Facilitators
+        and barriers to collaboration between drug courts and community-based medication
+        for opioid use disorder providers. Journal of Substance Use and Addiction
+        Treatment, 147, 208950. https:\/\/doi.org\/10.1016\/j.josat.2022.208950","journal-title":"Journal
+        of Substance Use and Addiction Treatment"},{"key":"291_CR179","doi-asserted-by":"publisher","first-page":"48","DOI":"10.1016\/J.DRUGALCDEP.2014.10.012","volume":"145","author":"C
+        Potier","year":"2014","unstructured":"Potier, C., Lapr\u00e9vote, V., Dubois-Arber,
+        F., Cottencin, O., & Rolland, B. (2014). Supervised injection services: What
+        has been demonstrated? A systematic literature review. Drug and Alcohol Dependence,
+        145, 48\u201368. https:\/\/doi.org\/10.1016\/J.DRUGALCDEP.2014.10.012","journal-title":"Drug
+        and Alcohol Dependence"},{"issue":"4","key":"291_CR180","doi-asserted-by":"publisher","first-page":"464","DOI":"10.1007\/s11414-020-09703-7","volume":"47","author":"G
+        Pro","year":"2020","unstructured":"Pro, G., Sahker, E., & Baldwin, J. (2020).
+        Incarceration as a reason for US alcohol and drug treatment non-completion:
+        A multilevel analysis of racial\/ethnic and sex disparities. The Journal of
+        Behavioral Health Services & Research, 47(4), 464\u2013475. https:\/\/doi.org\/10.1007\/s11414-020-09703-7","journal-title":"The
+        Journal of Behavioral Health Services & Research"},{"issue":"2","key":"291_CR181","doi-asserted-by":"publisher","first-page":"300","DOI":"10.2105\/AJPH.2021.306621","volume":"112","author":"SI
+        Ranapurwala","year":"2022","unstructured":"Ranapurwala, S. I., Figgatt, M.
+        C., Remch, M., Brown, C., Brinkley-Rubinstein, L., Rosen, D. L., Cox, M. E.,
+        & Proescholdbell, S. K. (2022). Opioid overdose deaths among formerly incarcerated
+        persons and the general population: North Carolina, 2000\u20132018. American
+        Journal of Public Health, 112(2), 300\u2013303. https:\/\/doi.org\/10.2105\/AJPH.2021.306621","journal-title":"American
+        Journal of Public Health"},{"key":"291_CR182","doi-asserted-by":"crossref","unstructured":"Rapport,
+        F., Clay-Williams, R., & Braithwaite, J. (Eds.). (2022). Implementation science:
+        The Key concepts (1st ed.). Routledge.","DOI":"10.4324\/9781003109945"},{"key":"291_CR183","doi-asserted-by":"publisher","first-page":"109571","DOI":"10.1016\/J.DRUGALCDEP.2022.109571","volume":"238","author":"B
+        Ray","year":"2022","unstructured":"Ray, B., Hedden, B. J., Carroll, J. J.,
+        del Pozo, B., Wagner, K., Kral, A. H., O\u2019Donnell, D., Victor, G., & Huynh,
+        P. (2022). Prevalence and correlates of incarceration following emergency
+        medical services response to overdose. Drug and Alcohol Dependence, 238, 109571.
+        https:\/\/doi.org\/10.1016\/J.DRUGALCDEP.2022.109571","journal-title":"Drug
+        and Alcohol Dependence"},{"key":"291_CR185","doi-asserted-by":"publisher","unstructured":"Reichert,
+        J., Adams, S., Taylor, J., & del Pozo, B. (2023a). Guiding officers to deflect
+        citizens to treatment: An examination of police department policies in Illinois.
+        Health & Justice, 11(1). https:\/\/doi.org\/10.1186\/s40352-023-00207-y. Article
+        7.","DOI":"10.1186\/s40352-023-00207-y"},{"key":"291_CR184","doi-asserted-by":"publisher","unstructured":"Reichert,
+        J., & Gleicher, L. (2019). Probation clients\u2019 barriers to access and
+        use of opioid use disorder medications. Health & Justice, 7(1). https:\/\/doi.org\/10.1186\/s40352-019-0089-6","DOI":"10.1186\/s40352-019-0089-6"},{"key":"291_CR186","doi-asserted-by":"publisher","unstructured":"Reichert,
+        J., Martins, K. F., Taylor, B., & del Pozo, B. (2023b). Police knowledge,
+        attitudes, and beliefs about opioid addiction treatment and harm reduction:
+        A Survey of Illinois officers. Journal of Drug Issues, 0(0). https:\/\/doi.org\/10.1177\/00220426231212567","DOI":"10.1177\/00220426231212567"},{"issue":"7","key":"291_CR187","doi-asserted-by":"publisher","first-page":"853","DOI":"10.1176\/appi.ps.201400047","volume":"65","author":"S
+        Reif","year":"2014","unstructured":"Reif, S., Braude, L., Lyman, D. R., Dougherty,
+        R. H., Daniels, A. S., Ghose, S. S., Salim, O., & Delphin-Rittmon, M. E. (2014).
+        Peer recovery support for individuals with substance use disorders: Assessing
+        the evidence. Psychiatric Services, 65(7), 853\u2013861. https:\/\/doi.org\/10.1176\/appi.ps.201400047","journal-title":"Psychiatric
+        Services"},{"issue":"3","key":"291_CR188","doi-asserted-by":"publisher","first-page":"411","DOI":"10.1093\/jurban\/jti072","volume":"82","author":"JD
+        Rich","year":"2005","unstructured":"Rich, J. D., Boutwell, A. E., Shield,
+        D. C., Key, R. G., McKenzie, M., Clarke, J. G., & Friedmann, P. D. (2005).
+        Attitudes and practices regarding the use of methadone in US state and federal
+        prisons. Journal of Urban Health: Bulletin of the New York Academy of Medicine,
+        82(3), 411\u2013419. https:\/\/doi.org\/10.1093\/jurban\/jti072","journal-title":"Journal
+        of Urban Health: Bulletin of the New York Academy of Medicine"},{"issue":"3","key":"291_CR189","doi-asserted-by":"publisher","first-page":"462","DOI":"10.1377\/hlthaff.2013.1133","volume":"33","author":"JD
+        Rich","year":"2014","unstructured":"Rich, J. D., Chandler, R., Williams, B.
+        A., Dumont, D., Wang, E. A., Taxman, F. S., Allen, S. A., Clarke, J. G., Greifinger,
+        R. B., Wildeman, C., Osher, F. C., Rosenberg, S., Haney, C., Mauer, M., &
+        Western, B. (2014). How health care reform can transform the health of criminal
+        justice-involved individuals. Health Affairs, 33(3), 462\u2013467. https:\/\/doi.org\/10.1377\/hlthaff.2013.1133","journal-title":"Health
+        Affairs"},{"issue":"9991","key":"291_CR190","doi-asserted-by":"publisher","first-page":"350","DOI":"10.1016\/S0140-6736(14)62338-2","volume":"386","author":"JD
+        Rich","year":"2015","unstructured":"Rich, J. D., McKenzie, M., Larney, S.,
+        Wong, J. B., Tran, L., Clarke, J., Noska, A., Reddy, M., & Zaller, N. (2015).
+        Methadone continuation versus forced withdrawal on incarceration in a combined
+        US prison and jail: A randomised, open-label trial. Lancet, 386(9991), 350\u2013359.
+        https:\/\/doi.org\/10.1016\/S0140-6736(14)62338-2","journal-title":"Lancet"},{"issue":"6","key":"291_CR191","doi-asserted-by":"publisher","first-page":"504","DOI":"10.1521\/aeap.2006.18.6.504","volume":"18","author":"MW
+        Ross","year":"2006","unstructured":"Ross, M. W., Harzke, A. J., Scott, D.
+        P., McCann, K., & Kelley, M. (2006). Outcomes of Project Wall Talk: An HIV\/AIDS
+        peer education program implemented within the Texas State prison system. AIDS
+        Education and Prevention, 18(6), 504\u2013517. https:\/\/doi.org\/10.1521\/aeap.2006.18.6.504","journal-title":"AIDS
+        Education and Prevention"},{"key":"291_CR192","doi-asserted-by":"publisher","first-page":"108774","DOI":"10.1016\/j.jsat.2022.108774","volume":"139","author":"H
+        Samples","year":"2022","unstructured":"Samples, H., Williams, A. R., Crystal,
+        S., & Olfson, M. (2022). Psychosocial and behavioral therapy in conjunction
+        with medication for opioid use disorder: Patterns, predictors, and association
+        with buprenorphine treatment outcomes. Journal of Substance Abuse Treatment,
+        139, 108774. https:\/\/doi.org\/10.1016\/j.jsat.2022.108774","journal-title":"Journal
+        of Substance Abuse Treatment"},{"issue":"9","key":"291_CR193","doi-asserted-by":"publisher","first-page":"979","DOI":"10.1001\/jamapsychiatry.2021.0976","volume":"78","author":"T
+        Santo Jr","year":"2021","unstructured":"Santo, T. Jr., Clark, B., Hickman,
+        M., Grebely, J., Campbell, G., Sordo, L., Chen, A., Tran, L. T., Bharat, C.,
+        Padmanathan, P., Cousins, G., Dupouy, J., Kelty, E., Muga, R., Nosyk, B.,
+        Min, J., Pavarin, R., Farrell, M., & Degenhardt, L. (2021). Association of
+        opioid agonist treatment with all-cause mortality and specific causes of death
+        among people with opioid dependence: A systematic review and meta-analysis.
+        JAMA Psychiatry, 78(9), 979\u2013993. https:\/\/doi.org\/10.1001\/jamapsychiatry.2021.0976","journal-title":"JAMA
+        Psychiatry"},{"key":"291_CR194","unstructured":"Saunders, H., & Panchal, N.
+        (2023, July 11). Addressing the opioid crisis: A look at the evolving landscape
+        of federal OUD treatment policies. KFF. https:\/\/www.kff.org\/mental-health\/issue-brief\/addressing-the-opioid-crisis-a-look-at-the-evolving-landscape-of-federal-oud-treatment-policies\/"},{"key":"291_CR259","unstructured":"Sawyer,
+        W. (2017). The steep cost of medical co-pays in prison puts health at risk  [Report].
+        Prison Policy Initiative. https:\/\/www.prisonpolicy.org\/blog\/2017\/04\/19\/copays\/"},{"key":"291_CR195","unstructured":"Sawyer,
+        W., & Wagner, P. (2024). Mass Incarceration: The Whole Pie 2024 [Report].
+        Prison Policy Initiative. https:\/\/www.prisonpolicy.org\/reports\/pie2024.html"},{"issue":"3","key":"291_CR196","doi-asserted-by":"publisher","first-page":"23","DOI":"10.29245\/2578-2959\/2018\/3.1124","volume":"2","author":"V
+        Saxon","year":"2018","unstructured":"Saxon, V., Mukherjee, D., & Thomas, D.
+        (2018). Behavioral health crisis stabilization centers: A new normal. Journal
+        of Mental Health and Clinical Psychology, 2(3), 23\u201326. https:\/\/doi.org\/10.29245\/2578-2959\/2018\/3.1124","journal-title":"Journal
+        of Mental Health and Clinical Psychology"},{"key":"291_CR197","doi-asserted-by":"publisher","unstructured":"Scannell,
+        C. (2021). Voices of hope: Substance use peer support in a system of care.
+        Substance Abuse: Research and Treatment, 15. https:\/\/doi.org\/10.1177\/11782218211050360","DOI":"10.1177\/11782218211050360"},{"key":"291_CR198","doi-asserted-by":"publisher","first-page":"108392","DOI":"10.1016\/j.drugalcdep.2020.108392","volume":"218","author":"RP
+        Schwartz","year":"2021","unstructured":"Schwartz, R. P., Kelly, S. M., Mitchell,
+        S. G., O\u2019Grady, K. E., Duren, T., Sharma, A., Gryczynski, J., & Jaffe,
+        J. H. (2021). Randomized trial of methadone treatment of arrestees: 24-month
+        post-release outcomes. Drug and Alcohol Dependence, 218, 108392. https:\/\/doi.org\/10.1016\/j.drugalcdep.2020.108392","journal-title":"Drug
+        and Alcohol Dependence"},{"issue":"1","key":"291_CR199","doi-asserted-by":"publisher","first-page":"17","DOI":"10.1186\/s40352-021-00143-9","volume":"9","author":"CK
+        Scott","year":"2021","unstructured":"Scott, C. K., Dennis, M. L., Grella,
+        C. E., Mischel, A. F., & Carnevale, J. (2021a). The impact of the opioid crisis
+        on U.S. state prison systems. Health & Justice, 9(1), 17. https:\/\/doi.org\/10.1186\/s40352-021-00143-9","journal-title":"Health
+        & Justice"},{"key":"291_CR200","doi-asserted-by":"publisher","first-page":"108245","DOI":"10.1016\/j.jsat.2020.108245","volume":"128","author":"CK
+        Scott","year":"2021","unstructured":"Scott, C. K., Dennis, M. L., Grella,
+        C. E., & Watson, D. P. (2021b). Improving retention across the OUD service
+        cascade upon reentry from jail using Recovery Management checkups-adaptive
+        (RMC-A) experiment. Journal of Substance Abuse Treatment, 128, 108245. https:\/\/doi.org\/10.1016\/j.jsat.2020.108245","journal-title":"Journal
+        of Substance Abuse Treatment"},{"key":"291_CR201","doi-asserted-by":"publisher","unstructured":"Scott,
+        C. K., Grella, C. E., Dennis, M. L., Carnevale, J., & LaVallee, R. (2022).
+        Availability of best practices for opioid use disorder in jails and related
+        training and resource needs: Findings from a national interview study of jails
+        in heavily impacted counties in the U.S. Health & Justice, 10(1). https:\/\/doi.org\/10.1186\/s40352-022-00197-3.
+        Article 36.","DOI":"10.1186\/s40352-022-00197-3"},{"issue":"1","key":"291_CR202","first-page":"113","volume":"7","author":"D
+        Sinkman","year":"2022","unstructured":"Sinkman, D., & Dorchak, G. (2022).
+        Using the Americans with Disabilities Act to reduce overdose deaths. US Department
+        of Justice Journal of Federal Law and Practice, 7(1), 113\u2013128. https:\/\/www.justice.gov\/media\/1189116\/dl?inline#page=117","journal-title":"US
+        Department of Justice Journal of Federal Law and Practice"},{"key":"291_CR203","unstructured":"Smith,
+        K., & Strashny, A. (2016). Characteristics of Criminal Justice System referrals
+        discharged from Substance Abuse Treatment and Facilities with specially designed
+        Criminal Justice Programs. The CBHSQ Report (pp. 1\u201310). Substance Abuse
+        and Mental Health Services Administration (US)."},{"issue":"1","key":"291_CR204","doi-asserted-by":"publisher","first-page":"525","DOI":"10.1186\/s12913-016-1753-3","volume":"16","author":"J
+        South","year":"2016","unstructured":"South, J., Woodall, J., Kinsella, K.,
+        & Bagnall, A. M. (2016). A qualitative synthesis of the positive and negative
+        impacts related to delivery of peer-based health interventions in prison settings.
+        BMC Health Services Research, 16(1), 525. https:\/\/doi.org\/10.1186\/s12913-016-1753-3","journal-title":"BMC
+        Health Services Research"},{"issue":"1","key":"291_CR205","doi-asserted-by":"publisher","first-page":"43","DOI":"10.1097\/qai.0000000000001634","volume":"78","author":"SA
+        Springer","year":"2018","unstructured":"Springer, S. A., Di Paola, A., Azar,
+        M. M., Barbour, R., Biondi, B. E., Desabrais, M., Lincoln, T., Skiest, D.
+        J., & Altice, F. L. (2018). Extended-release naltrexone improves viral suppression
+        among incarcerated persons living with HIV with opioid use disorders transitioning
+        to the community: Results of a double-blind, placebo-controlled randomized
+        trial. Journal of Acquired Immune Deficiency Syndrome, 78(1), 43\u201353.
+        https:\/\/doi.org\/10.1097\/qai.0000000000001634","journal-title":"Journal
+        of Acquired Immune Deficiency Syndrome"},{"key":"291_CR206","doi-asserted-by":"publisher","unstructured":"Springer,
+        S. A., Nijhawan, A. E., Knight, K., Kuo, I., Di Paola, A., Schlossberg, E.,
+        Frank, C. A., Sanchez, M., Pankow, J., Proffitt, R. P., Lehman, W., Pulitzer,
+        Z., Thompson, K., Violette, S., Harding, K. K., & ACTION Cooperative Group.
+        (2022). Study protocol of a randomized controlled trial comparing two linkage
+        models for HIV prevention and treatment in justice-involved persons. BMC Infectious
+        Diseases, 22(1). https:\/\/doi.org\/10.1186\/s12879-022-07354-x. Article 380.","DOI":"10.1186\/s12879-022-07354-x"},{"key":"291_CR207","doi-asserted-by":"publisher","unstructured":"Stahler,
+        G. J., Mennis, J., Stein, L. A. R., Belenko, S., Rohsenow, D. J., Grunwald,
+        H. E., Brinkley-Rubinstein, L., & Martin, R. A. (2022). Treatment outcomes
+        associated with medications for opioid use disorder (MOUD) among criminal
+        justice-referred admissions to residential treatment in the U.S., 2015\u20132018.
+        Drug and Alcohol Dependence, 236., Article 109498. https:\/\/doi.org\/10.1016\/j.drugalcdep.2022.109498","DOI":"10.1016\/j.drugalcdep.2022.109498"},{"issue":"2","key":"291_CR210","doi-asserted-by":"publisher","first-page":"187","DOI":"10.1177\/0032885521991092","volume":"101","author":"MD
+        Staton","year":"2021","unstructured":"Staton, M. D., Andraka-Christou, B.,
+        & Watson, D. P. (2021). Isomorphic pressures on jail diversion: From serious
+        mental illness to opioid use disorder. The Prison Journal, 101(2), 187\u2013209.
+        https:\/\/doi.org\/10.1177\/0032885521991092","journal-title":"The Prison
+        Journal"},{"key":"291_CR208","doi-asserted-by":"crossref","unstructured":"Stein,
+        L. A. R. (2023). The members of the linkage facilitation group at the justice-community
+        opioid innovations network. Justice-Community Opioid Innovations Network Linkage
+        Facilitation [Poster presentation]. The College on Problems of Drug Dependence
+        85th Annual Scientific Meeting, Denver, CO, United States.","DOI":"10.1016\/j.drugalcdep.2023.110540"},{"key":"291_CR209","doi-asserted-by":"publisher","first-page":"108627","DOI":"10.1016\/j.drugalcdep.2021.108627","volume":"221","author":"EM
+        Stone","year":"2021","unstructured":"Stone, E. M., Kennedy-Hendricks, A.,
+        Barry, C. L., Bachhuber, M. A., & McGinty, E. E. (2021). The role of stigma
+        in U.S. primary care physicians\u2019 treatment of opioid use disorder. Drug
+        and Alcohol Dependence, 221, 108627. https:\/\/doi.org\/10.1016\/j.drugalcdep.2021.108627","journal-title":"Drug
+        and Alcohol Dependence"},{"issue":"1","key":"291_CR211","doi-asserted-by":"publisher","first-page":"3","DOI":"10.1038\/s41572-019-0137-5","volume":"6","author":"J
+        Strang","year":"2020","unstructured":"Strang, J., Volkow, N. D., Degenhardt,
+        L., Hickman, M., Johnson, K., Koob, G. F., Marshall, B. D. L., Tyndall, M.,
+        & Walsh, S. L. (2020). Opioid use disorder. Nature Reviews Disease Primers,
+        6(1), 3. https:\/\/doi.org\/10.1038\/s41572-019-0137-5","journal-title":"Nature
+        Reviews Disease Primers"},{"key":"291_CR212","unstructured":"Substance Abuse
+        and Mental Health Services Administration (2014). Crisis services: Effectiveness,
+        cost-effectiveness, and funding strategies (HHS Publication No. SMA-14-4848).
+        U.S. Department of Health and Human Services. https:\/\/store.samhsa.gov\/sites\/default\/files\/d7\/priv\/sma14-4848.pdf"},{"key":"291_CR213","unstructured":"Substance
+        Abuse and Mental Health Services Administration (2017). Peers supporting recovery
+        from substance use disorder. https:\/\/www.samhsa.gov\/sites\/default\/files\/programs_campaigns\/brss_tacs\/peers-supporting-recovery-substance-use-disorders-2017.pdf"},{"key":"291_CR214","unstructured":"Substance
+        Abuse and Mental Health Services Administration (2019). Use of medication-assisted
+        treatment for opioid use disorder in criminal justice settings (HHS Publication
+        No. PEP19-MATUSECJS). U.S. National Mental Health and Substance Use Policy
+        Laboratory. https:\/\/store.samhsa.gov\/sites\/default\/files\/medication-assisted-treatment-opioid-use-disorder-criminal-justice-settings-pep19-matusecjs.pdf"},{"key":"291_CR215","unstructured":"Substance
+        Abuse and Mental Health Services Administration (2020). The opioid crisis
+        and the Black\/African American population: An urgent issue (HHS Publication
+        No. PEP20-05-02-001). U.S. Department of Health and Human Services, Office
+        of Behavioral Health Equity. https:\/\/store.samhsa.gov\/sites\/default\/files\/pep20-05-02-001.pdf"},{"key":"291_CR216","doi-asserted-by":"publisher","unstructured":"Sufrin,
+        C., Kramer, C. T., Terplan, M., Fiscella, K., Olson, S., Voegtline, K., &
+        Latkin, C. (2022). Availability of medications for the treatment of opioid
+        use disorder among pregnant and postpartum individuals in U.S. jails. JAMA
+        Network Open, 5(1). https:\/\/doi.org\/10.1001\/jamanetworkopen.2021.44369.
+        Article e2144369.","DOI":"10.1001\/jamanetworkopen.2021.44369"},{"issue":"4","key":"291_CR217","doi-asserted-by":"publisher","first-page":"414","DOI":"10.4300\/JGME-D-22-00480.1","volume":"14","author":"J
+        Sukhera","year":"2022","unstructured":"Sukhera, J. (2022). Narrative reviews:
+        Flexible, rigorous, and practical. Journal of Graduate Medical Education,
+        14(4), 414. https:\/\/doi.org\/10.4300\/JGME-D-22-00480.1","journal-title":"Journal
+        of Graduate Medical Education"},{"issue":"1","key":"291_CR218","doi-asserted-by":"publisher","first-page":"101","DOI":"10.1097\/ADM.0000000000001025","volume":"17","author":"J
+        Suzuki","year":"2023","unstructured":"Suzuki, J., Loguidice, F., & Martin,
+        B. (2023). Attitudes regarding medications for opioid use disorder among peer
+        recovery coaches. Journal of Addiction Medicine, 17(1), 101\u2013103. https:\/\/doi.org\/10.1097\/ADM.0000000000001025","journal-title":"Journal
+        of Addiction Medicine"},{"key":"291_CR219","doi-asserted-by":"publisher","unstructured":"Taweh,
+        N., Schlossberg, E., Frank, C., Nijhawan, A., Kuo, I., Knight, K., & Springer,
+        S. A. (2021). Linking criminal justice-involved individuals to HIV, hepatitis
+        C, and opioid use disorder prevention and treatment services upon release
+        to the community: Progress, gaps, and future directions. International Journal
+        of Drug Policy, 96, Article 103283. https:\/\/doi.org\/10.1016\/j.drugpo.2021.103283","DOI":"10.1016\/j.drugpo.2021.103283"},{"issue":"2","key":"291_CR220","first-page":"31","volume":"68","author":"FS
+        Taxman","year":"2002","unstructured":"Taxman, F. S. (2002). The offender and
+        reentry: Supporting active participation in reintegration. Federal Probation,
+        68(2), 31\u201335.","journal-title":"Federal Probation"},{"issue":"2","key":"291_CR221","doi-asserted-by":"publisher","first-page":"135","DOI":"10.1080\/0735648X.2012.686583","volume":"35","author":"FS
+        Taxman","year":"2012","unstructured":"Taxman, F. S. (2012). Crime control
+        in the twenty-first century: Science-based supervision (SBS). Journal of Crime
+        and Justice, 35(2), 135\u2013144. https:\/\/doi.org\/10.1080\/0735648X.2012.686583","journal-title":"Journal
+        of Crime and Justice"},{"key":"291_CR222","doi-asserted-by":"publisher","unstructured":"Taxman,
+        F. S., & Belenko, S. (2012). Implementing evidence-based practices in community
+        corrections and addiction treatment. Springer. https:\/\/doi.org\/10.1007\/978-1-4614-0412-5","DOI":"10.1007\/978-1-4614-0412-5"},{"issue":"3","key":"291_CR223","doi-asserted-by":"publisher","first-page":"605","DOI":"10.1016\/j.idc.2020.06.013","volume":"34","author":"K
+        Thakarar","year":"2020","unstructured":"Thakarar, K., Nenninger, K., & Agmas,
+        W. (2020). Harm Reduction Services to prevent and treat infectious diseases
+        in people who use drugs. Infectious Disease Clinics of North America, 34(3),
+        605\u2013620. https:\/\/doi.org\/10.1016\/j.idc.2020.06.013","journal-title":"Infectious
+        Disease Clinics of North America"},{"key":"291_CR224","doi-asserted-by":"publisher","unstructured":"Tillson,
+        M., Fallin-Bennett, A., & Staton, M. (2022). Providing peer navigation services
+        to women with a history of opioid misuse pre- and post-release from jail:
+        A program description. Journal of Clinical and Translational Science, 6(1).
+        https:\/\/doi.org\/10.1017\/cts.2022.441. Article e106.","DOI":"10.1017\/cts.2022.441"},{"key":"291_CR225","doi-asserted-by":"publisher","first-page":"935755","DOI":"10.3389\/fpsyt.2023.935755","volume":"14","author":"V
+        Tomaz","year":"2023","unstructured":"Tomaz, V., Moreira, D., & Souza Cruz,
+        O. (2023). Criminal reactions to drug-using offenders: A systematic review
+        of the effect of treatment and\/or punishment on reduction of drug use and\/or
+        criminal recidivism. Frontiers in Psychiatry, 14, 935755. https:\/\/doi.org\/10.3389\/fpsyt.2023.935755","journal-title":"Frontiers
+        in Psychiatry"},{"key":"291_CR226","doi-asserted-by":"publisher","unstructured":"Tori,
+        M. E., Cummins, E., Beletsky, L., Schoenberger, S. F., Lambert, A. M., Yan,
+        S., Carroll, J. J., Formica, S. W., Green, T. C., Apsler, R., Xuan, Z., &
+        Walley, A. Y. (2022). Warrant checking practices by post-overdose outreach
+        programs in Massachusetts: A mixed-methods study. International Journal of
+        Drug Policy, 100, Article 103483. https:\/\/doi.org\/10.1016\/j.drugpo.2021.103483","DOI":"10.1016\/j.drugpo.2021.103483"},{"key":"291_CR227","unstructured":"Trautman,
+        L., & Haggerty, J. (2019). Statewide policies relating to pre-arrest diversion
+        and crisis response [R Steet Policy Study No. 187]. https:\/\/www.rstreet.org\/wp-content\/uploads\/2019\/10\/Final-187.pdf"},{"key":"291_CR228","doi-asserted-by":"publisher","unstructured":"Tsai,
+        A. C., Kiang, M. V., Barnett, M. L., Beletsky, L., Keyes, K. M., McGinty,
+        E. E., Smith, L. R., Strathdee, S. A., Wakeman, S. E., & Venkataramani, A.
+        S. (2019). Stigma as a fundamental hindrance to the United States opioid overdose
+        crisis response. PLOS Medicine, 16(11). https:\/\/doi.org\/10.1371\/journal.pmed.1002969.
+        Article e1002969.","DOI":"10.1371\/journal.pmed.1002969"},{"key":"291_CR229","unstructured":"Tsai,
+        D. (2023). Letter to state medicaid directors regarding opportunities to test
+        transition-related strategies to support community reentry and improve care
+        transitions for individuals who are incarcerated [SMD#23\u2009\u2013\u2009003].
+        Retrieved from https:\/\/www.medicaid.gov\/federal-policy-guidance\/downloads\/smd23003.pdf"},{"issue":"1\u20132","key":"291_CR230","doi-asserted-by":"publisher","first-page":"23","DOI":"10.1016\/j.drugalcdep.2013.02.018","volume":"131","author":"LC
+        van Boekel","year":"2013","unstructured":"van Boekel, L. C., Brouwers, E.
+        P., van Weeghel, J., & Garretsen, H. F. (2013). Stigma among health professionals
+        towards patients with substance use disorders and its consequences for healthcare
+        delivery: Systematic review. Drug and Alcohol Dependence, 131(1\u20132), 23\u201335.
+        https:\/\/doi.org\/10.1016\/j.drugalcdep.2013.02.018","journal-title":"Drug
+        and Alcohol Dependence"},{"issue":"1","key":"291_CR231","doi-asserted-by":"publisher","first-page":"17","DOI":"10.1159\/000509119","volume":"30","author":"B
+        Varkey","year":"2021","unstructured":"Varkey, B. (2021). Principles of Clinical
+        Ethics and their application to practice. Medical Principles and Practice,
+        30(1), 17\u201328. https:\/\/doi.org\/10.1159\/000509119","journal-title":"Medical
+        Principles and Practice"},{"key":"291_CR232","unstructured":"Vest, N. (2023).
+        Locked up in more ways than one [Editorial]. Vital City. https:\/\/www.vitalcitynyc.org\/articles\/how-drugs-hurt-or-helped-me"},{"issue":"2","key":"291_CR233","doi-asserted-by":"publisher","first-page":"92","DOI":"10.1080\/16066359.2022.2123471","volume":"31","author":"N
+        Vest","year":"2023","unstructured":"Vest, N., Hennessy, E., Castedo de Martell,
+        S., & Smith, R. (2023). A socio-ecological model for collegiate recovery programs.
+        Addiction Research & Theory, 31(2), 92\u201399. https:\/\/doi.org\/10.1080\/16066359.2022.2123471","journal-title":"Addiction
+        Research & Theory"},{"key":"291_CR234","doi-asserted-by":"publisher","unstructured":"Vest,
+        N., Reinstra, M., Timko, C., Kelly, J., & Humphreys, K. (2021). College programming
+        for students in addiction recovery: A PRISMA-guided scoping review. Addictive
+        Behaviors, 121., Article 106992. https:\/\/doi.org\/10.1016\/j.addbeh.2021.106992","DOI":"10.1016\/j.addbeh.2021.106992"},{"issue":"12","key":"291_CR235","doi-asserted-by":"publisher","first-page":"2048","DOI":"10.1038\/s41386-021-01087-2","volume":"46","author":"ND
+        Volkow","year":"2021","unstructured":"Volkow, N. D. (2021). Addiction should
+        be treated, not penalized. Neuropsychopharmacology, 46(12), 2048\u20132050.
+        https:\/\/doi.org\/10.1038\/s41386-021-01087-2","journal-title":"Neuropsychopharmacology"},{"key":"291_CR236","doi-asserted-by":"publisher","unstructured":"Wakeman,
+        S. E., Larochelle, M. R., Ameli, O., Chaisson, C. E., McPheeters, J. T., Crown,
+        W. H., Azocar, F., & Sanghavi, D. M. (2020). Comparative effectiveness of
+        different treatment pathways for opioid Use Disorder. JAMA Network Open, 3(2).
+        https:\/\/doi.org\/10.1001\/jamanetworkopen.2019.20622. Article e1920622.","DOI":"10.1001\/jamanetworkopen.2019.20622"},{"key":"291_CR238","doi-asserted-by":"publisher","unstructured":"Watson,
+        D. P., Swartz, J. A., Robison-Taylor, L., Mackesy-Amiti, M. E., Erwin, K.,
+        Gastala, N., Jimenez, A. D., Staton, M. D., & Messmer, S. (2021). Syringe
+        service program-based telemedicine linkage to opioid use disorder treatment:
+        Protocol for the STAMINA randomized control trial. BMC Public Health, 21(1).
+        https:\/\/doi.org\/10.1186\/S12889-021-10669-0. Article 630.","DOI":"10.1186\/S12889-021-10669-0"},{"issue":"3","key":"291_CR237","doi-asserted-by":"publisher","first-page":"330","DOI":"10.3138\/cjccj.2013.E39","volume":"57","author":"TM
+        Watson","year":"2015","unstructured":"Watson, T. M. (2015). Research access
+        barriers as reputational risk management: A case study of censorship in corrections.
+        Canadian Journal of Criminology and Criminal Justice, 57(3), 330\u2013362.
+        https:\/\/doi.org\/10.3138\/cjccj.2013.E39","journal-title":"Canadian Journal
+        of Criminology and Criminal Justice"},{"issue":"2","key":"291_CR240","doi-asserted-by":"publisher","first-page":"918","DOI":"10.1177\/15248380231167390","volume":"25","author":"EL
+        Webb","year":"2024","unstructured":"Webb, E. L., Ireland, J. L., Lewis, M.,
+        & Morris, D. (2024). Potential sources of Moral Injury for Healthcare Workers
+        in Forensic and Psychiatric settings: A systematic review and Meta-ethnography.
+        Trauma Violence & Abuse, 25(2), 918\u2013934. https:\/\/doi.org\/10.1177\/15248380231167390","journal-title":"Trauma
+        Violence & Abuse"},{"key":"291_CR239","doi-asserted-by":"publisher","unstructured":"Weber,
+        S., & Lynch, S. (2021). Understanding the relations among adverse childhood
+        experiences (ACE), substance use, and reoffending among detained youth. Child
+        Abuse & Neglect, 120., Article 105211. https:\/\/doi.org\/10.1016\/j.chiabu.2021.105211","DOI":"10.1016\/j.chiabu.2021.105211"},{"issue":"1","key":"291_CR241","doi-asserted-by":"publisher","first-page":"1","DOI":"10.1080\/15487768.2016.1267051","volume":"20","author":"K
+        Weikel","year":"2017","unstructured":"Weikel, K., Tomer, A., Davis, L., &
+        Sieke, R. (2017). Recovery and self-efficacy of a newly trained certified
+        peer specialist following supplemental weekly group supervision: A case-based
+        time-series analysis. American Journal of Psychiatric Rehabilitation, 20(1),
+        1\u201315. https:\/\/doi.org\/10.1080\/15487768.2016.1267051","journal-title":"American
+        Journal of Psychiatric Rehabilitation"},{"key":"291_CR242","unstructured":"Weisman,
+        A. (2023). Eligibility of confined or incarcerated individuals to receive
+        Pell grants (DCL ID: GEN-23-05). U.S. Department of Education. https:\/\/fsapartners.ed.gov\/knowledge-center\/library\/dear-colleague-letters\/2023-03-29\/eligibility-confined-or-incarcerated-individuals-receive-pell-grants"},{"issue":"1","key":"291_CR243","doi-asserted-by":"publisher","first-page":"105","DOI":"10.1007\/s10488-014-0623-8","volume":"43","author":"WN
+        Welsh","year":"2016","unstructured":"Welsh, W. N., Knudsen, H. K., Knight,
+        K., Ducharme, L., Pankow, J., Urbine, T., Lindsey, A., Abdel-Salam, S., Wood,
+        J., Monico, L., Link, N., Albizu-Garcia, C., & Friedmann, P. D. (2016). Effects
+        of an organizational linkage intervention on inter-organizational service
+        coordination between probation\/parole agencies and community treatment providers.
+        Administration and Policy in Mental Health and Mental Health Services Research,
+        43(1), 105\u2013121. https:\/\/doi.org\/10.1007\/s10488-014-0623-8","journal-title":"Administration
+        and Policy in Mental Health and Mental Health Services Research"},{"key":"291_CR244","unstructured":"Wexler,
+        D. B., & Winick, B. J. (2009). Therapeutic jurisprudence. In R. K. Ries, D.
+        A. Fiellin, S. C. Miller, & R. Saitz (Eds.), Principles of Addiction Medicine
+        (4th ed.). Lippincott Williams & Wilkins."},{"issue":"7","key":"291_CR245","doi-asserted-by":"publisher","first-page":"961","DOI":"10.1046\/j.1360-0443.1999.9479612.x","volume":"94","author":"JM
+        White","year":"1999","unstructured":"White, J. M., & Irvine, R. J. (1999).
+        Mechanisms of fatal opioid overdose. Addiction, 94(7), 961\u2013972. https:\/\/doi.org\/10.1046\/j.1360-0443.1999.9479612.x","journal-title":"Addiction"},{"key":"291_CR246","unstructured":"Williams,
+        I. L., & Bonner, E. (2020). Patient termination as the ultimate failure of
+        addiction treatment: Reframing administrative discharge as clinical abandonment.
+        Journal of Social Work Values and Ethics, 17(1)."},{"key":"291_CR247","doi-asserted-by":"publisher","first-page":"459","DOI":"10.1007\/s11292-006-9019-4","volume":"2","author":"DB
+        Wilson","year":"2006","unstructured":"Wilson, D. B., Mitchell, O., & MacKenzie,
+        D. L. (2006). A systematic review of drug court effects on recidivism. Journal
+        of Experimental Criminology, 2, 459\u2013487. https:\/\/doi.org\/10.1007\/s11292-006-9019-4","journal-title":"Journal
+        of Experimental Criminology"},{"key":"291_CR248","unstructured":"Winick, B.
+        J. (2003). Therapeutic jurisprudence and problem-solving courts. Fordham Urban
+        Law Journal, 30(3), Article 14. https:\/\/ir.lawnet.fordham.edu\/ulj\/vol30\/iss3\/14\/"},{"key":"291_CR249","doi-asserted-by":"publisher","unstructured":"Winkelman,
+        T. N. A., Chang, V. W., & Binswanger, I. A. (2018). Health, polysubstance
+        use, and criminal justice involvement among adults with varying levels of
+        opioid use. JAMA Network Open, 1(3). https:\/\/doi.org\/10.1001\/jamanetworkopen.2018.0558.
+        Article e180558.","DOI":"10.1001\/jamanetworkopen.2018.0558"},{"issue":"11","key":"291_CR250","doi-asserted-by":"publisher","first-page":"2331","DOI":"10.1007\/s11606-019-05137-w","volume":"34","author":"GT
+        Woods","year":"2019","unstructured":"Woods, G. T., Cross, K., Williams, B.
+        C., & Winkelman, T. N. A. (2019). Accessing prison medical records in the
+        United States: A national analysis, 2018. Journal of General Internal Medicine,
+        34(11), 2331\u20132332. https:\/\/doi.org\/10.1007\/s11606-019-05137-w","journal-title":"Journal
+        of General Internal Medicine"},{"issue":"4","key":"291_CR251","doi-asserted-by":"publisher","first-page":"180","DOI":"10.1097\/ADM.0b013e318155980e","volume":"1","author":"GE
+        Woody","year":"2007","unstructured":"Woody, G. E., Kane, V., Lewis, K., &
+        Thompson, R. (2007). Premature deaths after discharge from methadone maintenance:
+        A replication. Journal of Addiction Medicine, 1(4), 180\u2013185. https:\/\/doi.org\/10.1097\/ADM.0b013e318155980e","journal-title":"Journal
+        of Addiction Medicine"},{"issue":"Supplement 6","key":"291_CR252","doi-asserted-by":"publisher","first-page":"S302","DOI":"10.1097\/PHH.0000000000001611","volume":"28","author":"N
+        Worthington","year":"2022","unstructured":"Worthington, N., Gilliam, T., Mital,
+        S., & Caslin, S. (2022). First responder assertive linkage programs: A scoping
+        review of interventions to improve linkage to care for people who use drugs.
+        Journal of Public Health Management and Practice: JPHMP, 28(Supplement 6),
+        S302\u2013S310. https:\/\/doi.org\/10.1097\/PHH.0000000000001611","journal-title":"Journal
+        of Public Health Management and Practice: JPHMP"},{"issue":"5","key":"291_CR253","doi-asserted-by":"publisher","first-page":"468","DOI":"10.1001\/jamapsychiatry.2023.0109","volume":"80","author":"Z
+        Xuan","year":"2023","unstructured":"Xuan, Z., Yan, S., Formica, S. W., Green,
+        T. C., Beletsky, L., Rosenbloom, D., Bagley, S. M., Kimmel, S. D., Carroll,
+        J. J., Lambert, A. M., & Walley, A. Y. (2023). Association of implementation
+        of postoverdose outreach programs with subsequent opioid overdose deaths among
+        Massachusetts municipalities. JAMA Psychiatry, 80(5), 468\u2013477. https:\/\/doi.org\/10.1001\/jamapsychiatry.2023.0109","journal-title":"JAMA
+        Psychiatry"},{"key":"291_CR254","doi-asserted-by":"publisher","first-page":"102849","DOI":"10.1016\/j.drugpo.2020.102849","volume":"83","author":"AJ
+        Yatsco","year":"2020","unstructured":"Yatsco, A. J., Champagne-Langabeer,
+        T., Holder, T. F., Stotts, A. L., & Langabeer, J. R. (2020). Developing interagency
+        collaboration to address the opioid epidemic: A scoping review of joint criminal
+        justice and healthcare initiatives. International Journal on Drug Policy,
+        83, 102849. https:\/\/doi.org\/10.1016\/j.drugpo.2020.102849","journal-title":"International
+        Journal on Drug Policy"},{"key":"291_CR255","doi-asserted-by":"publisher","unstructured":"Zhao,
+        J., & Tomm, B. M. (2018). Psychological responses to scarcity. In I. Johnsrude
+        (Ed.), Oxford Research Encyclopedia of Psychology. Oxford University Press.
+        https:\/\/doi.org\/10.1093\/acrefore\/9780190236557.013.41","DOI":"10.1093\/acrefore\/9780190236557.013.41"}],"container-title":["Health
+        &amp; Justice"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/link.springer.com\/content\/pdf\/10.1186\/s40352-024-00291-8.pdf","content-type":"application\/pdf","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/link.springer.com\/article\/10.1186\/s40352-024-00291-8\/fulltext.html","content-type":"text\/html","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/link.springer.com\/content\/pdf\/10.1186\/s40352-024-00291-8.pdf","content-type":"application\/pdf","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2024,8,29]],"date-time":"2024-08-29T08:07:06Z","timestamp":1724918826000},"score":1,"resource":{"primary":{"URL":"https:\/\/healthandjusticejournal.biomedcentral.com\/articles\/10.1186\/s40352-024-00291-8"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2024,8,29]]},"references-count":258,"journal-issue":{"issue":"1","published-online":{"date-parts":[[2024,12]]}},"alternative-id":["291"],"URL":"https:\/\/doi.org\/10.1186\/s40352-024-00291-8","relation":{"has-version":[{"id-type":"doi","id":"10.21428\/cb6ab371.153bd084","asserted-by":"object"}]},"ISSN":["2194-7899"],"issn-type":[{"value":"2194-7899","type":"electronic"}],"subject":[],"published":{"date-parts":[[2024,8,29]]},"assertion":[{"value":"20
+        January 2024","order":1,"name":"received","label":"Received","group":{"name":"ArticleHistory","label":"Article
+        History"}},{"value":"8 August 2024","order":2,"name":"accepted","label":"Accepted","group":{"name":"ArticleHistory","label":"Article
+        History"}},{"value":"29 August 2024","order":3,"name":"first_online","label":"First
+        Online","group":{"name":"ArticleHistory","label":"Article History"}},{"order":1,"name":"Ethics","group":{"name":"EthicsHeading","label":"Declarations"}},{"value":"Not
+        applicable. No animal or human data were collected.","order":2,"name":"Ethics","group":{"name":"EthicsHeading","label":"Ethics
+        approval and consent to participate"}},{"value":"Not applicable.","order":3,"name":"Ethics","group":{"name":"EthicsHeading","label":"Consent
+        for publication"}},{"value":"Amanda Fallin-Bennett is a co-founder of Voices
+        of Hope-Lexington, a recovery community organization that partners to deliver
+        the Kentucky Justice Community Opioid Innovation (JCOIN) intervention.","order":4,"name":"Ethics","group":{"name":"EthicsHeading","label":"Competing
+        interests"}}],"article-number":"36"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 22:54:20 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1186%2Fs40352-024-00291-8%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTcyNTI4NzE1MTAwMCwxMC4yMTQyOCUyRmNiNmFiMzcxLjE1M2JkMDg0","total-results":1,"items":[{"DOI":"10.21428\/cb6ab371.153bd084","relation":{"is-version-of":[{"id-type":"doi","id":"10.1186\/s40352-024-00291-8","asserted-by":"subject"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 22:54:20 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.21428/cb6ab371.153bd084?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2024,9,3]],"date-time":"2024-09-03T00:18:28Z","timestamp":1725322708805},"reference-count":0,"publisher":"PubPub","content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"DOI":"10.21428\/cb6ab371.153bd084","type":"journal-article","created":{"date-parts":[[2024,9,2]],"date-time":"2024-09-02T14:25:51Z","timestamp":1725287151000},"source":"Crossref","is-referenced-by-count":0,"title":["Linkage
+        facilitation for opioid use disorder in criminal legal system contexts: a
+        primer for researchers, clinicians, and legal practitioners"],"prefix":"10.21428","author":[{"given":"Milan
+        F.","family":"Satcher","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Steven","family":"Belenko","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"family":"Colleagues","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"9621","published-online":{"date-parts":[[2024,9,2]]},"container-title":["CrimRxiv"],"original-title":[],"language":"en","deposited":{"date-parts":[[2024,9,2]],"date-time":"2024-09-02T14:25:59Z","timestamp":1725287159000},"score":1,"resource":{"primary":{"URL":"https:\/\/www.crimrxiv.com\/pub\/ax71izou"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2024,9,2]]},"references-count":0,"URL":"https:\/\/doi.org\/10.21428\/cb6ab371.153bd084","relation":{"is-version-of":[{"id-type":"doi","id":"10.1186\/s40352-024-00291-8","asserted-by":"subject"}]},"subject":[],"published":{"date-parts":[[2024,9,2]]}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '760'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 22:54:20 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.1186/s40352-024-00291-8
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://api.crossref.org/v1/works/10.1186%2Fs40352-024-00291-8/transform">https://api.crossref.org/v1/works/10.1186%2Fs40352-024-00291-8/transform</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4f452b3eaffe86c-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Fri, 23 Oct 2026 22:54:20 GMT
+      expires:
+      - Fri, 23 Oct 2026 23:08:08 GMT
+      location:
+      - https://api.crossref.org/v1/works/10.1186%2Fs40352-024-00291-8/transform
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=wE7k%2BsJmEfy2W2TkcZkwf1hbay7VDQ4oY4z2q57MbPx0J2ElF2KP6l8WUEh%2BX4GCG3heHvyYNt35rts%2BPUZGxpud%2FowjjFtFlYoTEb2cLDhPxWqHsH1k2pk%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/v1/works/10.1186%2Fs40352-024-00291-8/transform
+  response:
+    body:
+      string: !!binary |
+        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
+        xYgS06bdvR//AUa/sBzI3gEA
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-type:
+      - application/vnd.citationstyles.csl+json
+      date:
+      - Fri, 23 Oct 2026 22:54:20 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept, Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.21428/cb6ab371.153bd084
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://api.crossref.org/v1/works/10.21428%2Fcb6ab371.153bd084/transform">https://api.crossref.org/v1/works/10.21428%2Fcb6ab371.153bd084/transform</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4f452b57fa7e86c-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Fri, 23 Oct 2026 22:54:21 GMT
+      expires:
+      - Fri, 23 Oct 2026 23:27:31 GMT
+      location:
+      - https://api.crossref.org/v1/works/10.21428%2Fcb6ab371.153bd084/transform
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=BxueVmXM1FxPDde88aOaIMsKiMIYd2BbDUep76XvxE7RmtqdlPsM07Mx8uuUFEVpM0WY%2FXURVzfheSTHYcHpGMQ8Ee%2F2IBA6t8yDrW4Nj2RkuLyT3Vt1wBU%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/v1/works/10.21428%2Fcb6ab371.153bd084/transform
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAA/7VUTW/bMAz9K4bOdmI5SeP4uA4DBnTY0HaXJT3IEp2ylS1PktNkQf77KOejKbDm
+        sg0IApmiSL5HPm4ZNgrWoFixZUp4SFphvWPFfJ6l2TiexaOHh3h/47EGVrBgT9JZko7u07TgeZHl
+        P1jMwq3zom5ZwafZZJRl0zTP08kuZhYqsNBISKTpGs+KNGZtV2p0j2Ap4reupB/FkKbx0PhEmVpg
+        05d0OM2pCGmNc7Wwz4mlTBalR0NXldAOKMvHr58pFk8HGR9n+WIoyytRjqZ8wCejUqX5OBS5aQOE
+        J9PZRuiEoKLUEDJbIIjvs5C9y0J2z8dFNikm/A8sZPmUT3iaplSfo6QyPL0OOIgTckeXnMhRSbk5
+        I8ij18H7BptnsYSoEhI1ehFAR5WxkWnRoIo6B5FCZ6wCG2ETSYs1ErhIw5L+3cZ5qKOe2bV3RSSi
+        ljzIN8QgIkFYSW1wcSQ1NihRNHQWjToEaK0gokNWcqKSWyoY12dMk010/tFQJ+dbtsQVUFPYF9Si
+        iT4N6LYSNeoN2e6ED6nI5OBnFzCTsULrfIhRVYRP7Hsa2m1NwE8h94djkpitjBRlp4UNMeWRzN3D
+        Ln5Nf+chHM6SfwANzbN5m1wo1UMT+p9VcEp4bbQGsezA/d+c9KiGuuyVNLvKOHsVl0pMQ02FS2O9
+        28uOVAY2OQ7dNY3I7RpXFMtYXIZ5Ot6FIqm1y46Gkjx7khW0xuFf6mf2nn5mB/1IY+klD/vkqKUt
+        C8Pcc7Jl329vKPCj960rFsPF8OXlZRDUYAnIQJp6MSReFkOxnnL8ZTq2C0G78gyXI6r9OVB0rruM
+        6ny9uTP5vhbT16LWA2VwYOxyMby8oizowzhsw3pYkeroKzFVPxWoksMOo3Bhgai9EjnPrxZDN05H
+        kyzpqU2zGU96cToH1vfrhXwJ8BNI3w/r6aPHehqai3B3vwEbcD9XMgYAAA==
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-length:
+      - '727'
+      content-type:
+      - application/vnd.citationstyles.csl+json
+      date:
+      - Fri, 23 Oct 2026 22:54:21 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept, Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+version: 1

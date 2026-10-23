@@ -32,6 +32,11 @@ from .sync import _copy_of
 logger = logging.getLogger(__name__)
 
 METADATA_VERSION = 4
+#: The providers the metadata service asks, in the order it asks them. It reads no setting
+#: for this, so no setting is in the fingerprint: changing which providers look up ids does
+#: not make the metadata stale. (The value is what the setting used to default to, so
+#: existing fingerprints do not change.)
+PROVIDERS = ("semantic_scholar", "pubmed", "openalex")
 
 #: Kept in the catalog row for display and for the upload stage.
 SUMMARY_FIELDS = ("title", "journal", "publication_year", "oa_status")
@@ -68,7 +73,7 @@ class MetadataStage:
         texts = sorted((source, artifact.fingerprint)
                        for source, artifact in (extractions or {}).items()
                        if source in PDF_SOURCES and artifact.status is Status.OK)
-        return fingerprint("metadata", METADATA_VERSION, tuple(self.settings.metadata_providers),
+        return fingerprint("metadata", METADATA_VERSION, PROVIDERS,
                            tuple(held), *([tuple(texts)] if texts else []))
 
     def plan(

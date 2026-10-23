@@ -45,6 +45,11 @@ _SAME_WORK = ("is-version-of", "has-version", "is-same-as", "is-identical-to")
 #: The version number a publisher appends to a version's DOI.
 _VERSIONED = re.compile(r"\.\d{1,2}$")
 
+
+def unversioned(doi: str) -> str:
+    """The DOI without the version number a publisher appends to it."""
+    return _VERSIONED.sub("", doi)
+
 #: A notice about another work, or another kind of work under its name: it takes that
 #: work's title into its own.
 _NOTICE = re.compile(
@@ -374,7 +379,7 @@ class Evidence:
         asked by each spelling of the DOI, as in `versions`. Raises when Crossref cannot
         be read."""
         if doi not in self._related:
-            own = (self.record(doi) or CrossrefWork(doi, (), None, {}, ())).relations
+            own = (self.record(doi) or CrossrefWork(doi, (), None, None, {}, ())).relations
             named: Dict[str, List[str]] = {}
             for spelling in self._spelled(doi):
                 for kind, found in self._registry.relating(
@@ -401,13 +406,13 @@ class Evidence:
         Crossref does not relate to the preprint). Raises Unreadable when the registry
         cannot be read for one of them."""
         if doi not in self._versions:
-            relations = (self.record(doi) or CrossrefWork(doi, (), None, {}, ())).relations
+            relations = (self.record(doi) or CrossrefWork(doi, (), None, None, {}, ())).relations
             relating = [self._registry.relating(spelling, _VERSION_OF)
                         for spelling in self._spelled(doi)]
             related = [r for kind in _VERSION_OF
                        for r in [*relations.get(kind, ()), *(r for found in relating
                                                              for r in found.get(kind, ()))]]
-            concepts = [base for r in related if (base := _VERSIONED.sub("", r)) != r
+            concepts = [base for r in related if (base := unversioned(r)) != r
                         and self.same_dois(base, r)]
             self._versions[doi] = list(dict.fromkeys(
                 d for d in (normalize_doi(v) for v in related + concepts) if d))

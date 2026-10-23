@@ -1,19 +1,21 @@
 """Ask external providers for the identifiers an article is missing.
 
 Results are remembered by the catalog's alias table: an article that already
-carries a pmid, a doi and a pmcid has nothing left to look up, so no provider
-is queried for it again.
+carries a pmid, a doi and a pmcid has nothing left for Semantic Scholar, OpenAlex or
+PubMed to look up, so they are not queried for it again. Crossref, which files an
+article's preprint and other ids, remembers that it has been asked in the catalog.
 """
 
 from __future__ import annotations
 
 import json
-from typing import List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Set, Tuple
 
 import httpx
 import requests
 
-from ingestion_workflow.catalog.evidence import Unreadable
+from ingestion_workflow.catalog.evidence import Unreadable, unversioned
+from ingestion_workflow.catalog.store import IdentityError
 from ingestion_workflow.clients.openalex import OpenAlexClient
 from ingestion_workflow.clients.pubmed import PubMedClient, PubMedSummary, summary_of_record
 from ingestion_workflow.clients.semantic_scholar import SemanticScholarClient
@@ -275,22 +277,23 @@ _NEW_VERSIONS = {"new_version", "major_revision", "minor_revision"}
 #: Where each field's ids are held by the catalog, for finding whom an id already belongs to.
 _KIND = {"doi": "doi", "preprint_dois": "doi", "alternative_dois": "doi",
          "preprint_pmids": "pmid", "preprint_pmcids": "pmcid"}
-#: Failures of a registry or PubMed that leave one article's ids unfiled, not the batch.
-_UNREADABLE = (Unreadable, requests.RequestException, httpx.HTTPError)
+#: Failures of PubMed or Crossref that leave one article's ids unfiled, not the batch.
+_UNREACHABLE = (requests.RequestException, httpx.HTTPError)
 
 
 class CrossrefIDLookupService(IDLookupService):
     """Files each article's other ids into the preprint and alternative buckets.
 
-    Runs after the other providers, so it files what they found too. PubMed's record of
-    the article's PMID says whether that PMID is a preprint's (a `Preprint`-typed record)
-    and which DOI is the paper's; Crossref says what each of the article's DOIs is (a
-    preprint is `posted-content`, whatever its prefix) and which DOIs it is related to,
-    from either side. Each id is checked against the catalog and the registries before it
-    is filed, with the evidence the catalog's repair uses, so that registration is not left
-    to refuse it: an id another article holds, a second journal DOI the registries do not
-    give the same work, a DOI PubMed gives another paper. What is not filed is in
-    `omitted`, with why; what was a collision and was filed is in `resolved`.
+    Runs last in the chain, so it files what the other providers found too. PubMed's
+    record of the article's PMID says whether that PMID is a preprint's (a
+    `Preprint`-typed record) and which DOI is the paper's; Crossref says what each of the
+    article's DOIs is (a `posted-content` preprint, whatever its prefix) and which DOIs it
+    is related to, from either side. Each id is checked against the catalog, the rest of
+    the batch and the registries before it is filed, with the evidence the catalog's repair
+    uses, so registration has nothing left to refuse: an id another article holds, a second
+    DOI the registries do not give the same work, a DOI PubMed gives another paper. What is
+    not filed is written to the catalog's `refusals`; what was a collision and was filed is
+    in `resolved`. The catalog is told each article was asked of, and does not ask again.
     """
 
     extractor_name = "crossref"
@@ -299,11 +302,13 @@ class CrossrefIDLookupService(IDLookupService):
 
     def __init__(self, settings: Settings, catalog=None) -> None:
         super().__init__(settings, catalog)
-        #: (kind, value, article id or None, why) of each id left unfiled since creation.
-        self.omitted: List[Tuple[str, str, Optional[str], str]] = []
         #: (kind, value, why) of each id that would have collided where the record had it,
         #: and was filed where the evidence puts it.
         self.resolved: List[Tuple[str, str, str]] = []
+        self._batch: List[Identifier] = []
+        #: The batch's identifiers holding each id, by (kind, value).
+        self._claims: Dict[Tuple[str, str], List[Identifier]] = {}
+        self._failed: Set[int] = set()
 
     def can_run(self) -> bool:
         return self.catalog is not None and self.catalog.evidence is not None
@@ -311,9 +316,20 @@ class CrossrefIDLookupService(IDLookupService):
     def _missing_credentials_reason(self) -> str:
         return "the catalog was opened without PubMed and registry evidence"
 
+    def find_identifiers(self, identifiers: Identifiers) -> Identifiers:
+        self._batch = identifiers.identifiers
+        self._claims = {}
+        for identifier in self._batch:
+            for claim in _ids(identifier):
+                self._claims.setdefault(claim, []).append(identifier)
+        self._failed = set()
+        return super().find_identifiers(identifiers)
+
     def _is_complete(self, identifier: Identifier) -> bool:
-        # Having all three ids says nothing of the article's preprints and other ids.
-        return False
+        # Having all three ids says nothing of the article's preprints and other ids; it is
+        # done once the catalog has a record of Crossref being asked.
+        owner = self.catalog.resolve(identifier)
+        return owner is not None and self.catalog.was_looked_up(owner.id, self.extractor_name)
 
     def _lookup_by_type(self, id_type: str, identifiers: Identifiers) -> None:
         for identifier in identifiers.identifiers:
@@ -323,14 +339,36 @@ class CrossrefIDLookupService(IDLookupService):
                 if id_type == "pmid":
                     self._file_pubmed(identifier, article)
                 else:
-                    # A preprint's relation names the paper, which is checked against the DOI
-                    # the article holds before that DOI's own relations file it unchecked.
-                    for doi in dict.fromkeys([*identifier.preprint_dois, identifier.doi]):
-                        if doi:
-                            self._file_crossref(identifier, doi, article)
-            except _UNREADABLE as exc:
+                    self._file_crossref_dois(identifier, article)
+            except _UNREACHABLE as exc:
+                self._failed.add(id(identifier))
                 self._log_lookup_failure(id_type, [identifier], exc)
             identifier.normalize()
+
+    def _persist_cache_entries(self, identifiers: Sequence[Identifier]) -> None:
+        """Register the articles, hold in the catalog as the preprint's each id filed as
+        one that the catalog holds as the paper's, and record that Crossref was asked."""
+        super()._persist_cache_entries(identifiers)
+        asked = []
+        for identifier in identifiers:
+            owner = self.catalog.resolve(identifier)
+            if owner is None:
+                continue
+            self._rekind(owner.id, identifier)
+            if id(identifier) not in self._failed:
+                asked.append(owner.id)
+        self.catalog.record_lookups(asked, self.extractor_name)
+
+    def _rekind(self, article: str, identifier: Identifier) -> None:
+        held = [(kind, value, article)
+                for kind, values in (("pmid", identifier.preprint_pmids),
+                                     ("pmcid", identifier.preprint_pmcids))
+                for value in values if value in self.catalog.aliases(article, kind)]
+        try:
+            self.catalog.rekind_aliases(held)
+        except IdentityError as exc:
+            for kind, value, _ in held:
+                self.catalog.refuse(kind, value, article, f"not held as the preprint's: {exc}")
 
     # -- Filing ----------------------------------------------------------
     def _file_pubmed(self, identifier: Identifier, article: Optional[str]) -> None:
@@ -339,15 +377,16 @@ class CrossrefIDLookupService(IDLookupService):
         if summary is None:
             return
         doi = normalize_doi(summary.doi) if summary.doi else None
+        held = {identifier.doi, *identifier.preprint_dois, *identifier.alternative_dois}
+        # An id the article holds needs no evidence: nothing is filed by it.
         paper = False
-        if doi is not None:
+        if doi is not None and doi not in held:
             try:
                 paper = self.catalog.evidence.same_paper(doi, summary)
                 why = "which the registry does not give that paper"
             except Unreadable as exc:
                 why = f"and the registry cannot say whether that is its paper: {exc}"
-            held = {identifier.doi, *identifier.preprint_dois, *identifier.alternative_dois}
-            if not paper and doi not in held:
+            if not paper:
                 self._omit("doi", doi, article, f"PubMed's record of {pmid} gives it, {why}")
         if summary.preprint:
             identifier.pmid = None
@@ -359,7 +398,7 @@ class CrossrefIDLookupService(IDLookupService):
             if paper:
                 self._add(identifier, "preprint_dois", doi, article)
             return
-        if not paper or doi == identifier.doi:
+        if not paper:
             return
         holder = self.catalog.holder("doi", doi)
         if holder not in (None, article):
@@ -369,22 +408,36 @@ class CrossrefIDLookupService(IDLookupService):
         elif identifier.doi is None:
             self._add(identifier, "doi", doi, article)
         else:
-            self._omit("doi", doi, article,
-                       f"PubMed gives pmid {pmid} this DOI, not the article's {identifier.doi}")
+            self._omit("doi", doi, article, f"PubMed gives pmid {pmid} this DOI, not the "
+                       f"article's {identifier.doi}; the repair reports it as pmid-doi")
+
+    def _file_crossref_dois(self, identifier: Identifier, article: Optional[str]) -> None:
+        """Ask Crossref of the article's DOI and its preprints', and of each preprint DOI
+        that asking finds. A preprint's relation names the paper, which is checked against
+        the DOI the article holds before that DOI's own relations file it."""
+        asked: Set[str] = set()
+        while True:
+            todo = [d for d in dict.fromkeys([*identifier.preprint_dois, identifier.doi])
+                    if d and d not in asked]
+            if not todo:
+                return
+            for doi in todo:
+                asked.add(doi)
+                self._file_crossref(identifier, doi, article)
 
     def _file_crossref(self, identifier: Identifier, doi: str, article: Optional[str]) -> None:
         evidence = self.catalog.evidence
         record = evidence.record(doi)
         if record is None:
             return
-        if record.type == "posted-content" and identifier.doi == doi:
+        if identifier.doi == doi and _is_preprint(record):
             identifier.doi = None
             self._add(identifier, "preprint_dois", doi, article)
         for updated, kind in record.updates:
             if updated == doi:
                 continue
             if kind in _NEW_VERSIONS:
-                self._add(identifier, "alternative_dois", updated, article)
+                self._add_alternative(identifier, updated, article)
             else:
                 self._omit("doi", updated, article, f"{doi} is a {kind or 'notice'} of it, "
                            "which is another work")
@@ -394,32 +447,53 @@ class CrossrefIDLookupService(IDLookupService):
         for paper in related.papers:
             self._add_paper(identifier, paper, article)
         for version in related.versions:
-            self._add(identifier, "preprint_dois" if is_preprint_doi(version)
-                      else "alternative_dois", version, article)
+            self._add_version(identifier, version, article)
+
+    def _add_version(self, identifier: Identifier, doi: str, article: Optional[str]) -> None:
+        """Another id of the work: a preprint server's copy is a preprint's, whichever server
+        and however Crossref types it, but a work with a version of record has its own
+        per-version DOIs (eLife's .1, .2, .3) as alternatives, though Crossref types the
+        reviewed preprints among them posted-content."""
+        record = None if is_preprint_doi(doi) else self.catalog.evidence.record(doi)
+        own_version = identifier.doi is not None and (
+            unversioned(doi) == unversioned(identifier.doi))
+        if is_preprint_doi(doi) or (record is not None and _is_preprint(record)
+                                    and not own_version):
+            self._add(identifier, "preprint_dois", doi, article)
+        else:
+            self._add_alternative(identifier, doi, article)
 
     def _add_paper(self, identifier: Identifier, doi: str, article: Optional[str]) -> None:
-        """The DOI of the paper a preprint is of: the version of record's, or when the
-        article has one already, another id of it only if the registries give both DOIs one
-        work."""
-        held = identifier.doi
-        if held is None or held == doi:
+        """The DOI of the paper a preprint is of: the version of record's, or another id of
+        the work when the article has one already."""
+        if identifier.doi is None:
             self._add(identifier, "doi", doi, article)
+        else:
+            self._add_alternative(identifier, doi, article)
+
+    def _add_alternative(self, identifier: Identifier, doi: str,
+                         article: Optional[str]) -> None:
+        """Another DOI of the article's version of record: a version of the DOI it holds, or
+        one the registries give one work with it."""
+        held = identifier.doi
+        if held is None or doi == held or unversioned(doi) == unversioned(held):
+            self._add(identifier, "alternative_dois", doi, article)
             return
         try:
             same = self.catalog.evidence.same_dois(held, doi)
             why = f"the registries do not give it and the article's {held} one work"
         except Unreadable as exc:
             same, why = False, f"the registry cannot say whether it is {held}'s work: {exc}"
-        if same:
-            if self._add(identifier, "alternative_dois", doi, article):
-                self.resolved.append(("doi", doi, f"a second journal DOI of {held}'s work"))
-        else:
+        if not same:
             self._omit("doi", doi, article, why)
+        elif self._add(identifier, "alternative_dois", doi, article):
+            self.resolved.append(("doi", doi, f"a second DOI of {held}'s work"))
 
     # -- Helpers ---------------------------------------------------------
     def _add(self, identifier: Identifier, field: str, value: str,
              article: Optional[str]) -> bool:
-        """File `value` in `field` unless the article holds it already or another does."""
+        """File `value` in `field` unless the article holds it already, or another article
+        does: one in the catalog, or one of the batch."""
         kind = _KIND[field]
         if kind == "doi":
             value = normalize_doi(value)
@@ -431,15 +505,20 @@ class CrossrefIDLookupService(IDLookupService):
         if holder not in (None, article):
             self._omit(kind, value, article, f"{holder} holds it")
             return False
+        for other in self._claims.get((kind, value), ()):
+            owner = self.catalog.resolve(other)
+            if other is not identifier and (owner is None or owner.id != article):
+                self._omit(kind, value, article, f"{other.slug}, in this batch, holds it")
+                return False
         if field == "doi":
             identifier.doi = value
         else:
             setattr(identifier, field, (*getattr(identifier, field), value))
+        self._claims.setdefault((kind, value), []).append(identifier)
         return True
 
     def _omit(self, kind: str, value: str, article: Optional[str], why: str) -> None:
-        self.omitted.append((kind, value, article, why))
-        self.logger.warning("%s %s not filed -- %s", kind, value, why)
+        self.catalog.refuse(kind, value, article, why)
 
     def _summary(self, identifier: Identifier, pmid: str) -> Optional[PubMedSummary]:
         """PubMed's summary of the PMID: the metadata stage's stored record of the article
@@ -456,3 +535,21 @@ class CrossrefIDLookupService(IDLookupService):
                 if stored is not None and PubMedClient._extract_pmid(record) == pmid:
                     self.catalog.evidence.hold({pmid: stored})
         return self.catalog.evidence.summaries([pmid]).get(pmid)
+
+
+def _is_preprint(record) -> bool:
+    """Crossref types a preprint `posted-content`, subtype `preprint`; its other
+    posted-content (a working paper, a report, a dissertation) is not one."""
+    return record.type == "posted-content" and record.subtype == "preprint"
+
+
+def _ids(identifier: Identifier):
+    """Each (kind, value) the identifier holds, in whatever bucket."""
+    yield from (("doi", d) for d in
+                {identifier.doi, *identifier.preprint_dois, *identifier.alternative_dois} - {None})
+    yield from (("pmid", p) for p in
+                {identifier.pmid, *identifier.preprint_pmids, *identifier.alternative_pmids}
+                - {None})
+    yield from (("pmcid", c) for c in
+                {identifier.pmcid, *identifier.preprint_pmcids, *identifier.alternative_pmcids}
+                - {None})

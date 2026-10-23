@@ -30,7 +30,6 @@ def config(tmp_path):
                 "log_to_file": False,
                 "show_progress": False,
                 "pubmed_email": "replay@example.com",
-                "metadata_providers": ["pubmed"],
             }
         ),
         encoding="utf-8",
@@ -65,6 +64,7 @@ def patched(monkeypatch):
     monkeypatch.setattr(lookup, "PubMedIDLookupService", FakeLookup, raising=False)
     monkeypatch.setattr(lookup, "SemanticScholarIDLookupService", FakeLookup, raising=False)
     monkeypatch.setattr(lookup, "OpenAlexIDLookupService", FakeLookup, raising=False)
+    monkeypatch.setattr(lookup, "CrossrefIDLookupService", FakeLookup, raising=False)
 
 
 def run(*args):
@@ -109,5 +109,6 @@ def test_an_unconfigured_provider_is_skipped_not_fatal(config, tmp_path, monkeyp
             return False
 
     monkeypatch.setattr(lookup, "PubMedIDLookupService", CannotRun, raising=False)
+    monkeypatch.setattr(lookup, "CrossrefIDLookupService", CannotRun, raising=False)
     out = run("add", "111", "--config", str(config))
     assert "not configured" in out

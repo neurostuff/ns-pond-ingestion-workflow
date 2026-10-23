@@ -1,0 +1,632 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=41799680&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAKyT227UMBCGX2XkK5C2Vbrbeg93ZbcCShdVC2ovKi5ms0NiyYfgQ1G04t07jktR
+        uSISUpRMfs/n3x57jqIlPJAXq6OIfUdiJSgkY9D3YiIeyQflLIvV6Uz8mgjPgzrm5KQOQawexPnZ
+        fLmUi0p8m/yJyzhjL8pEdGl/wJgNptVUskCvFdiihwvWg0u+zupHg42yDXym5F2oFbxZo9m/5RRM
+        sXU++x+FRZOT17hHe7JTvGSEzeVz0vOWLod81mqdQiQ/rI3380LfK60VmgA3X0eS2/o9et/DdnM9
+        kvxiVGxhsxuJ3aGFDy5FsnB1dT8SvsWkA5OfNiPBd9jrHm7vRmLXrrXBWVjf/BPId0hjiOV4/8aj
+        inqoONUtWlWjhs67jnxUFMB9h5+tigQGI08I0WMdAygL5RJhCMTPAR4VAuPBRYZVDdsdUDZ1jceu
+        7U+HG+jjbzfzf92Mf+WWe8zpNNTqnH9UCCnHuV+woVBCjbbJvUb84RJZbZJVPxINVVsuzxZSziS/
+        KinnssxiC0klmi5m8xNZXcjSh+UQHsQTAAAA//90VsuOmzAU3fcr0Kw7YCAQoKuoiz6kSKNKXXYB
+        xpnxjMERj6gP5d97ru0ECJldYnzsc+7jXH9Hp7UQtoMoDrW/qMG57mqkYBjp8qex2kPFIymDfI7z
+        7BHXHVGSUWrtCdYT/j3I2uUZOxtREyWzAi4hFJfKiLyaAxXMBGn4fH827X/afw6jPN2Ecb6CyMUl
+        yQTCt0dZF94M/GmJrrWcY+MJGzI/DNMo+LbfffFL/EYAlxfLBXQzQRcQxPVFIufwVIrOPHyIt4Bn
+        EfvJCzcBSwKWe4wVzEZnCTnJ/gaRBiwK2OYdRMm5OA53Iek7EGRNyVbcImKiFW6LeLtCXFN9H5Cu
+        AKIdOvH3LoClRbTmRKnshBJlf49XclFiqvggOtFyYcsRf69DpZL6x2958j2KM2bOH4/lBf32WeKz
+        zE/yOEqZ76EqCs8UAAuD9fcHc4krg59HIgNToN5oqCvjbJumKDU0qzY0DS14RScrWLeZnF/L3ttB
+        HVkHtR7k4UiuxxYDNkMZHkalXm2LOju9TMTWTUSSaKciHPRZfISevvdpQgqleTlgdhuPQJ0W3qwk
+        5/Ju6huB1dzp4nIwZ5AldpzrlugrVDLog3Cl9dvFJrEF2Zdj43ynloN9OFi7AOhFdBdON8tOnL3F
+        pdXE9wgfbsemoucJrZSnUqqyUuLQ6WbslHNHdyq+CLcECSu2WJvOJurTtXB4tIe7hMx/+TJZlJfd
+        cJDdbEyt3x4nUsVHRb7oAnQ+nz/8BwAA//8DACifgvluCQAA
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Fri, 23 Oct 2026 22:54:34 GMT
+      ncbi-phid:
+      - 1D32B8BB86A02F150000409820170C40.1.1.m_1
+      ncbi-sid:
+      - FD62006D246A6277_1E72SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1162/imag.a.1156?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,6,7]],"date-time":"2026-06-07T14:59:27Z","timestamp":1780844367409,"version":"3.54.1"},"reference-count":83,"publisher":"MIT
+        Press","license":[{"start":{"date-parts":[[2026,2,17]],"date-time":"2026-02-17T00:00:00Z","timestamp":1771286400000},"content-version":"vor","delay-in-days":47,"URL":"https:\/\/creativecommons.org\/licenses\/by\/4.0\/"}],"funder":[{"DOI":"10.13039\/100000070","name":"National
+        Institutes of Health","doi-asserted-by":"publisher","award":["R01-EB027577"],"award-info":[{"award-number":["R01-EB027577"]}],"id":[{"id":"10.13039\/100000070","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000070","name":"National
+        Institutes of Health","doi-asserted-by":"publisher","award":["R01-AG058853"],"award-info":[{"award-number":["R01-AG058853"]}],"id":[{"id":"10.13039\/100000070","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000070","name":"National
+        Institutes of Health","doi-asserted-by":"publisher","award":["U01-NS112120"],"award-info":[{"award-number":["U01-NS112120"]}],"id":[{"id":"10.13039\/100000070","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000006","name":"Office
+        of Naval Research","doi-asserted-by":"publisher","award":["N00014-22-1-2198"],"award-info":[{"award-number":["N00014-22-1-2198"]}],"id":[{"id":"10.13039\/100000006","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000006","name":"Office
+        of Naval Research","doi-asserted-by":"publisher","award":["N00014-24-1-2599"],"award-info":[{"award-number":["N00014-24-1-2599"]}],"id":[{"id":"10.13039\/100000006","id-type":"DOI","asserted-by":"publisher"}]},{"name":"Delaware
+        Community Foundation Boerger Fund"}],"content-domain":{"domain":["direct.mit.edu"],"crossmark-restriction":true},"short-container-title":[],"published-print":{"date-parts":[[2026,3,5]]},"abstract":"<jats:title>Abstract<\/jats:title>\n                  <jats:p>Magnetic
+        resonance elastography (MRE) is a promising neuroimaging technique to probe
+        tissue microstructure through mechanical properties, such as stiffness, and
+        which has revealed widespread softening in the aging brain and in neurological
+        disorders. Traditional MRE approaches assume mechanical isotropy. However,
+        white matter is known to be anisotropic from aligned, myelinated axonal bundles,
+        which can lead to uncertainty in mechanical property estimates in these areas
+        from isotropic MRE. Recent advances in anisotropic MRE now allow for estimation
+        of shear and tensile anisotropy, along with substrate shear modulus, in white
+        matter tracts. The objective of this study was to investigate age-related
+        differences in anisotropic mechanical properties in human brain white matter
+        for the first time. Anisotropic mechanical properties in major white matter
+        tracts were found to be significantly lower in older adults (mean 68.5 \u00b1
+        5.5 years; range 57\u201382) compared to young adults (mean 25.4 \u00b1 2.2
+        years; range 22\u201330), with average property differences ranging between
+        0.028\u20130.111 for shear anisotropy and between 0.140\u20130.350 for tensile
+        anisotropy. Stiffness perpendicular to the axonal fiber direction was significantly
+        lower in older adults in the anterior thalamic radiation (2.78 \u00b1 0.21
+        vs. 3.00 \u00b1 0.15 kPa; p &amp;lt; 0.001) and forceps minor (2.61 \u00b1
+        0.23 vs. 2.94 \u00b1 0.23 kPa; p &amp;lt; 0.001) fibers, while stiffness parallel
+        to fiber direction was lower in most tracts with an average difference between
+        groups of 0.36 kPa or 12.1%, reflected by the widespread lower shear anisotropy
+        observed in older adults. Comparing anisotropic MRE metrics with multiple
+        measures of white matter microstructure from diffusion tensor imaging using
+        tract-based spatial statistics, we observed anisotropic MRE measures further
+        differentiated young and older adults in a logistic regression analysis, and
+        widespread differences between mechanical anisotropy and diffusion tensor
+        imaging (DTI) parameters were observed in the voxel-wise analysis. These results
+        suggest that aging effects seen in anisotropic MRE measures are not overly
+        redundant with aging effects on diffusion measures, and the addition of anisotropic
+        MRE measures could further describe differences between the white matter of
+        young and older adult populations. Anisotropic MRE provides a new tool for
+        studying white matter microstructure with mechanical properties in aging and
+        neurodegeneration.<\/jats:p>","DOI":"10.1162\/imag.a.1156","type":"journal-article","created":{"date-parts":[[2026,2,17]],"date-time":"2026-02-17T19:42:56Z","timestamp":1771357376000},"update-policy":"https:\/\/doi.org\/10.1162\/mitpressjournals.corrections.policy","source":"Crossref","is-referenced-by-count":3,"title":["Mechanical
+        properties of white matter tracts in aging assessed via anisotropic MR elastography"],"prefix":"10.1162","volume":"4","author":[{"given":"Diego
+        A.","family":"Caban-Rivera","sequence":"first","affiliation":[{"name":"Department
+        of Biomedical Engineering, University of Delaware, Newark, DE, United States"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"L.
+        Tyler","family":"Williams","sequence":"additional","affiliation":[{"name":"Department
+        of Biomedical Engineering, University of Delaware, Newark, DE, United States"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Matthew
+        D.J.","family":"McGarry","sequence":"additional","affiliation":[{"name":"Thayer
+        School of Engineering, Dartmouth College, Hanover, NH, United States"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Daniel
+        R.","family":"Smith","sequence":"additional","affiliation":[{"name":"Emory
+        Sports Performance And Research Center (SPARC), Flowery Branch, GA, United
+        States"},{"name":"Emory Sports Medicine Center, Atlanta, GA, United States"},{"name":"Department
+        of Orthopaedics, Emory University School of Medicine, Atlanta, GA, United
+        States"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Elijah
+        E.W.","family":"Van Houten","sequence":"additional","affiliation":[{"name":"D\u00e9partement
+        de G\u00e9nie M\u00e9canique, Universite de Sherbrooke, Sherbrooke, QC, Canada"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Keith
+        D.","family":"Paulsen","sequence":"additional","affiliation":[{"name":"Thayer
+        School of Engineering, Dartmouth College, Hanover, NH, United States"},{"name":"Dartmouth-Hitchcock
+        Medical Center, Lebanon, NH, United States"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Philip
+        V.","family":"Bayly","sequence":"additional","affiliation":[{"name":"Mechanical
+        Engineering and Materials Science, Washington University in St. Louis, St.
+        Louis, MO, United States"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"ORCID":"https:\/\/orcid.org\/0000-0002-7760-131X","authenticated-orcid":false,"given":"Curtis
+        L.","family":"Johnson","sequence":"additional","affiliation":[{"name":"Department
+        of Biomedical Engineering, University of Delaware, Newark, DE, United States"}],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"281","published-online":{"date-parts":[[2026,3,5]]},"reference":[{"key":"2026030514560786800_IMAG.a.1156-b1","doi-asserted-by":"crossref","first-page":"538","DOI":"10.1016\/j.jmbbm.2016.03.005","article-title":"Observation
+        of direction-dependent mechanical properties in the human brain with multi-excitation
+        MR elastography","volume":"59","author":"Anderson","year":"2016","journal-title":"Journal
+        of the Mechanical Behavior of Biomedical Materials"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b2","doi-asserted-by":"crossref","first-page":"870","DOI":"10.1016\/S1053-8119(03)00336-7","article-title":"How
+        to correct susceptibility distortions in spin-echo echo-planar images: Application
+        to diffusion tensor imaging","volume":"20","author":"Andersson","year":"2003","journal-title":"NeuroImage"},{"key":"2026030514560786800_IMAG.a.1156-b3","doi-asserted-by":"crossref","first-page":"59","DOI":"10.1016\/j.neuroimage.2015.02.016","article-title":"Measuring
+        the effects of aging and sex on regional brain stiffness with MR elastography
+        in healthy older adults","volume":"111","author":"Arani","year":"2015","journal-title":"NeuroImage"},{"issue":"1","key":"2026030514560786800_IMAG.a.1156-b4","doi-asserted-by":"crossref","first-page":"51","DOI":"10.1007\/s12031-007-0029-0","article-title":"Diffusion
+        tensor imaging (DTI)-based white matter mapping in brain research: A review","volume":"34","author":"Assaf","year":"2008","journal-title":"Journal
+        of Molecular Neuroscience"},{"issue":"3","key":"2026030514560786800_IMAG.a.1156-b5","doi-asserted-by":"crossref","first-page":"779","DOI":"10.1007\/s10237-025-01957-4","article-title":"From
+        structure to mechanics: Exploring the role of axons and interconnections in
+        anisotropic behavior of brain white matter","volume":"24","author":"Atashgar","year":"2025","journal-title":"Biomechanics
+        and Modeling in Mechanobiology"},{"issue":"3","key":"2026030514560786800_IMAG.a.1156-b6","doi-asserted-by":"crossref","first-page":"378","DOI":"10.1002\/hbm.20872","article-title":"Age-related
+        differences in multiple measures of white matter integrity: A diffusion tensor
+        imaging study of healthy aging","volume":"31","author":"Bennett","year":"2010","journal-title":"Human
+        Brain Mapping"},{"key":"2026030514560786800_IMAG.a.1156-b7","first-page":"0439","article-title":"Anisotropic
+        mechanical properties of white matter tracts in aging via transversely isotropic
+        MR elastography","volume":"30","author":"Caban-Rivera","year":"2022","journal-title":"Proc.
+        Intl. Soc. Mag. Reson. Med"},{"key":"2026030514560786800_IMAG.a.1156-b8","doi-asserted-by":"crossref","first-page":"100035","DOI":"10.1016\/j.brain.2021.100035","article-title":"Hyperelastic
+        material properties of axonal fibers in brain white matter","volume":"2","author":"Chavoshnejad","year":"2021","journal-title":"Brain
+        Multiphysics"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b9","doi-asserted-by":"crossref","first-page":"530","DOI":"10.1016\/j.neuroimage.2009.01.068","article-title":"Assessing
+        the effects of age on long white matter tracts using diffusion tensor tractography","volume":"46","author":"Davis","year":"2009","journal-title":"NeuroImage"},{"issue":"6","key":"2026030514560786800_IMAG.a.1156-b10","doi-asserted-by":"crossref","first-page":"2799","DOI":"10.1093\/cercor\/bhaa388","article-title":"Effect
+        of aging on the viscoelastic properties of hippocampal subfields assessed
+        with high-resolution MR elastography","volume":"31","author":"Delgorio","year":"2021","journal-title":"Cerebral
+        Cortex"},{"key":"2026030514560786800_IMAG.a.1156-b11","doi-asserted-by":"crossref","first-page":"103327","DOI":"10.1016\/j.nicl.2023.103327","article-title":"Hippocampal
+        subfield viscoelasticity in amnestic mild cognitive impairment evaluated with
+        MR elastography","volume":"37","author":"Delgorio","year":"2023","journal-title":"NeuroImage:
+        Clinical"},{"key":"2026030514560786800_IMAG.a.1156-b12","doi-asserted-by":"crossref","first-page":"117","DOI":"10.1016\/j.jmbbm.2013.04.007","article-title":"Measurements
+        of mechanical anisotropy in brain tissue and implications for transversely
+        isotropic material models of white matter","volume":"23","author":"Feng","year":"2013","journal-title":"Journal
+        of the Mechanical Behavior of Biomedical Materials"},{"issue":"11","key":"2026030514560786800_IMAG.a.1156-b13","doi-asserted-by":"crossref","first-page":"1534","DOI":"10.1002\/nbm.2987","article-title":"MR
+        elastography in a murine stroke model reveals correlation of macroscopic viscoelastic
+        properties of the brain with neuronal density","volume":"26","author":"Freimann","year":"2013","journal-title":"NMR
+        in Biomedicine"},{"issue":"11","key":"2026030514560786800_IMAG.a.1156-b14","doi-asserted-by":"crossref","first-page":"1387","DOI":"10.1002\/nbm.2964","article-title":"Measuring
+        anisotropic muscle stiffness properties using elastography","volume":"26","author":"Green","year":"2013","journal-title":"NMR
+        in Biomedicine"},{"key":"2026030514560786800_IMAG.a.1156-b15","doi-asserted-by":"crossref","first-page":"10","DOI":"10.1016\/j.jbiomech.2018.01.016","article-title":"Mechanical
+        properties of porcine brain tissue in vivo and ex vivo estimated by MR elastography","volume":"69","author":"Guertler","year":"2018","journal-title":"Journal
+        of Biomechanics"},{"issue":"8","key":"2026030514560786800_IMAG.a.1156-b16","doi-asserted-by":"crossref","DOI":"10.1371\/journal.pone.0071807","article-title":"Towards
+        an Elastographic Atlas of Brain Anatomy","volume":"8","author":"Guo","year":"2013","journal-title":"PLoS
+        One"},{"issue":"3","key":"2026030514560786800_IMAG.a.1156-b17","doi-asserted-by":"crossref","first-page":"1313","DOI":"10.1002\/mrm.29050","article-title":"Correlated
+        noise in brain magnetic resonance elastography","volume":"87","author":"Hannum","year":"2022","journal-title":"Magnetic
+        Resonance in Medicine"},{"issue":"4","key":"2026030514560786800_IMAG.a.1156-b18","doi-asserted-by":"crossref","first-page":"410","DOI":"10.1093\/cercor\/bhh003","article-title":"Differential
+        vulnerability of anterior white matter in nondemented aging with minimal acceleration
+        in dementia of the Alzheimer type: Evidence from diffusion tensor imaging","volume":"14","author":"Head","year":"2004","journal-title":"Cerebral
+        Cortex"},{"issue":"24","key":"2026030514560786800_IMAG.a.1156-b19","doi-asserted-by":"crossref","first-page":"R401","DOI":"10.1088\/0031-9155\/61\/24\/R401","article-title":"Magnetic
+        resonance elastography (MRE) of the human brain: Technique, findings and clinical
+        applications","volume":"61","author":"Hiscox","year":"2016","journal-title":"Physics
+        in Medicine and Biology"},{"issue":"1","key":"2026030514560786800_IMAG.a.1156-b20","doi-asserted-by":"crossref","first-page":"1","DOI":"10.1093\/braincomms\/fcz049","article-title":"Mechanical
+        property alterations across the cerebral cortex due to Alzheimer\u2019s disease","volume":"2","author":"Hiscox","year":"2020","journal-title":"Brain
+        Communications"},{"key":"2026030514560786800_IMAG.a.1156-b21","doi-asserted-by":"crossref","first-page":"158","DOI":"10.1016\/j.neurobiolaging.2018.01.010","article-title":"High-resolution
+        magnetic resonance elastography reveals differences in subcortical gray matter
+        viscoelasticity between young and healthy older adults","volume":"65","author":"Hiscox","year":"2018","journal-title":"Neurobiology
+        of Aging"},{"key":"2026030514560786800_IMAG.a.1156-b22","doi-asserted-by":"crossref","first-page":"117889","DOI":"10.1016\/j.neuroimage.2021.117889","article-title":"Aging
+        brain mechanics: Progress and promise of magnetic resonance elastography","volume":"232","author":"Hiscox","year":"2021","journal-title":"NeuroImage"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b23","doi-asserted-by":"crossref","first-page":"1097","DOI":"10.1121\/10.0003528","article-title":"Shear
+        wave speeds in nearly-incompressible fibrous materials with two fiber families","volume":"149","author":"Hou","year":"2021","journal-title":"The
+        Journal of the Acoustical Society of America"},{"issue":"1","key":"2026030514560786800_IMAG.a.1156-b24","doi-asserted-by":"crossref","first-page":"336","DOI":"10.1016\/j.neuroimage.2007.07.053","article-title":"Tract
+        probability maps in stereotaxic spaces: Analyses of white matter anatomy and
+        tract-specific quantification","volume":"39","author":"Hua","year":"2008","journal-title":"NeuroImage"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b25","doi-asserted-by":"crossref","first-page":"474","DOI":"10.1002\/jmri.24977","article-title":"Magnetic
+        resonance elastography of frontotemporal dementia","volume":"43","author":"Huston","year":"2016","journal-title":"Journal
+        of Magnetic Resonance Imaging"},{"issue":"1","key":"2026030514560786800_IMAG.a.1156-b26","doi-asserted-by":"crossref","first-page":"193","DOI":"10.1002\/mrm.10354","article-title":"Fast,
+        automated, N-dimensional phase-unwrapping algorithm","volume":"49","author":"Jenkinson","year":"2003","journal-title":"Magnetic
+        Resonance in Medicine"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b27","doi-asserted-by":"crossref","first-page":"825","DOI":"10.1006\/nimg.2002.1132","article-title":"Improved
+        optimization for the robust and accurate linear registration and motion correction
+        of brain images","volume":"17","author":"Jenkinson","year":"2002","journal-title":"NeuroImage"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b28","doi-asserted-by":"crossref","first-page":"782","DOI":"10.1016\/j.neuroimage.2011.09.015","article-title":"FSL","volume":"62","author":"Jenkinson","year":"2012","journal-title":"NeuroImage"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b29","doi-asserted-by":"crossref","first-page":"143","DOI":"10.1016\/S1361-8415(01)00036-6","article-title":"A
+        global optimisation method for robust affine registration of brain images","volume":"5","author":"Jenkinson","year":"2001","journal-title":"Medical
+        Image Analysis"},{"key":"2026030514560786800_IMAG.a.1156-b30","article-title":"Brain
+        MR elastography with multiband excitation and nonlinear motion-induced phase
+        error correction","volume":"24","author":"Johnson","year":"2016","journal-title":"Proc.
+        Intl. Soc. Mag. Reson. Med."},{"key":"2026030514560786800_IMAG.a.1156-b31","doi-asserted-by":"crossref","first-page":"145","DOI":"10.1016\/j.neuroimage.2013.04.089","article-title":"Local
+        mechanical properties of white matter structures in the human brain","volume":"79","author":"Johnson","year":"2013","journal-title":"NeuroImage"},{"key":"2026030514560786800_IMAG.a.1156-b32","doi-asserted-by":"crossref","first-page":"105744","DOI":"10.1016\/j.jmbbm.2023.105744","article-title":"Transversely-isotropic
+        brain in vivo MR elastography with anisotropic damping","volume":"141","author":"Jyoti","year":"2023","journal-title":"Journal
+        of the Mechanical Behavior of Biomedical Materials"},{"issue":"3","key":"2026030514560786800_IMAG.a.1156-b33","doi-asserted-by":"crossref","first-page":"ac5ebe","DOI":"10.1088\/2057-1976\/ac5ebe","article-title":"Quantifying
+        stability of parameter estimates for in vivo nearly incompressible transversely-isotropic
+        brain MR elastography","volume":"8","author":"Jyoti","year":"2022","journal-title":"Biomedical
+        Physics and Engineering Express"},{"key":"2026030514560786800_IMAG.a.1156-b34","unstructured":"Kailash,
+        K., Rifkin, J. K., Ireland, J. A., Okamoto, R. J., & Bayly, P. V. (2019).
+        Design and evaluation of a lateral head excitation device for MR elastography
+        of the brain. In Biomedical Engineering Society Annual Meeting 2019. Philadelphia,
+        Pennsylvania, October 16\u201319, 2019. https:\/\/member.bmes.org\/archive"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b82","doi-asserted-by":"crossref","first-page":"671","DOI":"10.1002\/mrm.27757","article-title":"Magnetic
+        resonance elastography of brain: Comparison between anisotropic and isotropic
+        stiffness and its correlation to age","volume":"82","author":"Kalra","year":"2019","journal-title":"Magnetic
+        Resonance in Medicine"},{"issue":"1","key":"2026030514560786800_IMAG.a.1156-b35","doi-asserted-by":"crossref","first-page":"340","DOI":"10.1016\/j.neuroimage.2011.11.094","article-title":"Diffusion
+        tensor imaging of white matter tract evolution over the lifespan","volume":"60","author":"Lebel","year":"2012","journal-title":"NeuroImage"},{"issue":"12","key":"2026030514560786800_IMAG.a.1156-b36","doi-asserted-by":"crossref","first-page":"6614","DOI":"10.1007\/s00330-020-07054-7","article-title":"MR
+        elastography frequency\u2013dependent and independent parameters demonstrate
+        accelerated decrease of brain stiffness in elder subjects","volume":"30","author":"Lv","year":"2020","journal-title":"European
+        Radiology"},{"issue":"n\/a","key":"2026030514560786800_IMAG.a.1156-b37","doi-asserted-by":"crossref","first-page":"2377","DOI":"10.1002\/mrm.28627","article-title":"MR
+        elastography: Principles, guidelines, and terminology","volume":"n\/a","author":"Manduca","year":"2021","journal-title":"Magnetic
+        Resonance in Medicine"},{"issue":"5","key":"2026030514560786800_IMAG.a.1156-b38","doi-asserted-by":"crossref","first-page":"ab9a84","DOI":"10.1088\/1361-6560\/ab9a84","article-title":"A
+        heterogenous, time harmonic, nearly incompressible transverse isotropic finite
+        element brain simulation platform for MR elastography","volume":"66","author":"McGarry","year":"2021","journal-title":"Physics
+        in Medicine and Biology"},{"issue":"10","key":"2026030514560786800_IMAG.a.1156-b39","doi-asserted-by":"crossref","first-page":"6388","DOI":"10.1118\/1.4754649","article-title":"Multiresolution
+        MR elastography using nonlinear inversion","volume":"39","author":"McGarry","year":"2012","journal-title":"Medical
+        Physics"},{"issue":"13","key":"2026030514560786800_IMAG.a.1156-b40","doi-asserted-by":"crossref","first-page":"N153","DOI":"10.1088\/0031-9155\/56\/13\/N02","article-title":"An
+        octahedral shear strain-based measure of SNR for 3D MR elastography","volume":"56","author":"McGarry","year":"2011","journal-title":"Physics
+        in Medicine and Biology"},{"key":"2026030514560786800_IMAG.a.1156-b41","doi-asserted-by":"crossref","first-page":"102432","DOI":"10.1016\/j.media.2022.102432","article-title":"Mapping
+        heterogenous anisotropic tissue mechanical properties with transverse isotropic
+        nonlinear inversion MR elastography","volume":"78","author":"McGarry","year":"2022","journal-title":"Medical
+        Image Analysis"},{"issue":"4","key":"2026030514560786800_IMAG.a.1156-b42","doi-asserted-by":"crossref","first-page":"1659","DOI":"10.1002\/mrm.29308","article-title":"OSCILLATE:
+        A low-rank approach for accelerated magnetic resonance elastography","volume":"88","author":"McIlvain","year":"2022","journal-title":"Magnetic
+        Resonance in Medicine"},{"key":"2026030514560786800_IMAG.a.1156-b43","doi-asserted-by":"crossref","first-page":"119590","DOI":"10.1016\/j.neuroimage.2022.119590","article-title":"Mapping
+        brain mechanical property maturation from childhood to adulthood","volume":"263","author":"McIlvain","year":"2022","journal-title":"NeuroImage"},{"issue":"May","key":"2026030514560786800_IMAG.a.1156-b44","doi-asserted-by":"crossref","first-page":"27","DOI":"10.1016\/j.dcn.2018.06.001","article-title":"Mechanical
+        properties of the in vivo adolescent human brain","volume":"34","author":"McIlvain","year":"2018","journal-title":"Developmental
+        Cognitive Neuroscience"},{"issue":"4","key":"2026030514560786800_IMAG.a.1156-b45","doi-asserted-by":"crossref","first-page":"1190","DOI":"10.1016\/j.neuroimage.2010.05.019","article-title":"Selective
+        effects of aging on brain white matter microstructure: A diffusion tensor
+        imaging tractography study","volume":"52","author":"Michielse","year":"2010","journal-title":"NeuroImage"},{"issue":"6","key":"2026030514560786800_IMAG.a.1156-b46","doi-asserted-by":"crossref","first-page":"e2979","DOI":"10.1002\/cnm.2979","article-title":"Estimation
+        of transversely isotropic material properties from magnetic resonance elastography
+        using the optimised virtual fields method","volume":"34","author":"Miller","year":"2018","journal-title":"International
+        Journal for Numerical Methods in Biomedical Engineering"},{"issue":"10","key":"2026030514560786800_IMAG.a.1156-b47","doi-asserted-by":"crossref","first-page":"e3848","DOI":"10.1002\/nbm.3848","article-title":"Relative
+        identifiability of anisotropic properties from magnetic resonance elastography","volume":"31","author":"Miller","year":"2018","journal-title":"NMR
+        in Biomedicine"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b48","doi-asserted-by":"crossref","first-page":"570","DOI":"10.1016\/j.neuroimage.2007.12.035","article-title":"Stereotaxic
+        white matter atlas based on diffusion tensor imaging in an ICBM template","volume":"40","author":"Mori","year":"2008","journal-title":"NeuroImage"},{"key":"2026030514560786800_IMAG.a.1156-b49","doi-asserted-by":"crossref","first-page":"176","DOI":"10.1016\/j.neuroimage.2017.10.008","article-title":"MR
+        elastography of the brain and its application in neurological diseases","volume":"187","author":"Murphy","year":"2019","journal-title":"NeuroImage"},{"issue":"5232","key":"2026030514560786800_IMAG.a.1156-b50","doi-asserted-by":"crossref","first-page":"1854","DOI":"10.1126\/science.7569924","article-title":"Magnetic
+        resonance elastography by direct visualization of propagating acoustic strain
+        waves","volume":"269","author":"Muthupillai","year":"1995","journal-title":"Science
+        (New York, N.Y.)"},{"issue":"December 2020","key":"2026030514560786800_IMAG.a.1156-b51","doi-asserted-by":"crossref","first-page":"104229","DOI":"10.1016\/j.jmbbm.2020.104229","article-title":"Viscoelasticity
+        of children and adolescent brains through MR elastography","volume":"115","author":"Ozkaya","year":"2021","journal-title":"Journal
+        of the Mechanical Behavior of Biomedical Materials"},{"issue":"January","key":"2026030514560786800_IMAG.a.1156-b52","doi-asserted-by":"crossref","first-page":"103328","DOI":"10.1016\/j.nicl.2023.103328","article-title":"Differential
+        effect of dementia etiology on cortical stiffness as assessed by MR elastography","volume":"37","author":"Pavuluri","year":"2023","journal-title":"NeuroImage:
+        Clinical"},{"issue":"8\u20139","key":"2026030514560786800_IMAG.a.1156-b53","doi-asserted-by":"crossref","first-page":"581","DOI":"10.1023\/A:1025731309829","article-title":"The
+        effects of normal aging on myelin and nerve fibers: A review","volume":"31","author":"Peters","year":"2002","journal-title":"Journal
+        of Neurocytology"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b54","doi-asserted-by":"crossref","first-page":"259","DOI":"10.1002\/1522-2594(200008)44:2<259::AID-MRM13>3.0.CO;2-6","article-title":"Age-related
+        decline in brain white matter anisotropy measured with spatially corrected
+        echo-planar diffusion tensor imaging","volume":"44","author":"Pfefferbaum","year":"2000","journal-title":"Magnetic
+        Resonance in Medicine"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b55","doi-asserted-by":"crossref","first-page":"FCAB106","DOI":"10.1093\/braincomms\/fcab106","article-title":"Diffusion
+        models reveal white matter microstructural changes with ageing, pathology
+        and cognition","volume":"3","author":"Raghavan","year":"2021","journal-title":"Brain
+        Communications"},{"issue":"6","key":"2026030514560786800_IMAG.a.1156-b56","doi-asserted-by":"crossref","first-page":"1755","DOI":"10.1002\/mrm.25067","article-title":"In
+        vivo waveguide elastography: Effects of neurodegeneration in patients with
+        amyotrophic lateral sclerosis","volume":"72","author":"Romano","year":"2014","journal-title":"Magnetic
+        Resonance in Medicine"},{"issue":"5","key":"2026030514560786800_IMAG.a.1156-b57","doi-asserted-by":"crossref","first-page":"1410","DOI":"10.1002\/mrm.24141","article-title":"In
+        vivo waveguide elastography of white matter tracts in the human brain","volume":"68","author":"Romano","year":"2012","journal-title":"Magnetic
+        Resonance in Medicine"},{"key":"2026030514560786800_IMAG.a.1156-b58","doi-asserted-by":"crossref","first-page":"25","DOI":"10.1038\/s42254-022-00543-2","article-title":"Magnetic
+        resonance elastography from fundamental soft-tissue mechanics to diagnostic
+        imaging","volume":"5","author":"Sack","year":"2022","journal-title":"Nature
+        Reviews Physics"},{"issue":"3","key":"2026030514560786800_IMAG.a.1156-b59","doi-asserted-by":"crossref","first-page":"652","DOI":"10.1016\/j.neuroimage.2009.02.040","article-title":"The
+        impact of aging and gender on brain viscoelasticity","volume":"46","author":"Sack","year":"2009","journal-title":"NeuroImage"},{"issue":"24","key":"2026030514560786800_IMAG.a.1156-b60","doi-asserted-by":"crossref","first-page":"5672","DOI":"10.1039\/c3sm50552a","article-title":"Structure-sensitive
+        elastography: On the viscoelastic powerlaw behavior of in vivo human tissue
+        in health and disease","volume":"9","author":"Sack","year":"2013","journal-title":"Soft
+        Matter"},{"issue":"9","key":"2026030514560786800_IMAG.a.1156-b61","doi-asserted-by":"crossref","first-page":"e23451","DOI":"10.1371\/journal.pone.0023451","article-title":"The
+        influence of physiological aging and atrophy on brain viscoelastic properties
+        in humans","volume":"6","author":"Sack","year":"2011","journal-title":"PLoS
+        One"},{"issue":"1","key":"2026030514560786800_IMAG.a.1156-b62","doi-asserted-by":"crossref","first-page":"19641","DOI":"10.1038\/s41598-023-46600-3","article-title":"Histology-informed
+        multiscale modeling of human brain white matter","volume":"13","author":"Saeidi","year":"2023","journal-title":"Scientific
+        Reports"},{"issue":"17","key":"2026030514560786800_IMAG.a.1156-b63","doi-asserted-by":"crossref","first-page":"6650","DOI":"10.1073\/pnas.1200151109","article-title":"Demyelination
+        reduces brain parenchymal stiffness quantified in vivo by magnetic resonance
+        elastography","volume":"109","author":"Schregel","year":"2012","journal-title":"Proceedings
+        of the National Academy of Sciences of the United States of America"},{"issue":"46","key":"2026030514560786800_IMAG.a.1156-b64","doi-asserted-by":"crossref","first-page":"15425","DOI":"10.1523\/JNEUROSCI.0203-14.2014","article-title":"Accelerated
+        changes in white matter microstructure during aging: A longitudinal diffusion
+        tensor imaging study","volume":"34","author":"Sexton","year":"2014","journal-title":"Journal
+        of Neuroscience"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b65","doi-asserted-by":"crossref","first-page":"372","DOI":"10.1002\/mrm.20355","article-title":"Imaging
+        anisotropic and viscous properties of breast tissue by magnetic resonance-elastography","volume":"53","author":"Sinkus","year":"2005","journal-title":"Magnetic
+        Resonance in Medicine"},{"issue":"June","key":"2026030514560786800_IMAG.a.1156-b66","doi-asserted-by":"crossref","first-page":"100051","DOI":"10.1016\/j.brain.2022.100051","article-title":"Anisotropic
+        mechanical properties in the healthy human brain estimated with multi-excitation
+        transversely isotropic MR elastography","volume":"3","author":"Smith","year":"2022","journal-title":"Brain
+        Multiphysics"},{"issue":"4","key":"2026030514560786800_IMAG.a.1156-b67","doi-asserted-by":"crossref","first-page":"acb482","DOI":"10.1088\/1361-6560\/acb482","article-title":"In
+        vivo estimation of anisotropic mechanical properties of the gastrocnemius
+        during functional loading with MR elastography","volume":"68","author":"Smith","year":"2023","journal-title":"Physics
+        in Medicine and Biology"},{"issue":"7","key":"2026030514560786800_IMAG.a.1156-b68","doi-asserted-by":"crossref","first-page":"710051","DOI":"10.1115\/1.4046199","article-title":"Multi-excitation
+        magnetic resonance elastography of the brain: Wave propagation in anisotropic
+        white matter","volume":"142","author":"Smith","year":"2020","journal-title":"Journal
+        of Biomechanical Engineering"},{"issue":"4","key":"2026030514560786800_IMAG.a.1156-b69","doi-asserted-by":"crossref","first-page":"1487","DOI":"10.1016\/j.neuroimage.2006.02.024","article-title":"Tract-based
+        spatial statistics: Voxelwise analysis of multi-subject diffusion data","volume":"31","author":"Smith","year":"2006","journal-title":"NeuroImage"},{"issue":"Suppl.
+        1","key":"2026030514560786800_IMAG.a.1156-b70","doi-asserted-by":"crossref","first-page":"S208","DOI":"10.1016\/j.neuroimage.2004.07.051","article-title":"Advances
+        in functional and structural MR image analysis and implementation as FSL","volume":"23","author":"Smith","year":"2004","journal-title":"NeuroImage"},{"issue":"3","key":"2026030514560786800_IMAG.a.1156-b71","doi-asserted-by":"crossref","first-page":"727","DOI":"10.1002\/jmri.26881","article-title":"Influence
+        of age on global and regional brain stiffness in young and middle-aged adults","volume":"51","author":"Takamura","year":"2020","journal-title":"Journal
+        of Magnetic Resonance Imaging"},{"issue":"6","key":"2026030514560786800_IMAG.a.1156-b72","doi-asserted-by":"crossref","first-page":"2360","DOI":"10.1002\/mrm.26600","article-title":"Requirements
+        for accurate estimation of anisotropic material parameters by magnetic resonance
+        elastography: A computational study","volume":"78","author":"Tweten","year":"2017","journal-title":"Magnetic
+        Resonance in Medicine"},{"issue":"15","key":"2026030514560786800_IMAG.a.1156-b73","doi-asserted-by":"crossref","first-page":"4002","DOI":"10.1016\/j.jbiomech.2015.09.009","article-title":"Estimation
+        of material parameters from slow and fast shear waves in an incompressible,
+        transversely isotropic material","volume":"48","author":"Tweten","year":"2015","journal-title":"Journal
+        of Biomechanics"},{"issue":"4","key":"2026030514560786800_IMAG.a.1156-b74","doi-asserted-by":"crossref","first-page":"779","DOI":"10.1002\/(SICI)1522-2594(199910)42:4<779::AID-MRM21>3.0.CO;2-Z","article-title":"An
+        overlapping subzone technique for MR-based elastic property reconstruction","volume":"42","author":"Van
+        Houten","year":"1999","journal-title":"Magnetic Resonance in Medicine"},{"issue":"1","key":"2026030514560786800_IMAG.a.1156-b75","doi-asserted-by":"crossref","first-page":"53","DOI":"10.1007\/s10237-005-0007-9","article-title":"Anisotropic
+        constitutive equations and experimental tensile behavior of brain tissue","volume":"5","author":"Velardi","year":"2006","journal-title":"Biomechanics
+        and Modeling in Mechanobiology"},{"key":"2026030514560786800_IMAG.a.1156-b83","doi-asserted-by":"crossref","first-page":"120234","DOI":"10.1016\/j.neuroimage.2023.120234","article-title":"Mechanical
+        stiffness and anisotropy measured by MRE during brain development in the minipig","volume":"277","author":"Wang","year":"2023","journal-title":"NeuroImage"},{"issue":"4","key":"2026030514560786800_IMAG.a.1156-b76","doi-asserted-by":"crossref","first-page":"2327","DOI":"10.1121\/10.0025467","article-title":"Shear
+        wave speeds in a nearly incompressible fibrous material with two unequal fiber
+        families","volume":"155","author":"Wang","year":"2024","journal-title":"The
+        Journal of the Acoustical Society of America"},{"key":"2026030514560786800_IMAG.a.1156-b77","doi-asserted-by":"crossref","first-page":"119","DOI":"10.1016\/j.jmbbm.2017.04.017","article-title":"The
+        mechanical importance of myelination in the central nervous system","volume":"76","author":"Weickenmeier","year":"2017","journal-title":"Journal
+        of the Mechanical Behavior of Biomedical Materials"},{"key":"2026030514560786800_IMAG.a.1156-b78","doi-asserted-by":"crossref","first-page":"265","DOI":"10.1016\/j.actbio.2016.07.040","article-title":"Brain
+        stiffness increases with myelin content","volume":"42","author":"Weickenmeier","year":"2016","journal-title":"Acta
+        Biomaterialia"},{"key":"2026030514560786800_IMAG.a.1156-b79","doi-asserted-by":"crossref","first-page":"103782","DOI":"10.1016\/j.mcn.2022.103782","article-title":"Harmonic
+        viscoelastic response of 3D histology-informed white matter model","volume":"123","author":"Wu","year":"2022","journal-title":"Molecular
+        and Cellular Neuroscience"},{"issue":"5","key":"2026030514560786800_IMAG.a.1156-b203","doi-asserted-by":"crossref","first-page":"1497","DOI":"10.1007\/s10237-019-01157-x","article-title":"Paediatric
+        brain tissue properties measured with magnetic resonance elastography","volume":"18","author":"Yeung","year":"2019","journal-title":"Biomechanics
+        and Modeling in Mechanobiology"},{"key":"2026030514560786800_IMAG.a.1156-b80","doi-asserted-by":"crossref","first-page":"194","DOI":"10.1016\/j.jmbbm.2018.02.002","article-title":"Micromechanics
+        of brain white matter tissue: A fiber-reinforced hyperelastic model using
+        embedded element technique","volume":"80","author":"Yousefsani","year":"2018","journal-title":"Journal
+        of the Mechanical Behavior of Biomedical Materials"}],"container-title":["Imaging
+        Neuroscience"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/direct.mit.edu\/imag\/article-pdf\/doi\/10.1162\/IMAG.a.1156\/2581949\/imag.a.1156.pdf","content-type":"application\/pdf","content-version":"vor","intended-application":"syndication"},{"URL":"https:\/\/direct.mit.edu\/imag\/article-pdf\/doi\/10.1162\/IMAG.a.1156\/2581949\/imag.a.1156.pdf","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2026,3,5]],"date-time":"2026-03-05T19:56:31Z","timestamp":1772740591000},"score":1,"resource":{"primary":{"URL":"https:\/\/direct.mit.edu\/imag\/article\/doi\/10.1162\/IMAG.a.1156\/135340\/Mechanical-properties-of-white-matter-tracts-in"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2026]]},"references-count":83,"URL":"https:\/\/doi.org\/10.1162\/imag.a.1156","relation":{},"ISSN":["2837-6056"],"issn-type":[{"value":"2837-6056","type":"electronic"}],"subject":[],"published-other":{"date-parts":[[2026]]},"published":{"date-parts":[[2026]]},"article-number":"IMAG.a.1156"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '8823'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 22:54:34 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1162%2FIMAG.a.1156%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTcxNTI5NTkxMjAwMCwxMC4xMTAxJTJGMjAyNC4wNS4wOC41OTMyNjA=","total-results":1,"items":[{"DOI":"10.1101\/2024.05.08.593260","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.1162\/IMAG.a.1156","asserted-by":"subject"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 22:54:35 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1162%2Fimag.a.1156%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 22:54:35 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1101/2024.05.08.593260?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"institution":[{"name":"bioRxiv"}],"indexed":{"date-parts":[[2026,6,24]],"date-time":"2026-06-24T05:58:07Z","timestamp":1782280687924,"version":"3.54.5"},"posted":{"date-parts":[[2024,5,9]]},"group-title":"Neuroscience","reference-count":67,"publisher":"openRxiv","content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"accepted":{"date-parts":[[2024,5,9]]},"abstract":"<jats:title>ABSTRACT<\/jats:title>\n                <jats:p>Magnetic
+        resonance elastography (MRE) is a promising neuroimaging technique to probe
+        tissue microstructure, which has revealed widespread softening with loss of
+        structural integrity in the aging brain. Traditional MRE approaches assume
+        mechanical isotropy. However, white matter is known to be anisotropic from
+        aligned, myelinated axonal bundles, which can lead to uncertainty in mechanical
+        property estimates in these areas when using isotropic MRE. Recent advances
+        in anisotropic MRE now allow for estimation of shear and tensile anisotropy,
+        along with substrate shear modulus, in white matter tracts. The objective
+        of this study was to investigate age-related differences in anisotropic mechanical
+        properties in human brain white matter tracts for the first time. Anisotropic
+        mechanical properties in all tracts were found to be significantly lower in
+        older adults compared to young adults, with average property differences ranging
+        between 0.028-0.107 for shear anisotropy and between 0.139-0.347 for tensile
+        anisotropy. Stiffness perpendicular to the axonal fiber direction was also
+        significantly lower in older age, but only in certain tracts. When compared
+        with fractional anisotropy measures from diffusion tensor imaging, we found
+        that anisotropic MRE measures provided additional, complementary information
+        in describing differences between the white matter integrity of young and
+        older populations. Anisotropic MRE provides a new tool for studying white
+        matter structural integrity in aging and neurodegeneration.<\/jats:p>","DOI":"10.1101\/2024.05.08.593260","type":"posted-content","created":{"date-parts":[[2024,5,9]],"date-time":"2024-05-09T23:05:12Z","timestamp":1715295912000},"source":"Crossref","is-referenced-by-count":2,"title":["Mechanical
+        Properties of White Matter Tracts in Aging Assessed via Anisotropic MR Elastography"],"prefix":"10.64898","author":[{"given":"Diego
+        A.","family":"Caban-Rivera","sequence":"first","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Lance
+        T.","family":"Williams","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Matthew
+        D. J.","family":"McGarry","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Daniel
+        R.","family":"Smith","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Elijah
+        E. W.","family":"Van Houten","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Keith
+        D.","family":"Paulsen","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Philip
+        V.","family":"Bayly","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Curtis
+        L.","family":"Johnson","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"54368","reference":[{"key":"2024051313500775000_2024.05.08.593260v1.1","doi-asserted-by":"publisher","DOI":"10.1016\/j.jmbbm.2016.03.005"},{"key":"2024051313500775000_2024.05.08.593260v1.2","doi-asserted-by":"publisher","DOI":"10.1016\/S1053-8119(03)00336-7"},{"key":"2024051313500775000_2024.05.08.593260v1.3","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2015.02.016"},{"key":"2024051313500775000_2024.05.08.593260v1.4","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroscience.2013.11.026"},{"key":"2024051313500775000_2024.05.08.593260v1.5","unstructured":"Caban-Rivera,
+        D. A. , Smith, D. R. , McGarry, M. D. , Williams, L. T. , McIlvain, G. , Van
+        Houten, E. E. W. , Paulsen, K. D. , Bayly, P. V. , & Johnson, C. L. (2022).
+        Anisotropic Mechanical Properties of White Matter Tracts in Aging via Transversely
+        Isotropic MR Elastography. 30th Annual Meeting International Society of Magnetic
+        Resonance in Medicine."},{"key":"2024051313500775000_2024.05.08.593260v1.6","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2009.01.068"},{"key":"2024051313500775000_2024.05.08.593260v1.7","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhaa388"},{"key":"2024051313500775000_2024.05.08.593260v1.8","doi-asserted-by":"publisher","DOI":"10.1016\/J.NICL.2023.103327"},{"key":"2024051313500775000_2024.05.08.593260v1.9","doi-asserted-by":"publisher","DOI":"10.1016\/j.jmbbm.2013.04.007"},{"key":"2024051313500775000_2024.05.08.593260v1.10","doi-asserted-by":"publisher","DOI":"10.1002\/nbm.2987"},{"key":"2024051313500775000_2024.05.08.593260v1.11","doi-asserted-by":"publisher","DOI":"10.1002\/nbm.2964"},{"key":"2024051313500775000_2024.05.08.593260v1.12","doi-asserted-by":"publisher","DOI":"10.1016\/j.jbiomech.2018.01.016"},{"key":"2024051313500775000_2024.05.08.593260v1.13","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pone.0054650"},{"key":"2024051313500775000_2024.05.08.593260v1.14","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhh003"},{"key":"2024051313500775000_2024.05.08.593260v1.15","doi-asserted-by":"publisher","DOI":"10.1088\/0031-9155\/61\/24\/R401"},{"key":"2024051313500775000_2024.05.08.593260v1.16","doi-asserted-by":"publisher","DOI":"10.1093\/braincomms\/fcz049"},{"key":"2024051313500775000_2024.05.08.593260v1.17","doi-asserted-by":"publisher","DOI":"10.1016\/j.neurobiolaging.2018.01.010"},{"key":"2024051313500775000_2024.05.08.593260v1.18","doi-asserted-by":"publisher","DOI":"10.1016\/J.NEUROIMAGE.2021.117889"},{"key":"2024051313500775000_2024.05.08.593260v1.19","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2007.07.053"},{"key":"2024051313500775000_2024.05.08.593260v1.20","doi-asserted-by":"publisher","DOI":"10.1002\/jmri.24977"},{"key":"2024051313500775000_2024.05.08.593260v1.21","doi-asserted-by":"publisher","DOI":"10.1002\/mrm.10354"},{"key":"2024051313500775000_2024.05.08.593260v1.22","doi-asserted-by":"publisher","DOI":"10.1016\/S1053-8119(02)91132-8"},{"key":"2024051313500775000_2024.05.08.593260v1.23","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2011.09.015"},{"key":"2024051313500775000_2024.05.08.593260v1.24","doi-asserted-by":"publisher","DOI":"10.1016\/S1361-8415(01)00036-6"},{"key":"2024051313500775000_2024.05.08.593260v1.25","unstructured":"Johnson,
+        C. L. , Anderson, A. T. , & Sutton, B. P. (2016). Brain MR Elastography with
+        Multiband Excitation and Nonlinear Motion-Induced Phase Error Correction.
+        Proc. Intl. Soc. Mag. Reson. Med. 24."},{"key":"2024051313500775000_2024.05.08.593260v1.26","doi-asserted-by":"publisher","DOI":"10.1016\/J.NEUROIMAGE.2013.04.089"},{"key":"2024051313500775000_2024.05.08.593260v1.27","doi-asserted-by":"publisher","DOI":"10.1088\/2057-1976\/ac5ebe"},{"key":"2024051313500775000_2024.05.08.593260v1.28","unstructured":"Kailash,
+        K. , Rifkin, J. K. , Ireland, J. A. , Okamoto, R. J. , & Bayly, P. V. (2019).
+        Design and Evaluation of a Lateral Head Excitation Device for MR Elastography
+        of the Brain. Biomedical Engineering Society Annual Meeting 2019. Philadelphia,
+        Pennsylvania. October 16-19, 2019."},{"key":"2024051313500775000_2024.05.08.593260v1.29","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2011.11.094"},{"key":"2024051313500775000_2024.05.08.593260v1.30","doi-asserted-by":"publisher","DOI":"10.1007\/s00330-020-07054-7"},{"key":"2024051313500775000_2024.05.08.593260v1.31","doi-asserted-by":"publisher","DOI":"10.1162\/jocn.2009.21047"},{"key":"2024051313500775000_2024.05.08.593260v1.32","doi-asserted-by":"publisher","DOI":"10.1002\/mrm.28627"},{"key":"2024051313500775000_2024.05.08.593260v1.33","doi-asserted-by":"publisher","DOI":"10.1088\/1361-6560\/ab9a84"},{"key":"2024051313500775000_2024.05.08.593260v1.34","doi-asserted-by":"publisher","DOI":"10.1118\/1.4754649"},{"key":"2024051313500775000_2024.05.08.593260v1.35","doi-asserted-by":"publisher","DOI":"10.1016\/j.media.2022.102432"},{"key":"2024051313500775000_2024.05.08.593260v1.36","doi-asserted-by":"publisher","DOI":"10.1002\/MRM.29308"},{"key":"2024051313500775000_2024.05.08.593260v1.37","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2022.119590"},{"key":"2024051313500775000_2024.05.08.593260v1.38","doi-asserted-by":"publisher","DOI":"10.1016\/j.dcn.2018.06.001"},{"key":"2024051313500775000_2024.05.08.593260v1.39","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2010.05.019"},{"key":"2024051313500775000_2024.05.08.593260v1.40","doi-asserted-by":"publisher","DOI":"10.1002\/CNM.2979"},{"key":"2024051313500775000_2024.05.08.593260v1.41","doi-asserted-by":"publisher","DOI":"10.1002\/nbm.3848"},{"key":"2024051313500775000_2024.05.08.593260v1.42","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2007.12.035"},{"key":"2024051313500775000_2024.05.08.593260v1.43","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2017.10.008"},{"key":"2024051313500775000_2024.05.08.593260v1.44","doi-asserted-by":"publisher","DOI":"10.1126\/science.7569924"},{"key":"2024051313500775000_2024.05.08.593260v1.45","doi-asserted-by":"publisher","DOI":"10.1016\/j.jmbbm.2020.104229"},{"key":"2024051313500775000_2024.05.08.593260v1.46","doi-asserted-by":"publisher","DOI":"10.1016\/j.nicl.2023.103328"},{"key":"2024051313500775000_2024.05.08.593260v1.47","doi-asserted-by":"publisher","DOI":"10.1002\/1522-2594(200008)44:2<259::AID-MRM13>3.0.CO;2-6"},{"key":"2024051313500775000_2024.05.08.593260v1.48","doi-asserted-by":"publisher","DOI":"10.1002\/mrm.25067"},{"key":"2024051313500775000_2024.05.08.593260v1.49","doi-asserted-by":"publisher","DOI":"10.1002\/MRM.24141"},{"key":"2024051313500775000_2024.05.08.593260v1.50","doi-asserted-by":"publisher","DOI":"10.1038\/s42254-022-00543-2"},{"key":"2024051313500775000_2024.05.08.593260v1.51","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2009.02.040"},{"key":"2024051313500775000_2024.05.08.593260v1.52","doi-asserted-by":"publisher","DOI":"10.1039\/c3sm50552a"},{"key":"2024051313500775000_2024.05.08.593260v1.53","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pone.0023451"},{"key":"2024051313500775000_2024.05.08.593260v1.54","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.1200151109"},{"key":"2024051313500775000_2024.05.08.593260v1.55","doi-asserted-by":"publisher","DOI":"10.1002\/mrm.20355"},{"key":"2024051313500775000_2024.05.08.593260v1.56","doi-asserted-by":"publisher","DOI":"10.1016\/j.brain.2022.100051"},{"key":"2024051313500775000_2024.05.08.593260v1.57","doi-asserted-by":"publisher","DOI":"10.1115\/1.4046199"},{"key":"2024051313500775000_2024.05.08.593260v1.58","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2006.02.024"},{"key":"2024051313500775000_2024.05.08.593260v1.59","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2004.07.051"},{"key":"2024051313500775000_2024.05.08.593260v1.60","doi-asserted-by":"publisher","DOI":"10.1002\/jmri.26881"},{"key":"2024051313500775000_2024.05.08.593260v1.61","doi-asserted-by":"publisher","DOI":"10.1002\/mrm.26600"},{"key":"2024051313500775000_2024.05.08.593260v1.62","doi-asserted-by":"publisher","DOI":"10.1016\/j.jbiomech.2015.09.009"},{"key":"2024051313500775000_2024.05.08.593260v1.63","doi-asserted-by":"publisher","DOI":"10.1002\/(SICI)1522-2594(199910)42:4<779::AID-MRM21>3.0.CO;2-Z"},{"key":"2024051313500775000_2024.05.08.593260v1.64","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2023.120234"},{"key":"2024051313500775000_2024.05.08.593260v1.65","doi-asserted-by":"publisher","DOI":"10.1016\/j.jmbbm.2017.04.017"},{"key":"2024051313500775000_2024.05.08.593260v1.66","doi-asserted-by":"publisher","DOI":"10.1016\/j.actbio.2016.07.040"},{"key":"2024051313500775000_2024.05.08.593260v1.67","doi-asserted-by":"publisher","DOI":"10.1007\/s10237-019-01157-x"}],"container-title":[],"original-title":[],"link":[{"URL":"https:\/\/syndication.highwire.org\/content\/doi\/10.1101\/2024.05.08.593260","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2026,6,24]],"date-time":"2026-06-24T05:07:12Z","timestamp":1782277632000},"score":1,"resource":{"primary":{"URL":"http:\/\/biorxiv.org\/lookup\/doi\/10.1101\/2024.05.08.593260"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2024,5,9]]},"references-count":67,"URL":"https:\/\/doi.org\/10.1101\/2024.05.08.593260","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.1162\/IMAG.a.1156","asserted-by":"subject"}]},"subject":[],"published":{"date-parts":[[2024,5,9]]},"subtype":"preprint"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '3122'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 22:54:35 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1101%2F2024.05.08.593260%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 22:54:36 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+version: 1

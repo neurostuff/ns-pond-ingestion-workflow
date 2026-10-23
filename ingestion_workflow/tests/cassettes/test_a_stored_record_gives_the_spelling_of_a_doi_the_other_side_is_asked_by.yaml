@@ -1,0 +1,862 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&email=replay%40example.com&id=41799680&retmode=xml&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        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
+        p5bYAQAAAP//AwDz7OEd1b4AAA==
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - text/xml; charset=UTF-8
+      date:
+      - Fri, 23 Oct 2026 23:16:19 GMT
+      ncbi-phid:
+      - 1D33ABE4FCD277E5000038B554E7BF92.1.1.m_6
+      ncbi-sid:
+      - A0264BB4C7AC5E89_6665SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1162/imag.a.1156?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,6,7]],"date-time":"2026-06-07T14:59:27Z","timestamp":1780844367409,"version":"3.54.1"},"reference-count":83,"publisher":"MIT
+        Press","license":[{"start":{"date-parts":[[2026,2,17]],"date-time":"2026-02-17T00:00:00Z","timestamp":1771286400000},"content-version":"vor","delay-in-days":47,"URL":"https:\/\/creativecommons.org\/licenses\/by\/4.0\/"}],"funder":[{"DOI":"10.13039\/100000070","name":"National
+        Institutes of Health","doi-asserted-by":"publisher","award":["R01-EB027577"],"award-info":[{"award-number":["R01-EB027577"]}],"id":[{"id":"10.13039\/100000070","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000070","name":"National
+        Institutes of Health","doi-asserted-by":"publisher","award":["R01-AG058853"],"award-info":[{"award-number":["R01-AG058853"]}],"id":[{"id":"10.13039\/100000070","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000070","name":"National
+        Institutes of Health","doi-asserted-by":"publisher","award":["U01-NS112120"],"award-info":[{"award-number":["U01-NS112120"]}],"id":[{"id":"10.13039\/100000070","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000006","name":"Office
+        of Naval Research","doi-asserted-by":"publisher","award":["N00014-22-1-2198"],"award-info":[{"award-number":["N00014-22-1-2198"]}],"id":[{"id":"10.13039\/100000006","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000006","name":"Office
+        of Naval Research","doi-asserted-by":"publisher","award":["N00014-24-1-2599"],"award-info":[{"award-number":["N00014-24-1-2599"]}],"id":[{"id":"10.13039\/100000006","id-type":"DOI","asserted-by":"publisher"}]},{"name":"Delaware
+        Community Foundation Boerger Fund"}],"content-domain":{"domain":["direct.mit.edu"],"crossmark-restriction":true},"short-container-title":[],"published-print":{"date-parts":[[2026,3,5]]},"abstract":"<jats:title>Abstract<\/jats:title>\n                  <jats:p>Magnetic
+        resonance elastography (MRE) is a promising neuroimaging technique to probe
+        tissue microstructure through mechanical properties, such as stiffness, and
+        which has revealed widespread softening in the aging brain and in neurological
+        disorders. Traditional MRE approaches assume mechanical isotropy. However,
+        white matter is known to be anisotropic from aligned, myelinated axonal bundles,
+        which can lead to uncertainty in mechanical property estimates in these areas
+        from isotropic MRE. Recent advances in anisotropic MRE now allow for estimation
+        of shear and tensile anisotropy, along with substrate shear modulus, in white
+        matter tracts. The objective of this study was to investigate age-related
+        differences in anisotropic mechanical properties in human brain white matter
+        for the first time. Anisotropic mechanical properties in major white matter
+        tracts were found to be significantly lower in older adults (mean 68.5 \u00b1
+        5.5 years; range 57\u201382) compared to young adults (mean 25.4 \u00b1 2.2
+        years; range 22\u201330), with average property differences ranging between
+        0.028\u20130.111 for shear anisotropy and between 0.140\u20130.350 for tensile
+        anisotropy. Stiffness perpendicular to the axonal fiber direction was significantly
+        lower in older adults in the anterior thalamic radiation (2.78 \u00b1 0.21
+        vs. 3.00 \u00b1 0.15 kPa; p &amp;lt; 0.001) and forceps minor (2.61 \u00b1
+        0.23 vs. 2.94 \u00b1 0.23 kPa; p &amp;lt; 0.001) fibers, while stiffness parallel
+        to fiber direction was lower in most tracts with an average difference between
+        groups of 0.36 kPa or 12.1%, reflected by the widespread lower shear anisotropy
+        observed in older adults. Comparing anisotropic MRE metrics with multiple
+        measures of white matter microstructure from diffusion tensor imaging using
+        tract-based spatial statistics, we observed anisotropic MRE measures further
+        differentiated young and older adults in a logistic regression analysis, and
+        widespread differences between mechanical anisotropy and diffusion tensor
+        imaging (DTI) parameters were observed in the voxel-wise analysis. These results
+        suggest that aging effects seen in anisotropic MRE measures are not overly
+        redundant with aging effects on diffusion measures, and the addition of anisotropic
+        MRE measures could further describe differences between the white matter of
+        young and older adult populations. Anisotropic MRE provides a new tool for
+        studying white matter microstructure with mechanical properties in aging and
+        neurodegeneration.<\/jats:p>","DOI":"10.1162\/imag.a.1156","type":"journal-article","created":{"date-parts":[[2026,2,17]],"date-time":"2026-02-17T19:42:56Z","timestamp":1771357376000},"update-policy":"https:\/\/doi.org\/10.1162\/mitpressjournals.corrections.policy","source":"Crossref","is-referenced-by-count":3,"title":["Mechanical
+        properties of white matter tracts in aging assessed via anisotropic MR elastography"],"prefix":"10.1162","volume":"4","author":[{"given":"Diego
+        A.","family":"Caban-Rivera","sequence":"first","affiliation":[{"name":"Department
+        of Biomedical Engineering, University of Delaware, Newark, DE, United States"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"L.
+        Tyler","family":"Williams","sequence":"additional","affiliation":[{"name":"Department
+        of Biomedical Engineering, University of Delaware, Newark, DE, United States"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Matthew
+        D.J.","family":"McGarry","sequence":"additional","affiliation":[{"name":"Thayer
+        School of Engineering, Dartmouth College, Hanover, NH, United States"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Daniel
+        R.","family":"Smith","sequence":"additional","affiliation":[{"name":"Emory
+        Sports Performance And Research Center (SPARC), Flowery Branch, GA, United
+        States"},{"name":"Emory Sports Medicine Center, Atlanta, GA, United States"},{"name":"Department
+        of Orthopaedics, Emory University School of Medicine, Atlanta, GA, United
+        States"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Elijah
+        E.W.","family":"Van Houten","sequence":"additional","affiliation":[{"name":"D\u00e9partement
+        de G\u00e9nie M\u00e9canique, Universite de Sherbrooke, Sherbrooke, QC, Canada"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Keith
+        D.","family":"Paulsen","sequence":"additional","affiliation":[{"name":"Thayer
+        School of Engineering, Dartmouth College, Hanover, NH, United States"},{"name":"Dartmouth-Hitchcock
+        Medical Center, Lebanon, NH, United States"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Philip
+        V.","family":"Bayly","sequence":"additional","affiliation":[{"name":"Mechanical
+        Engineering and Materials Science, Washington University in St. Louis, St.
+        Louis, MO, United States"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"ORCID":"https:\/\/orcid.org\/0000-0002-7760-131X","authenticated-orcid":false,"given":"Curtis
+        L.","family":"Johnson","sequence":"additional","affiliation":[{"name":"Department
+        of Biomedical Engineering, University of Delaware, Newark, DE, United States"}],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"281","published-online":{"date-parts":[[2026,3,5]]},"reference":[{"key":"2026030514560786800_IMAG.a.1156-b1","doi-asserted-by":"crossref","first-page":"538","DOI":"10.1016\/j.jmbbm.2016.03.005","article-title":"Observation
+        of direction-dependent mechanical properties in the human brain with multi-excitation
+        MR elastography","volume":"59","author":"Anderson","year":"2016","journal-title":"Journal
+        of the Mechanical Behavior of Biomedical Materials"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b2","doi-asserted-by":"crossref","first-page":"870","DOI":"10.1016\/S1053-8119(03)00336-7","article-title":"How
+        to correct susceptibility distortions in spin-echo echo-planar images: Application
+        to diffusion tensor imaging","volume":"20","author":"Andersson","year":"2003","journal-title":"NeuroImage"},{"key":"2026030514560786800_IMAG.a.1156-b3","doi-asserted-by":"crossref","first-page":"59","DOI":"10.1016\/j.neuroimage.2015.02.016","article-title":"Measuring
+        the effects of aging and sex on regional brain stiffness with MR elastography
+        in healthy older adults","volume":"111","author":"Arani","year":"2015","journal-title":"NeuroImage"},{"issue":"1","key":"2026030514560786800_IMAG.a.1156-b4","doi-asserted-by":"crossref","first-page":"51","DOI":"10.1007\/s12031-007-0029-0","article-title":"Diffusion
+        tensor imaging (DTI)-based white matter mapping in brain research: A review","volume":"34","author":"Assaf","year":"2008","journal-title":"Journal
+        of Molecular Neuroscience"},{"issue":"3","key":"2026030514560786800_IMAG.a.1156-b5","doi-asserted-by":"crossref","first-page":"779","DOI":"10.1007\/s10237-025-01957-4","article-title":"From
+        structure to mechanics: Exploring the role of axons and interconnections in
+        anisotropic behavior of brain white matter","volume":"24","author":"Atashgar","year":"2025","journal-title":"Biomechanics
+        and Modeling in Mechanobiology"},{"issue":"3","key":"2026030514560786800_IMAG.a.1156-b6","doi-asserted-by":"crossref","first-page":"378","DOI":"10.1002\/hbm.20872","article-title":"Age-related
+        differences in multiple measures of white matter integrity: A diffusion tensor
+        imaging study of healthy aging","volume":"31","author":"Bennett","year":"2010","journal-title":"Human
+        Brain Mapping"},{"key":"2026030514560786800_IMAG.a.1156-b7","first-page":"0439","article-title":"Anisotropic
+        mechanical properties of white matter tracts in aging via transversely isotropic
+        MR elastography","volume":"30","author":"Caban-Rivera","year":"2022","journal-title":"Proc.
+        Intl. Soc. Mag. Reson. Med"},{"key":"2026030514560786800_IMAG.a.1156-b8","doi-asserted-by":"crossref","first-page":"100035","DOI":"10.1016\/j.brain.2021.100035","article-title":"Hyperelastic
+        material properties of axonal fibers in brain white matter","volume":"2","author":"Chavoshnejad","year":"2021","journal-title":"Brain
+        Multiphysics"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b9","doi-asserted-by":"crossref","first-page":"530","DOI":"10.1016\/j.neuroimage.2009.01.068","article-title":"Assessing
+        the effects of age on long white matter tracts using diffusion tensor tractography","volume":"46","author":"Davis","year":"2009","journal-title":"NeuroImage"},{"issue":"6","key":"2026030514560786800_IMAG.a.1156-b10","doi-asserted-by":"crossref","first-page":"2799","DOI":"10.1093\/cercor\/bhaa388","article-title":"Effect
+        of aging on the viscoelastic properties of hippocampal subfields assessed
+        with high-resolution MR elastography","volume":"31","author":"Delgorio","year":"2021","journal-title":"Cerebral
+        Cortex"},{"key":"2026030514560786800_IMAG.a.1156-b11","doi-asserted-by":"crossref","first-page":"103327","DOI":"10.1016\/j.nicl.2023.103327","article-title":"Hippocampal
+        subfield viscoelasticity in amnestic mild cognitive impairment evaluated with
+        MR elastography","volume":"37","author":"Delgorio","year":"2023","journal-title":"NeuroImage:
+        Clinical"},{"key":"2026030514560786800_IMAG.a.1156-b12","doi-asserted-by":"crossref","first-page":"117","DOI":"10.1016\/j.jmbbm.2013.04.007","article-title":"Measurements
+        of mechanical anisotropy in brain tissue and implications for transversely
+        isotropic material models of white matter","volume":"23","author":"Feng","year":"2013","journal-title":"Journal
+        of the Mechanical Behavior of Biomedical Materials"},{"issue":"11","key":"2026030514560786800_IMAG.a.1156-b13","doi-asserted-by":"crossref","first-page":"1534","DOI":"10.1002\/nbm.2987","article-title":"MR
+        elastography in a murine stroke model reveals correlation of macroscopic viscoelastic
+        properties of the brain with neuronal density","volume":"26","author":"Freimann","year":"2013","journal-title":"NMR
+        in Biomedicine"},{"issue":"11","key":"2026030514560786800_IMAG.a.1156-b14","doi-asserted-by":"crossref","first-page":"1387","DOI":"10.1002\/nbm.2964","article-title":"Measuring
+        anisotropic muscle stiffness properties using elastography","volume":"26","author":"Green","year":"2013","journal-title":"NMR
+        in Biomedicine"},{"key":"2026030514560786800_IMAG.a.1156-b15","doi-asserted-by":"crossref","first-page":"10","DOI":"10.1016\/j.jbiomech.2018.01.016","article-title":"Mechanical
+        properties of porcine brain tissue in vivo and ex vivo estimated by MR elastography","volume":"69","author":"Guertler","year":"2018","journal-title":"Journal
+        of Biomechanics"},{"issue":"8","key":"2026030514560786800_IMAG.a.1156-b16","doi-asserted-by":"crossref","DOI":"10.1371\/journal.pone.0071807","article-title":"Towards
+        an Elastographic Atlas of Brain Anatomy","volume":"8","author":"Guo","year":"2013","journal-title":"PLoS
+        One"},{"issue":"3","key":"2026030514560786800_IMAG.a.1156-b17","doi-asserted-by":"crossref","first-page":"1313","DOI":"10.1002\/mrm.29050","article-title":"Correlated
+        noise in brain magnetic resonance elastography","volume":"87","author":"Hannum","year":"2022","journal-title":"Magnetic
+        Resonance in Medicine"},{"issue":"4","key":"2026030514560786800_IMAG.a.1156-b18","doi-asserted-by":"crossref","first-page":"410","DOI":"10.1093\/cercor\/bhh003","article-title":"Differential
+        vulnerability of anterior white matter in nondemented aging with minimal acceleration
+        in dementia of the Alzheimer type: Evidence from diffusion tensor imaging","volume":"14","author":"Head","year":"2004","journal-title":"Cerebral
+        Cortex"},{"issue":"24","key":"2026030514560786800_IMAG.a.1156-b19","doi-asserted-by":"crossref","first-page":"R401","DOI":"10.1088\/0031-9155\/61\/24\/R401","article-title":"Magnetic
+        resonance elastography (MRE) of the human brain: Technique, findings and clinical
+        applications","volume":"61","author":"Hiscox","year":"2016","journal-title":"Physics
+        in Medicine and Biology"},{"issue":"1","key":"2026030514560786800_IMAG.a.1156-b20","doi-asserted-by":"crossref","first-page":"1","DOI":"10.1093\/braincomms\/fcz049","article-title":"Mechanical
+        property alterations across the cerebral cortex due to Alzheimer\u2019s disease","volume":"2","author":"Hiscox","year":"2020","journal-title":"Brain
+        Communications"},{"key":"2026030514560786800_IMAG.a.1156-b21","doi-asserted-by":"crossref","first-page":"158","DOI":"10.1016\/j.neurobiolaging.2018.01.010","article-title":"High-resolution
+        magnetic resonance elastography reveals differences in subcortical gray matter
+        viscoelasticity between young and healthy older adults","volume":"65","author":"Hiscox","year":"2018","journal-title":"Neurobiology
+        of Aging"},{"key":"2026030514560786800_IMAG.a.1156-b22","doi-asserted-by":"crossref","first-page":"117889","DOI":"10.1016\/j.neuroimage.2021.117889","article-title":"Aging
+        brain mechanics: Progress and promise of magnetic resonance elastography","volume":"232","author":"Hiscox","year":"2021","journal-title":"NeuroImage"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b23","doi-asserted-by":"crossref","first-page":"1097","DOI":"10.1121\/10.0003528","article-title":"Shear
+        wave speeds in nearly-incompressible fibrous materials with two fiber families","volume":"149","author":"Hou","year":"2021","journal-title":"The
+        Journal of the Acoustical Society of America"},{"issue":"1","key":"2026030514560786800_IMAG.a.1156-b24","doi-asserted-by":"crossref","first-page":"336","DOI":"10.1016\/j.neuroimage.2007.07.053","article-title":"Tract
+        probability maps in stereotaxic spaces: Analyses of white matter anatomy and
+        tract-specific quantification","volume":"39","author":"Hua","year":"2008","journal-title":"NeuroImage"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b25","doi-asserted-by":"crossref","first-page":"474","DOI":"10.1002\/jmri.24977","article-title":"Magnetic
+        resonance elastography of frontotemporal dementia","volume":"43","author":"Huston","year":"2016","journal-title":"Journal
+        of Magnetic Resonance Imaging"},{"issue":"1","key":"2026030514560786800_IMAG.a.1156-b26","doi-asserted-by":"crossref","first-page":"193","DOI":"10.1002\/mrm.10354","article-title":"Fast,
+        automated, N-dimensional phase-unwrapping algorithm","volume":"49","author":"Jenkinson","year":"2003","journal-title":"Magnetic
+        Resonance in Medicine"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b27","doi-asserted-by":"crossref","first-page":"825","DOI":"10.1006\/nimg.2002.1132","article-title":"Improved
+        optimization for the robust and accurate linear registration and motion correction
+        of brain images","volume":"17","author":"Jenkinson","year":"2002","journal-title":"NeuroImage"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b28","doi-asserted-by":"crossref","first-page":"782","DOI":"10.1016\/j.neuroimage.2011.09.015","article-title":"FSL","volume":"62","author":"Jenkinson","year":"2012","journal-title":"NeuroImage"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b29","doi-asserted-by":"crossref","first-page":"143","DOI":"10.1016\/S1361-8415(01)00036-6","article-title":"A
+        global optimisation method for robust affine registration of brain images","volume":"5","author":"Jenkinson","year":"2001","journal-title":"Medical
+        Image Analysis"},{"key":"2026030514560786800_IMAG.a.1156-b30","article-title":"Brain
+        MR elastography with multiband excitation and nonlinear motion-induced phase
+        error correction","volume":"24","author":"Johnson","year":"2016","journal-title":"Proc.
+        Intl. Soc. Mag. Reson. Med."},{"key":"2026030514560786800_IMAG.a.1156-b31","doi-asserted-by":"crossref","first-page":"145","DOI":"10.1016\/j.neuroimage.2013.04.089","article-title":"Local
+        mechanical properties of white matter structures in the human brain","volume":"79","author":"Johnson","year":"2013","journal-title":"NeuroImage"},{"key":"2026030514560786800_IMAG.a.1156-b32","doi-asserted-by":"crossref","first-page":"105744","DOI":"10.1016\/j.jmbbm.2023.105744","article-title":"Transversely-isotropic
+        brain in vivo MR elastography with anisotropic damping","volume":"141","author":"Jyoti","year":"2023","journal-title":"Journal
+        of the Mechanical Behavior of Biomedical Materials"},{"issue":"3","key":"2026030514560786800_IMAG.a.1156-b33","doi-asserted-by":"crossref","first-page":"ac5ebe","DOI":"10.1088\/2057-1976\/ac5ebe","article-title":"Quantifying
+        stability of parameter estimates for in vivo nearly incompressible transversely-isotropic
+        brain MR elastography","volume":"8","author":"Jyoti","year":"2022","journal-title":"Biomedical
+        Physics and Engineering Express"},{"key":"2026030514560786800_IMAG.a.1156-b34","unstructured":"Kailash,
+        K., Rifkin, J. K., Ireland, J. A., Okamoto, R. J., & Bayly, P. V. (2019).
+        Design and evaluation of a lateral head excitation device for MR elastography
+        of the brain. In Biomedical Engineering Society Annual Meeting 2019. Philadelphia,
+        Pennsylvania, October 16\u201319, 2019. https:\/\/member.bmes.org\/archive"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b82","doi-asserted-by":"crossref","first-page":"671","DOI":"10.1002\/mrm.27757","article-title":"Magnetic
+        resonance elastography of brain: Comparison between anisotropic and isotropic
+        stiffness and its correlation to age","volume":"82","author":"Kalra","year":"2019","journal-title":"Magnetic
+        Resonance in Medicine"},{"issue":"1","key":"2026030514560786800_IMAG.a.1156-b35","doi-asserted-by":"crossref","first-page":"340","DOI":"10.1016\/j.neuroimage.2011.11.094","article-title":"Diffusion
+        tensor imaging of white matter tract evolution over the lifespan","volume":"60","author":"Lebel","year":"2012","journal-title":"NeuroImage"},{"issue":"12","key":"2026030514560786800_IMAG.a.1156-b36","doi-asserted-by":"crossref","first-page":"6614","DOI":"10.1007\/s00330-020-07054-7","article-title":"MR
+        elastography frequency\u2013dependent and independent parameters demonstrate
+        accelerated decrease of brain stiffness in elder subjects","volume":"30","author":"Lv","year":"2020","journal-title":"European
+        Radiology"},{"issue":"n\/a","key":"2026030514560786800_IMAG.a.1156-b37","doi-asserted-by":"crossref","first-page":"2377","DOI":"10.1002\/mrm.28627","article-title":"MR
+        elastography: Principles, guidelines, and terminology","volume":"n\/a","author":"Manduca","year":"2021","journal-title":"Magnetic
+        Resonance in Medicine"},{"issue":"5","key":"2026030514560786800_IMAG.a.1156-b38","doi-asserted-by":"crossref","first-page":"ab9a84","DOI":"10.1088\/1361-6560\/ab9a84","article-title":"A
+        heterogenous, time harmonic, nearly incompressible transverse isotropic finite
+        element brain simulation platform for MR elastography","volume":"66","author":"McGarry","year":"2021","journal-title":"Physics
+        in Medicine and Biology"},{"issue":"10","key":"2026030514560786800_IMAG.a.1156-b39","doi-asserted-by":"crossref","first-page":"6388","DOI":"10.1118\/1.4754649","article-title":"Multiresolution
+        MR elastography using nonlinear inversion","volume":"39","author":"McGarry","year":"2012","journal-title":"Medical
+        Physics"},{"issue":"13","key":"2026030514560786800_IMAG.a.1156-b40","doi-asserted-by":"crossref","first-page":"N153","DOI":"10.1088\/0031-9155\/56\/13\/N02","article-title":"An
+        octahedral shear strain-based measure of SNR for 3D MR elastography","volume":"56","author":"McGarry","year":"2011","journal-title":"Physics
+        in Medicine and Biology"},{"key":"2026030514560786800_IMAG.a.1156-b41","doi-asserted-by":"crossref","first-page":"102432","DOI":"10.1016\/j.media.2022.102432","article-title":"Mapping
+        heterogenous anisotropic tissue mechanical properties with transverse isotropic
+        nonlinear inversion MR elastography","volume":"78","author":"McGarry","year":"2022","journal-title":"Medical
+        Image Analysis"},{"issue":"4","key":"2026030514560786800_IMAG.a.1156-b42","doi-asserted-by":"crossref","first-page":"1659","DOI":"10.1002\/mrm.29308","article-title":"OSCILLATE:
+        A low-rank approach for accelerated magnetic resonance elastography","volume":"88","author":"McIlvain","year":"2022","journal-title":"Magnetic
+        Resonance in Medicine"},{"key":"2026030514560786800_IMAG.a.1156-b43","doi-asserted-by":"crossref","first-page":"119590","DOI":"10.1016\/j.neuroimage.2022.119590","article-title":"Mapping
+        brain mechanical property maturation from childhood to adulthood","volume":"263","author":"McIlvain","year":"2022","journal-title":"NeuroImage"},{"issue":"May","key":"2026030514560786800_IMAG.a.1156-b44","doi-asserted-by":"crossref","first-page":"27","DOI":"10.1016\/j.dcn.2018.06.001","article-title":"Mechanical
+        properties of the in vivo adolescent human brain","volume":"34","author":"McIlvain","year":"2018","journal-title":"Developmental
+        Cognitive Neuroscience"},{"issue":"4","key":"2026030514560786800_IMAG.a.1156-b45","doi-asserted-by":"crossref","first-page":"1190","DOI":"10.1016\/j.neuroimage.2010.05.019","article-title":"Selective
+        effects of aging on brain white matter microstructure: A diffusion tensor
+        imaging tractography study","volume":"52","author":"Michielse","year":"2010","journal-title":"NeuroImage"},{"issue":"6","key":"2026030514560786800_IMAG.a.1156-b46","doi-asserted-by":"crossref","first-page":"e2979","DOI":"10.1002\/cnm.2979","article-title":"Estimation
+        of transversely isotropic material properties from magnetic resonance elastography
+        using the optimised virtual fields method","volume":"34","author":"Miller","year":"2018","journal-title":"International
+        Journal for Numerical Methods in Biomedical Engineering"},{"issue":"10","key":"2026030514560786800_IMAG.a.1156-b47","doi-asserted-by":"crossref","first-page":"e3848","DOI":"10.1002\/nbm.3848","article-title":"Relative
+        identifiability of anisotropic properties from magnetic resonance elastography","volume":"31","author":"Miller","year":"2018","journal-title":"NMR
+        in Biomedicine"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b48","doi-asserted-by":"crossref","first-page":"570","DOI":"10.1016\/j.neuroimage.2007.12.035","article-title":"Stereotaxic
+        white matter atlas based on diffusion tensor imaging in an ICBM template","volume":"40","author":"Mori","year":"2008","journal-title":"NeuroImage"},{"key":"2026030514560786800_IMAG.a.1156-b49","doi-asserted-by":"crossref","first-page":"176","DOI":"10.1016\/j.neuroimage.2017.10.008","article-title":"MR
+        elastography of the brain and its application in neurological diseases","volume":"187","author":"Murphy","year":"2019","journal-title":"NeuroImage"},{"issue":"5232","key":"2026030514560786800_IMAG.a.1156-b50","doi-asserted-by":"crossref","first-page":"1854","DOI":"10.1126\/science.7569924","article-title":"Magnetic
+        resonance elastography by direct visualization of propagating acoustic strain
+        waves","volume":"269","author":"Muthupillai","year":"1995","journal-title":"Science
+        (New York, N.Y.)"},{"issue":"December 2020","key":"2026030514560786800_IMAG.a.1156-b51","doi-asserted-by":"crossref","first-page":"104229","DOI":"10.1016\/j.jmbbm.2020.104229","article-title":"Viscoelasticity
+        of children and adolescent brains through MR elastography","volume":"115","author":"Ozkaya","year":"2021","journal-title":"Journal
+        of the Mechanical Behavior of Biomedical Materials"},{"issue":"January","key":"2026030514560786800_IMAG.a.1156-b52","doi-asserted-by":"crossref","first-page":"103328","DOI":"10.1016\/j.nicl.2023.103328","article-title":"Differential
+        effect of dementia etiology on cortical stiffness as assessed by MR elastography","volume":"37","author":"Pavuluri","year":"2023","journal-title":"NeuroImage:
+        Clinical"},{"issue":"8\u20139","key":"2026030514560786800_IMAG.a.1156-b53","doi-asserted-by":"crossref","first-page":"581","DOI":"10.1023\/A:1025731309829","article-title":"The
+        effects of normal aging on myelin and nerve fibers: A review","volume":"31","author":"Peters","year":"2002","journal-title":"Journal
+        of Neurocytology"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b54","doi-asserted-by":"crossref","first-page":"259","DOI":"10.1002\/1522-2594(200008)44:2<259::AID-MRM13>3.0.CO;2-6","article-title":"Age-related
+        decline in brain white matter anisotropy measured with spatially corrected
+        echo-planar diffusion tensor imaging","volume":"44","author":"Pfefferbaum","year":"2000","journal-title":"Magnetic
+        Resonance in Medicine"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b55","doi-asserted-by":"crossref","first-page":"FCAB106","DOI":"10.1093\/braincomms\/fcab106","article-title":"Diffusion
+        models reveal white matter microstructural changes with ageing, pathology
+        and cognition","volume":"3","author":"Raghavan","year":"2021","journal-title":"Brain
+        Communications"},{"issue":"6","key":"2026030514560786800_IMAG.a.1156-b56","doi-asserted-by":"crossref","first-page":"1755","DOI":"10.1002\/mrm.25067","article-title":"In
+        vivo waveguide elastography: Effects of neurodegeneration in patients with
+        amyotrophic lateral sclerosis","volume":"72","author":"Romano","year":"2014","journal-title":"Magnetic
+        Resonance in Medicine"},{"issue":"5","key":"2026030514560786800_IMAG.a.1156-b57","doi-asserted-by":"crossref","first-page":"1410","DOI":"10.1002\/mrm.24141","article-title":"In
+        vivo waveguide elastography of white matter tracts in the human brain","volume":"68","author":"Romano","year":"2012","journal-title":"Magnetic
+        Resonance in Medicine"},{"key":"2026030514560786800_IMAG.a.1156-b58","doi-asserted-by":"crossref","first-page":"25","DOI":"10.1038\/s42254-022-00543-2","article-title":"Magnetic
+        resonance elastography from fundamental soft-tissue mechanics to diagnostic
+        imaging","volume":"5","author":"Sack","year":"2022","journal-title":"Nature
+        Reviews Physics"},{"issue":"3","key":"2026030514560786800_IMAG.a.1156-b59","doi-asserted-by":"crossref","first-page":"652","DOI":"10.1016\/j.neuroimage.2009.02.040","article-title":"The
+        impact of aging and gender on brain viscoelasticity","volume":"46","author":"Sack","year":"2009","journal-title":"NeuroImage"},{"issue":"24","key":"2026030514560786800_IMAG.a.1156-b60","doi-asserted-by":"crossref","first-page":"5672","DOI":"10.1039\/c3sm50552a","article-title":"Structure-sensitive
+        elastography: On the viscoelastic powerlaw behavior of in vivo human tissue
+        in health and disease","volume":"9","author":"Sack","year":"2013","journal-title":"Soft
+        Matter"},{"issue":"9","key":"2026030514560786800_IMAG.a.1156-b61","doi-asserted-by":"crossref","first-page":"e23451","DOI":"10.1371\/journal.pone.0023451","article-title":"The
+        influence of physiological aging and atrophy on brain viscoelastic properties
+        in humans","volume":"6","author":"Sack","year":"2011","journal-title":"PLoS
+        One"},{"issue":"1","key":"2026030514560786800_IMAG.a.1156-b62","doi-asserted-by":"crossref","first-page":"19641","DOI":"10.1038\/s41598-023-46600-3","article-title":"Histology-informed
+        multiscale modeling of human brain white matter","volume":"13","author":"Saeidi","year":"2023","journal-title":"Scientific
+        Reports"},{"issue":"17","key":"2026030514560786800_IMAG.a.1156-b63","doi-asserted-by":"crossref","first-page":"6650","DOI":"10.1073\/pnas.1200151109","article-title":"Demyelination
+        reduces brain parenchymal stiffness quantified in vivo by magnetic resonance
+        elastography","volume":"109","author":"Schregel","year":"2012","journal-title":"Proceedings
+        of the National Academy of Sciences of the United States of America"},{"issue":"46","key":"2026030514560786800_IMAG.a.1156-b64","doi-asserted-by":"crossref","first-page":"15425","DOI":"10.1523\/JNEUROSCI.0203-14.2014","article-title":"Accelerated
+        changes in white matter microstructure during aging: A longitudinal diffusion
+        tensor imaging study","volume":"34","author":"Sexton","year":"2014","journal-title":"Journal
+        of Neuroscience"},{"issue":"2","key":"2026030514560786800_IMAG.a.1156-b65","doi-asserted-by":"crossref","first-page":"372","DOI":"10.1002\/mrm.20355","article-title":"Imaging
+        anisotropic and viscous properties of breast tissue by magnetic resonance-elastography","volume":"53","author":"Sinkus","year":"2005","journal-title":"Magnetic
+        Resonance in Medicine"},{"issue":"June","key":"2026030514560786800_IMAG.a.1156-b66","doi-asserted-by":"crossref","first-page":"100051","DOI":"10.1016\/j.brain.2022.100051","article-title":"Anisotropic
+        mechanical properties in the healthy human brain estimated with multi-excitation
+        transversely isotropic MR elastography","volume":"3","author":"Smith","year":"2022","journal-title":"Brain
+        Multiphysics"},{"issue":"4","key":"2026030514560786800_IMAG.a.1156-b67","doi-asserted-by":"crossref","first-page":"acb482","DOI":"10.1088\/1361-6560\/acb482","article-title":"In
+        vivo estimation of anisotropic mechanical properties of the gastrocnemius
+        during functional loading with MR elastography","volume":"68","author":"Smith","year":"2023","journal-title":"Physics
+        in Medicine and Biology"},{"issue":"7","key":"2026030514560786800_IMAG.a.1156-b68","doi-asserted-by":"crossref","first-page":"710051","DOI":"10.1115\/1.4046199","article-title":"Multi-excitation
+        magnetic resonance elastography of the brain: Wave propagation in anisotropic
+        white matter","volume":"142","author":"Smith","year":"2020","journal-title":"Journal
+        of Biomechanical Engineering"},{"issue":"4","key":"2026030514560786800_IMAG.a.1156-b69","doi-asserted-by":"crossref","first-page":"1487","DOI":"10.1016\/j.neuroimage.2006.02.024","article-title":"Tract-based
+        spatial statistics: Voxelwise analysis of multi-subject diffusion data","volume":"31","author":"Smith","year":"2006","journal-title":"NeuroImage"},{"issue":"Suppl.
+        1","key":"2026030514560786800_IMAG.a.1156-b70","doi-asserted-by":"crossref","first-page":"S208","DOI":"10.1016\/j.neuroimage.2004.07.051","article-title":"Advances
+        in functional and structural MR image analysis and implementation as FSL","volume":"23","author":"Smith","year":"2004","journal-title":"NeuroImage"},{"issue":"3","key":"2026030514560786800_IMAG.a.1156-b71","doi-asserted-by":"crossref","first-page":"727","DOI":"10.1002\/jmri.26881","article-title":"Influence
+        of age on global and regional brain stiffness in young and middle-aged adults","volume":"51","author":"Takamura","year":"2020","journal-title":"Journal
+        of Magnetic Resonance Imaging"},{"issue":"6","key":"2026030514560786800_IMAG.a.1156-b72","doi-asserted-by":"crossref","first-page":"2360","DOI":"10.1002\/mrm.26600","article-title":"Requirements
+        for accurate estimation of anisotropic material parameters by magnetic resonance
+        elastography: A computational study","volume":"78","author":"Tweten","year":"2017","journal-title":"Magnetic
+        Resonance in Medicine"},{"issue":"15","key":"2026030514560786800_IMAG.a.1156-b73","doi-asserted-by":"crossref","first-page":"4002","DOI":"10.1016\/j.jbiomech.2015.09.009","article-title":"Estimation
+        of material parameters from slow and fast shear waves in an incompressible,
+        transversely isotropic material","volume":"48","author":"Tweten","year":"2015","journal-title":"Journal
+        of Biomechanics"},{"issue":"4","key":"2026030514560786800_IMAG.a.1156-b74","doi-asserted-by":"crossref","first-page":"779","DOI":"10.1002\/(SICI)1522-2594(199910)42:4<779::AID-MRM21>3.0.CO;2-Z","article-title":"An
+        overlapping subzone technique for MR-based elastic property reconstruction","volume":"42","author":"Van
+        Houten","year":"1999","journal-title":"Magnetic Resonance in Medicine"},{"issue":"1","key":"2026030514560786800_IMAG.a.1156-b75","doi-asserted-by":"crossref","first-page":"53","DOI":"10.1007\/s10237-005-0007-9","article-title":"Anisotropic
+        constitutive equations and experimental tensile behavior of brain tissue","volume":"5","author":"Velardi","year":"2006","journal-title":"Biomechanics
+        and Modeling in Mechanobiology"},{"key":"2026030514560786800_IMAG.a.1156-b83","doi-asserted-by":"crossref","first-page":"120234","DOI":"10.1016\/j.neuroimage.2023.120234","article-title":"Mechanical
+        stiffness and anisotropy measured by MRE during brain development in the minipig","volume":"277","author":"Wang","year":"2023","journal-title":"NeuroImage"},{"issue":"4","key":"2026030514560786800_IMAG.a.1156-b76","doi-asserted-by":"crossref","first-page":"2327","DOI":"10.1121\/10.0025467","article-title":"Shear
+        wave speeds in a nearly incompressible fibrous material with two unequal fiber
+        families","volume":"155","author":"Wang","year":"2024","journal-title":"The
+        Journal of the Acoustical Society of America"},{"key":"2026030514560786800_IMAG.a.1156-b77","doi-asserted-by":"crossref","first-page":"119","DOI":"10.1016\/j.jmbbm.2017.04.017","article-title":"The
+        mechanical importance of myelination in the central nervous system","volume":"76","author":"Weickenmeier","year":"2017","journal-title":"Journal
+        of the Mechanical Behavior of Biomedical Materials"},{"key":"2026030514560786800_IMAG.a.1156-b78","doi-asserted-by":"crossref","first-page":"265","DOI":"10.1016\/j.actbio.2016.07.040","article-title":"Brain
+        stiffness increases with myelin content","volume":"42","author":"Weickenmeier","year":"2016","journal-title":"Acta
+        Biomaterialia"},{"key":"2026030514560786800_IMAG.a.1156-b79","doi-asserted-by":"crossref","first-page":"103782","DOI":"10.1016\/j.mcn.2022.103782","article-title":"Harmonic
+        viscoelastic response of 3D histology-informed white matter model","volume":"123","author":"Wu","year":"2022","journal-title":"Molecular
+        and Cellular Neuroscience"},{"issue":"5","key":"2026030514560786800_IMAG.a.1156-b203","doi-asserted-by":"crossref","first-page":"1497","DOI":"10.1007\/s10237-019-01157-x","article-title":"Paediatric
+        brain tissue properties measured with magnetic resonance elastography","volume":"18","author":"Yeung","year":"2019","journal-title":"Biomechanics
+        and Modeling in Mechanobiology"},{"key":"2026030514560786800_IMAG.a.1156-b80","doi-asserted-by":"crossref","first-page":"194","DOI":"10.1016\/j.jmbbm.2018.02.002","article-title":"Micromechanics
+        of brain white matter tissue: A fiber-reinforced hyperelastic model using
+        embedded element technique","volume":"80","author":"Yousefsani","year":"2018","journal-title":"Journal
+        of the Mechanical Behavior of Biomedical Materials"}],"container-title":["Imaging
+        Neuroscience"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/direct.mit.edu\/imag\/article-pdf\/doi\/10.1162\/IMAG.a.1156\/2581949\/imag.a.1156.pdf","content-type":"application\/pdf","content-version":"vor","intended-application":"syndication"},{"URL":"https:\/\/direct.mit.edu\/imag\/article-pdf\/doi\/10.1162\/IMAG.a.1156\/2581949\/imag.a.1156.pdf","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2026,3,5]],"date-time":"2026-03-05T19:56:31Z","timestamp":1772740591000},"score":1,"resource":{"primary":{"URL":"https:\/\/direct.mit.edu\/imag\/article\/doi\/10.1162\/IMAG.a.1156\/135340\/Mechanical-properties-of-white-matter-tracts-in"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2026]]},"references-count":83,"URL":"https:\/\/doi.org\/10.1162\/imag.a.1156","relation":{},"ISSN":["2837-6056"],"issn-type":[{"value":"2837-6056","type":"electronic"}],"subject":[],"published-other":{"date-parts":[[2026]]},"published":{"date-parts":[[2026]]},"article-number":"IMAG.a.1156"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '8823'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 23:16:20 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1162%2FIMAG.a.1156%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTcxNTI5NTkxMjAwMCwxMC4xMTAxJTJGMjAyNC4wNS4wOC41OTMyNjA=","total-results":1,"items":[{"DOI":"10.1101\/2024.05.08.593260","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.1162\/IMAG.a.1156","asserted-by":"subject"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 23:16:20 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1162%2Fimag.a.1156%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 23:16:21 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1101/2024.05.08.593260?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"institution":[{"name":"bioRxiv"}],"indexed":{"date-parts":[[2026,6,24]],"date-time":"2026-06-24T05:58:07Z","timestamp":1782280687924,"version":"3.54.5"},"posted":{"date-parts":[[2024,5,9]]},"group-title":"Neuroscience","reference-count":67,"publisher":"openRxiv","content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"accepted":{"date-parts":[[2024,5,9]]},"abstract":"<jats:title>ABSTRACT<\/jats:title>\n                <jats:p>Magnetic
+        resonance elastography (MRE) is a promising neuroimaging technique to probe
+        tissue microstructure, which has revealed widespread softening with loss of
+        structural integrity in the aging brain. Traditional MRE approaches assume
+        mechanical isotropy. However, white matter is known to be anisotropic from
+        aligned, myelinated axonal bundles, which can lead to uncertainty in mechanical
+        property estimates in these areas when using isotropic MRE. Recent advances
+        in anisotropic MRE now allow for estimation of shear and tensile anisotropy,
+        along with substrate shear modulus, in white matter tracts. The objective
+        of this study was to investigate age-related differences in anisotropic mechanical
+        properties in human brain white matter tracts for the first time. Anisotropic
+        mechanical properties in all tracts were found to be significantly lower in
+        older adults compared to young adults, with average property differences ranging
+        between 0.028-0.107 for shear anisotropy and between 0.139-0.347 for tensile
+        anisotropy. Stiffness perpendicular to the axonal fiber direction was also
+        significantly lower in older age, but only in certain tracts. When compared
+        with fractional anisotropy measures from diffusion tensor imaging, we found
+        that anisotropic MRE measures provided additional, complementary information
+        in describing differences between the white matter integrity of young and
+        older populations. Anisotropic MRE provides a new tool for studying white
+        matter structural integrity in aging and neurodegeneration.<\/jats:p>","DOI":"10.1101\/2024.05.08.593260","type":"posted-content","created":{"date-parts":[[2024,5,9]],"date-time":"2024-05-09T23:05:12Z","timestamp":1715295912000},"source":"Crossref","is-referenced-by-count":2,"title":["Mechanical
+        Properties of White Matter Tracts in Aging Assessed via Anisotropic MR Elastography"],"prefix":"10.64898","author":[{"given":"Diego
+        A.","family":"Caban-Rivera","sequence":"first","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Lance
+        T.","family":"Williams","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Matthew
+        D. J.","family":"McGarry","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Daniel
+        R.","family":"Smith","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Elijah
+        E. W.","family":"Van Houten","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Keith
+        D.","family":"Paulsen","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Philip
+        V.","family":"Bayly","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Curtis
+        L.","family":"Johnson","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"54368","reference":[{"key":"2024051313500775000_2024.05.08.593260v1.1","doi-asserted-by":"publisher","DOI":"10.1016\/j.jmbbm.2016.03.005"},{"key":"2024051313500775000_2024.05.08.593260v1.2","doi-asserted-by":"publisher","DOI":"10.1016\/S1053-8119(03)00336-7"},{"key":"2024051313500775000_2024.05.08.593260v1.3","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2015.02.016"},{"key":"2024051313500775000_2024.05.08.593260v1.4","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroscience.2013.11.026"},{"key":"2024051313500775000_2024.05.08.593260v1.5","unstructured":"Caban-Rivera,
+        D. A. , Smith, D. R. , McGarry, M. D. , Williams, L. T. , McIlvain, G. , Van
+        Houten, E. E. W. , Paulsen, K. D. , Bayly, P. V. , & Johnson, C. L. (2022).
+        Anisotropic Mechanical Properties of White Matter Tracts in Aging via Transversely
+        Isotropic MR Elastography. 30th Annual Meeting International Society of Magnetic
+        Resonance in Medicine."},{"key":"2024051313500775000_2024.05.08.593260v1.6","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2009.01.068"},{"key":"2024051313500775000_2024.05.08.593260v1.7","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhaa388"},{"key":"2024051313500775000_2024.05.08.593260v1.8","doi-asserted-by":"publisher","DOI":"10.1016\/J.NICL.2023.103327"},{"key":"2024051313500775000_2024.05.08.593260v1.9","doi-asserted-by":"publisher","DOI":"10.1016\/j.jmbbm.2013.04.007"},{"key":"2024051313500775000_2024.05.08.593260v1.10","doi-asserted-by":"publisher","DOI":"10.1002\/nbm.2987"},{"key":"2024051313500775000_2024.05.08.593260v1.11","doi-asserted-by":"publisher","DOI":"10.1002\/nbm.2964"},{"key":"2024051313500775000_2024.05.08.593260v1.12","doi-asserted-by":"publisher","DOI":"10.1016\/j.jbiomech.2018.01.016"},{"key":"2024051313500775000_2024.05.08.593260v1.13","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pone.0054650"},{"key":"2024051313500775000_2024.05.08.593260v1.14","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhh003"},{"key":"2024051313500775000_2024.05.08.593260v1.15","doi-asserted-by":"publisher","DOI":"10.1088\/0031-9155\/61\/24\/R401"},{"key":"2024051313500775000_2024.05.08.593260v1.16","doi-asserted-by":"publisher","DOI":"10.1093\/braincomms\/fcz049"},{"key":"2024051313500775000_2024.05.08.593260v1.17","doi-asserted-by":"publisher","DOI":"10.1016\/j.neurobiolaging.2018.01.010"},{"key":"2024051313500775000_2024.05.08.593260v1.18","doi-asserted-by":"publisher","DOI":"10.1016\/J.NEUROIMAGE.2021.117889"},{"key":"2024051313500775000_2024.05.08.593260v1.19","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2007.07.053"},{"key":"2024051313500775000_2024.05.08.593260v1.20","doi-asserted-by":"publisher","DOI":"10.1002\/jmri.24977"},{"key":"2024051313500775000_2024.05.08.593260v1.21","doi-asserted-by":"publisher","DOI":"10.1002\/mrm.10354"},{"key":"2024051313500775000_2024.05.08.593260v1.22","doi-asserted-by":"publisher","DOI":"10.1016\/S1053-8119(02)91132-8"},{"key":"2024051313500775000_2024.05.08.593260v1.23","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2011.09.015"},{"key":"2024051313500775000_2024.05.08.593260v1.24","doi-asserted-by":"publisher","DOI":"10.1016\/S1361-8415(01)00036-6"},{"key":"2024051313500775000_2024.05.08.593260v1.25","unstructured":"Johnson,
+        C. L. , Anderson, A. T. , & Sutton, B. P. (2016). Brain MR Elastography with
+        Multiband Excitation and Nonlinear Motion-Induced Phase Error Correction.
+        Proc. Intl. Soc. Mag. Reson. Med. 24."},{"key":"2024051313500775000_2024.05.08.593260v1.26","doi-asserted-by":"publisher","DOI":"10.1016\/J.NEUROIMAGE.2013.04.089"},{"key":"2024051313500775000_2024.05.08.593260v1.27","doi-asserted-by":"publisher","DOI":"10.1088\/2057-1976\/ac5ebe"},{"key":"2024051313500775000_2024.05.08.593260v1.28","unstructured":"Kailash,
+        K. , Rifkin, J. K. , Ireland, J. A. , Okamoto, R. J. , & Bayly, P. V. (2019).
+        Design and Evaluation of a Lateral Head Excitation Device for MR Elastography
+        of the Brain. Biomedical Engineering Society Annual Meeting 2019. Philadelphia,
+        Pennsylvania. October 16-19, 2019."},{"key":"2024051313500775000_2024.05.08.593260v1.29","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2011.11.094"},{"key":"2024051313500775000_2024.05.08.593260v1.30","doi-asserted-by":"publisher","DOI":"10.1007\/s00330-020-07054-7"},{"key":"2024051313500775000_2024.05.08.593260v1.31","doi-asserted-by":"publisher","DOI":"10.1162\/jocn.2009.21047"},{"key":"2024051313500775000_2024.05.08.593260v1.32","doi-asserted-by":"publisher","DOI":"10.1002\/mrm.28627"},{"key":"2024051313500775000_2024.05.08.593260v1.33","doi-asserted-by":"publisher","DOI":"10.1088\/1361-6560\/ab9a84"},{"key":"2024051313500775000_2024.05.08.593260v1.34","doi-asserted-by":"publisher","DOI":"10.1118\/1.4754649"},{"key":"2024051313500775000_2024.05.08.593260v1.35","doi-asserted-by":"publisher","DOI":"10.1016\/j.media.2022.102432"},{"key":"2024051313500775000_2024.05.08.593260v1.36","doi-asserted-by":"publisher","DOI":"10.1002\/MRM.29308"},{"key":"2024051313500775000_2024.05.08.593260v1.37","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2022.119590"},{"key":"2024051313500775000_2024.05.08.593260v1.38","doi-asserted-by":"publisher","DOI":"10.1016\/j.dcn.2018.06.001"},{"key":"2024051313500775000_2024.05.08.593260v1.39","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2010.05.019"},{"key":"2024051313500775000_2024.05.08.593260v1.40","doi-asserted-by":"publisher","DOI":"10.1002\/CNM.2979"},{"key":"2024051313500775000_2024.05.08.593260v1.41","doi-asserted-by":"publisher","DOI":"10.1002\/nbm.3848"},{"key":"2024051313500775000_2024.05.08.593260v1.42","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2007.12.035"},{"key":"2024051313500775000_2024.05.08.593260v1.43","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2017.10.008"},{"key":"2024051313500775000_2024.05.08.593260v1.44","doi-asserted-by":"publisher","DOI":"10.1126\/science.7569924"},{"key":"2024051313500775000_2024.05.08.593260v1.45","doi-asserted-by":"publisher","DOI":"10.1016\/j.jmbbm.2020.104229"},{"key":"2024051313500775000_2024.05.08.593260v1.46","doi-asserted-by":"publisher","DOI":"10.1016\/j.nicl.2023.103328"},{"key":"2024051313500775000_2024.05.08.593260v1.47","doi-asserted-by":"publisher","DOI":"10.1002\/1522-2594(200008)44:2<259::AID-MRM13>3.0.CO;2-6"},{"key":"2024051313500775000_2024.05.08.593260v1.48","doi-asserted-by":"publisher","DOI":"10.1002\/mrm.25067"},{"key":"2024051313500775000_2024.05.08.593260v1.49","doi-asserted-by":"publisher","DOI":"10.1002\/MRM.24141"},{"key":"2024051313500775000_2024.05.08.593260v1.50","doi-asserted-by":"publisher","DOI":"10.1038\/s42254-022-00543-2"},{"key":"2024051313500775000_2024.05.08.593260v1.51","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2009.02.040"},{"key":"2024051313500775000_2024.05.08.593260v1.52","doi-asserted-by":"publisher","DOI":"10.1039\/c3sm50552a"},{"key":"2024051313500775000_2024.05.08.593260v1.53","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pone.0023451"},{"key":"2024051313500775000_2024.05.08.593260v1.54","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.1200151109"},{"key":"2024051313500775000_2024.05.08.593260v1.55","doi-asserted-by":"publisher","DOI":"10.1002\/mrm.20355"},{"key":"2024051313500775000_2024.05.08.593260v1.56","doi-asserted-by":"publisher","DOI":"10.1016\/j.brain.2022.100051"},{"key":"2024051313500775000_2024.05.08.593260v1.57","doi-asserted-by":"publisher","DOI":"10.1115\/1.4046199"},{"key":"2024051313500775000_2024.05.08.593260v1.58","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2006.02.024"},{"key":"2024051313500775000_2024.05.08.593260v1.59","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2004.07.051"},{"key":"2024051313500775000_2024.05.08.593260v1.60","doi-asserted-by":"publisher","DOI":"10.1002\/jmri.26881"},{"key":"2024051313500775000_2024.05.08.593260v1.61","doi-asserted-by":"publisher","DOI":"10.1002\/mrm.26600"},{"key":"2024051313500775000_2024.05.08.593260v1.62","doi-asserted-by":"publisher","DOI":"10.1016\/j.jbiomech.2015.09.009"},{"key":"2024051313500775000_2024.05.08.593260v1.63","doi-asserted-by":"publisher","DOI":"10.1002\/(SICI)1522-2594(199910)42:4<779::AID-MRM21>3.0.CO;2-Z"},{"key":"2024051313500775000_2024.05.08.593260v1.64","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2023.120234"},{"key":"2024051313500775000_2024.05.08.593260v1.65","doi-asserted-by":"publisher","DOI":"10.1016\/j.jmbbm.2017.04.017"},{"key":"2024051313500775000_2024.05.08.593260v1.66","doi-asserted-by":"publisher","DOI":"10.1016\/j.actbio.2016.07.040"},{"key":"2024051313500775000_2024.05.08.593260v1.67","doi-asserted-by":"publisher","DOI":"10.1007\/s10237-019-01157-x"}],"container-title":[],"original-title":[],"link":[{"URL":"https:\/\/syndication.highwire.org\/content\/doi\/10.1101\/2024.05.08.593260","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2026,6,24]],"date-time":"2026-06-24T05:07:12Z","timestamp":1782277632000},"score":1,"resource":{"primary":{"URL":"http:\/\/biorxiv.org\/lookup\/doi\/10.1101\/2024.05.08.593260"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2024,5,9]]},"references-count":67,"URL":"https:\/\/doi.org\/10.1101\/2024.05.08.593260","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.1162\/IMAG.a.1156","asserted-by":"subject"}]},"subject":[],"published":{"date-parts":[[2024,5,9]]},"subtype":"preprint"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '3122'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 23:16:21 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1101%2F2024.05.08.593260%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 23:16:21 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+version: 1

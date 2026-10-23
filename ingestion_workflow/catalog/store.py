@@ -432,7 +432,7 @@ class Catalog:
                 if pubmed_doi:
                     holder = self._holder(conn, "doi", pubmed_doi)
                     if holder is not None and holder not in owners.values():
-                        self._refuse(conn, "pmid", str(identifier.pmid), None, why)
+                        self.refuse("pmid", str(identifier.pmid), None, why, conn)
                         pairs = [p for p in pairs if p[0] != "pmid"]
                 # A preprint's PMID or PMCID is not the one its holder is judged by.
                 incoming = {k: v for k, v in pairs
@@ -495,8 +495,14 @@ class Catalog:
         self.conflicts += 1
         logger.warning("catalog: %s -- %s", identifier.slug, why)
 
-    def _refuse(self, conn: sqlite3.Connection, kind: str, value: str,
-                article_id: Optional[str], why: str) -> None:
+    def refuse(self, kind: str, value: str, article_id: Optional[str], why: str,
+               conn: Optional[sqlite3.Connection] = None) -> None:
+        """Record an identifier left off an article, and why, in the `refusals` table, in the
+        log and on `refused`; `conn` is the caller's open write transaction, if it has one."""
+        if conn is None:
+            with self._write() as own:
+                self.refuse(kind, value, article_id, why, own)
+            return
         self.conflicts += 1
         if (kind, value, article_id, why) not in self.refused:
             self.refused.append((kind, value, article_id, why))
@@ -529,8 +535,9 @@ class Catalog:
                     conn.execute("INSERT INTO aliases(kind, value, article_id) VALUES(?, ?, ?)",
                                  ("alternative_doi", doi, article_id))
                 else:
-                    self._refuse(conn, "doi", doi, article_id,
-                                 f"{article_id} holds the journal DOI {', '.join(held)}, {why}")
+                    self.refuse("doi", doi, article_id,
+                                f"{article_id} holds the journal DOI {', '.join(held)}, {why}",
+                                conn)
 
     def _pubmed_evidence(self, identifiers: Sequence[Identifier]) -> Dict[str, Tuple[str, str]]:
         """For each PMID a record would add beside its other ids, (the DOI, why) it is
@@ -1440,6 +1447,25 @@ class Catalog:
                 "VALUES (?, ?, ?, ?, ?, ?)",
                 attempts,
             )
+
+    #: The stage under which `attempts` holds that a provider was asked for an article's ids.
+    LOOKUP_STAGE = "id_lookup"
+
+    def record_lookups(self, article_ids: Sequence[str], provider: str) -> None:
+        """Note that `provider` was asked for each article's ids. It is an attempt, not an
+        artifact: no stage is waiting on it, so no stage count shows it, and a merge or a
+        split carries it with the article."""
+        now = utcnow()
+        with self._write() as conn:
+            conn.executemany(
+                "INSERT INTO attempts(article_id, stage, source, attempted_at, ok, error) "
+                "VALUES (?, ?, ?, ?, 1, NULL)",
+                [(article_id, self.LOOKUP_STAGE, provider, now) for article_id in article_ids])
+
+    def was_looked_up(self, article_id: str, provider: str) -> bool:
+        return self._conn.execute(
+            "SELECT 1 FROM attempts WHERE article_id=? AND stage=? AND source=? AND ok=1 LIMIT 1",
+            (article_id, self.LOOKUP_STAGE, provider)).fetchone() is not None
 
     def attempt_counts(
         self, article_ids: Sequence[str], stage: str, source: str

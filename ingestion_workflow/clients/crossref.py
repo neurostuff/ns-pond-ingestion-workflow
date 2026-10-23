@@ -47,8 +47,10 @@ class CrossrefWork:
     #: The DOI as its publisher spells it (`alternative-id`), when that differs only in case:
     #: Crossref matches the DOI a relation names by case.
     spellings: Tuple[str, ...]
-    #: Crossref's type: journal-article, posted-content (a preprint), proceedings-article, ...
+    #: Crossref's type: journal-article, posted-content, proceedings-article, ...
     type: Optional[str]
+    #: A posted-content work's subtype: `preprint`, or working_paper, report, dissertation, ...
+    subtype: Optional[str]
     #: The DOIs this one is related to, by relation type (is-preprint-of, has-version, ...).
     relations: Dict[str, Tuple[str, ...]]
     #: The works this one is a Crossmark update to, as (DOI, update type): the work a
@@ -93,7 +95,7 @@ class CrossrefClient:
             doi=message["DOI"].lower(),
             spellings=tuple(a for a in message.get("alternative-id") or ()
                             if a.lower() == message["DOI"].lower()),
-            type=message.get("type"),
+            type=message.get("type"), subtype=message.get("subtype"),
             relations={kind: tuple(r["id"].lower() for r in related
                                    if r.get("id-type") == "doi" and r.get("id"))
                        for kind, related in (message.get("relation") or {}).items()},

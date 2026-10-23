@@ -1,0 +1,858 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1186/s40163-021-00151-y?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,8,26]],"date-time":"2026-08-26T16:31:28Z","timestamp":1787761888821,"version":"build-2784847793"},"reference-count":53,"publisher":"Springer
+        Science and Business Media LLC","issue":"1","license":[{"start":{"date-parts":[[2021,6,30]],"date-time":"2021-06-30T00:00:00Z","timestamp":1625011200000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/creativecommons.org\/licenses\/by\/4.0"},{"start":{"date-parts":[[2021,6,30]],"date-time":"2021-06-30T00:00:00Z","timestamp":1625011200000},"content-version":"vor","delay-in-days":0,"URL":"https:\/\/creativecommons.org\/licenses\/by\/4.0"}],"content-domain":{"domain":["link.springer.com"],"crossmark-restriction":false},"short-container-title":["Crime
+        Sci"],"published-print":{"date-parts":[[2021,12]]},"abstract":"<jats:title>Abstract<\/jats:title>\n                  <jats:sec>\n                    <jats:title>Background<\/jats:title>\n                    <jats:p>This
+        study aimed to determine whether crime patterns in Mexico City changed due
+        to the COVID-19 pandemic, and to test whether any changes observed were associated
+        with the disruption of routine activities, as measured by changes in public
+        transport passenger numbers.<\/jats:p>\n                  <\/jats:sec>\n                  <jats:sec>\n                    <jats:title>Method<\/jats:title>\n                    <jats:p>The
+        first objective was assessed by comparing the observed incidence of crime
+        after the COVID-19 pandemic was detected in the country with that expected
+        based on ARIMA forecasts based on the pre-pandemic trends. The second objective
+        was assessed by examining the association between crime incidence and the
+        number of passengers on public transport using regressions with ARIMA errors.<\/jats:p>\n                  <\/jats:sec>\n                  <jats:sec>\n                    <jats:title>Results<\/jats:title>\n                    <jats:p>Results
+        indicated that most crime categories decreased significantly after the pandemic
+        was detected in the country or after a national lockdown was instituted. Furthermore,
+        the study found that some of the declines observed were associated with the
+        reductions seen in public transport passenger numbers. However, the findings
+        suggested that the changes in mobility explain part of the declines observed,
+        with important variations per crime type.<\/jats:p>\n                  <\/jats:sec>\n                  <jats:sec>\n                    <jats:title>Conclusion<\/jats:title>\n                    <jats:p>The
+        findings contribute to the global evaluation of the effects of COVID-19 on
+        crime and propose a robust method to explicitly test whether the changes observed
+        are associated with changes in routine activities.<\/jats:p>\n                  <\/jats:sec>","DOI":"10.1186\/s40163-021-00151-y","type":"journal-article","created":{"date-parts":[[2021,6,30]],"date-time":"2021-06-30T05:03:27Z","timestamp":1625029407000},"update-policy":"https:\/\/doi.org\/10.1007\/springer_crossmark_policy","source":"Crossref","is-referenced-by-count":64,"title":["Crime
+        and COVID-19: effect of changes in routine activities in Mexico City"],"prefix":"10.1186","volume":"10","author":[{"ORCID":"https:\/\/orcid.org\/0000-0001-7513-6904","authenticated-orcid":false,"given":"Patricio
+        R.","family":"Est\u00e9vez-Soto","sequence":"first","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"297","published-online":{"date-parts":[[2021,6,30]]},"reference":[{"key":"151_CR1","doi-asserted-by":"publisher","unstructured":"Ashby,
+        M.P.J. (2020a). Changes in police calls for service during the early months
+        of the 2020 coronavirus pandemic. SocArXiv Papers https:\/\/doi.org\/10.31235\/osf.io\/h4mcu.","DOI":"10.31235\/osf.io\/h4mcu"},{"key":"151_CR2","doi-asserted-by":"publisher","DOI":"10.1186\/s40163-020-00117-6","author":"MPJ
+        Ashby","year":"2020","unstructured":"Ashby, M.P.J. (2020b). Initial evidence
+        on the relationship between the coronavirus pandemic and crime in the United
+        States. Crime Science 9(1), https:\/\/doi.org\/10.1186\/s40163-020-00117-6.","journal-title":"Crime
+        Science"},{"key":"151_CR3","unstructured":"Asmann, P., Dalby, C., & Robbins,
+        S. (2020). Six Ways Coronavirus is Impacting Organized Crime in the Americas.
+        InSight Crime https:\/\/www.insightcrime.org\/news\/analysis\/coronavirus-organized-crime-latin-america\/"},{"key":"151_CR4","unstructured":"Averbuch,
+        M. (2020). \u2018We\u2019ll disappear\u2019: Thousands of Mexican women strike
+        to protest femicide. The Guardian http:\/\/www.theguardian.com\/world\/2020\/mar\/09\/thousands-mexican-women-protest-violence-murders-femicide-government-inaction.
+        Accessed 25 July 2020."},{"key":"151_CR5","doi-asserted-by":"publisher","unstructured":"Box-Steffensmeier,
+        J. M., Freeman, J. R., Hitt, M. P., & Pevehouse, J. C. (2014). Time series
+        analysis for the social sciences. Cambridge: Cambridge University Press. https:\/\/doi.org\/10.1017\/CBO9781139025287.","DOI":"10.1017\/CBO9781139025287"},{"key":"151_CR6","doi-asserted-by":"publisher","DOI":"10.1080\/14616696.2020.1804973","author":"D
+        Buil-Gil","year":"2020","unstructured":"Buil-Gil, D., Mir\u00f3-llinares,
+        F., Moneva, A., Kemp, S., & D\u00edaz-Casta\u00f1o, N. (2020). Cybercrime
+        and shifts in opportunities during COVID-19: a preliminary analysis in the
+        UK. European Societies. https:\/\/doi.org\/10.1080\/14616696.2020.1804973.","journal-title":"European
+        Societies"},{"key":"151_CR7","doi-asserted-by":"publisher","unstructured":"Campedelli,
+        G. M., Aziani, A., & Favarin, S. (2020). Exploring the Effect of 2019-nCoV
+        Containment Policies on Crime: The Case of Los Angeles. arXiv (pp. 1\u201349).
+        https:\/\/doi.org\/10.31219\/osf.io\/gcpq8, arXiv:2003.11021.","DOI":"10.31219\/osf.io\/gcpq8"},{"key":"151_CR8","doi-asserted-by":"publisher","unstructured":"Cavanaugh,
+        J.E. (2007). Akaike Information Criterion. In: Salkind NJ (ed) Encyclopedia
+        of Measurement and Statistics (pp. 77\u201379). Sage Publications, Inc., Thousand
+        Oaks: California. https:\/\/doi.org\/10.4135\/9781412952644.n9.","DOI":"10.4135\/9781412952644.n9"},{"key":"151_CR9","doi-asserted-by":"crossref","unstructured":"Cohen,
+        L.E., & Felson, M. (1979). Social change and crime rate trends: aroutine activity
+        approach. American Sociological Review (pp. 588\u2013608).","DOI":"10.2307\/2094589"},{"key":"151_CR10","doi-asserted-by":"publisher","unstructured":"Denegri,
+        F., & Ley-Garc\u00eda, J. (2021). Crime against Businesses: temporal stability
+        of hot spots in Mexicali., Mexico. ISPRS International Journal of Geo-Information,
+        10(3), 178. https:\/\/doi.org\/10.3390\/ijgi10030178. https:\/\/www.mdpi.com\/2220-9964\/10\/3\/178.","DOI":"10.3390\/ijgi10030178"},{"key":"151_CR11","unstructured":"Echarri
+        C. C. J. (Ed.). (2012). Panorama Estad\u00edstico de la Violencia en M\u00e9xico.
+        Centro de Investigaci\u00f3n y Estudios en Seguridad, M\u00e9xico, DF: Secretar\u00eda
+        de Seguridad P\u00fablica Federal."},{"key":"151_CR12","unstructured":"ECLAC.
+        (2020). COVID-19 to cause biggest economic contraction ever in Latin America
+        & Caribbean. UN News https:\/\/news.un.org\/en\/story\/2020\/04\/1062292."},{"issue":"1","key":"151_CR13","doi-asserted-by":"publisher","first-page":"24","DOI":"10.1057\/cpcs.2009.20","volume":"12","author":"G
+        Farrell","year":"2010","unstructured":"Farrell, G., Tilley, N., Tseloni, A.,
+        & Mailley, J. (2010). Explaining and sustaining the crime drop: Clarifying
+        the role of opportunity-related theories. Crime Prevention and Community Safety,
+        12(1), 24\u201341. https:\/\/doi.org\/10.1057\/cpcs.2009.20.","journal-title":"Crime
+        Prevention and Community Safety"},{"issue":"2","key":"151_CR14","doi-asserted-by":"publisher","first-page":"147","DOI":"10.1177\/0022427810391539","volume":"48","author":"G
+        Farrell","year":"2011","unstructured":"Farrell, G., Tseloni, A., Mailley,
+        J., & Tilley, N. (2011a). The crime drop and the security hypothesis. Journal
+        of Research in Crime and Delinquency, 48(2), 147\u2013175. https:\/\/doi.org\/10.1177\/0022427810391539.","journal-title":"Journal
+        of Research in Crime and Delinquency"},{"issue":"1","key":"151_CR15","doi-asserted-by":"publisher","first-page":"421","DOI":"10.1086\/678081","volume":"43","author":"G
+        Farrell","year":"2014","unstructured":"Farrell, G., Tilley, N., & Tseloni,
+        A. (2014). Why the crime drop? Crime and Justice, 43(1), 421\u2013490. https:\/\/doi.org\/10.1086\/678081.","journal-title":"Crime
+        and Justice"},{"issue":"1","key":"151_CR16","doi-asserted-by":"publisher","first-page":"21","DOI":"10.1177\/1748895810392190","volume":"11","author":"G
+        Farrell","year":"2011","unstructured":"Farrell, G., Tseloni, A., & Tilley,
+        N. (2011b). The effectiveness of vehicle security devices and their role in
+        the crime drop. Criminology and Criminal Justice, 11(1), 21\u201335. https:\/\/doi.org\/10.1177\/1748895810392190.","journal-title":"Criminology
+        and Criminal Justice"},{"key":"151_CR17","unstructured":"Felbab-Brown, V.
+        (2020). COVID-19 and organized crime: Latin American governments are in a
+        state-making competition with crime. Brookings Institution: On the record
+        https:\/\/www.brookings.edu\/on-the-record\/covid-19-and-organized-crime-latin-american-governments-are-in-a-state-making-competition-with-crime\/,
+        accessed on Fri, August 14, 2020"},{"key":"151_CR18","first-page":"87","volume-title":"Environmental
+        criminology and crime analysis","author":"M Felson","year":"2017","unstructured":"Felson,
+        M. (2017). Routine activity approach. In R. Wortley & M. Townsley (Eds.),
+        Environmental criminology and crime analysis (2nd ed., pp. 87\u201397). Milton
+        Park, UK: Routledge.","edition":"2"},{"issue":"7820","key":"151_CR19","doi-asserted-by":"publisher","first-page":"257","DOI":"10.1038\/s41586-020-2405-7","volume":"584","author":"S
+        Flaxman","year":"2020","unstructured":"Flaxman, S., Mishra, S., Gandy, A.,
+        Unwin, H. J. T., Mellan, T. A., Coupland, H., et al., (2020). Estimating the
+        effects of non-pharmaceutical interventions on COVID-19 in Europe. Nature,
+        584(7820), 257\u2013261. https:\/\/doi.org\/10.1038\/s41586-020-2405-7.","journal-title":"Nature"},{"key":"151_CR20","unstructured":"Garrido,
+        S. (2019). El Punto de Inflexi\u00f3n. Nexos, Taller de Datos. https:\/\/datos.nexos.com.mx\/el-punto-de-inflexion\/."},{"key":"151_CR21","volume-title":"Data
+        analysis using regression and multilevel\/hierarchical models","author":"A
+        Gelman","year":"2007","unstructured":"Gelman, A., & Hill, J. (2007). Data
+        analysis using regression and multilevel\/hierarchical models. New York: Cambridge
+        University Press, Cambridge."},{"issue":"1","key":"151_CR22","doi-asserted-by":"publisher","first-page":"19","DOI":"10.1186\/s40163-020-00128-3","volume":"9","author":"M
+        Gerell","year":"2020","unstructured":"Gerell, M., Kardell, J., & Kindgren,
+        J. (2020). Minor covid-19 association with crime in Sweden. Crime Science,
+        9(1), 19. https:\/\/doi.org\/10.1186\/s40163-020-00128-3.","journal-title":"Crime
+        Science"},{"key":"151_CR23","unstructured":"Gonz\u00e1lez\u00a0Schont, C.
+        (2020). Violencia de G\u00e9nero en tiempos de COVID-19. CIDE: Violencia durante
+        la pandemia https:\/\/www.cide.edu\/coronavirus\/2020\/05\/11\/violencia-de-genero-en-tiempos-de-covid-19\/,.
+        Accessed 25 July 2020."},{"key":"151_CR24","doi-asserted-by":"publisher","DOI":"10.1186\/s40163-020-00121-w","author":"E
+        Halford","year":"2020","unstructured":"Halford, E., Dixon, A., Farrell, G.,
+        Malleson, N., & Tilley, N. (2020). Crime and coronavirus: social distancing
+        lockdown, and the mobility elasticity of crime. Crime Science , https:\/\/doi.org\/10.1186\/s40163-020-00121-w.","journal-title":"Crime
+        Science"},{"key":"151_CR25","volume-title":"Human ecology: a theory of community
+        structure","author":"AH Hawley","year":"1950","unstructured":"Hawley, A. H.
+        (1950). Human ecology: a theory of community structure. New York, NY: Ronald
+        Press."},{"key":"151_CR26","unstructured":"Hyndman, R. J. (2010). The ARIMAX
+        model muddle. Hyndsight Blog https:\/\/robjhyndman.com\/hyndsight\/arimax\/,
+        accessed on Mon, July 27, 2020"},{"key":"151_CR27","unstructured":"Hyndman,
+        R. J., & Athanasopoulos, G. (2019). Forecasting: Principles and Practice.
+        OTexts, https:\/\/Otexts.com\/fpp3\/, accessed on Mon, July 27, 2020"},{"key":"151_CR28","doi-asserted-by":"crossref","unstructured":"Hyndman,
+        R.J., & Khandakar, Y. (2008). Automatic Time Series Forecasting: The forecast
+        Package for R. Journal of Statistical Software 27(3), http:\/\/www.jstatsoft.org\/v27\/i03\/paper","DOI":"10.18637\/jss.v027.i03"},{"key":"151_CR29","unstructured":"INEGI
+        (2018). Encuesta Origen Destino en Hogares de la Zona Metropolitana del Valle
+        de M\u00e9xico (EOD) 2017. Instituto Nacional de Estad\u00edstica y Geograf\u00eda,
+        Mexico City, https:\/\/www.inegi.org.mx\/contenidos\/programas\/eod\/2017\/doc\/resultados_eod_2017.pdf."},{"key":"151_CR30","unstructured":"INEGI
+        (2020a). Encuesta Nacional de Victimizaci\u00f3n y Percepci\u00f3n sobre Seguridad
+        P\u00fablica (ENVIPE) 2020: Principales resultados. Instituto Nacional de
+        Estad\u00edstica y Geograf\u00eda, Mexico City, https:\/\/www.inegi.org.mx\/contenidos\/programas\/envipe\/2020\/doc\/envipe2020_presentacion_nacional.pdf."},{"key":"151_CR31","unstructured":"INEGI
+        (2020b). Encuesta Nacional de Victimizaci\u00f3n y Percepci\u00f3n sobre Seguridad
+        P\u00fablica (ENVIPE) 2020: Principales resultados, Ciudad de M\u00e9xico.
+        Instituto Nacional de Estad\u00edstica y Geograf\u00eda, Mexico City, https:\/\/www.inegi.org.mx\/contenidos\/programas\/envipe\/2020\/doc\/envipe2020_cdmx.pdf."},{"key":"151_CR32","unstructured":"Jewkes,
+        R., Sen, P., & Garcia-Moreno, C. (2002). Sexual Violence. In: Krug EG, Dahlberg
+        LL, Mercy JA, Ziwi AB, Lozano R (eds) World Report on Violence and Health,
+        World Health Organization, Geneva, https:\/\/www.who.int\/violence_injury_prevention\/violence\/world_report\/en\/.
+        Accessed 10 Sept 2020"},{"issue":"1\u20133","key":"151_CR33","doi-asserted-by":"publisher","first-page":"159","DOI":"10.1016\/0304-4076(92)90104-Y","volume":"54","author":"D
+        Kwiatkowski","year":"1992","unstructured":"Kwiatkowski, D., Phillips, P. C.,
+        Schmidt, P., & Shin, Y. (1992). Testing the null hypothesis of stationarity
+        against the alternative of a unit root: How sure are we that economic time
+        series have a unit root? Journal of Econometrics, 54(1\u20133), 159\u2013178.
+        https:\/\/doi.org\/10.1016\/0304-4076(92)90104-Y.","journal-title":"Journal
+        of Econometrics"},{"key":"151_CR34","doi-asserted-by":"publisher","unstructured":"Lau,
+        H., Khosrawipour, V., Kocbach, P., Mikolajczyk, A., Schubert, J., Bania, J.,
+        & Khosrawipour, T. (2020). The positive impact of lockdown in Wuhan on containing
+        the COVID-19 outbreak in China. Journal of Travel Medicine, 27(3), https:\/\/doi.org\/10.1093\/jtm\/taaa037.","DOI":"10.1093\/jtm\/taaa037"},{"issue":"2","key":"151_CR35","doi-asserted-by":"publisher","first-page":"297","DOI":"10.1093\/biomet\/65.2.297","volume":"65","author":"GM
+        Ljung","year":"1978","unstructured":"Ljung, G. M., & Box, G. E. P. (1978).
+        On a measure of lack of fit in time series models. Biometrika, 65(2), 297\u2013303.
+        https:\/\/doi.org\/10.1093\/biomet\/65.2.297.","journal-title":"Biometrika"},{"key":"151_CR36","doi-asserted-by":"publisher","first-page":"101,692","DOI":"10.1016\/j.jcrimjus.2020.101692","volume":"68","author":"G
+        Mohler","year":"2020","unstructured":"Mohler, G., Bertozzi, A. L., Carter,
+        J., Short, M. B., Sledge, D., Tita, G. E., et al., (2020). Impact of social
+        distancing during COVID-19 pandemic on crime in Los Angeles and Indianapolis.
+        Journal of Criminal Justice, 68, 101,692. https:\/\/doi.org\/10.1016\/j.jcrimjus.2020.101692.","journal-title":"Journal
+        of Criminal Justice"},{"key":"151_CR37","doi-asserted-by":"publisher","first-page":"253","DOI":"10.1016\/j.avb.2018.09.003","volume":"47","author":"R
+        Muggah","year":"2019","unstructured":"Muggah, R., & Tob\u00f3n, K. A. (2019).
+        Reducing Latin America\u2019s violent hot spots. Aggression and Violent Behavior,
+        47, 253\u2013256. https:\/\/doi.org\/10.1016\/j.avb.2018.09.003.","journal-title":"Aggression
+        and Violent Behavior"},{"issue":"3\u20134","key":"151_CR38","doi-asserted-by":"publisher","first-page":"171","DOI":"10.1080\/17440572.2018.1543916","volume":"19","author":"MM
+        M\u00fcller","year":"2018","unstructured":"M\u00fcller, M. M. (2018). Governing
+        crime and violence in Latin America. Global Crime, 19(3\u20134), 171\u2013191.
+        https:\/\/doi.org\/10.1080\/17440572.2018.1543916.","journal-title":"Global
+        Crime"},{"key":"151_CR39","unstructured":"O\u2019Hara-Wild, M., Hyndman, R.,
+        & Wang, E. (2020). Forecasting models for tidy time series. https:\/\/fable.tidyverts.org\/.
+        Accessed 25 July 2020."},{"key":"151_CR40","doi-asserted-by":"publisher","DOI":"10.1007\/s11292-020-09441-y","author":"JL
+        Payne","year":"2020","unstructured":"Payne, J. L., Morgan, A., & Piquero,
+        A. (2020). COVID-19 and social distancing measures in Queensland Australia
+        are associated with short-term decreases in recorded violent crime. Journal
+        of Experimental Criminology. https:\/\/doi.org\/10.1007\/s11292-020-09441-y.","journal-title":"Journal
+        of Experimental Criminology"},{"key":"151_CR41","doi-asserted-by":"crossref","unstructured":"P\u00e9rez
+        Morales V, V\u00e9lez Salas DdM, Rivas Rodr\u00edguez FJ, V\u00e9lez Salas
+        MA (2015) Evoluci\u00f3n de la extorsi\u00f3n en M\u00e9xico: Un an\u00e1lisis
+        estad\u00edstico regional (2012\u20132013). Revista Mexicana de Opini\u00f3n
+        P\u00fablica (18).","DOI":"10.1016\/S1870-7300(15)71363-3"},{"key":"151_CR42","unstructured":"Phillips,
+        T. (2020). Mexico: activists voice anger at Amlo\u2019s failure to tackle
+        \u2019femicide emergency\u2019. The Guardian http:\/\/www.theguardian.com\/world\/2020\/mar\/05\/mexico-femicide-emergency-activists.
+        Accessed 25 July 2020."},{"key":"151_CR43","doi-asserted-by":"publisher","DOI":"10.1007\/s12103-020-09531-7","author":"AR
+        Piquero","year":"2020","unstructured":"Piquero, A.R., Riddell, J.R., Bishopp,
+        S.A., Narvey, C., Reid, J.A., & Piquero, N.L. (2020). Staying home, staying
+        safe? A short-term analysis of COVID-19 on Dallas domestic violence. American
+        Journal of Criminal Justice. https:\/\/doi.org\/10.1007\/s12103-020-09531-7","journal-title":"American
+        Journal of Criminal Justice"},{"key":"151_CR44","unstructured":"R Core Development
+        Team (2015). R: a language and environment for statistical computing. R Foundation
+        for statistical computing. http:\/\/www.r-project.org."},{"key":"151_CR45","doi-asserted-by":"publisher","DOI":"10.2139\/ssrn.3567394","author":"S
+        Shayegh","year":"2020","unstructured":"Shayegh, S., Malpede, M. (2020). Staying
+        home saves lives, really! SSRN Electronic Journal,. https:\/\/doi.org\/10.2139\/ssrn.3567394.","journal-title":"SSRN
+        Electronic Journal"},{"key":"151_CR46","doi-asserted-by":"publisher","DOI":"10.1007\/s12103-020-09546-0","author":"B
+        Stickle","year":"2020","unstructured":"Stickle, B., & Felson, M. (2020). Crime
+        rates in a pandemic: the largest criminological experiment in history. American
+        Journal of Criminal Justice. https:\/\/doi.org\/10.1007\/s12103-020-09546-0.","journal-title":"merican
+        Journal of Criminal Justice"},{"key":"151_CR47","unstructured":"TfL (2019).
+        Travel in London: Report 12. Transport for London, London, UK, http:\/\/content.tfl.gov.uk\/travel-in-london-report-12.pdf."},{"key":"151_CR48","doi-asserted-by":"publisher","unstructured":"Tilley,
+        N., Farrell, G., & Clarke, R.V. (2015). Target Suitability and the Crime drop.
+        In: Andersen MA, Farrell G (eds) The criminal act: the role and influence
+        of routine activity Theory (pp 59\u201376). Palgrave Macmillan: Houndmills.
+        https:\/\/doi.org\/10.1007\/978-1-137-52502-4_1.","DOI":"10.1007\/978-1-137-52502-4_1"},{"issue":"2","key":"151_CR49","doi-asserted-by":"publisher","first-page":"111","DOI":"10.1080\/17440572.2020.1715219","volume":"21","author":"CJ
+        Vilalta","year":"2020","unstructured":"Vilalta, C. J., Muggah, R., & Fondevila,
+        G. (2020). Homicide as a function of city block layout: Mexico City as case
+        study. Global Crime, 21(2), 111\u2013129. https:\/\/doi.org\/10.1080\/17440572.2020.1715219.","journal-title":"Global
+        Crime"},{"key":"151_CR50","doi-asserted-by":"publisher","unstructured":"Vilalta,
+        C. J., Lopez-Ramirez, P., & Fondevila, G. (2021). The spatial diffusion of
+        homicide in Mexico City: a test of theories in context. Global Crime, , 1\u201319.
+        https:\/\/doi.org\/10.1080\/17440572.2021.1909480https:\/\/www.tandfonline.com\/doi\/full\/10.1080\/17440572.2021.1909480.","DOI":"10.1080\/17440572.2021.1909480"},{"key":"151_CR51","doi-asserted-by":"publisher","unstructured":"Vilalta,
+        C.J, Sanchez, T.W., Fondevila, G., & Ramirez, M. (2018). A descriptive model
+        of the relationship between police CCTV systems and crime. Evidence from Mexico
+        City. Police Practice and Research. https:\/\/doi.org\/10.1080\/15614263.2018.1473770.","DOI":"10.1080\/15614263.2018.1473770"},{"key":"151_CR52","volume-title":"Introductory
+        econometrics: a modern approach","author":"JM Wooldridge","year":"2013","unstructured":"Wooldridge,
+        J. M. (2013). Introductory econometrics: a modern approach (5th ed.). Cengage
+        Learning, Mason, OH: South-Western.","edition":"5"},{"key":"151_CR53","unstructured":"Zerme\u00f1o
+        N\u00fa\u00f1ez, M.F., & Pl\u00e1cido R\u00edos, E.C. (2009). La discriminaci\u00f3n
+        y violencia contra las mujeres en el transporte p\u00fablico de la Ciudad
+        de M\u00e9xico [Documento de Trabajo No. E-18-2009]. CONAPRED, Mexico City,
+        https:\/\/www.epadeq.com.mx\/wp-content\/uploads\/2014\/05\/Violencia_Mujeres_Transporte_Publico_CONAPRED.pdf"}],"container-title":["Crime
+        Science"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/link.springer.com\/content\/pdf\/10.1186\/s40163-021-00151-y.pdf","content-type":"application\/pdf","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/link.springer.com\/article\/10.1186\/s40163-021-00151-y\/fulltext.html","content-type":"text\/html","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/link.springer.com\/content\/pdf\/10.1186\/s40163-021-00151-y.pdf","content-type":"application\/pdf","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2021,6,30]],"date-time":"2021-06-30T05:15:55Z","timestamp":1625030155000},"score":1,"resource":{"primary":{"URL":"https:\/\/crimesciencejournal.biomedcentral.com\/articles\/10.1186\/s40163-021-00151-y"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2021,6,30]]},"references-count":53,"journal-issue":{"issue":"1","published-print":{"date-parts":[[2021,12]]}},"alternative-id":["151"],"URL":"https:\/\/doi.org\/10.1186\/s40163-021-00151-y","relation":{"has-version":[{"id-type":"doi","id":"10.21428\/cb6ab371.bedeec7e","asserted-by":"object"}],"has-preprint":[{"id-type":"doi","id":"10.31235\/osf.io\/3jfwu","asserted-by":"object"}]},"ISSN":["2193-7680"],"issn-type":[{"value":"2193-7680","type":"electronic"}],"subject":[],"published":{"date-parts":[[2021,6,30]]},"assertion":[{"value":"27
+        October 2020","order":1,"name":"received","label":"Received","group":{"name":"ArticleHistory","label":"Article
+        History"}},{"value":"16 June 2021","order":2,"name":"accepted","label":"Accepted","group":{"name":"ArticleHistory","label":"Article
+        History"}},{"value":"30 June 2021","order":3,"name":"first_online","label":"First
+        Online","group":{"name":"ArticleHistory","label":"Article History"}},{"order":1,"name":"Ethics","group":{"name":"EthicsHeading","label":"Declarations"}},{"value":"The
+        author declares no competing interests.","order":2,"name":"Ethics","group":{"name":"EthicsHeading","label":"Competing
+        interests"}}],"article-number":"15"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '7849'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 22:54:22 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1186%2Fs40163-021-00151-y%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTYyODI5MzAyMjAwMCwxMC4yMTQyOCUyRmNiNmFiMzcxLmJlZGVlYzdl","total-results":2,"items":[{"DOI":"10.31235\/osf.io\/3jfwu","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.1186\/s40163-021-00151-y","asserted-by":"subject"}]}},{"DOI":"10.21428\/cb6ab371.bedeec7e","relation":{"is-version-of":[{"id-type":"doi","id":"10.1186\/s40163-021-00151-y","asserted-by":"subject"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 22:54:22 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.21428/cb6ab371.bedeec7e?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2024,3,3]],"date-time":"2024-03-03T14:39:38Z","timestamp":1709476778674},"reference-count":0,"publisher":"PubPub","content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"DOI":"10.21428\/cb6ab371.bedeec7e","type":"journal-article","created":{"date-parts":[[2021,8,6]],"date-time":"2021-08-06T23:37:02Z","timestamp":1628293022000},"source":"Crossref","is-referenced-by-count":0,"title":["Crime
+        and COVID-19: effect of changes in routine activities in Mexico City"],"prefix":"10.21428","author":[{"given":"Patricio
+        R.","family":"Est\u00e9vez-Soto","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"9621","published-online":{"date-parts":[[2021,6,30]]},"container-title":["CrimRxiv"],"original-title":[],"language":"en","deposited":{"date-parts":[[2021,8,6]],"date-time":"2021-08-06T23:37:02Z","timestamp":1628293022000},"score":1,"resource":{"primary":{"URL":"https:\/\/www.crimrxiv.com\/pub\/v88oxuf3"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2021,6,30]]},"references-count":0,"URL":"https:\/\/doi.org\/10.21428\/cb6ab371.bedeec7e","relation":{"is-version-of":[{"id-type":"doi","id":"10.1186\/s40163-021-00151-y","asserted-by":"subject"}]},"subject":[],"published":{"date-parts":[[2021,6,30]]}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '703'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 22:54:22 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.1186/s40163-021-00151-y
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://api.crossref.org/v1/works/10.1186%2Fs40163-021-00151-y/transform">https://api.crossref.org/v1/works/10.1186%2Fs40163-021-00151-y/transform</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4f452c18d6ad811-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Fri, 23 Oct 2026 22:54:23 GMT
+      expires:
+      - Fri, 23 Oct 2026 23:34:32 GMT
+      location:
+      - https://api.crossref.org/v1/works/10.1186%2Fs40163-021-00151-y/transform
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=7Y70bHzGh1PUg3P71Gto5iiovktej3wCr7njl27vPrWpA6By%2B1JwNYrAn%2FPQsY93v7p78aKhBAfW0tnGWbnNdPKosfNDrsTICb1ugCaIBr9v6V7ghD1QJcw%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/v1/works/10.1186%2Fs40163-021-00151-y/transform
+  response:
+    body:
+      string: !!binary |
+        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
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-length:
+      - '7798'
+      content-type:
+      - application/vnd.citationstyles.csl+json
+      date:
+      - Fri, 23 Oct 2026 22:54:23 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept, Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.21428/cb6ab371.bedeec7e
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://api.crossref.org/v1/works/10.21428%2Fcb6ab371.bedeec7e/transform">https://api.crossref.org/v1/works/10.21428%2Fcb6ab371.bedeec7e/transform</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4f452c2c809d811-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Fri, 23 Oct 2026 22:54:23 GMT
+      expires:
+      - Fri, 23 Oct 2026 23:27:31 GMT
+      location:
+      - https://api.crossref.org/v1/works/10.21428%2Fcb6ab371.bedeec7e/transform
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=dbJMNIR%2FfdhdYNrAfZhOL65C8w9%2B%2F%2B8QLN%2FmhNVoILL5nzoCZBBIxXowcWDGTgOHzLCw9V8peHljUZR5B9vwJMlhmiNEAyzMahUN4YNrILWmUSngfNPFebY%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/v1/works/10.21428%2Fcb6ab371.bedeec7e/transform
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAA/7VUTXObMBD9K4zOyBbgAuaa9JCZdtJJPw41Pgix2JsCciXh2PX4v3dlHMfTSXLr
+        DAfQrt7ue/uWA8O+hh3UrDiwWjrgG2mcZcViEYt4FiZhslyGY8RhB6xg/pyLhJ5v0axI5kWS/2Qh
+        81HrZLdhRZSJ+SxLsyxPs9kxZAYaMNAr4EoPvWOFCNlmqFq0azCE+GWo6CEMpXsHveO17iT2p5bO
+        bwtqQhltbSfNL26okkHlUFOoka0FqnJ7f0dYkZjE0SzOy6mqUlklWTSpoAZQGfgm9xtP4VEPppct
+        J6qoWh9QBoji6ypEYR6mr6gQcZFzkX6LkyLJChH/q0Ia5/E8EXEshKD+LBVV/uqN50GaUDpafhGn
+        5tX+SiCHrh2zCTKQfR3c3P+4u+XRvAigaUC5QDeBWst+BTbAPjB6cNhTKumyRYfj6WfYodLBDbo9
+        1dtQNdxdyURncnBrTWNYHNgKt9D7gUgvL+rgYUIJjeyw3dPxR+vKQQiYb+EP/6qdpqCF34PvnsIN
+        Gus8YNNgi3Kcjh+c0Z4J4Y8vzxVDttVKVkMrjUdXz7Icl0e61EFXndwxT+OIvRim5rpviecbo0rD
+        RCyXx9FLZB0w/FrJhx1uCUwbXKF3wDnmu2xJyUGufCaJQNOGjbb4v02htKGbkV+SZ4McaEzYnUQ5
+        sO8Pnwh47dzGFuW0nD49PU0UhQ0RmSjdlVMSppxu81zvhiZhRw86VFe8LGntromitcObrC76XXxp
+        r0z50s2pmXo3qTVOtFmV0/cXz0B7NsTBm34LxtIX183JF1jz82YSnF+LerRoFOVpObUzEaX0v/Ha
+        iuhDxL2TpbVg3GlpKJcYP9JGeOuEl48T2Ytt3ud7/Au2PiOOCQUAAA==
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-length:
+      - '667'
+      content-type:
+      - application/vnd.citationstyles.csl+json
+      date:
+      - Fri, 23 Oct 2026 22:54:23 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept, Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.31235/osf.io/3jfwu?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2025,11,16]],"date-time":"2025-11-16T16:12:37Z","timestamp":1763309557011,"version":"3.45.0"},"posted":{"date-parts":[[2020,10,27]]},"group-title":"SocArXiv","reference-count":0,"publisher":"Center
+        for Open Science","license":[{"start":{"date-parts":[[2020,10,27]],"date-time":"2020-10-27T00:00:00Z","timestamp":1603756800000},"content-version":"unspecified","delay-in-days":0,"URL":"https:\/\/creativecommons.org\/licenses\/by\/4.0\/legalcode"}],"content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"abstract":"<p>**Background.**This
+        study aimed to determine whether crime patterns in Mexico City changed due
+        to the COVID-19 pandemic, and to test whether any changes observed were associated
+        with the disruption of routine activities.**Method.**The first objective was
+        assessed by comparing the observed incidence of crime after the COVID-19 pandemic
+        was detected in the country with that expected based on ARIMA forecasts based
+        on the pre-pandemic trends. The second objective was assessed by examining
+        the association between crime incidence and the number of passengers on public
+        transport using regressions with ARIMA errors. **Results.**Results indicated
+        that most crime categories decreased significantly after the pandemic was
+        detected in the country or after a national lockdown was instituted. Furthermore,
+        the study found that most of the declines observed were associated with the
+        reductions seen in public transport passenger numbers. However, the declines
+        predicted by the changes in mobility were not always consistent nor as large
+        as those observed. **Conclusion.**The findings contribute to the global evaluation
+        of the effects of COVID-19 on crime and propose a robust method to explictily
+        test whether the changes observed are associated with changes in routine activities.<\/p>","DOI":"10.31235\/osf.io\/3jfwu","type":"posted-content","created":{"date-parts":[[2020,10,27]],"date-time":"2020-10-27T08:11:26Z","timestamp":1603786286000},"source":"Crossref","is-referenced-by-count":4,"title":["Crime
+        and COVID-19: Effect of changes in routine activities in Mexico City"],"prefix":"10.31235","author":[{"ORCID":"https:\/\/orcid.org\/0000-0001-7513-6904","authenticated-orcid":true,"given":"Patricio
+        Rodrigo","family":"Est\u00e9vez-Soto","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"15934","container-title":[],"original-title":[],"deposited":{"date-parts":[[2025,11,16]],"date-time":"2025-11-16T16:09:06Z","timestamp":1763309346000},"score":1,"resource":{"primary":{"URL":"https:\/\/osf.io\/3jfwu_v1"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2020,10,27]]},"references-count":0,"URL":"https:\/\/doi.org\/10.31235\/osf.io\/3jfwu","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.1186\/s40163-021-00151-y","asserted-by":"subject"}]},"subject":[],"published":{"date-parts":[[2020,10,27]]},"subtype":"preprint"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1410'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 22:54:23 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.31235%2Fosf.io%2F3jfwu%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTYyNTAyOTQwNzAwMCwxMC4xMTg2JTJGczQwMTYzLTAyMS0wMDE1MS15","total-results":1,"items":[{"DOI":"10.1186\/s40163-021-00151-y","relation":{"has-version":[{"id-type":"doi","id":"10.21428\/cb6ab371.bedeec7e","asserted-by":"object"}],"has-preprint":[{"id-type":"doi","id":"10.31235\/osf.io\/3jfwu","asserted-by":"object"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 22:54:23 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+version: 1

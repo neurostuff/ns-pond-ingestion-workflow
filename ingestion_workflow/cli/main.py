@@ -431,12 +431,14 @@ def _attach_pdfs(
 
 
 def _enrich(settings: Settings, catalog: Catalog, refs: Sequence[ArticleRef]) -> List[ArticleRef]:
-    """Fill in the identifiers a source needs to address an article.
+    """Fill in the identifiers a source needs to address an article, and file its preprint
+    and other ids.
 
     A PubMed search yields PMIDs; pubget addresses articles by PMCID, so
-    without this every searched article is unreachable to it. Each provider
-    consults the catalog first, so an article that already has all three ids
-    costs nothing.
+    without this every searched article is unreachable to it. The providers run in
+    one fixed order, Crossref last, which files what the others found. Each consults the
+    catalog first: an article that already has all three ids is not asked of the first
+    three, and one Crossref has been asked of is not asked again.
     """
     from ingestion_workflow.services.id_lookup import (
         CrossrefIDLookupService,
@@ -454,11 +456,7 @@ def _enrich(settings: Settings, catalog: Catalog, refs: Sequence[ArticleRef]) ->
     identifiers = Identifiers([ref.identifier for ref in refs])
     identifiers.set_index("pmid", "doi", "pmcid")
 
-    for name in settings.metadata_providers:
-        factory = providers.get(name)
-        if factory is None:
-            typer.echo(f"  unknown metadata provider {name!r}, skipping")
-            continue
+    for name, factory in providers.items():
         service = factory(settings, catalog)
         if not service.can_run():
             typer.echo(f"  {name}: not configured, skipping")
@@ -467,11 +465,6 @@ def _enrich(settings: Settings, catalog: Catalog, refs: Sequence[ArticleRef]) ->
         service.find_identifiers(identifiers)
         gained = _complete(identifiers) - before
         typer.echo(f"  {name}: completed {gained:,} more")
-        if isinstance(service, CrossrefIDLookupService):
-            typer.echo(f"  {name}: {len(service.resolved):,} collisions resolved, "
-                       f"{len(service.omitted):,} ids not filed")
-            for kind, value, _, why in service.omitted:
-                typer.echo(f"    {kind} {value}: {why}")
 
     return catalog.register_many(list(identifiers.identifiers))
 

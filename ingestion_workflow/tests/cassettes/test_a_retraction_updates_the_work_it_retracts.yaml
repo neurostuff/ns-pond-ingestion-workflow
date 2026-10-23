@@ -1,0 +1,202 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1016/j.nbd.2012.05.020?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,7,6]],"date-time":"2026-07-06T15:42:06Z","timestamp":1783352526917,"version":"3.54.6"},"update-to":[{"DOI":"10.1016\/j.nbd.2012.05.020","type":"retraction","label":"Retraction","source":"publisher","updated":{"date-parts":[[2012,9,1]],"date-time":"2012-09-01T00:00:00Z","timestamp":1346457600000}}],"reference-count":59,"publisher":"Elsevier
+        BV","issue":"3","license":[{"start":{"date-parts":[[2012,9,1]],"date-time":"2012-09-01T00:00:00Z","timestamp":1346457600000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/tdm\/userlicense\/1.0\/"},{"start":{"date-parts":[[2012,9,1]],"date-time":"2012-09-01T00:00:00Z","timestamp":1346457600000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/legal\/tdmrep-license"}],"content-domain":{"domain":["clinicalkey.fr","clinicalkey.jp","clinicalkey.es","clinicalkey.com.au","clinicalkey.com","elsevier.com","sciencedirect.com"],"crossmark-restriction":true},"short-container-title":["Neurobiology
+        of Disease"],"published-print":{"date-parts":[[2012,9]]},"DOI":"10.1016\/j.nbd.2012.05.020","type":"journal-article","created":{"date-parts":[[2012,6,3]],"date-time":"2012-06-03T08:26:34Z","timestamp":1338711994000},"page":"385-392","update-policy":"https:\/\/doi.org\/10.1016\/elsevier_cm_policy","source":"Crossref","is-referenced-by-count":58,"title":["RETRACTED:
+        LRRK2 kinase activity mediates toxic interactions between genetic mutation
+        and oxidative stress in a Drosophila model: Suppression by curcumin"],"prefix":"10.1016","volume":"47","author":[{"given":"Dejun","family":"Yang","sequence":"first","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Tianxia","family":"Li","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Zhaohui","family":"Liu","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Nicolas","family":"Arbez","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Jianqun","family":"Yan","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Timothy
+        H.","family":"Moran","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Christopher
+        A.","family":"Ross","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Wanli
+        W.","family":"Smith","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"78","reference":[{"key":"10.1016\/j.nbd.2012.05.020_bb0005","doi-asserted-by":"crossref","first-page":"228","DOI":"10.1177\/0891988710383572","article-title":"The
+        genetics of Parkinson disease","volume":"23","author":"Bekris","year":"2010","journal-title":"J.
+        Geriatr. Psychiatry Neurol."},{"key":"10.1016\/j.nbd.2012.05.020_bb0010","doi-asserted-by":"crossref","first-page":"791","DOI":"10.1038\/nrn2935","article-title":"The
+        role of leucine-rich repeat kinase 2 (LRRK2) in Parkinson''s disease","volume":"11","author":"Cookson","year":"2010","journal-title":"Nat.
+        Rev. Neurosci."},{"key":"10.1016\/j.nbd.2012.05.020_bb0015","doi-asserted-by":"crossref","first-page":"11865","DOI":"10.1523\/JNEUROSCI.3695-07.2007","article-title":"The
+        roles of kinases in familial Parkinson''s disease","volume":"27","author":"Cookson","year":"2007","journal-title":"J.
+        Neurosci."},{"key":"10.1016\/j.nbd.2012.05.020_bb0020","doi-asserted-by":"crossref","first-page":"304","DOI":"10.1111\/j.1471-4159.2010.07105.x","article-title":"Insight
+        into the mode of action of the LRRK2 Y1699C pathogenic mutant","volume":"116","author":"Daniels","year":"2011","journal-title":"J.
+        Neurochem."},{"key":"10.1016\/j.nbd.2012.05.020_bb0025","doi-asserted-by":"crossref","first-page":"889","DOI":"10.1016\/S0896-6273(03)00568-3","article-title":"Parkinson''s
+        disease. Mechanisms and models","volume":"39","author":"Dauer","year":"2003","journal-title":"Neuron"},{"key":"10.1016\/j.nbd.2012.05.020_bb0030","doi-asserted-by":"crossref","first-page":"646","DOI":"10.1016\/j.neuron.2010.04.034","article-title":"Genetic
+        animal models of Parkinson''s disease","volume":"66","author":"Dawson","year":"2010","journal-title":"Neuron"},{"key":"10.1016\/j.nbd.2012.05.020_bb0035","doi-asserted-by":"crossref","first-page":"1499","DOI":"10.1073\/pnas.0709098105","article-title":"Structure
+        of the ROC domain from the Parkinson''s disease-associated leucine-rich repeat
+        kinase 2 reveals a dimeric GTPase","volume":"105","author":"Deng","year":"2008","journal-title":"Proc.
+        Natl. Acad. Sci. U. S. A."},{"key":"10.1016\/j.nbd.2012.05.020_bb0040","doi-asserted-by":"crossref","first-page":"405","DOI":"10.1042\/BJ20100784","article-title":"Inhibition
+        of LRRK2 kinase activity leads to dephosphorylation of Ser910\/Ser935, disruption
+        of 14-3-3 binding and altered cytoplasmic localisation","volume":"403","author":"Dzamko","year":"2010","journal-title":"Biochem.
+        J."},{"key":"10.1016\/j.nbd.2012.05.020_bb0045","doi-asserted-by":"crossref","first-page":"918","DOI":"10.1002\/ana.20484","article-title":"An
+        LRRK2 mutation as a cause for the parkinsonism in the original PARK8 family","volume":"57","author":"Funayama","year":"2005","journal-title":"Ann.
+        Neurol."},{"key":"10.1016\/j.nbd.2012.05.020_bb0050","doi-asserted-by":"crossref","first-page":"283","DOI":"10.1002\/jnr.21949","article-title":"Leucine-rich
+        repeat kinase 2 (LRRK2): a key player in the pathogenesis of Parkinson''s
+        disease","volume":"87","author":"Gandhi","year":"2009","journal-title":"J.
+        Neurosci. Res."},{"key":"10.1016\/j.nbd.2012.05.020_bb0055","doi-asserted-by":"crossref","first-page":"99","DOI":"10.1159\/000109764","article-title":"Mutations
+        in LRRK2 as a cause of Parkinson''s disease","volume":"16","author":"Giasson","year":"2008","journal-title":"Neurosignals"},{"key":"10.1016\/j.nbd.2012.05.020_bb0060","doi-asserted-by":"crossref","first-page":"2352","DOI":"10.1038\/emboj.2008.167","article-title":"Structure
+        of the Roc-COR domain tandem of C. tepidum, a prokaryotic homologue of the
+        human LRRK2 Parkinson kinase","volume":"27","author":"Gotthardt","year":"2008","journal-title":"EMBO
+        J."},{"key":"10.1016\/j.nbd.2012.05.020_bb0065","doi-asserted-by":"crossref","DOI":"10.1042\/AN20090007","article-title":"Leucine-rich
+        repeat kinase 2 mutations and Parkinson''s disease: three questions","volume":"1","author":"Greggio","year":"2009","journal-title":"ASN
+        Neuro"},{"key":"10.1016\/j.nbd.2012.05.020_bb0070","doi-asserted-by":"crossref","first-page":"329","DOI":"10.1016\/j.nbd.2006.04.001","article-title":"Kinase
+        activity is required for the toxic effects of mutant LRRK2\/dardarin","volume":"23","author":"Greggio","year":"2006","journal-title":"Neurobiol.
+        Dis."},{"key":"10.1016\/j.nbd.2012.05.020_bb0075","doi-asserted-by":"crossref","first-page":"449","DOI":"10.1016\/j.bbrc.2009.08.163","article-title":"The
+        Parkinson''s disease kinase LRRK2 autophosphorylates its GTPase domain at
+        multiple sites","volume":"389","author":"Greggio","year":"2009","journal-title":"Biochem.
+        Biophys. Res. Commun."},{"key":"10.1016\/j.nbd.2012.05.020_bb0080","doi-asserted-by":"crossref","first-page":"3658","DOI":"10.1016\/j.yexcr.2007.07.007","article-title":"The
+        Parkinson''s disease-associated protein, leucine-rich repeat kinase 2 (LRRK2),
+        is an authentic GTPase that stimulates kinase activity","volume":"313","author":"Guo","year":"2007","journal-title":"Exp.
+        Cell Res."},{"key":"10.1016\/j.nbd.2012.05.020_bb0085","doi-asserted-by":"crossref","first-page":"1937","DOI":"10.1039\/c1np00051a","article-title":"Multitargeting
+        by curcumin as revealed by molecular interaction studies","volume":"28","author":"Gupta","year":"2011","journal-title":"Nat.
+        Prod. Rep."},{"key":"10.1016\/j.nbd.2012.05.020_bb0090","doi-asserted-by":"crossref","first-page":"201","DOI":"10.1016\/j.neuron.2010.10.014","article-title":"Genetic
+        analysis of pathways to Parkinson disease","volume":"68","author":"Hardy","year":"2010","journal-title":"Neuron"},{"key":"10.1016\/j.nbd.2012.05.020_bb0095","doi-asserted-by":"crossref","first-page":"471","DOI":"10.1007\/978-0-387-46401-5_21","article-title":"Clinical
+        studies with curcumin","volume":"595","author":"Hsu","year":"2007","journal-title":"Adv.
+        Exp. Med. Biol."},{"key":"10.1016\/j.nbd.2012.05.020_bb0100","doi-asserted-by":"crossref","first-page":"1319","DOI":"10.1093\/hmg\/ddm080","article-title":"Apoptotic
+        mechanisms in mutant LRRK2-mediated cell death","volume":"16","author":"Iaccarino","year":"2007","journal-title":"Hum.
+        Mol. Genet."},{"key":"10.1016\/j.nbd.2012.05.020_bb0105","doi-asserted-by":"crossref","first-page":"2432","DOI":"10.1038\/emboj.2008.163","article-title":"Phosphorylation
+        of 4E-BP by LRRK2 affects the maintenance of dopaminergic neurons in Drosophila","volume":"27","author":"Imai","year":"2008","journal-title":"EMBO
+        J."},{"key":"10.1016\/j.nbd.2012.05.020_bb0110","doi-asserted-by":"crossref","first-page":"1380","DOI":"10.1021\/bi061960m","article-title":"GTP
+        binding is essential to the protein kinase activity of LRRK2, a causative
+        gene product for familial Parkinson''s disease","volume":"46","author":"Ito","year":"2007","journal-title":"Biochemistry"},{"key":"10.1016\/j.nbd.2012.05.020_bb0115","doi-asserted-by":"crossref","first-page":"307","DOI":"10.1042\/BJ20070209","article-title":"LRRK2
+        phosphorylates moesin at threonine-558: characterization of how Parkinson''s
+        disease mutants affect kinase activity","volume":"405","author":"Jaleel","year":"2007","journal-title":"Biochem.
+        J."},{"key":"10.1016\/j.nbd.2012.05.020_bb0120","doi-asserted-by":"crossref","first-page":"467S","DOI":"10.1093\/jn\/130.2.467S","article-title":"Progress
+        in cancer chemoprevention: development of diet-derived chemopreventive agents","volume":"130","author":"Kelloff","year":"2000","journal-title":"J.
+        Nutr."},{"key":"10.1016\/j.nbd.2012.05.020_bb0125","doi-asserted-by":"crossref","first-page":"703","DOI":"10.1111\/j.1471-4159.2009.06358.x","article-title":"Homo-
+        and heterodimerization of ROCO kinases: LRRK2 kinase inhibition by the LRRK2
+        ROCO fragment","volume":"111","author":"Klein","year":"2009","journal-title":"J.
+        Neurochem."},{"key":"10.1016\/j.nbd.2012.05.020_bb0130","doi-asserted-by":"crossref","first-page":"998","DOI":"10.1038\/nm.2199","article-title":"Inhibitors
+        of leucine-rich repeat kinase-2 protect against models of Parkinson''s disease","volume":"16","author":"Lee","year":"2010","journal-title":"Nat.
+        Med."},{"key":"10.1016\/j.nbd.2012.05.020_bb0135","doi-asserted-by":"crossref","first-page":"561","DOI":"10.1089\/rej.2010.1031","article-title":"Curcumin
+        extends life span, improves health span, and modulates the expression of age-associated
+        aging genes in Drosophila melanogaster","volume":"13","author":"Lee","year":"2010","journal-title":"Rejuvenation
+        Res."},{"key":"10.1016\/j.nbd.2012.05.020_bb0140","doi-asserted-by":"crossref","first-page":"668","DOI":"10.1016\/j.bbrc.2007.04.006","article-title":"The
+        R1441C mutation of LRRK2 disrupts GTP hydrolysis","volume":"357","author":"Lewis","year":"2007","journal-title":"Biochem.
+        Biophys. Res. Commun."},{"key":"10.1016\/j.nbd.2012.05.020_bb0150","doi-asserted-by":"crossref","first-page":"29569","DOI":"10.1074\/jbc.M110.127639","article-title":"Reevaluation
+        of phosphorylation sites in the Parkinson disease-associated leucine-rich
+        repeat kinase 2","volume":"285","author":"Li","year":"2010","journal-title":"J.
+        Biol. Chem."},{"key":"10.1016\/j.nbd.2012.05.020_bb0145","first-page":"942412","article-title":"Models
+        for LRRK2-linked Parkinsonism","volume":"2011","author":"Li","year":"2011","journal-title":"Park.
+        Dis."},{"key":"10.1016\/j.nbd.2012.05.020_bb0155","doi-asserted-by":"crossref","first-page":"8370","DOI":"10.1523\/JNEUROSCI.21-21-08370.2001","article-title":"The
+        curry spice curcumin reduces oxidative damage and amyloid pathology in an
+        Alzheimer transgenic mouse","volume":"21","author":"Lim","year":"2001","journal-title":"J.
+        Neurosci."},{"key":"10.1016\/j.nbd.2012.05.020_bb0170","doi-asserted-by":"crossref","first-page":"2693","DOI":"10.1073\/pnas.0708452105","article-title":"A
+        Drosophila model for LRRK2-linked parkinsonism","volume":"105","author":"Liu","year":"2008","journal-title":"Proc.
+        Natl. Acad. Sci. U. S. A."},{"key":"10.1016\/j.nbd.2012.05.020_bb0160","doi-asserted-by":"crossref","first-page":"2008","DOI":"10.1021\/bi901851y","article-title":"Kinetic
+        mechanistic studies of wild-type leucine-rich repeat kinase 2: characterization
+        of the kinase and GTPase activities","volume":"49","author":"Liu","year":"2010","journal-title":"Biochemistry"},{"key":"10.1016\/j.nbd.2012.05.020_bb0165","doi-asserted-by":"crossref","first-page":"3933","DOI":"10.1093\/hmg\/ddr312","article-title":"Inhibitors
+        of LRRK2 kinase attenuate neurodegeneration and Parkinson-like phenotypes
+        in Caenorhabditis elegans and Drosophila Parkinson''s disease models","volume":"20","author":"Liu","year":"2011","journal-title":"Hum.
+        Mol. Genet."},{"key":"10.1016\/j.nbd.2012.05.020_bb0175","doi-asserted-by":"crossref","first-page":"439","DOI":"10.1016\/j.phrs.2011.01.004","article-title":"Curcumin
+        protects against A53T alpha-synuclein-induced toxicity in a PC12 inducible
+        cell model for Parkinsonism","volume":"63","author":"Liu","year":"2011","journal-title":"Pharmacol.
+        Res."},{"key":"10.1016\/j.nbd.2012.05.020_bb0180","doi-asserted-by":"crossref","first-page":"2031","DOI":"10.1093\/hmg\/ddm151","article-title":"Mechanistic
+        insight into the dominant mode of the Parkinson''s disease-associated G2019S
+        LRRK2 mutation","volume":"16","author":"Luzon-Toro","year":"2007","journal-title":"Hum.
+        Mol. Genet."},{"key":"10.1016\/j.nbd.2012.05.020_bb0185","doi-asserted-by":"crossref","first-page":"587","DOI":"10.1016\/j.neuron.2006.10.008","article-title":"The
+        familial Parkinsonism gene LRRK2 regulates neurite process morphology","volume":"52","author":"MacLeod","year":"2006","journal-title":"Neuron"},{"key":"10.1016\/j.nbd.2012.05.020_bb0190","doi-asserted-by":"crossref","first-page":"49","DOI":"10.1111\/j.2042-7158.1997.tb06751.x","article-title":"Modifications
+        on antioxidant capacity and lipid peroxidation in mice under fraxetin treatment","volume":"49","author":"Martin-Aragon","year":"1997","journal-title":"J.
+        Pharm. Pharmacol."},{"key":"10.1016\/j.nbd.2012.05.020_bb0195","doi-asserted-by":"crossref","first-page":"595","DOI":"10.1016\/j.neuron.2004.10.023","article-title":"Cloning
+        of the gene containing mutations that cause PARK8-linked Parkinson''s disease","volume":"44","author":"Paisan-Ruiz","year":"2004","journal-title":"Neuron"},{"key":"10.1016\/j.nbd.2012.05.020_bb0200","doi-asserted-by":"crossref","first-page":"1506","DOI":"10.1212\/01.wnl.0000240220.33950.0c","article-title":"Parkinsonism,
+        Lrrk2 G2019S, and tau neuropathology","volume":"67","author":"Rajput","year":"2006","journal-title":"Neurology"},{"issue":"Suppl.
+        3","key":"10.1016\/j.nbd.2012.05.020_bb0205","doi-asserted-by":"crossref","first-page":"S309","DOI":"10.1016\/S1353-8020(08)70022-1","article-title":"Gene\u2013environment
+        interactions in Parkinson''s disease","volume":"13","author":"Ross","year":"2007","journal-title":"Parkinsonism
+        Relat. Disord."},{"key":"10.1016\/j.nbd.2012.05.020_bb0210","doi-asserted-by":"crossref","first-page":"388","DOI":"10.1002\/ana.20731","article-title":"Lrrk2
+        and Lewy body disease","volume":"59","author":"Ross","year":"2006","journal-title":"Ann.
+        Neurol."},{"key":"10.1016\/j.nbd.2012.05.020_bb0215","doi-asserted-by":"crossref","first-page":"1744","DOI":"10.1172\/JCI29178","article-title":"Diagnosis
+        and treatment of Parkinson disease: molecules to medicine","volume":"116","author":"Savitt","year":"2006","journal-title":"J.
+        Clin. Invest."},{"key":"10.1016\/j.nbd.2012.05.020_bb0220","doi-asserted-by":"crossref","first-page":"36346","DOI":"10.1074\/jbc.M109.025437","article-title":"Dependence
+        of leucine-rich repeat kinase 2 (LRRK2) kinase activity on dimerization","volume":"284","author":"Sen","year":"2009","journal-title":"J.
+        Biol. Chem."},{"key":"10.1016\/j.nbd.2012.05.020_bb0225","doi-asserted-by":"crossref","first-page":"6847","DOI":"10.1158\/1078-0432.CCR-04-0744","article-title":"Phase
+        I clinical trial of oral curcumin: biomarkers of systemic activity and compliance","volume":"10","author":"Sharma","year":"2004","journal-title":"Clin.
+        Cancer Res."},{"key":"10.1016\/j.nbd.2012.05.020_bb0230","doi-asserted-by":"crossref","first-page":"1","DOI":"10.1007\/s12017-007-8016-8","article-title":"Neurodegenerative
+        diseases: neurotoxins as sufficient etiologic agents?","volume":"10","author":"Shaw","year":"2008","journal-title":"Neuromolecular
+        Med."},{"key":"10.1016\/j.nbd.2012.05.020_bb0235","doi-asserted-by":"crossref","first-page":"5544","DOI":"10.1523\/JNEUROSCI.0482-05.2005","article-title":"Alpha-synuclein
+        phosphorylation enhances eosinophilic cytoplasmic inclusion formation in SH-SY5Y
+        cells","volume":"25","author":"Smith","year":"2005","journal-title":"J. Neurosci."},{"key":"10.1016\/j.nbd.2012.05.020_bb0245","doi-asserted-by":"crossref","first-page":"18676","DOI":"10.1073\/pnas.0508052102","article-title":"Leucine-rich
+        repeat kinase 2 (LRRK2) interacts with parkin, and mutant LRRK2 induces neuronal
+        degeneration","volume":"102","author":"Smith","year":"2005","journal-title":"Proc.
+        Natl. Acad. Sci. U. S. A."},{"key":"10.1016\/j.nbd.2012.05.020_bb0240","doi-asserted-by":"crossref","first-page":"1231","DOI":"10.1038\/nn1776","article-title":"Kinase
+        activity of mutant LRRK2 mediates neuronal toxicity","volume":"9","author":"Smith","year":"2006","journal-title":"Nat.
+        Neurosci."},{"key":"10.1016\/j.nbd.2012.05.020_bb0250","doi-asserted-by":"crossref","first-page":"105","DOI":"10.1111\/j.2042-7158.1997.tb06761.x","article-title":"Nitric
+        oxide scavenging by curcuminoids","volume":"49","author":"Sreejayan","year":"1997","journal-title":"J.
+        Pharm. Pharmacol."},{"key":"10.1016\/j.nbd.2012.05.020_bb0255","doi-asserted-by":"crossref","first-page":"447","DOI":"10.1111\/j.2042-7158.1973.tb09131.x","article-title":"Pharmacology
+        of diferuloyl methane (curcumin), a non-steroidal anti-inflammatory agent","volume":"25","author":"Srimal","year":"1973","journal-title":"J.
+        Pharm. Pharmacol."},{"key":"10.1016\/j.nbd.2012.05.020_bb0260","doi-asserted-by":"crossref","first-page":"6436","DOI":"10.1111\/j.1742-4658.2009.07342.x","article-title":"LRRK2
+        in Parkinson''s disease: function in cells and neurodegeneration","volume":"276","author":"Webber","year":"2009","journal-title":"FEBS
+        J."},{"key":"10.1016\/j.nbd.2012.05.020_bb0265","doi-asserted-by":"crossref","first-page":"16842","DOI":"10.1073\/pnas.0507360102","article-title":"Parkinson''s
+        disease-associated mutations in leucine-rich repeat kinase 2 augment kinase
+        activity","volume":"102","author":"West","year":"2005","journal-title":"Proc.
+        Natl. Acad. Sci. U. S. A."},{"key":"10.1016\/j.nbd.2012.05.020_bb0270","doi-asserted-by":"crossref","first-page":"223","DOI":"10.1093\/hmg\/ddl471","article-title":"Parkinson''s
+        disease-associated mutations in LRRK2 link enhanced GTP-binding and kinase
+        activities to neuronal toxicity","volume":"16","author":"West","year":"2007","journal-title":"Hum.
+        Mol. Genet."},{"key":"10.1016\/j.nbd.2012.05.020_bb0275","doi-asserted-by":"crossref","first-page":"e1000902","DOI":"10.1371\/journal.pgen.1000902","article-title":"GTPase
+        activity plays a key role in the pathobiology of LRRK2","volume":"6","author":"Xiong","year":"2010","journal-title":"PLoS
+        Genet."},{"key":"10.1016\/j.nbd.2012.05.020_bb0280","doi-asserted-by":"crossref","first-page":"5892","DOI":"10.1074\/jbc.M404751200","article-title":"Curcumin
+        inhibits formation of amyloid beta oligomers and fibrils, binds plaques, and
+        reduces amyloid in vivo","volume":"280","author":"Yang","year":"2005","journal-title":"J.
+        Biol. Chem."},{"key":"10.1016\/j.nbd.2012.05.020_bb0285","doi-asserted-by":"crossref","first-page":"125","DOI":"10.1007\/s12264-007-0018-x","article-title":"Pathogenesis
+        of Parkinson''s disease: oxidative stress, environmental impact factors and
+        inflammatory processes","volume":"23","author":"Yuan","year":"2007","journal-title":"Neurosci.
+        Bull."},{"key":"10.1016\/j.nbd.2012.05.020_bb0290","doi-asserted-by":"crossref","first-page":"175","DOI":"10.1007\/BF02797132","article-title":"Scavenging
+        effect of extracts of green tea and natural antioxidants on active oxygen
+        radicals","volume":"14","author":"Zhao","year":"1989","journal-title":"Cell
+        Biophys."},{"key":"10.1016\/j.nbd.2012.05.020_bb0295","doi-asserted-by":"crossref","first-page":"601","DOI":"10.1016\/j.neuron.2004.11.005","article-title":"Mutations
+        in LRRK2 cause autosomal-dominant parkinsonism with pleomorphic pathology","volume":"44","author":"Zimprich","year":"2004","journal-title":"Neuron"}],"updated-by":[{"DOI":"10.1016\/j.nbd.2025.106930","type":"erratum","label":"Erratum","source":"publisher","updated":{"date-parts":[[2025,6,15]],"date-time":"2025-06-15T00:00:00Z","timestamp":1749945600000}},{"DOI":"10.1016\/j.nbd.2012.05.020","type":"retraction","label":"Retraction","source":"publisher","updated":{"date-parts":[[2012,9,1]],"date-time":"2012-09-01T00:00:00Z","timestamp":1346457600000}}],"container-title":["Neurobiology
+        of Disease"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S0969996112002069?httpAccept=text\/xml","content-type":"text\/xml","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S0969996112002069?httpAccept=text\/plain","content-type":"text\/plain","content-version":"vor","intended-application":"text-mining"}],"deposited":{"date-parts":[[2025,4,18]],"date-time":"2025-04-18T00:44:20Z","timestamp":1744937060000},"score":1,"resource":{"primary":{"URL":"https:\/\/linkinghub.elsevier.com\/retrieve\/pii\/S0969996112002069"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2012,9]]},"references-count":59,"journal-issue":{"issue":"3","published-print":{"date-parts":[[2012,9]]}},"alternative-id":["S0969996112002069"],"URL":"https:\/\/doi.org\/10.1016\/j.nbd.2012.05.020","relation":{},"ISSN":["0969-9961"],"issn-type":[{"value":"0969-9961","type":"print"}],"subject":[],"published":{"date-parts":[[2012,9]]},"assertion":[{"value":"Elsevier","name":"publisher","label":"This
+        article is maintained by"},{"value":"RETRACTED: LRRK2 kinase activity mediates
+        toxic interactions between genetic mutation and oxidative stress in a Drosophila
+        model: Suppression by curcumin","name":"articletitle","label":"Article Title"},{"value":"Neurobiology
+        of Disease","name":"journaltitle","label":"Journal Title"},{"value":"https:\/\/doi.org\/10.1016\/j.nbd.2012.05.020","name":"articlelink","label":"CrossRef
+        DOI link to publisher maintained version"},{"value":"article","name":"content_type","label":"Content
+        Type"},{"value":"Copyright \u00a9 2012 Elsevier Inc. All rights are reserved,
+        including those for text and data mining, AI training, and similar technologies.","name":"copyright","label":"Copyright"}]}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '5718'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 22:58:26 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+version: 1

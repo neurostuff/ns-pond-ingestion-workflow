@@ -1,0 +1,589 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=38013996&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAKxV224aMRD9FctPrUTIXmCzbJ5I0yqKlCpq0ocqyoPZHcCt16a+kKSo/96xvYGl
+        JFIj9QXMjM9cjs8MG7oE1oCm1YbapxXQioJxbcv0Ex3QNWjDlURjMszp7wHV6BTWX3a8MbS6o3mZ
+        pPlkUtD7we4c/QjbWgZ05WYNsz5BlmQ5+azWJB2jHV5zGOV07c0zrr488jWamLNLpX3eDZWs9c7z
+        JWuZYORj5+6amIabaKuFMxZ0qAY72OLOmDFgLTm/eSPwGyhydnv7RtSFasGQ6eU/wZBKwYyN3e6D
+        LbfCIz85WVt8GibITDMuiQT7oPQPQ5gGgr2pmiOpDXngdklmCj8MPBImG7IAiQ9OEFMvuWg0yGFg
+        W9vn4PP/GdzLSAkXWMAzN8Z1xxVbgIlHweTCqwnwC7uXonWS/3QQCEmTtEAdlScRLiME4ikrJtlR
+        mSXjKLFI7B291rDSXFq0XqKOfCtTbXmN/d17GddKN8iwdb6Aaze7giYG2Bpz/1QREqW+obzp3g3v
+        tQEQLVhHil0yETrbat4//w7S1v375e7+9dWHNMEGx+XkAML3kox3IPQd8aYiPfDpPrpRvI/Nd9g0
+        GabI6bEfNzwN02w4LorxJPsrPd8LMNoFeAGIpC65sQrXhmeqT+SWrN6UH6eYviRJUY1i1j4Abwsu
+        4VVEfoAAaTX8ehmQV+PJAcDTp0EAMy+lOSFJUiVJ6ErDHFDFNUQJ4M/tXrqpOZk26yFB4IhcOkHS
+        7DRN3mXl+wqXqhyhfUjwHSoSKM+KY4ODg4hnJw3xO76/rnwdODpeiK1Xfl6ijJIctSVVqDBUxKzV
+        fOZsqIheMNwM2JhmtfXSxs4wZK0car8qUGZzJ8T3OALdLur2KamIXQJZdZOCI6xx35O50gRvCLXw
+        /wAgVM38LgiTiJKoyMHr93sMsvoDAAD//2RVQRLDIAi89zc59EFKzYQpxoyjufn3LBEnaXpFBRaX
+        3Sc7MOFEhpK4nPlUcjJRWhWMgDoAg/Z9St8hQ7gCKnCNtvAfLt2M+qbi0RLy6O8RNqi9iv3vOe0N
+        OrfW6NXyNOJ2x+K8hDmnWLOYHllWnAQLAcJft4hdubX1qywtbiujiIrrr80pz6a38axfmDnfNP/u
+        a7vioSoqRzaa1trrAAAA//8DAMcNVey8BwAA
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Fri, 23 Oct 2026 22:54:23 GMT
+      ncbi-phid:
+      - 1D32B8BB86A02F15000049980B60CC37.1.1.m_1
+      ncbi-sid:
+      - 1D9A8C439B3B7B85_BC72SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.1101/2023.11.12.566592
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://api.crossref.org/v1/works/10.1101%2F2023.11.12.566592/transform">https://api.crossref.org/v1/works/10.1101%2F2023.11.12.566592/transform</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4f452cb78bbc001-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Fri, 23 Oct 2026 22:54:24 GMT
+      expires:
+      - Fri, 23 Oct 2026 23:08:08 GMT
+      location:
+      - https://api.crossref.org/v1/works/10.1101%2F2023.11.12.566592/transform
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=z2dQm%2FO9MJrnJZvA%2BgMMBrXcDoeSvDsnlhOMUKzlQte%2B3cdMD40Ox%2FQDBjhTs4FschvspM9qpCUjtIec%2Fj9oRB2ht7C0ETd1iKA8hLtoRnoUlmVzMh%2F61x4%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/v1/works/10.1101%2F2023.11.12.566592/transform
+  response:
+    body:
+      string: !!binary |
+        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
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-length:
+      - '3982'
+      content-type:
+      - application/vnd.citationstyles.csl+json
+      date:
+      - Fri, 23 Oct 2026 22:54:24 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept, Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1101/2023.11.12.566592?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"institution":[{"name":"bioRxiv"}],"indexed":{"date-parts":[[2026,1,15]],"date-time":"2026-01-15T19:57:28Z","timestamp":1768507048502,"version":"3.49.0"},"posted":{"date-parts":[[2023,11,15]]},"group-title":"Neuroscience","reference-count":68,"publisher":"openRxiv","content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"accepted":{"date-parts":[[2023,11,15]]},"abstract":"<jats:title>Abstract<\/jats:title>\n                <jats:p>Sex
+        and gender are associated with human behavior throughout the lifespan and
+        across health and disease, but whether they are associated with similar or
+        distinct neural phenotypes is unknown. Here, we demonstrate that, in children,
+        sex and gender are uniquely reflected in the intrinsic functional connectivity
+        of the brain. Unimodal networks are more strongly associated with sex while
+        heteromodal networks are more strongly associated with gender. These results
+        suggest sex and gender are irreducible to one another not only in society
+        but also in biology.<\/jats:p>","DOI":"10.1101\/2023.11.12.566592","type":"posted-content","created":{"date-parts":[[2023,11,15]],"date-time":"2023-11-15T17:55:16Z","timestamp":1700070916000},"source":"Crossref","is-referenced-by-count":0,"title":["Functional
+        brain networks are associated with both sex and gender in children"],"prefix":"10.64898","author":[{"ORCID":"https:\/\/orcid.org\/0000-0002-8253-6962","authenticated-orcid":false,"given":"Elvisha","family":"Dhamala","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0002-6183-4493","authenticated-orcid":false,"given":"Dani
+        S.","family":"Bassett","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0002-0119-3276","authenticated-orcid":false,"given":"B.T.
+        Thomas","family":"Yeo","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0001-6583-803X","authenticated-orcid":false,"given":"Avram
+        J.","family":"Homes","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"54368","reference":[{"key":"2023111708500714000_2023.11.12.566592v1.1","doi-asserted-by":"publisher","DOI":"10.1002\/jnr.23830"},{"key":"2023111708500714000_2023.11.12.566592v1.2","doi-asserted-by":"publisher","DOI":"10.1016\/j.neubiorev.2016.07.035"},{"key":"2023111708500714000_2023.11.12.566592v1.3","doi-asserted-by":"publisher","DOI":"10.1016\/j.bandc.2009.10.008"},{"key":"2023111708500714000_2023.11.12.566592v1.4","doi-asserted-by":"publisher","DOI":"10.1196\/annals.1440.010"},{"key":"2023111708500714000_2023.11.12.566592v1.5","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2007.03.001"},{"key":"2023111708500714000_2023.11.12.566592v1.6","doi-asserted-by":"publisher","DOI":"10.1038\/nrn1494"},{"key":"2023111708500714000_2023.11.12.566592v1.7","doi-asserted-by":"crossref","unstructured":"Eliot,
+        L. , Ahmed, A. , Khan, H. & Patel, J. Dump the \u201cdimorphism\u201d: Comprehensive
+        synthesis of human brain studies reveals few male-female differences beyond
+        size. Neuroscience & Biobehavioral Reviews (2021).","DOI":"10.31219\/osf.io\/syd7z"},{"key":"2023111708500714000_2023.11.12.566592v1.8","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.1523888113"},{"key":"2023111708500714000_2023.11.12.566592v1.9","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.1316909110"},{"key":"2023111708500714000_2023.11.12.566592v1.10","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2011.12.001"},{"key":"2023111708500714000_2023.11.12.566592v1.11","doi-asserted-by":"publisher","DOI":"10.1038\/s41598-018-23976-1"},{"key":"2023111708500714000_2023.11.12.566592v1.12","doi-asserted-by":"crossref","first-page":"1898","DOI":"10.1016\/S0140-6736(19)32764-3","article-title":"The
+        misuses of \u201cbiological sex\u201d","volume":"394","year":"2019","journal-title":"The
+        Lancet"},{"key":"2023111708500714000_2023.11.12.566592v1.13","unstructured":"Goetz,
+        T. G. & Keuroghlian, A. S. Gender-affirming Psychiatric Care. (American Psychiatric
+        Association Publishing, 2023)."},{"key":"2023111708500714000_2023.11.12.566592v1.14","doi-asserted-by":"crossref","first-page":"101057","DOI":"10.1016\/j.dcn.2022.101057","article-title":"Measurement
+        of gender and sexuality in the Adolescent Brain Cognitive Development (ABCD)
+        study","volume":"53","year":"2022","journal-title":"Developmental Cognitive
+        Neuroscience"},{"key":"2023111708500714000_2023.11.12.566592v1.15","doi-asserted-by":"publisher","DOI":"10.1016\/j.yfrne.2020.100874"},{"key":"2023111708500714000_2023.11.12.566592v1.16","doi-asserted-by":"publisher","DOI":"10.3389\/fnhum.2019.00224"},{"key":"2023111708500714000_2023.11.12.566592v1.17","doi-asserted-by":"publisher","DOI":"10.1037\/a0024780"},{"key":"2023111708500714000_2023.11.12.566592v1.18","doi-asserted-by":"crossref","first-page":"42","DOI":"10.1111\/bjc.12147","article-title":"Gender
+        differences in preferences for psychological treatment, coping strategies,
+        and triggers to help-seeking","volume":"57","year":"2018","journal-title":"British
+        Journal of Clinical Psychology"},{"key":"2023111708500714000_2023.11.12.566592v1.19","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.25030"},{"key":"2023111708500714000_2023.11.12.566592v1.20","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhu036"},{"key":"2023111708500714000_2023.11.12.566592v1.21","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.2110416119"},{"key":"2023111708500714000_2023.11.12.566592v1.22","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.25709"},{"key":"2023111708500714000_2023.11.12.566592v1.23","doi-asserted-by":"crossref","unstructured":"Dhamala,
+        E. et al. Brain-based predictions of psychiatric illness-linked behaviors
+        across the sexes. Biol Psychiat (2023).","DOI":"10.1101\/2022.12.18.520947"},{"key":"2023111708500714000_2023.11.12.566592v1.24","doi-asserted-by":"crossref","first-page":"888","DOI":"10.1093\/cercor\/bhz134","article-title":"Gender
+        differences in connectome-based predictions of individualized intelligence
+        quotient and sub-domain scores","volume":"30","year":"2020","journal-title":"Cerebral
+        Cortex"},{"key":"2023111708500714000_2023.11.12.566592v1.25","doi-asserted-by":"publisher","DOI":"10.1016\/j.dcn.2018.03.001"},{"key":"2023111708500714000_2023.11.12.566592v1.26","doi-asserted-by":"crossref","first-page":"523","DOI":"10.1007\/s11199-020-01136-y","article-title":"Investigating
+        the relation between gender typicality and pressure to conform to gender norms","volume":"83","year":"2020","journal-title":"Sex
+        Roles"},{"key":"2023111708500714000_2023.11.12.566592v1.27","doi-asserted-by":"crossref","unstructured":"Meadow,
+        T. Trans kids: Being gendered in the twenty-first century. (Univ of California
+        Press, 2018).","DOI":"10.1525\/california\/9780520275034.001.0001"},{"key":"2023111708500714000_2023.11.12.566592v1.28","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhz129"},{"key":"2023111708500714000_2023.11.12.566592v1.29","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.23950"},{"key":"2023111708500714000_2023.11.12.566592v1.30","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2013.10.067"},{"key":"2023111708500714000_2023.11.12.566592v1.31","doi-asserted-by":"crossref","first-page":"120115","DOI":"10.1016\/j.neuroimage.2023.120115","article-title":"Relationship
+        between prediction accuracy and feature importance reliability: An empirical
+        and theoretical study","volume":"274","year":"2023","journal-title":"NeuroImage"},{"key":"2023111708500714000_2023.11.12.566592v1.32","doi-asserted-by":"publisher","DOI":"10.1152\/jn.00338.2011"},{"key":"2023111708500714000_2023.11.12.566592v1.33","first-page":"47","article-title":"Gender
+        differences in determinants and consequences of health and illness","volume":"25","year":"2007","journal-title":"Journal
+        of health, population, and nutrition"},{"key":"2023111708500714000_2023.11.12.566592v1.34","doi-asserted-by":"crossref","first-page":"383","DOI":"10.1038\/s44220-023-00076-2","article-title":"Integrating
+        sex and gender in mental health research: enhanced funding for better treatments","volume":"1","year":"2023","journal-title":"Nature
+        Mental Health"},{"key":"2023111708500714000_2023.11.12.566592v1.35","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.0800376105"},{"key":"2023111708500714000_2023.11.12.566592v1.36","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pcbi.1000381"},{"key":"2023111708500714000_2023.11.12.566592v1.37","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.0705843104"},{"key":"2023111708500714000_2023.11.12.566592v1.38","doi-asserted-by":"crossref","unstructured":"Dong,
+        H. , Margulies, D. S. , Zuo, X.-N. & Holmes, A. Shifting gradients of macroscale
+        cortical organization mark the transition from childhood to adolescence. bioRxiv
+        (2020).","DOI":"10.1101\/2020.11.17.385260"},{"key":"2023111708500714000_2023.11.12.566592v1.39","doi-asserted-by":"crossref","unstructured":"Ricard,
+        J. et al. Confronting racially exclusionary practices in the acquisition and
+        analyses of neuroimaging data. Nature Neuroscience, 1\u20138 (2022).","DOI":"10.1038\/s41593-022-01218-y"},{"key":"2023111708500714000_2023.11.12.566592v1.40","doi-asserted-by":"crossref","unstructured":"Ooi,
+        L. Q. R. et al. Comparison of individualized behavioral predictions across
+        anatomical, diffusion and functional connectivity MRI. BioRxiv (2022).","DOI":"10.1101\/2022.03.08.483564"},{"key":"2023111708500714000_2023.11.12.566592v1.41","doi-asserted-by":"publisher","DOI":"10.1038\/s41467-022-29766-8"},{"key":"2023111708500714000_2023.11.12.566592v1.42","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2019.116091"},{"key":"2023111708500714000_2023.11.12.566592v1.43","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhu239"},{"key":"2023111708500714000_2023.11.12.566592v1.44","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhy123"},{"key":"2023111708500714000_2023.11.12.566592v1.45","doi-asserted-by":"crossref","first-page":"173","DOI":"10.1017\/S0001566000007200","article-title":"Childhood
+        sex-role behaviors: Similarities and differences in twins","volume":"33","year":"1984","journal-title":"Acta
+        Geneticae Medicae et Gemellologiae: Twin Research"},{"key":"2023111708500714000_2023.11.12.566592v1.46","doi-asserted-by":"publisher","DOI":"10.1023\/B:ASEB.0000014325.68094.f3"},{"key":"2023111708500714000_2023.11.12.566592v1.47","doi-asserted-by":"publisher","DOI":"10.1093\/biostatistics\/kxj037"},{"key":"2023111708500714000_2023.11.12.566592v1.48","doi-asserted-by":"crossref","unstructured":"Chen,
+        J. et al. There is no fundamental trade-off between prediction accuracy and
+        feature importance reliability. bioRxiv (2022).","DOI":"10.1101\/2022.08.08.503167"},{"key":"2023111708500714000_2023.11.12.566592v1.49","doi-asserted-by":"publisher","DOI":"10.1006\/nimg.1998.0395"},{"key":"2023111708500714000_2023.11.12.566592v1.50","doi-asserted-by":"publisher","DOI":"10.1109\/42.906426"},{"key":"2023111708500714000_2023.11.12.566592v1.51","doi-asserted-by":"publisher","DOI":"10.1006\/nimg.1998.0396"},{"key":"2023111708500714000_2023.11.12.566592v1.52","doi-asserted-by":"publisher","DOI":"10.1002\/(SICI)1097-0193(1999)8:4<272::AID-HBM10>3.0.CO;2-4"},{"key":"2023111708500714000_2023.11.12.566592v1.53","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2009.06.060"},{"key":"2023111708500714000_2023.11.12.566592v1.54","doi-asserted-by":"publisher","DOI":"10.1016\/S1053-8119(02)91132-8"},{"key":"2023111708500714000_2023.11.12.566592v1.55","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2011.10.018"},{"key":"2023111708500714000_2023.11.12.566592v1.56","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2019.116041"},{"key":"2023111708500714000_2023.11.12.566592v1.57","doi-asserted-by":"crossref","first-page":"116400","DOI":"10.1016\/j.neuroimage.2019.116400","article-title":"Correction
+        of respiratory artifacts in MRI head motion estimates","volume":"208","year":"2020","journal-title":"Neuroimage"},{"key":"2023111708500714000_2023.11.12.566592v1.58","doi-asserted-by":"crossref","first-page":"116866","DOI":"10.1016\/j.neuroimage.2020.116866","article-title":"Removal
+        of high frequency contamination from motion estimates in single-band fMRI
+        saves data without biasing functional connectivity","volume":"217","year":"2020","journal-title":"Neuroimage"},{"key":"2023111708500714000_2023.11.12.566592v1.59","first-page":"1","article-title":"Task-induced
+        brain state manipulation improves prediction of individual traits","volume":"9","year":"2018","journal-title":"Nature
+        communications"},{"key":"2023111708500714000_2023.11.12.566592v1.60","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2019.04.016"},{"key":"2023111708500714000_2023.11.12.566592v1.61","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2013.08.048"},{"key":"2023111708500714000_2023.11.12.566592v1.62"},{"key":"2023111708500714000_2023.11.12.566592v1.63","doi-asserted-by":"publisher","DOI":"10.1016\/S0896-6273(02)00569-X"},{"key":"2023111708500714000_2023.11.12.566592v1.64","doi-asserted-by":"crossref","first-page":"116276","DOI":"10.1016\/j.neuroimage.2019.116276","article-title":"Deep
+        neural networks and kernel regression achieve comparable accuracies for functional
+        connectivity prediction of behavior and demographics","volume":"206","year":"2020","journal-title":"NeuroImage"},{"key":"2023111708500714000_2023.11.12.566592v1.65","unstructured":"Dhamala,
+        E. , Yeo, B. T. & Holmes, A. J. Methodological Considerations for Brain-Based
+        Predictive Modelling in Psychiatry. Biol Psychiat (2022)."},{"key":"2023111708500714000_2023.11.12.566592v1.66","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.25420"},{"key":"2023111708500714000_2023.11.12.566592v1.67","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2022.119485"},{"key":"2023111708500714000_2023.11.12.566592v1.68","doi-asserted-by":"crossref","unstructured":"Tian,
+        Y. & Zalesky, A. Machine learning prediction of cognition from functional
+        connectivity: Are feature weights reliable? bioRxiv (2021).","DOI":"10.1101\/2021.05.27.446059"}],"container-title":[],"original-title":[],"link":[{"URL":"https:\/\/syndication.highwire.org\/content\/doi\/10.1101\/2023.11.12.566592","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2026,1,15]],"date-time":"2026-01-15T05:31:18Z","timestamp":1768455078000},"score":1,"resource":{"primary":{"URL":"http:\/\/biorxiv.org\/lookup\/doi\/10.1101\/2023.11.12.566592"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2023,11,15]]},"references-count":68,"URL":"https:\/\/doi.org\/10.1101\/2023.11.12.566592","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.1126\/sciadv.adn4202","asserted-by":"subject"}]},"subject":[],"published":{"date-parts":[[2023,11,15]]},"subtype":"preprint"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '4013'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 22:54:24 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1101%2F2023.11.12.566592%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTcyMDc5Mjc0NTAwMCwxMC4xMTI2JTJGc2NpYWR2LmFkbjQyMDI=","total-results":1,"items":[{"DOI":"10.1126\/sciadv.adn4202","relation":{"has-preprint":[{"id-type":"doi","id":"10.1101\/2023.11.12.566592","asserted-by":"object"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 22:54:25 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1126/sciadv.adn4202?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,10,7]],"date-time":"2026-10-07T01:55:22Z","timestamp":1791338122255,"version":"4.3.1"},"reference-count":87,"publisher":"American
+        Association for the Advancement of Science (AAAS)","issue":"28","content-domain":{"domain":["www.science.org"],"crossmark-restriction":true},"short-container-title":["Sci.
+        Adv."],"published-print":{"date-parts":[[2024,7,12]]},"abstract":"<jats:p>Sex
+        and gender are associated with human behavior throughout the life span and
+        across health and disease, but whether they are associated with similar or
+        distinct neural phenotypes is unknown. Here, we demonstrate that, in children,
+        sex and gender are uniquely reflected in the intrinsic functional connectivity
+        of the brain. Somatomotor, visual, control, and limbic networks are preferentially
+        associated with sex, while network correlates of gender are more distributed
+        throughout the cortex. These results suggest that sex and gender are irreducible
+        to one another not only in society but also in biology.<\/jats:p>","DOI":"10.1126\/sciadv.adn4202","type":"journal-article","created":{"date-parts":[[2024,7,12]],"date-time":"2024-07-12T13:59:05Z","timestamp":1720792745000},"update-policy":"https:\/\/doi.org\/10.34133\/aaas_crossmark","source":"Crossref","is-referenced-by-count":47,"title":["Functional
+        brain networks are associated with both sex and gender in children"],"prefix":"10.1126","volume":"10","author":[{"ORCID":"https:\/\/orcid.org\/0000-0002-8253-6962","authenticated-orcid":true,"given":"Elvisha","family":"Dhamala","sequence":"first","affiliation":[{"name":"Institute
+        of Behavioral Science, Feinstein Institutes for Medical Research, Manhasset,
+        NY, USA."},{"name":"Department of Psychiatry, Donald and Barbara Zucker School
+        of Medicine at Hofstra\/Northwell, Uniondale, NY, USA."}],"role":[{"vocabulary":"crossref","role":"author"}]},{"ORCID":"https:\/\/orcid.org\/0000-0002-6183-4493","authenticated-orcid":true,"given":"Dani
+        S.","family":"Bassett","sequence":"additional","affiliation":[{"name":"University
+        of Pennsylvania, Philadelphia, PA, USA."},{"name":"Santa Fe Institute, Santa
+        Fe, NM, USA."}],"role":[{"vocabulary":"crossref","role":"author"}]},{"ORCID":"https:\/\/orcid.org\/0000-0002-0119-3276","authenticated-orcid":true,"given":"B.T.","family":"Yeo","sequence":"additional","affiliation":[{"name":"Yong
+        Loo Lin School of Medicine and College of Design and Engineering, National
+        University of Singapore, Singapore, Singapore."}],"role":[{"vocabulary":"crossref","role":"author"}]},{"ORCID":"https:\/\/orcid.org\/0000-0001-6583-803X","authenticated-orcid":true,"given":"Avram
+        J.","family":"Holmes","sequence":"additional","affiliation":[{"name":"Department
+        of Psychiatry, Brain Health Institute, Rutgers University, Piscataway, NJ,
+        USA."}],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"221","reference":[{"key":"e_1_3_3_2_2","doi-asserted-by":"publisher","DOI":"10.1002\/jnr.23830"},{"key":"e_1_3_3_3_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.neubiorev.2016.07.035"},{"key":"e_1_3_3_4_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.bandc.2009.10.008"},{"key":"e_1_3_3_5_2","doi-asserted-by":"publisher","DOI":"10.1196\/annals.1440.010"},{"key":"e_1_3_3_6_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2007.03.001"},{"key":"e_1_3_3_7_2","doi-asserted-by":"publisher","DOI":"10.1038\/nrn1494"},{"key":"e_1_3_3_8_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.neubiorev.2021.02.026"},{"key":"e_1_3_3_9_2","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.1523888113"},{"key":"e_1_3_3_10_2","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.1316909110"},{"key":"e_1_3_3_11_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuron.2011.12.001"},{"key":"e_1_3_3_12_2","doi-asserted-by":"publisher","DOI":"10.1038\/s41598-018-23976-1"},{"key":"e_1_3_3_13_2","doi-asserted-by":"publisher","DOI":"10.1016\/S0140-6736(19)32764-3"},{"key":"e_1_3_3_14_2","unstructured":"T.
+        G. Goetz A. S. Keuroghlian Gender-Affirming Psychiatric Care (American Psychiatric
+        Association Publishing 2023)."},{"key":"e_1_3_3_15_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.dcn.2022.101057"},{"key":"e_1_3_3_16_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.yfrne.2020.100874"},{"key":"e_1_3_3_17_2","doi-asserted-by":"publisher","DOI":"10.3389\/fnhum.2019.00224"},{"key":"e_1_3_3_18_2","doi-asserted-by":"publisher","DOI":"10.1037\/a0024780"},{"key":"e_1_3_3_19_2","doi-asserted-by":"publisher","DOI":"10.1111\/bjc.12147"},{"key":"e_1_3_3_20_2","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.25030"},{"key":"e_1_3_3_21_2","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhu036"},{"key":"e_1_3_3_22_2","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.2110416119"},{"key":"e_1_3_3_23_2","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.25709"},{"key":"e_1_3_3_24_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2023.03.025"},{"key":"e_1_3_3_25_2","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhz134"},{"key":"e_1_3_3_26_2","unstructured":"T.
+        L. Becker Principles and Concept Clarity in PAA 2022 Annual Meeting (PAA 2022)."},{"key":"e_1_3_3_27_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.dcn.2018.03.001"},{"key":"e_1_3_3_28_2","doi-asserted-by":"publisher","DOI":"10.1007\/s11199-020-01136-y"},{"key":"e_1_3_3_29_2","doi-asserted-by":"crossref","unstructured":"T.
+        Meadow Trans Kids: Being Gendered in the Twenty-First Century (University
+        of California Press 2018).","DOI":"10.1525\/california\/9780520275034.001.0001"},{"key":"e_1_3_3_30_2","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhz129"},{"key":"e_1_3_3_31_2","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.23950"},{"key":"e_1_3_3_32_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2013.10.067"},{"key":"e_1_3_3_33_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2023.120115"},{"key":"e_1_3_3_34_2","doi-asserted-by":"publisher","DOI":"10.1152\/jn.00338.2011"},{"key":"e_1_3_3_35_2","first-page":"47","article-title":"Gender
+        differences in determinants and consequences of health and illness","volume":"25","author":"Vlassoff
+        C.","year":"2007","unstructured":"C. Vlassoff, Gender differences in determinants
+        and consequences of health and illness. J. Health Popul. Nutr. 25, 47\u201361
+        (2007).","journal-title":"J. Health Popul. Nutr."},{"key":"e_1_3_3_36_2","doi-asserted-by":"publisher","DOI":"10.1038\/s44220-023-00076-2"},{"key":"e_1_3_3_37_2","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.0800376105"},{"key":"e_1_3_3_38_2","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pcbi.1000381"},{"key":"e_1_3_3_39_2","doi-asserted-by":"publisher","DOI":"10.1073\/pnas.0705843104"},{"key":"e_1_3_3_40_2","first-page":"100283","article-title":"Recommendations
+        for a better understanding of sex and gender in neuroscience of mental health","volume":"30","author":"Wierenga
+        L. M.","year":"2023","unstructured":"L. M. Wierenga, A. Ruigrok, E. R. Aksnes,
+        C. Barth, D. Beck, S. Burke, A. Crestol, L. van Drunen, M. Ferrara, L. A.
+        M. Galea, Recommendations for a better understanding of sex and gender in
+        neuroscience of mental health. Biol. Psychiatry Glob. Open Sci. 30, 100283
+        (2023).","journal-title":"Biol. Psychiatry Glob. Open Sci."},{"key":"e_1_3_3_41_2","doi-asserted-by":"publisher","DOI":"10.1038\/s41467-023-41839-w"},{"key":"e_1_3_3_42_2","doi-asserted-by":"publisher","DOI":"10.1038\/s41593-022-01218-y"},{"key":"e_1_3_3_43_2","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.25420"},{"key":"e_1_3_3_44_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2022.119485"},{"key":"e_1_3_3_45_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2022.119636"},{"key":"e_1_3_3_46_2","doi-asserted-by":"publisher","DOI":"10.1038\/s41467-022-29766-8"},{"key":"e_1_3_3_47_2","doi-asserted-by":"publisher","DOI":"10.1038\/s41593-022-01059-9"},{"key":"e_1_3_3_48_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2019.116276"},{"key":"e_1_3_3_49_2","doi-asserted-by":"publisher","DOI":"10.1126\/sciadv.abj1812"},{"key":"e_1_3_3_50_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2019.04.016"},{"key":"e_1_3_3_51_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2022.09.024"},{"key":"e_1_3_3_52_2","doi-asserted-by":"publisher","DOI":"10.1002\/hbm.22720"},{"key":"e_1_3_3_53_2","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/12.9.998"},{"key":"e_1_3_3_54_2","doi-asserted-by":"crossref","unstructured":"G.
+        Matte Bon D. Kraft E. Comasco B. Derntl T. Kaufmann Modeling brain sex in
+        the limbic system as phenotype for female-prevalent mental disorders. medRxiv
+        23294165 [Preprint] (2023). https:\/\/doi.org\/10.1101\/2023.08.17.23294165.","DOI":"10.1186\/s13293-024-00615-1"},{"key":"e_1_3_3_55_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.neubiorev.2013.07.001"},{"key":"e_1_3_3_56_2","doi-asserted-by":"publisher","DOI":"10.1038\/sdata.2015.31"},{"key":"e_1_3_3_57_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2019.116091"},{"key":"e_1_3_3_58_2","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhu239"},{"key":"e_1_3_3_59_2","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhy123"},{"key":"e_1_3_3_60_2","first-page":"173","article-title":"Childhood
+        sex-role behaviors: Similarities and differences in twins","volume":"33","author":"Elizabeth
+        P. H.","year":"1984","unstructured":"P. H. Elizabeth, R. Green, Childhood
+        sex-role behaviors: Similarities and differences in twins. Acta Genet. Med.
+        Gemellol. 33, 173\u2013179 (1984).","journal-title":"Acta Genet. Med. Gemellol."},{"key":"e_1_3_3_61_2","doi-asserted-by":"publisher","DOI":"10.1023\/B:ASEB.0000014325.68094.f3"},{"key":"e_1_3_3_62_2","doi-asserted-by":"publisher","DOI":"10.1111\/j.2517-6161.1995.tb02031.x"},{"key":"e_1_3_3_63_2","doi-asserted-by":"crossref","unstructured":"J.
+        Chen L. Q. R. Ooi J. Li C. L. Asplund S. B. Eickhoff D. Bzdok A. J. Holmes
+        B. T. Yeo There is no fundamental trade-off between prediction accuracy and
+        feature importance reliability. bioRxiv 503167 [Preprint] (2022). https:\/\/doi.org\/10.1101\/2022.08.08.503167.","DOI":"10.1101\/2022.08.08.503167"},{"key":"e_1_3_3_64_2","doi-asserted-by":"publisher","DOI":"10.1006\/nimg.1998.0395"},{"key":"e_1_3_3_65_2","doi-asserted-by":"publisher","DOI":"10.1109\/42.906426"},{"key":"e_1_3_3_66_2","doi-asserted-by":"publisher","DOI":"10.1006\/nimg.1998.0396"},{"key":"e_1_3_3_67_2","doi-asserted-by":"publisher","DOI":"10.1002\/(SICI)1097-0193(1999)8:4<272::AID-HBM10>3.0.CO;2-4"},{"key":"e_1_3_3_68_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2009.06.060"},{"key":"e_1_3_3_69_2","doi-asserted-by":"publisher","DOI":"10.1006\/nimg.2002.1132"},{"key":"e_1_3_3_70_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2011.10.018"},{"key":"e_1_3_3_71_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2019.116041"},{"key":"e_1_3_3_72_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2019.116400"},{"key":"e_1_3_3_73_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2020.116866"},{"key":"e_1_3_3_74_2","doi-asserted-by":"publisher","DOI":"10.1038\/s41467-018-04920-3"},{"key":"e_1_3_3_75_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2013.08.048"},{"key":"e_1_3_3_76_2","doi-asserted-by":"publisher","DOI":"10.1093\/cercor\/bhx179"},{"key":"e_1_3_3_77_2","doi-asserted-by":"publisher","DOI":"10.1016\/S0896-6273(02)00569-X"},{"key":"e_1_3_3_78_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2021.118648"},{"key":"e_1_3_3_79_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.bpobgyn.2017.11.005"},{"key":"e_1_3_3_80_2","unstructured":"A.
+        Fausto-Sterling Sexing the Body: Gender Politics and the Construction of Sexuality
+        (Basic Books 2000)."},{"key":"e_1_3_3_81_2","doi-asserted-by":"crossref","unstructured":"H.
+        Malatino Queer Embodiment: Monstrosity Medical Violence and Intersex Experience
+        (University of Nebraska Press 2019).","DOI":"10.2307\/j.ctvckq9pv"},{"key":"e_1_3_3_82_2","unstructured":"L.
+        Feinberg Transgender Warriors: Making History from Joan of Arc to Marsha P.
+        Johnson and Beyond (Beacon Press 1997)."},{"key":"e_1_3_3_83_2","unstructured":"Q.-L.
+        Driskill Asegi Stories: Cherokee Queer and Two-Spirit Memory (University of
+        Arizona Press 2016)."},{"key":"e_1_3_3_84_2","doi-asserted-by":"publisher","DOI":"10.1056\/NEJMp1812005"},{"key":"e_1_3_3_85_2","unstructured":"S.
+        Vosniadou A. Ortony Similarity and Analogical Reasoning (Cambridge Univ. Press
+        2009)."},{"key":"e_1_3_3_86_2","doi-asserted-by":"publisher","DOI":"10.3917\/enf.583.0293"},{"key":"e_1_3_3_87_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.heliyon.2021.e06660"},{"key":"e_1_3_3_88_2","doi-asserted-by":"publisher","DOI":"10.1016\/j.neuroimage.2022.119250"}],"container-title":["Science
+        Advances"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/www.science.org\/doi\/pdf\/10.1126\/sciadv.adn4202","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2024,9,16]],"date-time":"2024-09-16T15:04:10Z","timestamp":1726499050000},"score":1,"resource":{"primary":{"URL":"https:\/\/www.science.org\/doi\/10.1126\/sciadv.adn4202"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2024,7,12]]},"references-count":87,"journal-issue":{"issue":"28","published-print":{"date-parts":[[2024,7,12]]}},"alternative-id":["10.1126\/sciadv.adn4202"],"URL":"https:\/\/doi.org\/10.1126\/sciadv.adn4202","relation":{"has-preprint":[{"id-type":"doi","id":"10.1101\/2023.11.12.566592","asserted-by":"object"}]},"ISSN":["2375-2548"],"issn-type":[{"value":"2375-2548","type":"electronic"}],"subject":[],"published":{"date-parts":[[2024,7,12]]},"assertion":[{"value":"2023-12-08","order":0,"name":"received","label":"Received","group":{"name":"publication_history","label":"Publication
+        History"}},{"value":"2024-06-12","order":2,"name":"accepted","label":"Accepted","group":{"name":"publication_history","label":"Publication
+        History"}},{"value":"2024-07-12","order":3,"name":"published","label":"Published","group":{"name":"publication_history","label":"Publication
+        History"}}],"article-number":"eadn4202"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '4225'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 22:54:25 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1126%2Fsciadv.adn4202%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTcwMDA3MDkxNjAwMCwxMC4xMTAxJTJGMjAyMy4xMS4xMi41NjY1OTI=","total-results":1,"items":[{"DOI":"10.1101\/2023.11.12.566592","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.1126\/sciadv.adn4202","asserted-by":"subject"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 22:54:26 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+version: 1
