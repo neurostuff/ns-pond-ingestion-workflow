@@ -1,0 +1,65 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - pmc.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://pmc.ncbi.nlm.nih.gov/tools/idconv/api/v1/articles/?email=someone%40example.com&format=json&ids=10.1371%2Fjournal.pone.0041873&idtype=doi&tool=ingestion-workflow-tests
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA31RwWqEMBT8lRJYT2qTaFUEoVDordB72UPQbDe7mmeTWFvEf+9LXEoPxeObN5mZ
+        N1mIdcJNltQEriQmRtoRtJVJJ5xEkFNeJIwmPLtjRZ0VNWWB9TFJ60i9kFkYrfQ7CrwdY3ICMwjE
+        ycWCRqLq3PfodTpQYfQ8wmjKspLdX2AyWvQpOsqU0pxVZUZQRQ5C9fjIwiBx9Si/xDD2Mm1hQBEH
+        4JdoihEU6GQGcz31MCcOAYsM2Z4BGUGmuYkccvpHJtqCNj5mhKmaW6QDf/4vVLTd0eAVkbdvdsw/
+        pbG48I1qwNmeYRZKddu8+vJaMKGIJdRS7/cRk3Fow/PXl6cspyXjDwH0GOdVXhV5/vslsksCd1dy
+        Pa4/KAMt+PgBAAA=
+    headers:
+      allow:
+      - GET, HEAD, OPTIONS
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json
+      cross-origin-opener-policy:
+      - same-origin
+      date:
+      - Fri, 23 Oct 2026 20:36:01 GMT
+      referrer-policy:
+      - same-origin
+      server:
+      - istio-envoy
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Accept,Accept-Encoding
+      via:
+      - 1.1 google
+      x-content-type-options:
+      - nosniff
+      - nosniff
+      x-envoy-upstream-service-time:
+      - '8'
+      x-frame-options:
+      - DENY
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1
