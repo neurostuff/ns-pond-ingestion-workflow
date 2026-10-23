@@ -129,11 +129,8 @@ class _After(Context):
         return fresh
 
 
-def _read_source(artifact: Artifact) -> Optional[str]:
-    """The extraction source `artifact` is, or was read from; None for a stage whose
-    artifacts are not tied to one."""
-    if artifact.stage == "extract":
-        return artifact.source
+def _read_from(artifact: Artifact) -> Optional[str]:
+    """The extraction source the passages or triage verdict `artifact` was read from."""
     if artifact.stage in ("passages", "triage"):
         return (artifact.summary or {}).get("source") or None
     return None
@@ -157,9 +154,8 @@ class StageCounts:
     #: Made from an artifact that is rewritten, and not asked about, so left to go
     #: stale. A stage whose model is not served blocks, and asks about nothing.
     unasked: int = 0
-    #: Left stale, and no plan can ask about them: an extraction whose source the article
-    #: has no download for, and the passages and triage verdicts read from one. Reported;
-    #: a run never reads them, so they are no reason to refuse.
+    #: Extractions left stale that no plan can ask about, the article having no download
+    #: of their source. Reported; a run never reads them, so they are no reason to refuse.
     unreachable: int = 0
 
 
@@ -207,16 +203,20 @@ def refingerprint(ctx: Context, stages: Sequence[Stage], refs: Sequence[ArticleR
     for stage in stages:
         stale = ctx.catalog.artifacts(sorted(made.get(stage.requires, ())), stage.name)
         downloads = ctx.catalog.artifacts(sorted(stale), "download")
+        extractions = ctx.catalog.artifacts(sorted(stale), "extract")
         for article_id, by_source in stale.items():
-            readable = extraction_inputs({s: d for s, d in downloads.get(article_id, {}).items()
-                                          if d.status is Status.OK})
+            readable = extraction_inputs(downloads.get(article_id, {}))
             for artifact in by_source.values():
                 key = _key(artifact)
                 if (artifact.ok and artifact.fingerprint not in ("", NO_TEXT)
                         and key not in after.asked and key not in fresh_before):
+                    read = extractions.get(article_id, {}).get(_read_from(artifact))
+                    if read is not None and read.status is not Status.OK:
+                        # The verdict stays while its extraction is failed, with or
+                        # without this repair: no plan reads it, and nothing chains on it.
+                        continue
                     found = counts.setdefault(stage.name, StageCounts())
-                    source = _read_source(artifact)
-                    if source and source not in readable:
+                    if artifact.stage == "extract" and artifact.source not in readable:
                         found.unreachable += 1
                     else:
                         found.unasked += 1
