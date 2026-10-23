@@ -10,7 +10,12 @@ from pathlib import Path
 
 import pytest
 import tenacity
-from ingestion_workflow.clients.pubmed import PUBMED_REQUEST_LIMIT, PubMedClient
+from ingestion_workflow.clients.pubmed import (
+    PUBMED_REQUEST_LIMIT,
+    PubMedClient,
+    summary_of_record,
+)
+from ingestion_workflow.models import Identifier
 from ingestion_workflow.tests import cassette_secrets
 
 #: 200 PMIDs esummary answers with a 500 every time it is asked them together, and each
@@ -43,3 +48,20 @@ def test_every_client_in_the_process_keeps_one_pace_with_ncbi():
     for client in (first, second, first, second):
         client._rate_limit_sleep()
     assert time.monotonic() - started >= 3 / PUBMED_REQUEST_LIMIT - 0.05
+
+
+@pytest.mark.vcr()
+@pytest.mark.parametrize("pmid", [
+    "38013996",   # a bioRxiv preprint's record, typed Preprint, with its PMC copy
+    "11335702",   # Brain, 2001
+    "41221578",   # a review whose DOI PubMed spells in capitals
+    "41178409",   # a parotid tumour study, which PubMed gives the DOI it gives the review
+])
+def test_a_stored_record_gives_the_summary_esummary_gives(pubmed, pmid):
+    stored = pubmed.get_metadata([Identifier(pmid=pmid)])
+    record = next(iter(stored.values())).raw_metadata["pubmed"]
+
+    summary, asked = summary_of_record(record), pubmed.summaries([pmid])[pmid]
+
+    for field in ("doi", "title", "pubtypes", "pmcid", "first_author", "year", "supplement"):
+        assert getattr(summary, field) == getattr(asked, field), field

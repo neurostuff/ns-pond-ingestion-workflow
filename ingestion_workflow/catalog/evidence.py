@@ -18,11 +18,12 @@ import unicodedata
 from dataclasses import dataclass
 from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple, Union
 
+from ingestion_workflow.clients.crossref import CrossrefWork
 from ingestion_workflow.clients.doi_registry import DoiRegistry, RegisteredWork, Unreadable
 from ingestion_workflow.clients.pubmed import PmcRecord, PubMedClient, PubMedSummary
 from ingestion_workflow.utils.doi import normalize_doi
 
-__all__ = ["Evidence", "Unreadable", "same_work"]
+__all__ = ["Evidence", "Related", "Unreadable", "same_work"]
 
 #: How alike two titles must be, letter by letter, to name one work. Publishers and
 #: PubMed differ in case, punctuation, spelling and the odd word, not in more.
@@ -39,6 +40,8 @@ LONG_TITLE_WORDS = 8
 
 #: Crossref relations joining a preprint and its version of record.
 _VERSION_OF = ("is-preprint-of", "has-preprint")
+#: Crossref relations joining two ids of one work: a publisher's versions of it, and its aliases.
+_SAME_WORK = ("is-version-of", "has-version", "is-same-as", "is-identical-to")
 #: The version number a publisher appends to a version's DOI.
 _VERSIONED = re.compile(r"\.\d{1,2}$")
 
@@ -61,6 +64,18 @@ _NOT_ARTICLES = {"book", "chapter", "book-chapter", "book-section", "edited-book
                  "entry", "entry-dictionary", "entry-encyclopedia", "reference-entry",
                  "reference-book", "dataset", "component", "peer-review", "standard",
                  "proceedings-article", "paper-conference", "proceedings"}
+
+
+@dataclass(frozen=True)
+class Related:
+    """The DOIs Crossref relates to one DOI, on either side of each relation."""
+
+    #: Preprints of the DOI's paper.
+    preprints: Tuple[str, ...] = ()
+    #: The papers the DOI is a preprint of.
+    papers: Tuple[str, ...] = ()
+    #: Other ids of the same work: its versions and aliases.
+    versions: Tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -259,9 +274,18 @@ class Evidence:
         self._pmc: Dict[str, Optional[PmcRecord]] = {}
         self._works: Dict[str, Union[RegisteredWork, Unreadable, None]] = {}
         self._versions: Dict[str, List[str]] = {}
+        self._records: Dict[str, Optional[CrossrefWork]] = {}
+        self._related: Dict[str, Related] = {}
         #: Each DOI as PubMed and PMC spell it, by its lowercase form.
         self._spellings: Dict[str, Set[str]] = {}
         self._title_versions: Dict[str, List[str]] = {}
+
+    def hold(self, summaries: Dict[str, PubMedSummary]) -> None:
+        """Take PubMed summaries already in hand (the metadata stage's stored records), so
+        `summaries` does not ask NCBI for them."""
+        for pmid, summary in summaries.items():
+            if self._summaries.setdefault(pmid, summary) is summary:
+                self._spelt([summary.doi])
 
     def summaries(self, pmids: Iterable[str]) -> Dict[str, PubMedSummary]:
         """PubMed's summary of each PMID PubMed has a record of."""
@@ -331,6 +355,42 @@ class Evidence:
         first, second = self.work(doi), self.work(other)
         return first is not None and second is not None and same_work(first, second)
 
+    def record(self, doi: str) -> Optional[CrossrefWork]:
+        """Crossref's own record of the DOI; None when Crossref does not have it."""
+        if doi not in self._records:
+            self._records[doi] = self._registry.record(doi)
+        return self._records[doi]
+
+    def _spelled(self, doi: str) -> List[str]:
+        """The DOI as asked, as PubMed and PMC have spelled it, and as its publisher does."""
+        record = self.record(doi)
+        return sorted({doi, *self._spellings.get(normalize_doi(doi) or doi, ()),
+                       *(record.spellings if record else ())})
+
+    def related(self, doi: str) -> Related:
+        """The DOIs Crossref relates to this one, from its record and from the records
+        naming it: a relation is often deposited by one side only (a bioRxiv preprint's
+        is-preprint-of its paper, without the paper's has-preprint). The other side is
+        asked by each spelling of the DOI, as in `versions`. Raises when Crossref cannot
+        be read."""
+        if doi not in self._related:
+            own = (self.record(doi) or CrossrefWork(doi, (), None, {}, ())).relations
+            named: Dict[str, List[str]] = {}
+            for spelling in self._spelled(doi):
+                for kind, found in self._registry.relating(
+                        spelling, _VERSION_OF + _SAME_WORK).items():
+                    named.setdefault(kind, []).extend(found)
+
+            def gather(*pairs) -> Tuple[str, ...]:
+                dois = (normalize_doi(d) for source, kind in pairs for d in source.get(kind, ()))
+                return tuple(d for d in dict.fromkeys(dois) if d and d != normalize_doi(doi))
+            self._related[doi] = Related(
+                preprints=gather((own, "has-preprint"), (named, "is-preprint-of")),
+                papers=gather((own, "is-preprint-of"), (named, "has-preprint")),
+                versions=gather(*[(source, kind) for kind in _SAME_WORK
+                                  for source in (own, named)]))
+        return self._related[doi]
+
     def versions(self, doi: str) -> List[str]:
         """The DOIs Crossref records as this DOI's preprint or version of record, on either
         side of the relation (the other side asked by each spelling of the DOI PubMed and
@@ -341,9 +401,9 @@ class Evidence:
         Crossref does not relate to the preprint). Raises Unreadable when the registry
         cannot be read for one of them."""
         if doi not in self._versions:
-            relations = self._registry.relations(doi)
-            relating = [self._registry.relating(spelling, _VERSION_OF) for spelling in
-                        sorted({doi, *self._spellings.get(normalize_doi(doi) or doi, ())})]
+            relations = (self.record(doi) or CrossrefWork(doi, (), None, {}, ())).relations
+            relating = [self._registry.relating(spelling, _VERSION_OF)
+                        for spelling in self._spelled(doi)]
             related = [r for kind in _VERSION_OF
                        for r in [*relations.get(kind, ()), *(r for found in relating
                                                              for r in found.get(kind, ()))]]

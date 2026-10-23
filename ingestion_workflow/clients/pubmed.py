@@ -96,6 +96,41 @@ def _year(date: Optional[str]) -> Optional[int]:
     return int(match.group(1)) if match else None
 
 
+def summary_of_record(article: Mapping[str, Any]) -> Optional[PubMedSummary]:
+    """The summary of an efetch record, as the metadata stage stores it, so that a stored
+    record answers what `PubMedClient.summaries` would ask NCBI; None for a record
+    with no article or PMID."""
+    citation = article.get("MedlineCitation")
+    data = citation.get("Article") if isinstance(citation, dict) else None
+    pmid = PubMedClient._extract_pmid(article)
+    if not isinstance(data, dict) or not pmid:
+        return None
+    ensure, text = PubMedClient._ensure_list, PubMedClient._text_from
+    ids = {i.get("@IdType"): text(i) for i in ensure(
+        ((article.get("PubmedData") or {}).get("ArticleIdList") or {}).get("ArticleId"))
+        if isinstance(i, dict)}
+    first = next(iter(ensure((data.get("AuthorList") or {}).get("Author"))), None) or {}
+    if first.get("LastName"):
+        author = " ".join(filter(None, (text(first["LastName"]), text(first.get("Initials")))))
+    else:
+        author = text(first.get("CollectiveName")) or None
+    journal = data.get("Journal") if isinstance(data.get("Journal"), dict) else {}
+    issue = journal.get("JournalIssue") if isinstance(journal.get("JournalIssue"), dict) else {}
+    pmc = ids.get("pmc")
+    return PubMedSummary(
+        doi=html.unescape(ids["doi"]) if ids.get("doi") else None,
+        title=html.unescape(text(data.get("ArticleTitle"))),
+        pubtypes=tuple(text(t) for t in ensure(
+            (data.get("PublicationTypeList") or {}).get("PublicationType"))),
+        pmcid=normalize_pmcid(pmc) if pmc and pmc.upper().startswith("PMC") else None,
+        first_author=author,
+        year=PubMedClient._extract_publication_year(data, citation),
+        issns=tuple(text(i) for i in ensure(journal.get("ISSN"))),
+        journal=text(journal.get("Title")) or None,
+        supplement=in_supplement(issue.get("Issue"), issue.get("Volume"),
+                                 (data.get("Pagination") or {}).get("StartPage")))
+
+
 class PubMedClient:
     """Client for the PubMed/PMC API."""
 
@@ -835,8 +870,8 @@ class PubMedClient:
                     keywords.append(text)
         return keywords
 
+    @staticmethod
     def _extract_publication_year(
-        self,
         article_data: Mapping[str, Any],
         citation: Mapping[str, Any],
     ) -> Optional[int]:
@@ -844,19 +879,20 @@ class PubMedClient:
         if isinstance(journal, dict):
             issue = journal.get("JournalIssue")
             if isinstance(issue, dict):
-                candidate = self._year_from_pubdate(issue.get("PubDate"))
+                candidate = PubMedClient._year_from_pubdate(issue.get("PubDate"))
                 if candidate:
                     return candidate
-        candidate = self._year_from_pubdate(article_data.get("ArticleDate"))
+        candidate = PubMedClient._year_from_pubdate(article_data.get("ArticleDate"))
         if candidate:
             return candidate
-        candidate = self._year_from_pubdate(citation.get("DateCompleted"))
+        candidate = PubMedClient._year_from_pubdate(citation.get("DateCompleted"))
         return candidate
 
-    def _year_from_pubdate(self, data: Any) -> Optional[int]:
+    @staticmethod
+    def _year_from_pubdate(data: Any) -> Optional[int]:
         if not data:
             return None
-        for entry in self._ensure_list(data):
+        for entry in PubMedClient._ensure_list(data):
             if isinstance(entry, Mapping):
                 year = entry.get("Year") or entry.get("#text")
                 if year:
@@ -866,11 +902,11 @@ class PubMedClient:
                         pass
                 medline_date = entry.get("MedlineDate")
                 if medline_date:
-                    year_match = self._extract_year_from_string(medline_date)
+                    year_match = PubMedClient._extract_year_from_string(medline_date)
                     if year_match:
                         return year_match
             elif isinstance(entry, str):
-                year_match = self._extract_year_from_string(entry)
+                year_match = PubMedClient._extract_year_from_string(entry)
                 if year_match:
                     return year_match
         return None

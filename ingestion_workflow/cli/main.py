@@ -439,6 +439,7 @@ def _enrich(settings: Settings, catalog: Catalog, refs: Sequence[ArticleRef]) ->
     costs nothing.
     """
     from ingestion_workflow.services.id_lookup import (
+        CrossrefIDLookupService,
         OpenAlexIDLookupService,
         PubMedIDLookupService,
         SemanticScholarIDLookupService,
@@ -448,6 +449,7 @@ def _enrich(settings: Settings, catalog: Catalog, refs: Sequence[ArticleRef]) ->
         "semantic_scholar": SemanticScholarIDLookupService,
         "pubmed": PubMedIDLookupService,
         "openalex": OpenAlexIDLookupService,
+        "crossref": CrossrefIDLookupService,
     }
     identifiers = Identifiers([ref.identifier for ref in refs])
     identifiers.set_index("pmid", "doi", "pmcid")
@@ -465,6 +467,11 @@ def _enrich(settings: Settings, catalog: Catalog, refs: Sequence[ArticleRef]) ->
         service.find_identifiers(identifiers)
         gained = _complete(identifiers) - before
         typer.echo(f"  {name}: completed {gained:,} more")
+        if isinstance(service, CrossrefIDLookupService):
+            typer.echo(f"  {name}: {len(service.resolved):,} collisions resolved, "
+                       f"{len(service.omitted):,} ids not filed")
+            for kind, value, _, why in service.omitted:
+                typer.echo(f"    {kind} {value}: {why}")
 
     return catalog.register_many(list(identifiers.identifiers))
 

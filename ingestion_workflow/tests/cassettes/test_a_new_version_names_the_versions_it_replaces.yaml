@@ -1,0 +1,219 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.12688/f1000research.141553.3?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,2,27]],"date-time":"2026-02-27T05:07:14Z","timestamp":1772168834145,"version":"3.50.1"},"update-to":[{"DOI":"10.12688\/f1000research.141553.1","type":"new_version","label":"New
+        version","source":"publisher","updated":{"date-parts":[[2024,4,10]],"date-time":"2024-04-10T00:00:00Z","timestamp":1712707200000}},{"DOI":"10.12688\/f1000research.141553.2","type":"new_version","label":"New
+        version","source":"publisher","updated":{"date-parts":[[2024,4,10]],"date-time":"2024-04-10T00:00:00Z","timestamp":1712707200000}}],"reference-count":27,"publisher":"F1000
+        Research Ltd","license":[{"start":{"date-parts":[[2024,4,10]],"date-time":"2024-04-10T00:00:00Z","timestamp":1712707200000},"content-version":"tdm","delay-in-days":0,"URL":"http:\/\/creativecommons.org\/licenses\/by\/4.0\/"}],"content-domain":{"domain":["f1000research.com"],"crossmark-restriction":false},"short-container-title":["F1000Res"],"abstract":"<ns3:p>\n                    Background
+        Stroke is ischemia and neurological dysfunction caused by acute brain circulation
+        loss. It causes acute localized neurological abnormalities such as weakness,
+        sensory deficit, or language issues that require long-term treatment. These
+        deficiencies harm the patient and their family psychologically, socially,
+        and economically. Thus, combination treatment can rapidly rehabilitate such
+        patients. Detoxification methods like Ayurvedic medicated enema help stroke
+        pathophysiology. Physical modalities in physiotherapy have been shown to facilitate
+        normal movement and function on the stroke patient\u2019s affected side, increasing
+        independence with everyday duties. A stroke patient may benefit from\n                    <ns3:italic>Dashmoola
+        Niruha Basti<\/ns3:italic>\n                    , Function Electrical Stimulation
+        (FES), and Motor Relearning Programme (MRP). Aim &amp; Objectives This study
+        compares the adjuvant role of\n                    <ns3:italic>Dashmoola Basti<\/ns3:italic>\n                    with
+        MRP and FES in stroke recovery. The main goals of this study are to assess
+        and compare the adjuvant role of\n                    <ns3:italic>Dashmoola
+        Basti<\/ns3:italic>\n                    with standard control over sensorimotor
+        function of lower extremities, static and dynamic balance in stroke patients;
+        gait parameters; resistance experienced during passive range of motion; quality
+        of life of patients; Barthel Index; Modified Ashworth Scale; and Fuglmeyer
+        assessment, Single Limb Stance Test, Functional Reach Test. Methods A total
+        of 40 patients will be enrolled and divided randomly into two equal groups.
+        In Group A (control), standard treatment (modern + physiotherapy) will be
+        prescribed for one month. In Group B (interventional group),\n                    <ns3:italic>Dashmoola
+        Basti<\/ns3:italic>\n                    will be added to the aforementioned
+        standard treatment for one month. Expected results Improvement in Fuglmeyer
+        assessment, Single Limb Stance Test, Functional Reach Test, quality of Life
+        of Patients, Barthel Index, Modified Ashworth scale, and National Institute
+        of Health (NIH) stroke-scale-score will be observed and recorded. Conclusions
+        Results and conclusions will be derived according to the data collected in
+        case record form and assessment sheets filled at baseline and follow-up visits.
+        Trial registration CTRI\/2021\/10\/037445 dated 21.10.2021.\n                  <\/ns3:p>","DOI":"10.12688\/f1000research.141553.3","type":"journal-article","created":{"date-parts":[[2024,4,10]],"date-time":"2024-04-10T13:25:05Z","timestamp":1712755505000},"page":"1589","update-policy":"https:\/\/doi.org\/10.12688\/f1000research.crossmark-policy","source":"Crossref","is-referenced-by-count":0,"title":["Efficacy
+        of Dashmool Vasti as an adjuvant therapy with the standard of care (modern
+        + physiotherapy) in the rehabilitation of stroke as compared to standard of
+        care \u2013 a clinical trial protocol"],"prefix":"10.12688","volume":"12","author":[{"ORCID":"https:\/\/orcid.org\/0000-0001-7980-7832","authenticated-orcid":false,"given":"Punam","family":"Sawarkar","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Vaishali","family":"Kuchewar","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0002-5605-795X","authenticated-orcid":false,"given":"Gaurav","family":"Sawarkar","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Irshad","family":"Qureshi","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"2560","published-online":{"date-parts":[[2024,4,10]]},"reference":[{"key":"ref1","doi-asserted-by":"publisher","first-page":"230-234","DOI":"10.7897\/2321-6328.03550","article-title":"A
+        non-randomized observational clinical study on ayurvedic treatment in Pakshaghata.","volume":"3","author":"J
+        Patel","year":"2015","journal-title":"J. Biol. Sci. Opin."},{"key":"ref3","first-page":"14-17","article-title":"Sample
+        size calculation in medical studies. Gastroenterol Hepatol Bed Bench.","volume":"6","author":"M
+        Pourhoseingholi","journal-title":"2013 Winter"},{"key":"ref4","article-title":"Electrophysical
+        agents: Contraindications and precautions. Canad\u00e1.","author":"J Frenette","year":"2010","journal-title":"Physiother.
+        Can."},{"key":"ref5","doi-asserted-by":"publisher","first-page":"256-264","DOI":"10.1109\/TNSRE.2019.2891004","article-title":"Synergy-based
+        FES for post-stroke rehabilitation of upper-limb motor functions.","volume":"27","author":"C
+        Niu","year":"2019 Feb 8","journal-title":"IEEE Trans. Neural Syst. Rehabil.
+        Eng."},{"key":"ref6","doi-asserted-by":"publisher","first-page":"40","DOI":"10.1186\/s13643-017-0435-5","article-title":"Effectiveness
+        of upper limb functional electrical stimulation after Stroke to improve activities
+        of daily living and motor function: a systematic review and meta-analysis.","volume":"6","author":"J
+        Eraifej","year":"2017 Dec 1","journal-title":"Syst. Rev."},{"key":"ref7","doi-asserted-by":"publisher","first-page":"173-180","DOI":"10.1097\/MRR.0000000000000108","article-title":"Six-month
+        functional recovery of stroke patients: a multi-time-point study.","volume":"38","author":"K
+        Lee","year":"2015 Jun","journal-title":"Int. J. Rehabil. Res."},{"key":"ref8","first-page":"824","article-title":"Sushruta
+        Samhita of Sushruta, reprint 2003 Chaukamba Sura Bharati Prakashan Varanasi.","year":"2003"},{"key":"ref9","article-title":"A
+        Clinical Study To Evaluate The Efficacy Of Dwi-Panchamula Niruha Vasti In
+        Pakshaghata\u201dPG Thesis Submitted By Dr. Prakash Paltye, Department Of
+        Panchakarma, SDMCA Udupi. In Rajiv Gandhi University Of Health Sciences, Karnataka,
+        Bangalore, 2010-11."},{"key":"ref10","first-page":"738","article-title":"Jadavji
+        Trikamji Acharya,5th edition Chaukamba publication Varanasi.","year":"2001"},{"key":"ref11","first-page":"1069","article-title":"edited
+        by Kavivar Sri Saligramaji Vaishya Dec-2003, Kaumarajsri Krishna Das Prakashan
+        Mumbi.","author":"V Sena"},{"key":"ref12","article-title":"Dr.Kaur Mandeep:
+        A clinical study on the effect of Panchaprasritiki Niruha Vasti in Pakshaghata
+        Dept of Panchakarma SDMCA Udupi, RGUHS, Bangalore in 2007-2008."},{"key":"ref13","article-title":"Dr.Upadhyaya
+        Asha: A clinical study on the effect of Upanaha Sweda in Pakshaghata, Dept
+        of Panchakarma SDMCA Udupi, RGUHS Bangalore in 2007."},{"key":"ref14","first-page":"738","article-title":"Jadavji
+        Trikamji Acharya reprint 2007 Chaukamba orientalia Golgahar Varabnasi.","year":"2007"},{"key":"ref15","first-page":"48-56","article-title":"B.B.
+        Conceptual And Therapeutic Study Of Pakshaghata.","volume":"3","author":"K
+        Manish","year":"2017","journal-title":"Int. J. Appl. Ayurved Res."},{"key":"ref16","doi-asserted-by":"publisher","first-page":"230-234","DOI":"10.7897\/2321-6328.03550","article-title":"A
+        non-randomized observational clinical study on ayurvedic treatment in pakshaghata.","volume":"3","author":"J
+        Patel","year":"2015","journal-title":"J. Biol. Sci. Opin."},{"key":"ref17","article-title":"Agnivesha:
+        Charaka samhitha, Acharya Jadavji Trikamji, edited by Chaukambha Orientalia."},{"key":"ref18","article-title":"Dr.Patanjali:
+        A clinical study on the effect of Agni chikitsa in Pakshaghata, Dept of Panchakarma
+        SDMCA Udupi, RGUHS Bangalore in 2006."},{"key":"ref19","article-title":"Dr.Devagirikar
+        Vaishali panduranga: A comparative study of the effect of samshodhana and
+        Samshamana in Pakshaghata Dept of kayachikitsa SDMCA Udupi, RGUHS, Bangalore
+        in 2004."},{"key":"ref20","article-title":"Dr.U Shreekanth: \u201cstudies
+        on some systematic effect of Vasti with special reference to Gridhrasi, Viswachi
+        and Pakshavadha\u201d undertaken at IPGT&R, Gujarat Ayurveda University \u2013
+        Jamnagar in 1984. L-1416."},{"key":"ref21","doi-asserted-by":"publisher","first-page":"246-250","DOI":"10.4103\/0975-9476.147445","article-title":"Anuvasan
+        Basti in escalating dose is an alternative for Snehapana before Vamana and
+        Virechana: Trends from a pilot study.","volume":"5","author":"P Kadus","year":"2014
+        Oct-Dec","journal-title":"J. Ayurveda Integr. Med."},{"key":"ref22","doi-asserted-by":"publisher","first-page":"235-256","DOI":"10.2165\/00007256-200535030-00004","article-title":"The
+        mechanisms of massage and effects on performance, muscle recovery and injury
+        prevention.","volume":"35","author":"P Weerapong","year":"2005","journal-title":"Sports
+        Med."},{"key":"ref23","first-page":"32040-32043","article-title":"Management
+        Of Ardita (Bell\u2019s Palsy) Through Ayurveda- A Case Study.","volume":"10","author":"G
+        Sawarkar","year":"April, 2019","journal-title":"Int. J. Recent Sci. Res."},{"key":"ref24","doi-asserted-by":"publisher","first-page":"1-2","DOI":"10.47070\/ijapr.v8i7.1506","article-title":"Evaluate
+        The Efficacy Of Shashtik-Shali Pinda Sweda And Abhyanga In Management Of Pakshaghata
+        Along With Virechana Wsr To Hemiplegia.","author":"N Singh","year":"2020 Jul
+        12","journal-title":"Int. J. Ayurveda Pharma. Res."},{"key":"ref25","first-page":"23","article-title":"The
+        role of Panchakarma therapy in musculoskeletal disorders with special reference
+        to vatavyadhi.","volume":"2","author":"D Kumar","year":"2013","journal-title":"Global
+        Journal of Research on Medicinal Plants & Indigenous Medicine."},{"key":"ref26","first-page":"889-895","article-title":"The
+        effectiveness of physical therapy methods (Bobath and motor relearning program)
+        in the rehabilitation of stroke patients.","volume":"39","author":"G Krutulyte","year":"2003","journal-title":"Medicine
+        (Kaunas, Lithuania)."},{"key":"ref27","doi-asserted-by":"publisher","first-page":"256-264","DOI":"10.1109\/TNSRE.2019.2891004","article-title":"Synergy-based
+        FES for post-stroke rehabilitation of upper-limb motor functions.","volume":"27","author":"C
+        Niu","year":"2019 Feb 8","journal-title":"IEEE Trans. Neural Syst. Rehabil.
+        Eng."},{"key":"ref28","doi-asserted-by":"publisher","first-page":"40","DOI":"10.1186\/s13643-017-0435-5","article-title":"Effectiveness
+        of upper limb functional electrical stimulation after Stroke to improve activities
+        of daily living and motor function: a systematic review and meta-analysis.","volume":"6","author":"J
+        Eraifej","year":"2017 Dec 1","journal-title":"Syst. Rev."}],"container-title":["F1000Research"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/f1000research.com\/articles\/12-1589\/v3\/xml","content-type":"application\/xml","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/f1000research.com\/articles\/12-1589\/v3\/pdf","content-type":"application\/pdf","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/f1000research.com\/articles\/12-1589\/v3\/iparadigms","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2024,4,13]],"date-time":"2024-04-13T03:40:12Z","timestamp":1712979612000},"score":1,"resource":{"primary":{"URL":"https:\/\/f1000research.com\/articles\/12-1589\/v3"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2024,4,10]]},"references-count":27,"URL":"https:\/\/doi.org\/10.12688\/f1000research.141553.3","relation":{"has-review":[{"id-type":"doi","id":"10.5256\/f1000research.164455.r265099","asserted-by":"subject"},{"id-type":"doi","id":"10.5256\/f1000research.164455.r265099","asserted-by":"object"}]},"ISSN":["2046-1402"],"issn-type":[{"value":"2046-1402","type":"electronic"}],"subject":[],"published":{"date-parts":[[2024,4,10]]},"assertion":[{"value":"Indexed","URL":"https:\/\/f1000research.com\/articles\/12-1589\/v3#article-reports","order":0,"name":"referee-status","label":"Referee
+        status","group":{"name":"current-referee-status","label":"Current Referee
+        Status"}},{"value":"10.5256\/f1000research.162587.r247406, Neha Tank, Department
+        of Panchkarma, Institute of Teaching and Teaching in Ayurveda (Institute of
+        national Importance) Ministry of Ayush, Jamnagar, Gujarat, 28 Feb 2024, version
+        2, 1 approved, 1 approved with reservations","URL":"https:\/\/f1000research.com\/articles\/12-1589\/v2#referee-response-247406","order":0,"name":"referee-response-247406","label":"Referee
+        Report","group":{"name":"article-reports","label":"Article Reports"}},{"value":"10.5256\/f1000research.164455.r265099,
+        Aishwarya Ashish Joglekar, Sumedh Joshi, Samhita Siddhant, All India Institute
+        of Ayurveda, New Delhi, New Delhi, 13 Apr 2024, version 3, indexed","URL":"https:\/\/f1000research.com\/articles\/12-1589\/v3#referee-response-265099","order":1,"name":"referee-response-265099","label":"Referee
+        Report","group":{"name":"article-reports","label":"Article Reports"}},{"value":"The
+        author(s) declared that no grants were involved in supporting this work","order":2,"name":"grant-information","label":"Grant
+        Information"},{"value":"This is an open access article distributed under the
+        terms of the Creative Commons Attribution Licence, which permits unrestricted
+        use, distribution, and reproduction in any medium, provided the original work
+        is properly cited.","order":0,"name":"copyright-info","label":"Copyright"}]}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '4819'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 21:48:48 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.12688%2Ff1000research.141553.3%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 21:48:48 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+version: 1

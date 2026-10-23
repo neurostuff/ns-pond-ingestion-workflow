@@ -1,0 +1,827 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1101/2021.06.04.447120?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"institution":[{"name":"bioRxiv"}],"indexed":{"date-parts":[[2026,1,15]],"date-time":"2026-01-15T16:22:28Z","timestamp":1768494148966,"version":"3.49.0"},"posted":{"date-parts":[[2021,6,6]]},"group-title":"Biophysics","reference-count":42,"publisher":"openRxiv","content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"accepted":{"date-parts":[[2021,6,6]]},"abstract":"<jats:title>Abstract<\/jats:title>\n                <jats:p>Understanding
+        the response of skin to superphysiological temperatures is critical to the
+        diagnosis and prognosis of thermal injuries, and to the development of temperature-based
+        medical therapeutics. Unfortunately, this understanding has been hindered
+        by our incomplete knowledge about the nonlinear coupling between skin temperature
+        and its mechanics. In Part I of this study we experimentally demonstrated
+        a complex interdependence of time, temperature, direction, and load in skin\u2019s
+        response to superphysiological temperatures. In Part II of our study, we test
+        two different models of skin\u2019s thermo-mechanics to explain our observations.
+        In both models we assume that skin\u2019s response to superphysiological temperatures
+        is governed by the denaturation of its highly collageneous microstructure.
+        Thus, we capture skin\u2019s native mechanics via a microstructurally-motivated
+        strain energy function which includes probability distributions for collagen
+        fiber orientation and waviness. In the first model, we capture skin\u2019s
+        response to superphysiological temperatures as a transition between two states
+        that link the kinetics of collagen fiber denaturation to fiber coiling and
+        to the transformation of each fiber\u2019s constitutive behavior from purely
+        elastic to viscoelastic. In the second model, we capture skin\u2019s response
+        to super-physiological temperatures instead via three states in which a sequence
+        of two reactions link the kinetics of collagen fiber denaturation to fiber
+        coiling, followed by a state of fiber damage. Given the success of both models
+        in qualitatively capturing our observations, we expect that our work will
+        provide guidance for future experiments that could probe each model\u2019s
+        assumptions toward a better understanding of skin\u2019s coupled thermo-mechanics
+        and that our work will be used to guide the engineering design of heat treatment
+        therapies.<\/jats:p>","DOI":"10.1101\/2021.06.04.447120","type":"posted-content","created":{"date-parts":[[2021,6,6]],"date-time":"2021-06-06T23:50:24Z","timestamp":1623023424000},"source":"Crossref","is-referenced-by-count":0,"title":["The
+        biaxial mechanics of thermally denaturing skin - Part II: Modeling"],"prefix":"10.64898","author":[{"ORCID":"https:\/\/orcid.org\/0000-0003-1337-6472","authenticated-orcid":false,"given":"Manuel","family":"Rausch","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"William
+        D.","family":"Meador","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"John
+        Toaquiza","family":"Tubon","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Omar","family":"Moreno-Flores","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0001-8531-0603","authenticated-orcid":false,"given":"Adrian
+        Buganza","family":"Tepole","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"54368","reference":[{"key":"2021060804200713000_2021.06.04.447120v1.1","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pone.0064074"},{"key":"2021060804200713000_2021.06.04.447120v1.2","doi-asserted-by":"publisher","DOI":"10.1146\/annurev.bioeng.4.101001.131546"},{"key":"2021060804200713000_2021.06.04.447120v1.3","doi-asserted-by":"publisher","DOI":"10.1016\/j.bpj.2011.04.033"},{"key":"2021060804200713000_2021.06.04.447120v1.4","doi-asserted-by":"publisher","DOI":"10.1529\/biophysj.106.085902"},{"issue":"2","key":"2021060804200713000_2021.06.04.447120v1.5","doi-asserted-by":"crossref","first-page":"123","DOI":"10.3109\/03008208809008064","article-title":"The
+        locations of collagens with different thermal stabilities in fibrils of bovine
+        reticular dermis","volume":"18","year":"1988","journal-title":"Connective
+        Tissue Research"},{"issue":"10","key":"2021060804200713000_2021.06.04.447120v1.6","doi-asserted-by":"crossref","first-page":"2157","DOI":"10.1016\/j.bpj.2012.10.010","article-title":"Collagen
+        unfolding accelerates water influx, determining hydration in the interstitial
+        matrix","volume":"103","year":"2012","journal-title":"Biophysical journal"},{"issue":"10","key":"2021060804200713000_2021.06.04.447120v1.7","doi-asserted-by":"crossref","first-page":"1875","DOI":"10.1002\/bip.360251006","article-title":"Multiple
+        denaturational transitions in fibrillar collagen","volume":"25","year":"1986","journal-title":"Biopolymers:
+        Original Research on Biomolecules"},{"key":"2021060804200713000_2021.06.04.447120v1.8","doi-asserted-by":"crossref","unstructured":"F.
+        Xu , T. Lu , K. Seffen , Thermally-induced change in the relaxation behavior
+        of skin tissue, Journal of biomechanical engineering 131 (7) (2009).","DOI":"10.1115\/1.3118766"},{"key":"2021060804200713000_2021.06.04.447120v1.9","doi-asserted-by":"crossref","unstructured":"S.
+        Baek , P. Wells , K. Rajagopal , J. Humphrey , Heat-induced changes in the
+        finite strain viscoelastic behavior of a collaagenous tissue (2005).","DOI":"10.1115\/1.1934222"},{"key":"2021060804200713000_2021.06.04.447120v1.10","doi-asserted-by":"crossref","unstructured":"S.
+        Chen , N. Wright , J. Humphrey , Heat-induced changes in the mechanics of
+        a collagenous tissue: isothermal free shrinkage (1997).","DOI":"10.1115\/1.2798281"},{"key":"2021060804200713000_2021.06.04.447120v1.11","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pmed.0040234"},{"issue":"2","key":"2021060804200713000_2021.06.04.447120v1.12","doi-asserted-by":"crossref","first-page":"195","DOI":"10.1016\/j.jss.2006.02.043","article-title":"Comparison
+        of combat and non-combat burns from ongoing us military operations","volume":"132","year":"2006","journal-title":"Journal
+        of Surgical Research"},{"key":"2021060804200713000_2021.06.04.447120v1.13","doi-asserted-by":"publisher","DOI":"10.1016\/j.burns.2009.08.015"},{"key":"2021060804200713000_2021.06.04.447120v1.14","doi-asserted-by":"crossref","unstructured":"S.
+        Chen , N. Wright , J. Humphrey , Heat-induced changes in the mechanics of
+        a collagenous tissue: isothermal, isotonic shrinkage (1998).","DOI":"10.1115\/1.2798005"},{"key":"2021060804200713000_2021.06.04.447120v1.15","doi-asserted-by":"publisher","DOI":"10.1115\/1.1567754"},{"issue":"9","key":"2021060804200713000_2021.06.04.447120v1.16","doi-asserted-by":"crossref","first-page":"1971","DOI":"10.1007\/s10439-012-0571-y","article-title":"Development
+        of a simultaneous cryoanchoring and radiofrequency ablation catheter for percutaneous
+        treatment of mitral valve prolapse","volume":"40","year":"2012","journal-title":"Annals
+        of biomedical engineering"},{"issue":"1","key":"2021060804200713000_2021.06.04.447120v1.17","doi-asserted-by":"crossref","first-page":"237","DOI":"10.1007\/s11340-020-00662-w","article-title":"Radiofrequency
+        ablation alters the microstructural organization of healthy and enzymatically
+        digested porcine mitral valves","volume":"61","year":"2021","journal-title":"Experimental
+        Mechanics"},{"key":"2021060804200713000_2021.06.04.447120v1.18","doi-asserted-by":"publisher","DOI":"10.1098\/rsta.2009.0238"},{"key":"2021060804200713000_2021.06.04.447120v1.19","doi-asserted-by":"publisher","DOI":"10.1109\/10.720201"},{"key":"2021060804200713000_2021.06.04.447120v1.20","doi-asserted-by":"publisher","DOI":"10.1529\/biophysj.107.111716"},{"key":"2021060804200713000_2021.06.04.447120v1.21","doi-asserted-by":"crossref","unstructured":"W.
+        Meador , A. B. Tepole , M. K. Rausch , The biaxial mechanics of thermally
+        denaturing skin - part i: Experiments, Submitted to Acta Biomaterialia (2021)
+        1\u201316.","DOI":"10.1101\/2021.06.04.447116"},{"issue":"2","key":"2021060804200713000_2021.06.04.447120v1.22","doi-asserted-by":"crossref","first-page":"300","DOI":"10.1115\/1.1553974","article-title":"On
+        a relationship between the arrhenius parameters from thermal damage studies","volume":"125","year":"2003","journal-title":"J.
+        Biomech. Eng."},{"key":"2021060804200713000_2021.06.04.447120v1.23","doi-asserted-by":"crossref","unstructured":"G.
+        Limbert , Constitutive modelling of skin mechanics, in: Skin Biophysics, Springer,
+        2019, pp. 19\u201376.","DOI":"10.1007\/978-3-030-13279-8_2"},{"issue":"2203","key":"2021060804200713000_2021.06.04.447120v1.24","doi-asserted-by":"crossref","first-page":"20170257","DOI":"10.1098\/rspa.2017.0257","article-title":"Mathematical
+        and computational modelling of skin biophysics: a review","volume":"473","year":"2017","journal-title":"Proceedings
+        of the Royal Society A: Mathematical, Physical and Engineering Sciences"},{"issue":"4","key":"2021060804200713000_2021.06.04.447120v1.25","doi-asserted-by":"crossref","first-page":"5913","DOI":"10.1016\/j.actbio.2012.11.035","article-title":"Full-field
+        bulge test for planar anisotropic tissues: Part i\u2013experimental methods
+        applied to human skin tissue","volume":"9","year":"2013","journal-title":"Acta
+        biomaterialia"},{"issue":"4","key":"2021060804200713000_2021.06.04.447120v1.26","doi-asserted-by":"crossref","first-page":"5926","DOI":"10.1016\/j.actbio.2012.11.034","article-title":"Full-field
+        bulge test for planar anisotropic tissues: Part ii\u2013a thin shell method
+        for determining material parameters and comparison of two distributed fiber
+        modeling approaches","volume":"9","year":"2013","journal-title":"Acta biomaterialia"},{"key":"2021060804200713000_2021.06.04.447120v1.27","doi-asserted-by":"crossref","first-page":"12","DOI":"10.1016\/j.jmbbm.2015.10.006","article-title":"A
+        microstructurally inspired damage model for early venous thrombus","volume":"55","year":"2016","journal-title":"Journal
+        of the mechanical behavior of biomedical materials"},{"issue":"5","key":"2021060804200713000_2021.06.04.447120v1.28","doi-asserted-by":"crossref","first-page":"767","DOI":"10.1007\/s10237-010-0272-0","article-title":"Estimating
+        material parameters of a structurally based constitutive relation for skin
+        mechanics","volume":"10","year":"2011","journal-title":"Biomechanics and modeling
+        in mechanobiology"},{"key":"2021060804200713000_2021.06.04.447120v1.29","doi-asserted-by":"crossref","first-page":"403","DOI":"10.1016\/j.actbio.2019.10.020","article-title":"The
+        regional-dependent biaxial behavior of young and aged mouse skin: A detailed
+        histomechanical characterization, residual strain analysis, and constitutive
+        model","volume":"101","year":"2020","journal-title":"Acta biomaterialia"},{"key":"2021060804200713000_2021.06.04.447120v1.30","doi-asserted-by":"crossref","first-page":"172","DOI":"10.1016\/j.jmps.2018.09.014","article-title":"Anisotropic
+        finite strain viscoelasticity: Constitutive modeling and finite element implementation","volume":"124","year":"2019","journal-title":"Journal
+        of the Mechanics and Physics of Solids"},{"key":"2021060804200713000_2021.06.04.447120v1.31","doi-asserted-by":"publisher","DOI":"10.1016\/0020-7683(92)90167-R"},{"key":"2021060804200713000_2021.06.04.447120v1.32","doi-asserted-by":"publisher","DOI":"10.1016\/0021-9290(79)90027-7"},{"key":"2021060804200713000_2021.06.04.447120v1.33","doi-asserted-by":"publisher","DOI":"10.1016\/j.jbiomech.2003.11.026"},{"key":"2021060804200713000_2021.06.04.447120v1.34","doi-asserted-by":"publisher","DOI":"10.1016\/0141-8130(93)90025-H"},{"key":"2021060804200713000_2021.06.04.447120v1.35","doi-asserted-by":"crossref","first-page":"112","DOI":"10.1016\/j.eml.2018.01.009","article-title":"Multiscale
+        modeling of keratin, collagen, elastin and related human diseases: Perspectives
+        from atomistic to coarse-grained molecular dynamics simulations","volume":"20","year":"2018","journal-title":"Extreme
+        Mechanics Letters"},{"key":"2021060804200713000_2021.06.04.447120v1.36","doi-asserted-by":"crossref","first-page":"87","DOI":"10.1016\/j.polymdegradstab.2015.05.005","article-title":"Molecular-based
+        nonlinear viscoelastic chemomechanical model incorporating thermal denaturation
+        kinetics of collagen fibrous biomaterials","volume":"119","year":"2015","journal-title":"Polymer
+        Degradation and Stability"},{"key":"2021060804200713000_2021.06.04.447120v1.37","doi-asserted-by":"crossref","first-page":"201","DOI":"10.1016\/j.jtherbio.2016.06.017","article-title":"Thermoelastic
+        modelling of the skin at finite deformations","volume":"62","year":"2016","journal-title":"Journal
+        of thermal biology"},{"key":"2021060804200713000_2021.06.04.447120v1.38","doi-asserted-by":"crossref","unstructured":"J.
+        Weickenmeier , E. Mazza , Inverse methods, in: Skin Biophysics, Springer,
+        2019, pp. 193\u2013213.","DOI":"10.1007\/978-3-030-13279-8_6"},{"key":"2021060804200713000_2021.06.04.447120v1.39","doi-asserted-by":"crossref","first-page":"100634","DOI":"10.1016\/j.pmatsci.2019.100634","article-title":"The
+        materials science of skin: Analysis, characterization, and modeling","volume":"110","year":"2020","journal-title":"Progress
+        in Materials Science"},{"issue":"4","key":"2021060804200713000_2021.06.04.447120v1.40","doi-asserted-by":"crossref","first-page":"1079","DOI":"10.1007\/s10237-019-01129-1","article-title":"On
+        the compressibility and poroelasticity of human and murine skin","volume":"18","year":"2019","journal-title":"Biomechanics
+        and modeling in mechanobiology"},{"key":"2021060804200713000_2021.06.04.447120v1.41","doi-asserted-by":"crossref","unstructured":"D.
+        Sachs , A. Wahlsten , S. Kozerke , G. Restivo , E. Mazza , A biphasic multilayer
+        computational model of human skin, Biomechanics and Modeling in Mechanobiology
+        (2021) 1\u201314.","DOI":"10.1007\/s10237-021-01424-w"},{"key":"2021060804200713000_2021.06.04.447120v1.42","first-page":"54","article-title":"Mechanically
+        overloading collagen fibrils uncoils collagen molecules","volume":"33","year":"2014","journal-title":"placing
+        them in a stable, denatured state, Matrix Biology"}],"container-title":[],"original-title":[],"link":[{"URL":"https:\/\/syndication.highwire.org\/content\/doi\/10.1101\/2021.06.04.447120","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2026,1,15]],"date-time":"2026-01-15T01:48:46Z","timestamp":1768441726000},"score":1,"resource":{"primary":{"URL":"http:\/\/biorxiv.org\/lookup\/doi\/10.1101\/2021.06.04.447120"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2021,6,6]]},"references-count":42,"URL":"https:\/\/doi.org\/10.1101\/2021.06.04.447120","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.1016\/j.actbio.2021.11.031","asserted-by":"subject"}]},"subject":[],"published":{"date-parts":[[2021,6,6]]},"subtype":"preprint"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '4395'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 21:48:46 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1101%2F2021.06.04.447120%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTYzODI3MjcyODAwMCwxMC4xMDE2JTJGai5hY3RiaW8uMjAyMS4xMS4wMzE=","total-results":1,"items":[{"DOI":"10.1016\/j.actbio.2021.11.031","relation":{"has-preprint":[{"id-type":"doi","id":"10.1101\/2021.06.04.447120","asserted-by":"object"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 21:48:47 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.1016/j.actbio.2021.09.033
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://api.crossref.org/v1/works/10.1016%2Fj.actbio.2021.09.033/transform">https://api.crossref.org/v1/works/10.1016%2Fj.actbio.2021.09.033/transform</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4f3f2aaed914799-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Fri, 23 Oct 2026 21:48:47 GMT
+      expires:
+      - Fri, 23 Oct 2026 21:53:09 GMT
+      link:
+      - <https://dul.usage.elsevier.com/doi/>; rel=dul
+      - <https://dul.usage.elsevier.com/doi/>; rel=dul
+      location:
+      - https://api.crossref.org/v1/works/10.1016%2Fj.actbio.2021.09.033/transform
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=Am0o2R3C9ciIJ6g%2BSMvs3UcVjkhiMcXdF2EwMjeWm2mpftg%2BJ5TvNrn9mTfsuNl990OwqwUuCgnxc2PnkkqUQ7NVEMxkkW0tHCd2V0JpdHdHgusGwZ6qPt4%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/v1/works/10.1016%2Fj.actbio.2021.09.033/transform
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAA/9VcbW/bxpb+KwN9WLSASPNFJCUBi4WduJu0cRPEvtvdxkEwIkfSxBTJyxfFatD/
+        vs8ZkhJHpmwzaS92AyO2KXI455lznvM2468jmUTiXkSj+ddRxEthZDwvi9H8wwfHcvyxO/Y/fhzX
+        n5RyI0bzEV03LNew/BsrmDvBfDL5fTQe0adFyTfZaG4HgRNMHcufTGbueLQVeSHTBI+6pmeZ9ujP
+        8SgXS5GLJBRGmFZJOZpPrPEoqxaxLNYix62XcSG2UuTs4r8weCxDkRR4+4evI7wkL3un62C6ds90
+        HTVd+8ay5urreLr+xLdmztSif5hbmCalSErjMO8y2uCRSMR8Z8jEiPgOr8SE//H+DT5dl2VWzG/P
+        bs++fPliimbiZphubs/w5O1ZVYi8keD2zDat2zNA8P9MkFiseKzkyUVmtOvxuBju2Bl7PWJABkji
+        nRYj8PDPOS0G75HCndhdOU6IkWYiMXgYiqLoXxfMdlnBJHKlay/fvsZ4NpTWtdwZbrLqfzben3Al
+        z6+8xKR4zK5DSQrNfoJCR+oiTTKVBi/wnlJExmKH+w9KPh7xLzyH5X0Y2TPb93139LG5BrGWqZpB
+        /WtSbRZqSoc7aaYyUvfQtxOTlJFR7jKaJ4mC0U/M5c+PtJSnxHV6xH2dFKUsq1IULF2yV4LH5fr5
+        Av/k2q/e2BNvFvjPEFq7+2nBnb9G8KnndwT/RyKVApY7kvdG3POC8ZKdV4Dh6ZV+ZMLNawZM+OPB
+        JqJ0w/F6sr7mpw+jrsZjoKLWy0jmIizVNXo+T4tiw/M7I4fZ5TJU+jov80r8eSDiyMhymZzkqI/A
+        rgOdZfu3Z59NHpYLmZq4BSY1My3XJfOuRfucVjmUx8A4MozFiCYiMHK/+7HHs7Hj9BCIbVgzw3Fu
+        LGfuenP7gf/xXQcOyLYnNYFkfEUPTmzHmDgW7q2y+l0prH+nER9W0UzzFS1NI1CL5qdw86l5AJhC
+        jpDGfEE4wpnRAhbG3qvRqrWezfZwfyZCyeNPtUrLZEWPqkmXMQ1zIfk9PmcbEa55IkNlUyWWe8Pj
+        eMcikfCyoudYcScTZrB3gInZc3Z5n2G8DVShwHAZJiDvD8uBS9s0rhRsAIO0qirXac1tb9+/eP1S
+        Ez7NQxnV4pNiGsQhhhfMAmPmeW7zNF4lQ1oyQ90+mi85EBqPVjAP4ubfZBxLvmEvTTyw5BsZE8JX
+        gkcpGUIh/lkRQri2lHlR0qjLpcQjtQZ+wGrnaVy7+vqHdtIkTMgXVcxzGjJsoa9N+JnizGbWxPAc
+        L3imOP/JF7kUcczZO02g62pFq5PoIvEokjU//qvlmnourMK3nrtM51EuecIuqhVP/uBdyW5ElirT
+        /D8gl2vYrhsY/iRwninXFU8qEbNftMV6z6siXP+9IuGhjagd1iiYjjohbs38RVEp9sInd2L3FGV+
+        WshF48IfOpbwQDrKhoyG4DyP7n9AyJ83CwxtTUzbMeshG/o1Wvq5WQsmE6Lign5o+UbhwUqxAcfQ
+        74It0zhOvxAPqTkgDkzu6DewVYiPMI2EyYKFwFtEbEHMtd5FzUA1pbGlXMDndKnJnfgdahpdyVh9
+        vhM8V3xvefitdR3tnH822VUam+xC4n8ViLYQu4MgdgZB7DreQ4ivrZk/NSauM/3Bsn4ktZ0YTj/M
+        DaHHfAEhWe2zC4KckNlDuIHShZUywgNIzuMY2T0YXUnIkWjgTAaB4w4Ex+qC49oWYhxki54fuD5G
+        xzXPnXhO0IsNlGKdxlEBJctb38civsHYrExZkqoLpRKkmDOQV+3GuyA5QRek/+E5IZncpV2k7D6k
+        XiOcwoUmtv25/lQFtghccjUbyRWQzwdvMgg823K9WY9yKftdbAi+mbm/6Ri+F3SBlAe4RB1F2scT
+        KqeB3uUrYSDgg9oxBHg8Z19kucYv+NrKbaoeR1hbVFnOs/UOCdcKfBt3WUCzXXvvcWq95Hmxhop3
+        AVda8cB82RXmxi7Emm/JhjfgiyusZq5pqz1IW72BgM80tO0JRudJAgm3Jl4gkpU5oZfCthCw217N
+        UkfAv+xSZZcGt5IzAIzkYKWUVeYYlxKIBQwf9wuW5SnloV00J10sf8vlal1qRu70IHmOKbP3Yo/i
+        JaJLDUNrEIj+MBAdd6KjaKm8xgxo3ft8zTu4cMwzSeNGswRJr+CDc1Y41hRA4CEljCqE09BVRL93
+        pN/AmO9RTquiYQQNRa8L4wu88ACiPZtN++z/8vKS3eQ8KcwGR5OANAeafDCML1VU08HO9qgO4QSz
+        qTPtw+5VFxKy7JXYOw8tdehDaA7PnLa8usyFOICqGbQ9exS9oNeYFWaw51b5ng/ZdBhk05OQ1fb/
+        t0E2Vj+nuP0Ebo41WOse4vZtMcxsIIZ2H4Y23HTgTXowPI/By4CvxQv6syDelrBSICcyXMojWW1Y
+        VClf3VG0hgIb/7No8tw9lHHKI92fOJrxvuJ5LvVAx+0PBhskO2b7TSG3YsshJnyEJdHfzcXVJUXc
+        rjl1LDfoU8tfZCJKPc/vxDq6LlJaAWYSj2FIJYUOiioReAzEyVAO/CbFtIflL/ZM9yXg09uzwnYd
+        d2ZgYZAQ2tPewPo9AEhBaSq52zG+iGt/XNe8VEyHoJuTGhdsJSBame9UqLOotabR6jDdZEgDqYqL
+        ddlIxEkx2/J4K1gs+DIWJQJPqrEkgkouNW0k6RYJJ4KjsCqxSoo9qKil7qBQqxSrnabi3bV5l8tQ
+        aOFpX7T0guwr3fIipBVhN5gyHKi2MLNBCzMs67FnR2rerIw1UStDxfzANna94RHASbMDWoXcVHGL
+        U5jvUgNwAwriCFqQ/MRSIudfC6yfCg1OgH28ZgiwYp4VemygsfRFivxox++0BTgRZJ2MrwYBPyyj
+        ctygD3fbncAaHLII33eMLwNMojEC5f4oO4SCViEFsMh28hXs4I99KLtWNf3aTkTyx27DqfSi6pES
+        XhSTZxkVYRKhwa7Rua8p+4VQnZVubtCXjF3eZyo70GCeDoJ5YO7ler5O4wFwtlzfRdDvWb4zDaZO
+        n2dsMnpoZ1ZUcZrna0qa2gxWV01kt1VMBI6Mv6T8X5YaLbha8H8lE8lDqZG236eYG/Yzu8Y6lAUw
+        i4YFX/awjMnTEyZrFtSVOtea+gaVIKxZU7dTEckzwXoSpDlb8ILCrrqRoWE208z5Fd/xYq2D1qdg
+        L2JZE/5bpPZpxkVErpj0/L2IqbiI7wVGCNe3lWVx8R32Piydcq0jc3duz8IwMh3P9voc30/0MFtX
+        GySYQrUCROO82qACT+AqoR6nBVLbLnpTTeNeIqCLijTpomf3xQkvGipuqYJwOzgoqo0yVU7ZUq0W
+        2dx3BGPD8inHPRHYuj4Muq9qkmKGSYXAVcGVHhICkkmV5FpN0bQ0koUqldJdMvlc5Zohe1o181W1
+        yda52D0Zw55nWWwq3jMpnR+YetrEjwUpQLEf8Zp6Rbhb1XFChC7LPN00ekKikFaseY4hcaFoqr2I
+        PqMthUCI99NIxABgNWYQzlS2YDlaHfKNpJK3VqRA/vjNBUd7WCYzCY4YqR49EiWF3xh3avZT0bly
+        h9t6BZeEQF344+31GMuba55MLy1eqNpM3f85LOusZ1lfkh2WacyIdL6dSJxheYmt8upjrrbNRZib
+        am/AzJ55U9OD55uYYdQHETz8mnKUuuVIGUhU17KaiBdObkPGsEijHdGMqiSS8gC4juGolkvMT0P5
+        CzQQQKbVnTyCs8/fdUqzC/wEZ5IL9m8Iymu+/naucYblKgLJzdQ+Ihxkg3hFPUMzSxNhHu465Q1L
+        SrjIf3dtsU0Na2ZXC7AB41SUhbeV2qpQeXVMGQZVcMM0WaYN5+d8p6WWhUiKNK9pDa+ooJD5URm3
+        uyS/icVCM+m+Bsy7N+k1e/vr5TCecoZlHnUN8WFJnASrx7d908KX3d9UIFaH9hGgBzprO1EKV14y
+        5HOyFCwSCr/aZ3VjWOfI8iM9YetVU5Opl/f1p2B7wzTTPUbFD/pI7bou66vaMi24BJM121WUpHVN
+        q6ki6A4PKtJUEcYsW0uECnAajd+Detb82GoUy9Md6VSKeAzD8znbUETQpAdaeOZPu9D9juDuyVT3
+        nXJWpMWJyrWQXqgdE+3+qmKgvj2ZCVRJmwPRNpTRTyb772rMbkz2Bt9+Mdm1WC5FMmb77t1RObGt
+        JubQs/vaiXarYx3ox0wr+DEQww/Bj2ZfzOKCNwLf/w5/MSy0d3utDIqyQdRNVhbU3eNevSMJv9Cu
+        N5Uy0lrhgqKumnGQaIo5oRXHYl9/Jb2K24bbnr47yqOH9r8DNi1ztHsLqiZr/a1JCmN+eyji+A8w
+        UobYK33HjrI8pY4h4rBadiKdxm/mtJHoy7hu/Aiytr1JyWY3XZN6d8YTjQnowYjeDf45TSN+J5+E
+        R+0aejXv9je7FgZBrigVwoWBRjaw72E5feq2Hx2UTsrm9bnN8yb6OC5eSMo4slyUtQW2GXinvqew
+        3qRV0RA/lBuRXlQHxVSUkgXwFh03/Ee7i/MQ2ms6+WaXKJU9gN7XHDkPS67Mft/dfD6uw5ojyBcf
+        x3UGfsHovREx8Ci5jPUyf2O9GtIcwoGiFZzplqo/tH+wKjIZHdVK9QBD37/Q7gd7vEv8PdgNTCWs
+        XgrUsLPMepZ922dysVJUZkQioyoXEsW2UN/1BjvQZF3oxGujjjoSP+xXYI0IUKtLH6nkmAhTRhV5
+        4drpt4sybvr/LZ1gNRQD6Uth/2uXwh3YU3lqKXyV2Ll97fh3MZA49EhKUZRNwEebHcpGQUlbAWEW
+        87Au5C8aufAM0uRDhgw8wSJp0yxob6nx5Ymu4XrX+Q1fkHhPR4rfg6v9MHx5Bb8HieF7oSUXCD/T
+        +E7kiDxM9hvAWMIHjxliHNq3PGZX5jVuEYlxveakZGN2vhT3c3besfGf8PpUiX3ZxYVU9j3LeKi6
+        8s3efGaZcG+ZidDmtoLArj3xBhYy3KEJwvRRZXFgtHiB06csL7pmEokizGXWeuDWRWwkFKJc52m1
+        WtdWVjatorZ0VBscR9JrrMgWYb88g4sHoKLeyaCci1F7FxV9k/Ict+xsSysbvUPQgtT2aO/SMy1z
+        HzEOyjPcYb0J2w76t35MHNvuc90vDt33hcSAFHOociUvGG1Fp77Ew3boPnrWtwxqYN2s002h99un
+        fbWYZ3U4g0GYDWs0OL6+Rc72HGDWlOg+421Ebd7M6qv1vk62xGarup/eeIdiU2i7jvbgdbclLXbw
+        KFBfOI12q00hoMCRsaYdctRDxrOiuVsC9iPdnGkO47p6ukxzUYtkgncGmv/AvKWvPnCNOXkGwnX3
+        B8v7MaB2hNFXHriqt1nCX+wptI3HD4CCE2C2awTx911IAr2PmKdRcafXePtqJufR1mTv8rQUUOsX
+        yJnN79iq5Q7cqjWbHTdxHdK9zLRngW+6vmV7dp2Tn6pVdXIbbcdvovBpA0aqFCKkDlMVy4DrysOW
+        m+5m4lxlzyr8nlDd2bUsdqdRouZRz5Moh67e8WK9lbHsGntwSgXTeIe0EQz+NpdQakywbeywtG7o
+        NjttB1YV3GEJj92b7+z3dXoqtLT6XNT5cfgd7yhXzCRVAhuGVAGecjSQDJ9vmy1McFqbRaXRpqch
+        ut8W/0Qt66/fqukOTGx0+Nzp7Rluy+zAd/s211ze1xXSTlL3zwrhmiy55t615JBqGDKuD2EpNSZK
+        bBreBiCWSynqUkZTeVWjZ2vahNMsUphmeiNIowjqqcRSb6/1ccR1KKGl2XeAOyzzcYKjXcfN3g7H
+        DQykPbS/w7aM/pzxEeV8mIMoFS265RI9Q3xk3+GJyKctpl2p4a/UqCkwib+97DMZlqs8qE93wbM8
+        6oU7Ru9WTkrxDltgZaQiobZsQadOjupAQFkUSk0BZhXXUUCvu+9Q8+jk3mIRx0+fsXgE3+YMIsW7
+        eX8kioxBUtsnbai3vYuO1yBLW1VNI4UmSedI1DGZ44PIPJNHJ3ibk4/4qEb09uzd69fzawSjTmD5
+        pKuW79jT/6AxzsNQZOW/l+Ie999vKAtuD042BxL7PjqcM96qvJhKS4jaIwNhPXm5sjlLjUeNjUxk
+        sx/ob5w6ElVFHL2TP/7wW6ZPRyxFlhby1FFMb2xbY2facxbTM8AOzvTGDuaT2dxzH/wtAN/2AzeY
+        ufVZTJBkjidtOh/VnqL8OsqQVqojVQ9hbI4YravFEZq5QGwmtkAxkxJB3zGMoz/pddWio3YFlL/s
+        6qGiiH6J2/Ot+2NcRfdPFahtVInqFRvqbO/o4fs/PjiPHt2bDw+YnjgxS+2Eeqm+jta8MDI4vPow
+        rjpH3OoAxhuND+eKMeTtWT0QUomJOZkEtnLqOp2li88iLNVJvNHr6+tf1clyzN8gAWjiwE3doVA6
+        MnRDwXjK3Pdnhx9FtZ5Ofdzu62jLY8XU7R99GO1PXXfPUMd8IWIVjcqCNSZEp83oDFVZJ94Qjkyx
+        He8vOlbbzKV5Za0+h+mcNzO5Ude7r+/FpxmsodrjwdrK/MPBHjujfEKF9Hkrjj28SZ1cfi+WDM6L
+        0WcUgu/h7oLaEkp3NocD3M1LGvb5pNSy85b6Mruhy90B1GaSGaMJM4XT1R4k9joJkSW1ekTp6/6v
+        gbwpkbKfxzFT+y8K1TjKt8jjuzPJdu3JmcM02mtQ+f8Fn2DTcPREAAA=
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-length:
+      - '5000'
+      content-type:
+      - application/vnd.citationstyles.csl+json
+      date:
+      - Fri, 23 Oct 2026 21:48:47 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept, Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.1016/j.actbio.2021.11.031
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://api.crossref.org/v1/works/10.1016%2Fj.actbio.2021.11.031/transform">https://api.crossref.org/v1/works/10.1016%2Fj.actbio.2021.11.031/transform</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4f3f2ac2ef94799-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Fri, 23 Oct 2026 21:48:47 GMT
+      expires:
+      - Fri, 23 Oct 2026 21:53:09 GMT
+      link:
+      - <https://dul.usage.elsevier.com/doi/>; rel=dul
+      - <https://dul.usage.elsevier.com/doi/>; rel=dul
+      location:
+      - https://api.crossref.org/v1/works/10.1016%2Fj.actbio.2021.11.031/transform
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=PkoVBjNvnvKrNVny%2FPCjOQtdvgmezTI%2BZbf78Qvjmns4u2KQmDS1bdplXgdCW414yb4QLpiFCcU84Lhk%2BE8IXR7y6hwXAbVFB9iVPQrULN4yMg93KoPRyIk%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/v1/works/10.1016%2Fj.actbio.2021.11.031/transform
+  response:
+    body:
+      string: !!binary |
+        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
+        ZLtva9cOw2ivQd7/ByEb5AKwTAAA
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-length:
+      - '5322'
+      content-type:
+      - application/vnd.citationstyles.csl+json
+      date:
+      - Fri, 23 Oct 2026 21:48:47 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept, Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1016/j.actbio.2021.09.033?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,3,6]],"date-time":"2026-03-06T07:27:44Z","timestamp":1772782064493,"version":"3.50.1"},"reference-count":40,"publisher":"Elsevier
+        BV","license":[{"start":{"date-parts":[[2022,3,1]],"date-time":"2022-03-01T00:00:00Z","timestamp":1646092800000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/tdm\/userlicense\/1.0\/"},{"start":{"date-parts":[[2022,3,1]],"date-time":"2022-03-01T00:00:00Z","timestamp":1646092800000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/legal\/tdmrep-license"},{"start":{"date-parts":[[2023,2,5]],"date-time":"2023-02-05T00:00:00Z","timestamp":1675555200000},"content-version":"am","delay-in-days":341,"URL":"http:\/\/www.elsevier.com\/open-access\/userlicense\/1.0\/"}],"funder":[{"DOI":"10.13039\/100000001","name":"National
+        Science Foundation","doi-asserted-by":"publisher","award":["1916663"],"award-info":[{"award-number":["1916663"]}],"id":[{"id":"10.13039\/100000001","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100000002","name":"National
+        Institutes of Health","doi-asserted-by":"publisher","award":["F31HL145976"],"award-info":[{"award-number":["F31HL145976"]}],"id":[{"id":"10.13039\/100000002","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100008562","name":"University
+        of Texas at Austin","doi-asserted-by":"publisher","id":[{"id":"10.13039\/100008562","id-type":"DOI","asserted-by":"publisher"}]}],"content-domain":{"domain":["elsevier.com","sciencedirect.com"],"crossmark-restriction":true},"short-container-title":["Acta
+        Biomaterialia"],"published-print":{"date-parts":[[2022,3]]},"DOI":"10.1016\/j.actbio.2021.09.033","type":"journal-article","created":{"date-parts":[[2021,9,22]],"date-time":"2021-09-22T02:35:14Z","timestamp":1632278114000},"page":"412-420","update-policy":"https:\/\/doi.org\/10.1016\/elsevier_cm_policy","source":"Crossref","is-referenced-by-count":15,"special_numbering":"C","title":["Biaxial
+        mechanics of thermally denaturing skin - Part 1: Experiments"],"prefix":"10.1016","volume":"140","author":[{"ORCID":"https:\/\/orcid.org\/0000-0001-5797-9553","authenticated-orcid":false,"given":"William
+        D.","family":"Meador","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0001-9904-5257","authenticated-orcid":false,"given":"Gabriella
+        P.","family":"Sugerman","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0001-8531-0603","authenticated-orcid":false,"given":"Adrian
+        Buganza","family":"Tepole","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0003-1337-6472","authenticated-orcid":false,"given":"Manuel
+        K.","family":"Rausch","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"78","reference":[{"issue":"2","key":"10.1016\/j.actbio.2021.09.033_bib0001","doi-asserted-by":"crossref","first-page":"551","DOI":"10.1016\/j.jmb.2004.12.001","article-title":"The
+        increase in denaturation temperature following cross-linking of collagen is
+        caused by dehydration of the fibres","volume":"346","author":"Miles","year":"2005","journal-title":"J.
+        Mol. Biol."},{"issue":"3","key":"10.1016\/j.actbio.2021.09.033_bib0002","doi-asserted-by":"crossref","first-page":"325","DOI":"10.1016\/S0968-4328(00)00034-2","article-title":"Thermally
+        labile domains in the collagen molecule","volume":"32","author":"Miles","year":"2001","journal-title":"Micron"},{"issue":"4","key":"10.1016\/j.actbio.2021.09.033_bib0003","doi-asserted-by":"crossref","first-page":"320","DOI":"10.3109\/02656736.2010.534527","article-title":"Thresholds
+        for thermal damage to normal tissues: an update","volume":"27","author":"Yarmolenko","year":"2011","journal-title":"International
+        Journal of Hyperthermia"},{"key":"10.1016\/j.actbio.2021.09.033_bib0004","doi-asserted-by":"crossref","first-page":"103595","DOI":"10.1016\/j.jmbbm.2019.103595","article-title":"Cartilage
+        and collagen mechanics under large-strain shear within in vivo and at supraphysiogical
+        temperatures","volume":"103","author":"Marshall","year":"2020","journal-title":"J
+        Mech Behav Biomed Mater"},{"issue":"1","key":"10.1016\/j.actbio.2021.09.033_bib0005","doi-asserted-by":"crossref","first-page":"109","DOI":"10.1146\/annurev.bioeng.4.101001.131546","article-title":"Denaturation
+        of collagen via heating: an irreversible rate process","volume":"4","author":"Wright","year":"2002","journal-title":"Annu
+        Rev Biomed Eng"},{"issue":"10","key":"10.1016\/j.actbio.2021.09.033_bib0006","doi-asserted-by":"crossref","first-page":"1234","DOI":"10.1109\/10.720201","article-title":"Phenomenological
+        evolution equations for heat-induced shrinkage of a collagenous tissue","volume":"45","author":"Chen","year":"1998","journal-title":"IEEE
+        Trans. Biomed. Eng."},{"key":"10.1016\/j.actbio.2021.09.033_bib0007","doi-asserted-by":"crossref","first-page":"372","DOI":"10.1115\/1.2798281","article-title":"Heat-induced
+        changes in the mechanics of a collagenous tissue: isothermal free shrinkage","volume":"119","author":"Chen","year":"1997","journal-title":"J
+        Biomech Eng"},{"key":"10.1016\/j.actbio.2021.09.033_bib0008","doi-asserted-by":"crossref","first-page":"382","DOI":"10.1115\/1.2798005","article-title":"Heat-induced
+        changes in the mechanics of a collagenous tissue: isothermal, isotonic shrinkage","volume":"120","author":"Chen","year":"1998","journal-title":"J
+        Biomech Eng"},{"issue":"3","key":"10.1016\/j.actbio.2021.09.033_bib0009","doi-asserted-by":"crossref","first-page":"381","DOI":"10.1115\/1.1567754","article-title":"Altered
+        mechanical behavior of epicardium due to isothermal heating under biaxial
+        isotonic loads","volume":"125","author":"Harris","year":"2003","journal-title":"J.
+        Biomech. Eng."},{"issue":"2","key":"10.1016\/j.actbio.2021.09.033_bib0010","doi-asserted-by":"crossref","first-page":"371","DOI":"10.1109\/TBME.2003.820375","article-title":"Kinetics
+        of thermal damage to a collagenous membrane under biaxial isotonic loading","volume":"51","author":"Harris","year":"2004","journal-title":"IEEE
+        Trans. Biomed. Eng."},{"issue":"3","key":"10.1016\/j.actbio.2021.09.033_bib0011","doi-asserted-by":"crossref","first-page":"194","DOI":"10.1007\/s13239-010-0018-2","article-title":"Radiofrequency
+        ablation directionally alters geometry and biomechanical compliance of mitral
+        valve leaflets: refinement of a novel percutaneous treatment strategy","volume":"1","author":"Price","year":"2010","journal-title":"Cardiovasc
+        Eng Technol"},{"issue":"9","key":"10.1016\/j.actbio.2021.09.033_bib0012","doi-asserted-by":"crossref","first-page":"1971","DOI":"10.1007\/s10439-012-0571-y","article-title":"Development
+        of a simultaneous cryo-anchoring and radiofrequency ablation catheter for
+        percutaneous treatment of mitral valve prolapse","volume":"40","author":"Boronyak","year":"2012","journal-title":"Ann
+        Biomed Eng"},{"issue":"1","key":"10.1016\/j.actbio.2021.09.033_bib0013","doi-asserted-by":"crossref","first-page":"237","DOI":"10.1007\/s11340-020-00662-w","article-title":"Radiofrequency
+        ablation alters the microstructural organization of healthy and enzymatically
+        digested porcine mitral valves","volume":"61","author":"Bender","year":"2021","journal-title":"Exp
+        Mech"},{"issue":"8","key":"10.1016\/j.actbio.2021.09.033_bib0014","doi-asserted-by":"crossref","first-page":"1356","DOI":"10.1177\/0363546506287824","article-title":"Thermal
+        capsulorrhaphy for the treatment of shoulder instability","volume":"34","author":"Miniaci","year":"2006","journal-title":"Am
+        J Sports Med"},{"key":"10.1016\/j.actbio.2021.09.033_bib0015","doi-asserted-by":"crossref","first-page":"59","DOI":"10.1097\/00003086-200109000-00009","article-title":"Thermal
+        capsulorrhaphy treatment of shoulder instability: basic science","volume":"390","author":"Hayashi","year":"2001","journal-title":"Clinical
+        Orthopaedics and Related Research\u00ae"},{"issue":"1","key":"10.1016\/j.actbio.2021.09.033_bib0016","doi-asserted-by":"crossref","first-page":"30","DOI":"10.1002\/ccd.25152","article-title":"First
+        human experience of thermal arterial closure","volume":"84","author":"Davidson","year":"2014","journal-title":"Catheterization
+        and Cardiovascular Interventions"},{"issue":"2","key":"10.1016\/j.actbio.2021.09.033_bib0017","doi-asserted-by":"crossref","first-page":"231","DOI":"10.1115\/1.1536177","article-title":"Continuum
+        thermomechanics and the clinical treatment of disease and injury","volume":"56","author":"Humphrey","year":"2003","journal-title":"Appl.
+        Mech. Rev."},{"key":"10.1016\/j.actbio.2021.09.033_bib0018","series-title":"Skin
+        biophysics: from experimental characterisation to advanced modelling, vol.\u00a022","author":"Limbert","year":"2019"},{"issue":"4","key":"10.1016\/j.actbio.2021.09.033_bib0019","doi-asserted-by":"crossref","first-page":"479","DOI":"10.1016\/j.det.2009.08.009","article-title":"Ablative
+        and fractional ablative lasers","volume":"27","author":"Brightman","year":"2009","journal-title":"Dermatol
+        Clin"},{"issue":"1","key":"10.1016\/j.actbio.2021.09.033_bib0020","doi-asserted-by":"crossref","first-page":"108","DOI":"10.1097\/01.bcr.0000191958.51354.cd","article-title":"Aesthetic
+        skin branding: a novel form of body art with adverse clinical sequela","volume":"27","author":"Karamanoukian","year":"2006","journal-title":"Journal
+        of burn care & research"},{"issue":"2","key":"10.1016\/j.actbio.2021.09.033_bib0021","doi-asserted-by":"crossref","first-page":"e0118131","DOI":"10.1371\/journal.pone.0118131","article-title":"Thermal
+        transport characteristics of human skin measured in vivo using ultrathin conformal
+        arrays of thermal sensors and actuators","volume":"10","author":"Webb","year":"2015","journal-title":"PLoS
+        ONE"},{"key":"10.1016\/j.actbio.2021.09.033_bib0022","doi-asserted-by":"crossref","first-page":"201","DOI":"10.1016\/j.jtherbio.2016.06.017","article-title":"Thermoelastic
+        modelling of the skin at finite deformations","volume":"62","author":"Bride","year":"2016","journal-title":"J.
+        Therm. Biol."},{"issue":"1912","key":"10.1016\/j.actbio.2021.09.033_bib0023","first-page":"679","article-title":"Strain
+        rate sensitivity of skin tissue under thermomechanical loading, philosophical
+        transactions of the royal society a: mathematical","volume":"368","author":"Zhou","year":"2010","journal-title":"Physical
+        and Engineering Sciences"},{"key":"10.1016\/j.actbio.2021.09.033_bib0024","doi-asserted-by":"crossref","unstructured":"F.
+        Xu, T. Lu, K. Seffen, Thermally-induced change in the relaxation behavior
+        of skin tissue, J Biomech Eng 131(7).","DOI":"10.1115\/1.3118766"},{"issue":"1","key":"10.1016\/j.actbio.2021.09.033_bib0025","doi-asserted-by":"crossref","first-page":"3","DOI":"10.1016\/j.jdermsci.2017.12.009","article-title":"Skin
+        wound healing in humans and mice: challenges in translational research","volume":"90","author":"Zomer","year":"2018","journal-title":"J.
+        Dermatol. Sci."},{"issue":"4","key":"10.1016\/j.actbio.2021.09.033_bib0026","first-page":"323","article-title":"Skin
+        mechanical properties and modeling: a review, proceedings of the institution
+        of mechanical engineers","volume":"232","author":"Joodaki","year":"2018","journal-title":"Part
+        H: Journal of Engineering in Medicine"},{"key":"10.1016\/j.actbio.2021.09.033_bib0027","doi-asserted-by":"crossref","first-page":"302","DOI":"10.1016\/j.actbio.2016.12.051","article-title":"A
+        novel microstructural interpretation for the biomechanics of mouse skin derived
+        from multiscale characterization","volume":"50","author":"Lynch","year":"2017","journal-title":"Acta
+        Biomater"},{"key":"10.1016\/j.actbio.2021.09.033_bib0028","doi-asserted-by":"crossref","first-page":"100","DOI":"10.1016\/j.actbio.2019.11.039","article-title":"A
+        detailed mechanical and microstructural analysis of ovine tricuspid valve
+        leaflets","volume":"102","author":"Meador","year":"2020","journal-title":"Acta
+        Biomater"},{"key":"10.1016\/j.actbio.2021.09.033_bib0029","doi-asserted-by":"crossref","first-page":"403","DOI":"10.1016\/j.actbio.2019.10.020","article-title":"The
+        regional-dependent biaxial behavior of young and aged mouse skin: a detailed
+        histomechanical characterization, residual strain analysis, and constitutive
+        model","volume":"101","author":"Meador","year":"2020","journal-title":"Acta
+        Biomater"},{"key":"10.1016\/j.actbio.2021.09.033_bib0030","doi-asserted-by":"crossref","first-page":"303","DOI":"10.1016\/j.actbio.2016.08.036","article-title":"Planar
+        biaxial testing of heart valve cusp replacement biomaterials: experiments,
+        theory and material constants","volume":"45","author":"Labrosse","year":"2016","journal-title":"Acta
+        Biomater"},{"key":"10.1016\/j.actbio.2021.09.033_bib0031","unstructured":"H.
+        Singmann, B. Bolker, J. Westfall, F. Aust, M.S. Ben-Shachar, Afex: Analysis
+        of Factorial Experiments, in: R package version 0., pp. 13\u2013145."},{"key":"10.1016\/j.actbio.2021.09.033_bib0032","doi-asserted-by":"crossref","first-page":"208","DOI":"10.1016\/j.actbio.2020.01.026","article-title":"Constitutive
+        description of skin dermis: through analytical continuum and coarse-grained
+        approaches for multi-scale understanding","volume":"106","author":"Pissarenko","year":"2020","journal-title":"Acta
+        Biomater"},{"issue":"12","key":"10.1016\/j.actbio.2021.09.033_bib0033","doi-asserted-by":"crossref","first-page":"1174","DOI":"10.1109\/10.42111","article-title":"Changes
+        in birefringence as markers of thermal damage in tissues","volume":"36","author":"Thomsen","year":"1989","journal-title":"IEEE
+        Trans. Biomed. Eng."},{"issue":"7","key":"10.1016\/j.actbio.2021.09.033_bib0034","doi-asserted-by":"crossref","first-page":"2620","DOI":"10.1529\/biophysj.106.085902","article-title":"Investigating
+        mechanisms of collagen thermal denaturation by high resolution second-harmonic
+        generation imaging","volume":"91","author":"Sun","year":"2006","journal-title":"Biophys.
+        J."},{"key":"10.1016\/j.actbio.2021.09.033_bib0035","doi-asserted-by":"crossref","first-page":"301","DOI":"10.1016\/S0065-3233(05)70009-7","article-title":"Molecular
+        structure of the collagen triple helix","volume":"70","author":"Brodsky","year":"2005","journal-title":"Adv.
+        Protein Chem."},{"issue":"10","key":"10.1016\/j.actbio.2021.09.033_bib0036","doi-asserted-by":"crossref","first-page":"1991","DOI":"10.1002\/bip.1976.360151010","article-title":"Thermal
+        properties of collagen in helical and random coiled states in the temperature
+        range from 4 to 300 k","volume":"15","author":"Andronikashvili","year":"1976","journal-title":"Biopolymers:
+        Original Research on Biomolecules"},{"key":"10.1016\/j.actbio.2021.09.033_bib0037","doi-asserted-by":"crossref","first-page":"12","DOI":"10.1016\/j.jmbbm.2015.10.006","article-title":"A
+        microstructurally inspired damage model for early venous thrombus","volume":"55","author":"Rausch","year":"2016","journal-title":"J
+        Mech Behav Biomed Mater"},{"issue":"1","key":"10.1016\/j.actbio.2021.09.033_bib0038","doi-asserted-by":"crossref","first-page":"1","DOI":"10.1038\/srep17635","article-title":"Ex
+        vivo multiscale quantitation of skin biomechanics in wild-type and genetically-modified
+        mice using multiphoton microscopy","volume":"5","author":"Bancelin","year":"2015","journal-title":"Sci
+        Rep"},{"issue":"1","key":"10.1016\/j.actbio.2021.09.033_bib0039","doi-asserted-by":"crossref","first-page":"275","DOI":"10.1007\/s10237-019-01210-9","article-title":"A
+        microstructurally inspired constitutive model for skin mechanics","volume":"19","author":"Chen","year":"2020","journal-title":"Biomech
+        Model Mechanobiol"},{"issue":"4","key":"10.1016\/j.actbio.2021.09.033_bib0040","doi-asserted-by":"crossref","first-page":"201","DOI":"10.1007\/s10237-005-0002-1","article-title":"Histological
+        evidence for the role of mechanical stress in modulating thermal denaturation
+        of collagen","volume":"4","author":"Wells","year":"2005","journal-title":"Biomech
+        Model Mechanobiol"}],"container-title":["Acta Biomaterialia"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S1742706121006218?httpAccept=text\/xml","content-type":"text\/xml","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S1742706121006218?httpAccept=text\/plain","content-type":"text\/plain","content-version":"vor","intended-application":"text-mining"}],"deposited":{"date-parts":[[2025,10,28]],"date-time":"2025-10-28T17:49:53Z","timestamp":1761673793000},"score":1,"resource":{"primary":{"URL":"https:\/\/linkinghub.elsevier.com\/retrieve\/pii\/S1742706121006218"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2022,3]]},"references-count":40,"alternative-id":["S1742706121006218"],"URL":"https:\/\/doi.org\/10.1016\/j.actbio.2021.09.033","relation":{"has-preprint":[{"id-type":"doi","id":"10.1101\/2021.06.04.447116","asserted-by":"object"}]},"ISSN":["1742-7061"],"issn-type":[{"value":"1742-7061","type":"print"}],"subject":[],"published":{"date-parts":[[2022,3]]},"assertion":[{"value":"Elsevier","name":"publisher","label":"This
+        article is maintained by"},{"value":"Biaxial mechanics of thermally denaturing
+        skin - Part 1: Experiments","name":"articletitle","label":"Article Title"},{"value":"Acta
+        Biomaterialia","name":"journaltitle","label":"Journal Title"},{"value":"https:\/\/doi.org\/10.1016\/j.actbio.2021.09.033","name":"articlelink","label":"CrossRef
+        DOI link to publisher maintained version"},{"value":"article","name":"content_type","label":"Content
+        Type"},{"value":"\u00a9 2021 Acta Materialia Inc. Published by Elsevier Ltd.
+        All rights reserved.","name":"copyright","label":"Copyright"}]}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '5044'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 21:48:47 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1016%2Fj.actbio.2021.09.033%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTYyMzA2NjY2NDAwMCwxMC4xMTAxJTJGMjAyMS4wNi4wNC40NDcxMTY=","total-results":1,"items":[{"DOI":"10.1101\/2021.06.04.447116","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.1016\/j.actbio.2021.09.033","asserted-by":"subject"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 21:48:48 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+version: 1

@@ -4,7 +4,8 @@ and the licences publishers deposit, for many works at once."""
 from __future__ import annotations
 
 import time
-from typing import Dict, List, Optional, Sequence
+from dataclasses import dataclass
+from typing import Dict, List, Optional, Sequence, Tuple
 from urllib.parse import quote
 
 import requests
@@ -38,6 +39,23 @@ def _wait(retry_state) -> float:
     return wait_exponential(multiplier=1, max=16)(retry_state)
 
 
+@dataclass(frozen=True)
+class CrossrefWork:
+    """What a DOI's own Crossref record says of what it is and what it is related to."""
+
+    doi: str
+    #: The DOI as its publisher spells it (`alternative-id`), when that differs only in case:
+    #: Crossref matches the DOI a relation names by case.
+    spellings: Tuple[str, ...]
+    #: Crossref's type: journal-article, posted-content (a preprint), proceedings-article, ...
+    type: Optional[str]
+    #: The DOIs this one is related to, by relation type (is-preprint-of, has-version, ...).
+    relations: Dict[str, Tuple[str, ...]]
+    #: The works this one is a Crossmark update to, as (DOI, update type): the work a
+    #: correction or a retraction is of, or the earlier edition a new version replaces.
+    updates: Tuple[Tuple[str, str], ...]
+
+
 class CrossrefClient:
     BASE_URL = "https://api.crossref.org/works/"
 
@@ -65,6 +83,22 @@ class CrossrefClient:
             return None
         response.raise_for_status()
         return response.json().get("message")
+
+    def record(self, doi: str) -> Optional[CrossrefWork]:
+        """The work's type, relations and updates; None when Crossref does not know the DOI."""
+        message = self.work(doi)
+        if message is None:
+            return None
+        return CrossrefWork(
+            doi=message["DOI"].lower(),
+            spellings=tuple(a for a in message.get("alternative-id") or ()
+                            if a.lower() == message["DOI"].lower()),
+            type=message.get("type"),
+            relations={kind: tuple(r["id"].lower() for r in related
+                                   if r.get("id-type") == "doi" and r.get("id"))
+                       for kind, related in (message.get("relation") or {}).items()},
+            updates=tuple((u["DOI"].lower(), u.get("type") or "")
+                          for u in message.get("update-to") or () if u.get("DOI")))
 
     @retry(stop=stop_after_attempt(4), wait=_wait, retry=retry_if_exception(transient),
            reraise=True)
