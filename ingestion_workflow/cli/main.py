@@ -970,6 +970,9 @@ def _render_refingerprint(found) -> str:
         if n is not None and n.unreachable:
             lines.append(f"  {stage}: {n.unreachable:,} stale and unreachable: no plan asks about "
                          "them, so they are left as they are")
+        if n is not None and n.failed_read:
+            lines.append(f"  {stage}: {n.failed_read:,} read from an extraction that has since "
+                         "failed: no plan asks about them, so they are left as they are")
     return "\n".join(lines)
 
 

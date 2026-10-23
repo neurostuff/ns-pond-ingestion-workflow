@@ -166,6 +166,9 @@ class StageCounts:
     #: Extractions left stale that no plan can ask about, the article having no download
     #: of their source. Reported; a run never reads them, so they are no reason to refuse.
     unreachable: int = 0
+    #: Passages and triage verdicts read from an extraction that has since failed: kept as
+    #: they are, with or without this repair. Reported; no reason to refuse.
+    failed_read: int = 0
 
 
 @dataclass
@@ -223,6 +226,7 @@ def refingerprint(ctx: Context, stages: Sequence[Stage], refs: Sequence[ArticleR
                     if read is not None and read.status is not Status.OK:
                         # The verdict stays while its extraction is failed, with or
                         # without this repair: no plan reads it, and nothing chains on it.
+                        counts.setdefault(stage.name, StageCounts()).failed_read += 1
                         continue
                     found = counts.setdefault(stage.name, StageCounts())
                     if artifact.stage == "extract" and artifact.source not in readable:

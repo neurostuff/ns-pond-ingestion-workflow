@@ -504,8 +504,11 @@ def test_a_verdict_read_from_an_extraction_that_failed_is_left_as_it_is(elsevier
     found = _refingerprint(elsevier, ref)
 
     assert found.stages["metadata"].filled == 1
-    assert "triage" not in found.stages
+    assert found.stages["triage"].failed_read == 1
+    assert found.stages["triage"].unasked == 0
     assert found.rerun() == {}
+    assert [line.split(":")[0].strip() for line in _render_refingerprint(found).splitlines()
+            if "failed" in line] == ["triage"]
 
 
 def test_passages_read_from_an_extraction_that_is_not_failed_still_stop_the_repair(elsevier):
@@ -567,6 +570,42 @@ def test_an_extraction_that_says_it_holds_no_text_is_stored(env):
 
     assert found.stages["extract"].filled == 1
     assert found.stages["extract"].empty_rerun == 0
+
+
+def test_an_extraction_imported_with_its_text_is_stored(env):
+    """Production, 2026-10-23: an import with no fingerprint whose text file is there is
+    the one a run would have made, and is stored."""
+    settings, catalog, stages, tmp_path = env
+    ref = catalog.register(Identifier(pmid="7", pmcid="PMC7"))
+    _download(catalog, ref, tmp_path)
+    text = tmp_path / f"{ref.id}.txt"
+    text.write_text(TEXT, encoding="utf-8")
+    catalog.record([Outcome(
+        article_id=ref.id, stage="extract", source="pubget",
+        payload={"full_text_path": str(text), "tables": [], "figure_captions": []},
+        summary={"migrated": True, "text_sha256": file_sha256(text),
+                 "captions_sha256": captions_digest(())})])
+    found = refingerprint(Context(settings, catalog), stages, [ref], catalog.empty_fingerprints())
+
+    assert found.stages["extract"].filled == 1
+    assert found.stages["extract"].empty_rerun == 0
+
+
+def test_an_extraction_whose_download_failed_is_not_unreachable(elsevier):
+    """A failed download still names the source the extraction was read from, as the stages
+    that choose among extractions count it. Planned with extract alone, as a later stage
+    asks about it otherwise, the stale extraction still stops the repair."""
+    settings, catalog, stages, tmp_path = elsevier
+    ref = _held(catalog, tmp_path, 7)
+    catalog.record([Outcome.failure(ref.id, "download", "ace", "did not return a payload")])
+    _stale_extraction(catalog, ref, "ace")
+    found = refingerprint(Context(settings, catalog),
+                          [s for s in stages if s.name in ("download", "extract")], [ref],
+                          catalog.empty_fingerprints())
+
+    assert found.stages["extract"].unreachable == 0
+    assert found.stages["extract"].unasked == 1
+    assert found.rerun() == {"extract": 1}
 
 
 def test_a_stage_that_blocks_on_its_model_still_stops_the_repair(migrated):
