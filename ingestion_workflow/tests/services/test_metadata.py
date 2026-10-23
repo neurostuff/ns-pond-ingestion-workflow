@@ -54,9 +54,9 @@ def _offline(service: MetadataService) -> MetadataService:
 
 
 def _enrich(service, contents, held=None):
-    """`enrich_metadata` with each content's identifier's DOI as the catalog's."""
-    dois = {c.slug: [c.identifier.doi] if c.identifier and c.identifier.doi else []
-            for c in contents}
+    """`enrich_metadata` with each content's identifier's DOIs as the catalog's."""
+    dois = {c.slug: [d for d in (c.identifier.doi, *c.identifier.preprint_dois) if d]
+            if c.identifier else [] for c in contents}
     return service.enrich_metadata(contents, held or {}, dois, NOW)
 
 

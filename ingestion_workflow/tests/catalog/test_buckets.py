@@ -126,9 +126,10 @@ def test_what_each_article_presents_is_what_it_presented_before(tmp_path):
     assert (paper.pmid, paper.doi, paper.preprint_dois) == (
         "38345852", "10.7554/elife.92563", ("10.1101/2023.09.27.559792",))
     assert (paper.preprint_pmids, paper.preprint_pmcids) == (("37808793",), ("PMC10592780",))
-    # known only by its preprint's DOI, it is asked by it as before, and is a preprint
-    assert (only.doi, only.preprint_dois, only.publication_status) == (
-        "10.1101/2025.05.13.653896", ("10.1101/2025.05.13.653896",), "preprint")
+    # known only by its preprint's DOI: it has no version of record's, is asked by the
+    # preprint's as before, and is a preprint
+    assert (only.doi, only.asking_doi, only.preprint_dois, only.publication_status) == (
+        None, "10.1101/2025.05.13.653896", ("10.1101/2025.05.13.653896",), "preprint")
     assert (elife.doi, elife.alternative_dois, elife.preprint_dois) == (
         "10.7554/elife.106070", ("10.7554/elife.106070.1",), ("10.1101/2025.02.05.636581",))
     assert (twice.pmid, twice.alternative_pmids, twice.alternative_pmcids) == (
@@ -199,6 +200,33 @@ def test_the_version_of_record_s_id_anchors_before_the_preprint_s(catalog):
     assert catalog.conflicts >= 1
 
 
+def test_the_preprint_s_id_anchors_before_the_base_study(catalog):
+    based = catalog.register(Identifier(pmid="38345852", neurostore="8YJSSriJx23a"))
+    preprint = catalog.register(Identifier(pmid="38345853",
+                                           preprint_dois=["10.1101/2023.09.27.559792"]))
+
+    ref = catalog.register(Identifier(neurostore="8YJSSriJx23a",
+                                      preprint_dois=["10.1101/2023.09.27.559792"]))
+
+    # two PMIDs would be fused if both joined, so the record stays with the one it anchored on
+    assert ref.id == preprint.id != based.id
+    assert catalog.aliases(based.id, "neurostore") == ["8YJSSriJx23a"]
+
+
+def test_several_preprint_records_of_one_paper_are_held_together(catalog):
+    """A paper on bioRxiv and Research Square has a PubMed record of each."""
+    ref = catalog.register(Identifier(
+        preprint_dois=["10.1101/2019.12.17.19014415", "10.21203/rs.3.rs-2556690/v2"],
+        preprint_pmids=["34845462", "36000001"], preprint_pmcids=["PMC8629206", "PMC9000001"]))
+
+    held = catalog.identifier(ref.id)
+    assert held.preprint_pmids == ("34845462", "36000001")
+    assert held.preprint_pmcids == ("PMC8629206", "PMC9000001")
+    assert catalog.conflicts == 0
+    from ingestion_workflow.catalog.invariants import suspects
+    assert ref.id not in suspects(catalog)
+
+
 def test_two_articles_one_paper_s_preprint_and_journal_ids_join_when_compatible(catalog):
     preprint = catalog.register(Identifier(preprint_dois=["10.1101/2023.10.21.563317"]))
     paper = catalog.register(Identifier(pmid="37961286", doi="10.1016/j.neuroimage.2023.120450"))
@@ -236,15 +264,18 @@ def test_an_id_held_as_the_version_of_record_s_is_found_when_given_as_a_preprint
     assert catalog.aliases(held.id, "doi") == ["10.7554/elife.92563"]
 
 
-def test_a_second_doi_row_is_presented_as_an_alternative_not_lost(catalog):
+def test_a_second_doi_row_is_held_but_is_no_alternative_until_a_repair_says_so(catalog):
     ref = catalog.register(Identifier(pmid="22848644", doi="10.1371/journal.pone.0041873"))
     catalog._conn.execute("INSERT INTO aliases VALUES('doi', '10.1002/hbm.25137', ?)", (ref.id,))
 
     held = catalog.identifier(ref.id)
 
-    # the shorter is presented, as before; the other is the paper's too
+    # the shorter is presented, as before. The other is not called the paper's: of 298
+    # articles holding two, most are two works, and a parse of one refuses.
     assert held.doi == "10.1002/hbm.25137"
-    assert held.alternative_dois == ("10.1371/journal.pone.0041873",)
+    assert held.alternative_dois == ()
+    assert sorted(catalog.aliases(ref.id, "doi")) == [
+        "10.1002/hbm.25137", "10.1371/journal.pone.0041873"]
 
 
 def test_an_article_known_only_by_a_preprint_is_named_by_it(catalog):
@@ -254,3 +285,48 @@ def test_an_article_known_only_by_a_preprint_is_named_by_it(catalog):
     with pytest.raises(IdentityError, match="no pmcid, pmid, doi, preprint_doi"):
         catalog.remove_aliases([("preprint_doi", "10.1101/2025.05.13.653896", ref.id)])
     assert catalog.aliases(ref.id, "preprint_doi") == ["10.1101/2025.05.13.653896"]
+
+
+# -- the header of what the catalog holds ------------------------------------------------
+
+def _header_identifiers(identifier):
+    from ingestion_workflow.models import ArticleMetadata
+    from ingestion_workflow.services.paper_parse import article_identifiers
+
+    return article_identifiers(identifier, [], ArticleMetadata(title="T"))
+
+
+def test_an_elife_doi_the_catalog_holds_as_a_preprint_s_is_never_the_version_of_record_s(catalog):
+    """10.7554/eLife.112197 shares its prefix with eLife's journal, so no pattern files it;
+    once a repair or the Crossref lookup files it, the header must not repeat it as `doi`."""
+    ref = catalog.register(Identifier(preprint_dois=["10.7554/elife.112197"]))
+    held = catalog.identifier(ref.id)
+    header = _header_identifiers(held)
+
+    assert held.doi is None and held.preprint_dois == ("10.7554/elife.112197",)
+    assert header.doi is None
+    assert [(p.doi, p.server) for p in header.preprint_dois] == [
+        ("10.7554/elife.112197", "elife")]
+    assert header.publication_status == "preprint"
+
+
+def test_a_preprint_only_article_is_headed_as_a_preprint_with_no_doi(catalog):
+    ref = catalog.register(Identifier(doi="10.1101/2023.02.15.528738"))
+
+    header = _header_identifiers(catalog.identifier(ref.id))
+
+    assert header.doi is None
+    assert [p.doi for p in header.preprint_dois] == ["10.1101/2023.02.15.528738"]
+    assert header.publication_status == "preprint"
+
+
+def test_crossref_and_openalex_are_asked_by_the_journal_s_doi_and_each_preprint_s(catalog):
+    """dpl6phhniqbj: 1,581 articles hold a journal DOI beside a preprint's; an alternative
+    is not asked."""
+    from ingestion_workflow.pipeline.stages.metadata import held_dois
+
+    ref = catalog.register(Identifier(
+        doi="10.7554/elife.106070", preprint_dois=["10.1101/2025.02.05.636581"],
+        alternative_dois=["10.7554/elife.106070.1"]))
+
+    assert held_dois(catalog, ref.id) == ["10.7554/elife.106070", "10.1101/2025.02.05.636581"]

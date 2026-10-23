@@ -345,13 +345,13 @@ def test_a_pmid_and_a_pmcid_are_held_as_the_preprint_s(catalog):
     assert catalog.resolve(Identifier(pmcid="PMC10592780")).id == a
 
 
-def test_a_move_may_not_give_an_article_two_preprint_pmids(catalog):
+def test_a_move_may_give_an_article_two_preprint_pmids(catalog):
     a = catalog.register(Identifier(doi="10.7554/elife.92563", pmid="38345852")).id
     _hold(catalog, a, "preprint_pmid", "37808794")
     b = catalog.register(Identifier(doi="10.1101/2023.09.27.559792")).id
     _hold(catalog, b, "preprint_pmid", "37808793")
-    with pytest.raises(IdentityError, match="two preprint_pmids"):
-        catalog.reassign_aliases([("preprint_pmid", "37808793", b, a)])
+    catalog.reassign_aliases([("preprint_pmid", "37808793", b, a)])
+    assert catalog.aliases(a, "preprint_pmid") == ["37808793", "37808794"]
 
 
 def test_a_rekind_may_not_leave_an_article_without_a_paper_id(catalog):
@@ -361,12 +361,12 @@ def test_a_rekind_may_not_leave_an_article_without_a_paper_id(catalog):
     assert catalog.aliases(a, "pmid") == ["37808793"]
 
 
-def test_a_rekind_may_not_give_an_article_two_preprint_pmids(catalog):
+def test_a_rekind_may_give_an_article_two_preprint_pmids(catalog):
     a = catalog.register(Identifier(doi="10.7554/elife.92563", pmid="38345852")).id
     _hold(catalog, a, "preprint_pmid", "37808794")
     _hold(catalog, a, "pmid", "37808793")
-    with pytest.raises(IdentityError, match="two preprint_pmids"):
-        catalog.rekind_aliases([("pmid", "37808793", a)])
+    catalog.rekind_aliases([("pmid", "37808793", a)])
+    assert catalog.aliases(a, "preprint_pmid") == ["37808793", "37808794"]
 
 
 def test_only_the_article_s_alias_is_rekinded(catalog):
@@ -396,7 +396,7 @@ def test_a_removed_preprint_pmid_is_put_back(catalog):
     assert catalog.aliases(a, "preprint_pmid") == ["37808793"]
 
 
-def test_merge_refuses_two_base_studies_or_two_preprint_pmids(catalog):
+def test_merge_refuses_two_base_studies_and_keeps_two_preprint_pmids(catalog):
     # bqb4eprbjxw7 came of two articles holding one base study each.
     a = catalog.register(
         Identifier(doi="10.1016/j.pnpbp.2026.111696", neurostore="8YJSSriJx23a")).id
@@ -407,8 +407,8 @@ def test_merge_refuses_two_base_studies_or_two_preprint_pmids(catalog):
     _hold(catalog, c, "preprint_pmid", "37808793")
     d = catalog.register(Identifier(pmcid="PMC10942577")).id
     _hold(catalog, d, "preprint_pmid", "37808794")
-    with pytest.raises(IdentityError, match="would hold two"):
-        catalog.merge([c, d])
+    survivor = catalog.merge([c, d])
+    assert catalog.aliases(survivor, "preprint_pmid") == ["37808793", "37808794"]
 
 
 def test_merge_carries_exclusions_and_attempts(catalog):

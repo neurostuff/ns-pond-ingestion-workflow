@@ -82,7 +82,7 @@ class NoticesStage:
         attempts = ctx.catalog.attempt_counts([ref.id for ref in refs], self.name, "")
         max_age = timedelta(days=self.settings.notices_max_age_days)
         for ref in refs:
-            pmids, doi = ref.identifier.pmids, ref.identifier.doi
+            pmids, doi = ref.identifier.pmids, ref.identifier.asking_doi
             found = upstream.get(ref.id, {}).get("")
             if not (pmids or doi) or found is None or found.status is not Status.OK:
                 plan.blocked += 1
@@ -112,7 +112,7 @@ class NoticesStage:
             return getattr(exc, "found", {}), exc
 
     def _openalex_retracted(self, works: List[Work]) -> Tuple[Dict[str, bool], Optional[Exception]]:
-        dois = [work.ref.identifier.doi for work in works if work.ref.identifier.doi]
+        dois = [work.ref.identifier.asking_doi for work in works if work.ref.identifier.asking_doi]
         if not dois or self.openalex is None:
             return {}, None
         try:
@@ -128,7 +128,7 @@ class NoticesStage:
             ident = work.ref.identifier
             pmid = str(ident.pmid) if ident.pmid else None
             answered = [p for p in ident.pmids if p in pubmed]
-            doi = ident.doi or ""
+            doi = ident.asking_doi or ""
             # Each source answers what it can: a failure is the paper's only
             # when the other source has nothing for it.
             from_pubmed = bool(answered)

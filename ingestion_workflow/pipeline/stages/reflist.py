@@ -54,7 +54,7 @@ class ReflistStage:
         plan = StagePlan(stage=self.name)
         attempts = ctx.catalog.attempt_counts([ref.id for ref in refs], self.name, "")
         for ref in refs:
-            doi = ref.identifier.doi
+            doi = ref.identifier.asking_doi
             downloaded = any(a.status is Status.OK for a in upstream.get(ref.id, {}).values())
             if not doi or not downloaded:
                 plan.blocked += 1
@@ -76,7 +76,7 @@ class ReflistStage:
 
         crossref, openalex = self.clients()
         for work in works:
-            doi = work.ref.identifier.doi
+            doi = work.ref.identifier.asking_doi
             try:
                 message = crossref.work(doi)
             except Exception as exc:  # noqa: BLE001 - retried by the scheduler's backoff

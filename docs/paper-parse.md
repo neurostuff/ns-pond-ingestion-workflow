@@ -86,9 +86,9 @@ triage rejected keeps that reading.
   buckets. `doi`, `pmid` and `pmcid` are the version of record's. A DOI that
   `utils/preprints.py` names a preprint server for is in `preprint_dois` with its server, and
   so is an eLife DOI the catalog holds as a preprint's, which no pattern can tell from eLife's
-  journal DOIs. Every other id of the paper is in `alternative_dois`, `alternative_pmids` or
-  `alternative_pmcids`; a second DOI of the version of record is one of them, and does not fail
-  the parse.
+  journal DOIs. Every other id the catalog holds as the paper's is in `alternative_dois`,
+  `alternative_pmids` or `alternative_pmcids`. An article with two `doi` rows is not parsed:
+  one may be the other's alternative or another paper's, and only an identity repair says.
 - A PMID whose PubMed record is typed `Preprint` is in `preprint_pmids`, and the PMCID that
   record lists is in `preprint_pmcids`.
 - `publication_status` is `preprint` when only a preprint's identifiers are known, and

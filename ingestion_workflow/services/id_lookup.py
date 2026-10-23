@@ -56,7 +56,7 @@ class IDLookupService:
 
         any_success = False
         for id_type in self.lookup_order:
-            subset = [identifier for identifier in pending if getattr(identifier, id_type)]
+            subset = [identifier for identifier in pending if identifier.asking(id_type)]
             if not subset:
                 continue
 
@@ -167,9 +167,9 @@ class IDLookupService:
         error: Exception,
     ) -> None:
         values = [
-            str(getattr(identifier, id_type))
+            str(identifier.asking(id_type))
             for identifier in identifiers
-            if getattr(identifier, id_type)
+            if identifier.asking(id_type)
         ]
         self.logger.warning(
             "Failed %s lookup for %s (provider=%s): %s",

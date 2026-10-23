@@ -44,9 +44,10 @@ def test_two_of_a_kind_are_violations_and_suspects(checked):
 
     one_each = {"journal-dois", "pmids", "pmcids", "preprint-pmids", "base-studies"}
     found = [v for v in violations(checked, [a, b, c, d]) if v.rule in one_each]
+    # a paper indexed on two preprint servers has a PubMed record of each
     assert _rules(found) == sorted(
-        [(a, "journal-dois"), (b, "pmcids"), (c, "base-studies"), (d, "preprint-pmids")])
-    assert suspects(checked) == {a, b, c, d}
+        [(a, "journal-dois"), (b, "pmcids"), (c, "base-studies")])
+    assert suspects(checked) == {a, b, c}
 
 
 @pytest.mark.vcr()
@@ -533,11 +534,12 @@ def test_a_preprint_pmid_s_doi_held_as_an_alternate_is_no_version_of_record_s(ch
 
 
 @pytest.mark.vcr()
-def test_two_preprint_pmcids_are_a_violation(checked):
+def test_several_preprint_pmcids_are_no_violation(checked):
     a = checked.register(Identifier(doi="10.7554/elife.92563")).id
     _hold(checked, a, "preprint_pmcid", "PMC10634801")
     _hold(checked, a, "preprint_pmcid", "PMC10634864")
-    assert (a, "preprint-pmcids") in _rules(violations(checked, [a]))
+    assert "preprint-pmcids" not in [v.rule for v in violations(checked, [a])]
+    assert a not in suspects(checked)
 
 
 @pytest.mark.vcr()

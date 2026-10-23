@@ -110,7 +110,7 @@ def _pdf_copy(result: DownloadResult) -> DownloadCopy:
     # locations on the same site may (`pdf_extractor.site_type`).
     location_type = (attempt.get("location_type") if attempt.get("location_type") in _PDF_LOCATIONS
                      else attempt.get("site_type"))
-    route, version, server = located(url, result.identifier.doi,
+    route, version, server = located(url, result.identifier.asking_doi,
                                      OPENALEX_VERSIONS.get(str(attempt.get("version"))),
                                      location_type)
     return DownloadCopy(route=route, version=version, access=CopyAccess.public, url=url,

@@ -106,6 +106,17 @@ def test_pubmed_lookup_restores_missing_ids(
     assert restored.pmcid == original.pmcid
 
 
+def test_a_preprint_only_paper_with_a_pmid_and_a_pmcid_still_needs_its_journal_doi(tmp_path):
+    """4,276 catalog articles hold a preprint's DOI and a PMID or PMCID but no version of
+    record's DOI; PubMed may give the journal's."""
+    service = _DummyLookup(_settings(tmp_path))
+    preprint_only = Identifier(pmid="40462995", pmcid="PMC12132522",
+                               doi="10.1101/2025.05.13.653896")
+    assert not service._is_complete(preprint_only)
+    assert service._is_complete(Identifier(pmid="40462995", pmcid="PMC12132522",
+                                           doi="10.1016/j.neuroimage.2025.121234"))
+
+
 def test_hydrate_carries_the_catalog_s_preprint_and_alternative_ids(tmp_path):
     settings = _settings(tmp_path)
     with Catalog.open(settings.catalog_root) as catalog:

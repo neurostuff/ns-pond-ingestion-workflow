@@ -258,7 +258,7 @@ class MetadataService:
             main = {item.slug: _by_journal_doi(item.identifier, journal[item.slug])
                     for item in identified_items}
             extra = [ident for item in identified_items for d, ident in by_doi[item.slug]
-                     if d != main[item.slug].doi]
+                     if d != main[item.slug].asking_doi]
             openalex = self._get_openalex_metadata_cached(
                 list({i.slug: i for i in [*main.values(), *extra]}.values()), unanswered)
             merge({item.identifier.slug: openalex[main[item.slug].slug]
@@ -309,9 +309,10 @@ class MetadataService:
                 metadata.raw_metadata["crossref"] = crossref_by_doi
             if works:
                 metadata.raw_metadata["openalex"] = works
-            ids = article_identifiers(item.identifier, metadata)
+            ids = article_identifiers(item.identifier, [journal[slug]] if journal[slug] else [],
+                                      metadata)
             try:
-                _decide_licenses(metadata, ids, item.identifier.doi, crossref_by_doi, works,
+                _decide_licenses(metadata, ids, item.identifier.asking_doi, crossref_by_doi, works,
                                  paper_work, answers.get(slug, {}), held.get(slug, ()), waiting, now)
             except Undecided as exc:
                 self.undecided[slug] = exc

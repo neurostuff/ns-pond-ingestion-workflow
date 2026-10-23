@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 from collections.abc import MutableMapping
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Optional, Tuple
 
@@ -47,8 +47,7 @@ def _bucket(name: str, values: Optional[Iterable[str]]) -> Tuple[str, ...]:
 class Identifier(MutableMapping[str, Optional[str]]):
     neurostore: Optional[str] = None
     pmid: Optional[str] = None
-    #: The DOI a provider is asked by: the version of record's, else a preprint's. A
-    #: preprint's is also in `preprint_dois`; `routed` files it there and only there.
+    #: The version of record's DOI, never a preprint's: those are `preprint_dois`.
     doi: Optional[str] = None
     pmcid: Optional[str] = None
     other_ids: Optional[dict[str, str]] = None
@@ -70,6 +69,12 @@ class Identifier(MutableMapping[str, Optional[str]]):
         # every reader, the catalog included, sees the canonical id.
         if name == "doi":
             value = normalize_doi(value) if value else None
+            # `doi` is never a preprint server's, whoever gives it: providers hand over a
+            # record's DOI whichever it is, and the registry files it. (Before construction
+            # is done the buckets do not exist; `normalize` files it then.)
+            if value and "preprint_dois" in self.__dict__ and is_preprint_doi(value):
+                self.preprint_dois = (*self.preprint_dois, value)
+                return
         elif name == "pmcid":
             value = normalize_pmcid(value)
         elif name == "pmid":
@@ -78,22 +83,18 @@ class Identifier(MutableMapping[str, Optional[str]]):
             value = _bucket(name, value)
         super().__setattr__(name, value)
 
-    def routed(self) -> "Identifier":
-        """A copy with each DOI a preprint server registered filed as the preprint's.
+    @property
+    def asking_doi(self) -> Optional[str]:
+        """The DOI to ask a provider by: the version of record's, else the preprint's (of
+        several, the shortest, then the lowest).
 
-        Providers hand over a record's DOI as `doi` whichever it is, and clients ask by
-        `doi`; the catalog and the parse header take the one answer from here, so no
-        producer has to know the registry.
+        `doi` itself is the version of record's only, so a preprint-only paper has none.
         """
-        routed = {name: set(getattr(self, name)) for name in BUCKETS}
-        doi = self.doi
-        if doi and (is_preprint_doi(doi) or doi in routed["preprint_dois"]):
-            routed["preprint_dois"].add(doi)
-            doi = None
-        moved = {d for d in routed["alternative_dois"] if is_preprint_doi(d)}
-        routed["preprint_dois"] |= moved
-        routed["alternative_dois"] -= moved
-        return replace(self, doi=doi, **routed)
+        return self.doi or min(self.preprint_dois, key=lambda d: (len(d), d), default=None)
+
+    def asking(self, id_type: str) -> Optional[str]:
+        """The id of `id_type` to ask a provider by: `asking_doi` for a DOI, else the field."""
+        return self.asking_doi if id_type == "doi" else getattr(self, id_type)
 
     @property
     def pmids(self) -> List[str]:
@@ -107,10 +108,8 @@ class Identifier(MutableMapping[str, Optional[str]]):
         An alternative id never makes a paper published: it may be a preprint's other
         version.
         """
-        routed = self.routed()
-        held = routed.preprint_dois or routed.preprint_pmids or routed.preprint_pmcids
-        return ("preprint" if held and not (routed.doi or routed.pmid or routed.pmcid)
-                else "published")
+        held = self.preprint_dois or self.preprint_pmids or self.preprint_pmcids
+        return "preprint" if held and not (self.doi or self.pmid or self.pmcid) else "published"
 
     def make_slug(self) -> str:
         """Create a slugable representation of the identifiers.
@@ -120,7 +119,7 @@ class Identifier(MutableMapping[str, Optional[str]]):
         """
         id_parts = [
             self.pmid or next(iter(self.preprint_pmids), ""),
-            self.doi or min(self.preprint_dois, key=lambda d: (len(d), d), default=""),
+            self.asking_doi or "",
             self.pmcid or next(iter(self.preprint_pmcids), ""),
         ]
         # replace slashes to avoid path issues
@@ -135,14 +134,15 @@ class Identifier(MutableMapping[str, Optional[str]]):
         """Normalize identifier fields.
 
         An id is in one slot only: the version of record's, else a preprint's, else an
-        alternative. The one exception is `doi` standing for a preprint's, which stays in
-        `preprint_dois` too.
+        alternative. A preprint server's DOI given as `doi` is the preprint's.
         """
         buckets = {name: set(getattr(self, name)) for name in BUCKETS}
+        if self.doi and is_preprint_doi(self.doi):
+            buckets["preprint_dois"].add(self.doi)
+            self.doi = None
         for kind, vor in _VERSION_OF_RECORD.items():
             held = {getattr(self, vor)} - {None}
-            if kind != "dois":
-                buckets[f"preprint_{kind}"] -= held
+            buckets[f"preprint_{kind}"] -= held
             buckets[f"alternative_{kind}"] -= held | buckets[f"preprint_{kind}"]
         for name, values in buckets.items():
             setattr(self, name, values)
@@ -325,7 +325,7 @@ class Identifiers:
         if not self._index_keys:
             return
         for key in self._index_keys:
-            value = getattr(identifier, key)
+            value = identifier.asking(key)
             if value:
                 normalized = self._normalize_for_key(key, value)
                 if normalized:
@@ -335,7 +335,7 @@ class Identifiers:
         if not self._index_keys:
             return
         for key in self._index_keys:
-            value = getattr(identifier, key)
+            value = identifier.asking(key)
             if value:
                 normalized = self._normalize_for_key(key, value)
                 if normalized:

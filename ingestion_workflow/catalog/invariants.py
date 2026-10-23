@@ -54,8 +54,7 @@ _PMC_DIR = re.compile(r"pmcid_(\d+)/")
 _ELSEVIER_DOI = re.compile(r"<prism:doi>\s*([^<\s]+)")
 _JATS_DOI = re.compile(r"<article-id[^>]*pub-id-type=\"doi\"[^>]*>\s*([^<\s]+)")
 
-_ONE_EACH = (("pmids", "pmid"), ("pmcids", "pmcid"), ("preprint-pmids", "preprint_pmid"),
-             ("preprint-pmcids", "preprint_pmcid"), ("base-studies", "neurostore"))
+_ONE_EACH = (("pmids", "pmid"), ("pmcids", "pmcid"), ("base-studies", "neurostore"))
 
 
 @dataclass(frozen=True)
@@ -75,16 +74,17 @@ class Unreadable(Exception):
 
 def suspects(catalog: Catalog) -> Set[str]:
     """Every live article holding two of an id kind other than the alternative kinds and a
-    preprint's DOI, of which a paper has one for each version a server registers.
+    preprint's ids, of which a paper has one for each server that registers it.
 
     Only these can break the one-of-a-kind rules, so they are checked with the
     articles a repair touched, which covers those rules for the whole catalog.
     """
     rows = catalog._conn.execute(
         "SELECT a.article_id FROM aliases a JOIN articles r ON r.id = a.article_id "
-        "WHERE r.merged_into IS NULL AND a.kind NOT IN (?, ?, ?, ?) "
+        "WHERE r.merged_into IS NULL AND a.kind NOT IN (?, ?, ?, ?, ?, ?) "
         "GROUP BY a.article_id, a.kind HAVING COUNT(*) > 1",
-        ("alternative_doi", "alternative_pmid", "alternative_pmcid", "preprint_doi"))
+        ("alternative_doi", "alternative_pmid", "alternative_pmcid", "preprint_doi",
+         "preprint_pmid", "preprint_pmcid"))
     return {row[0] for row in rows}
 
 

@@ -205,9 +205,13 @@ study_schema have:
   publisher's earlier DOI. There is no kind for why.
 
 Each of these finds the article, whichever kind it is looked up as. An article presents the
-version of record's `doi`; one known only by a preprint is presented by the preprint's DOI,
-which providers are asked by, and is a `preprint`. A PubMed or PMC record of a preprint
-is `preprint_pmid` or `preprint_pmcid` only once it is filed as one.
+version of record's `doi`, which is never a preprint's; one known only by a preprint has
+none, and providers are asked by `Identifier.asking_doi` (the version of record's, else the
+preprint's). A paper may hold several `preprint_pmid` and `preprint_pmcid` (one for each
+preprint server that indexes it). An alternative is only what the catalog holds as one: a
+second plain `doi` row is another version-of-record DOI, which a repair settles, and sync
+refuses to parse the article until then. A PubMed or PMC record of a preprint is a
+`preprint_pmid` or `preprint_pmcid` only once it is filed as one.
 
 Catalog schema 4 holds the ids this way. Opening an older catalog copies it first
 (`catalog.pre-v<n>.sqlite`), then moves each preprint server's DOI from `doi` to `preprint_doi`
@@ -368,6 +372,10 @@ nohup ingest run -c my_config.yaml -m staging/manifests/tbss-2006.jsonl \
 (`POST <neurostore_api_url>/api/study-schema-uploads/`) with the admin token from
 the environment variable `NEUROSTORE_TOKEN` (only from there: it is not a setting
 and is not read from `.env`):
+
+Sync writes study_schema paper-parse 0.9.0 headers. Do not set `neurostore_api_url` against a
+neurostore that still pins an older study_schema (`extra=forbid`): it refuses each paper, and a
+refusal is recorded as that paper's and not retried until its parse changes.
 
 ```yaml
 neurostore_api_url: https://staging.neurostore.xyz   # or https://neurostore.org

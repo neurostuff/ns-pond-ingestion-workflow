@@ -1,3 +1,5 @@
+# Composed, not recorded: a proxy's 502 to every try and to the health check, which the local neurostore (served by uvicorn, no proxy) cannot give. The request is the fixture paper's, from test_a_parse_and_its_parsed_paper_are_posted_as_sync_wrote_them.
+# Request bodies composed, not recorded, for study_schema 0.9.0 (paper_parse.9): each is the 0.8.0 body carried to the 0.9.0 header (identifiers in buckets, corresponding_authors). The responses were recorded, or composed, for the 0.6.0 bodies against neurostore on study_schema 2cc7bec, which would refuse these. Re-record against a local neurostore on neurostore-preprint-base-study (study_schema main) before relying on them.
 interactions:
 - &id001
   request:
@@ -24,7 +26,7 @@ interactions:
       connection:
       - keep-alive
       content-length:
-      - '7404'
+      - '7587'
       content-type:
       - application/json
       host:

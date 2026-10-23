@@ -48,7 +48,7 @@ class BaseExtractor:
         """Whether this source can look the article up with the ids we hold."""
         if not self._SUPPORTED_IDS:
             return True
-        return any(getattr(identifier, str(field), None) for field in self._SUPPORTED_IDS)
+        return any(identifier.asking(str(field)) for field in self._SUPPORTED_IDS)
 
     def download(
         self,

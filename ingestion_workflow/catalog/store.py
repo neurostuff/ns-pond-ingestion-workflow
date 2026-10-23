@@ -29,7 +29,7 @@ from typing import (
 
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.utils.doi import normalize_doi
-from ingestion_workflow.utils.preprints import is_preprint_doi, preprint_server
+from ingestion_workflow.utils.preprints import preprint_server
 
 from .backup import backup
 from .blobs import BlobStore
@@ -102,33 +102,22 @@ def _article_id(seed: str) -> str:
 def _presented(aliases: Sequence[Tuple[str, str]]) -> Identifier:
     """The Identifier an article presents, from its alias rows.
 
-    Each bucket is presented whole; `doi` is the DOI providers are asked by, the version of
-    record's else the preprint's (`Identifier.routed` files it again). Of two ids of a kind of the version of record's, which
-    the invariants report, the lowest is presented and the other is an alternative of the
-    paper's, so that none is lost from the identifiers.
+    Each bucket is presented whole. Of two ids of a kind of the version of record's, which
+    the invariants report, the lowest is presented, and the other is held but not presented:
+    only a repair says whether it is the paper's alternative or another paper's.
     """
     held: Dict[str, List[str]] = {}
     for kind, value in aliases:
         held.setdefault(kind, []).append(value)
     for values in held.values():
         values.sort(key=lambda v: (len(v), v))
-    fields: Dict[str, object] = {}
-    for kind in ALIAS_KINDS:
-        if kind in SECOND_KINDS:
-            fields[field_of(kind)] = held.get(kind, [])
-        else:
-            fields[kind] = (held.get(kind) or [None])[0]
-    for kind in ("pmid", "pmcid", "doi"):
-        fields[f"alternative_{kind}s"] += held.get(kind, [])[1:]
-    if not fields["doi"] and fields["preprint_dois"]:
-        # Providers are asked by `doi`; a preprint-only paper is asked by its preprint's.
-        fields["doi"] = fields["preprint_dois"][0]
-    return Identifier(**fields)
+    return Identifier(**{
+        field_of(kind): held.get(kind, []) if kind in SECOND_KINDS else (held.get(kind) or [None])[0]
+        for kind in ALIAS_KINDS})
 
 
 def _alias_pairs(identifier: Identifier) -> List[Tuple[str, str]]:
     pairs = []
-    identifier = identifier.routed()
     for kind in ALIAS_KINDS:
         held = getattr(identifier, field_of(kind), None)
         for value in ([held] if isinstance(held, str) else held or ()):
@@ -384,7 +373,7 @@ class Catalog:
     SINGULAR = ("pmid", "pmcid")
     #: Kinds two articles may not both hold a value of and be merged: each is one
     #: paper's, and two neurostore ids are two base studies.
-    ONE_EACH = SINGULAR + ("preprint_pmid", "preprint_pmcid", "neurostore")
+    ONE_EACH = SINGULAR + ("neurostore",)
 
     def register_many(self, identifiers: Sequence[Identifier]) -> List[ArticleRef]:
         """Register articles, adding aliases to existing ones. Idempotent.
@@ -751,7 +740,7 @@ class Catalog:
             for article_id in dict.fromkeys(a for _, _, src, dst in moves for a in (src, dst)):
                 self._require_journal_doi(conn, article_id)
             for dst in dict.fromkeys(dst for _, _, _, dst in moves):
-                for kind in self.SINGULAR + ("preprint_pmid", "preprint_pmcid"):
+                for kind in self.SINGULAR:
                     if len(self._aliases(conn, dst, kind)) > 1:
                         raise IdentityError(f"{dst} would hold two {kind}s: "
                                             f"{', '.join(self._aliases(conn, dst, kind))}")
@@ -792,7 +781,7 @@ class Catalog:
 
         Refused when an alias is not the article's, the kind has no other, the
         article is not live, or it would be left with no pmid, pmcid or doi, with
-        two preprint PMIDs or PMCIDs, or with a journal DOI only as an alternate:
+        a journal DOI only as an alternate:
         the version of record's DOI is the one an article presents.
         """
         with self._write() as conn:
@@ -800,7 +789,6 @@ class Catalog:
                 self._rekind(conn, kind, value, article_id)
             for article_id in dict.fromkeys(a for _, _, a in rows):
                 self._require_named(conn, article_id)
-                self._require_one_each(conn, article_id)
                 self._require_journal_doi(conn, article_id)
 
     def _rekind(self, conn: sqlite3.Connection, kind: str, value: str, article_id: str) -> None:
@@ -814,17 +802,10 @@ class Catalog:
                        kind, value, article_id, self.REKIND[kind])
 
     def _require_journal_doi(self, conn: sqlite3.Connection, article_id: str) -> None:
-        alternates = [d for d in self._aliases(conn, article_id, "alternative_doi")
-                      if not is_preprint_doi(d)]
+        alternates = self._aliases(conn, article_id, "alternative_doi")
         if alternates and not self._journal_dois(conn, article_id):
             raise IdentityError(f"{article_id} would hold its journal DOI {', '.join(alternates)} "
                                 "only as an alternate")
-
-    def _require_one_each(self, conn: sqlite3.Connection, article_id: str) -> None:
-        for kind in ("preprint_pmid", "preprint_pmcid"):
-            held = self._aliases(conn, article_id, kind)
-            if len(held) > 1:
-                raise IdentityError(f"{article_id} would hold two {kind}s: {', '.join(held)}")
 
     def split(
         self,

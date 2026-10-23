@@ -42,7 +42,7 @@ IDENTIFIERS = pp.ArticleIdentifiers(publication_status="published")
 
 
 def _inputs(**given):
-    return ParseInputs(article_id="a", text_copy=COPY, **given)
+    return ParseInputs(article_id="a", text_copy=COPY, dois=(), **given)
 
 TABLE_1 = """<table>
 <tr><th>Region</th><th>x</th><th>y</th><th>z</th><th>t</th><th>k</th></tr>
@@ -110,7 +110,7 @@ def written(tmp_path):
     return _written(tmp_path)
 
 
-def _written(tmp_path, identifier=None, text_copy=COPY, **metadata):
+def _written(tmp_path, identifier=None, text_copy=COPY, dois=None, **metadata):
     identifier = identifier or Identifier(
         pmid="22848644", pmcid="PMC3407125", doi="10.1371/journal.pone.0041873"
     )
@@ -208,6 +208,7 @@ def _written(tmp_path, identifier=None, text_copy=COPY, **metadata):
     inputs = ParseInputs(
         article_id="art-1",
         text_copy=text_copy,
+        dois=[identifier.doi] if dois is None and identifier.doi else dois or [],
         base_study_id=BASE,
         triage={
             "is_meta_analysis": False,
@@ -352,16 +353,16 @@ def test_a_copy_the_metadata_holds_no_licence_for_has_no_text_copy():
 
 @pytest.mark.parametrize("identifier, expected", [
     # bioRxiv's DOI alone: the paper is known only as a preprint.
-    (Identifier(doi="10.1101/2025.05.13.653896"),
+    (Identifier(preprint_dois=["10.1101/2025.05.13.653896"]),
      {"preprint_dois": [{"doi": "10.1101/2025.05.13.653896", "server": "biorxiv"}],
       "publication_status": "preprint"}),
     # A PubMed record beside it: published, the preprint's DOI kept as a preprint's.
-    (Identifier(pmid="40462995", doi="10.1101/2025.05.13.653896"),
+    (Identifier(pmid="40462995", preprint_dois=["10.1101/2025.05.13.653896"]),
      {"pmid": "40462995",
       "preprint_dois": [{"doi": "10.1101/2025.05.13.653896", "server": "biorxiv"}],
       "publication_status": "published"}),
     # A PMC copy alone beside it is published too.
-    (Identifier(pmcid="PMC12132522", doi="10.1101/2025.05.13.653896"),
+    (Identifier(pmcid="PMC12132522", preprint_dois=["10.1101/2025.05.13.653896"]),
      {"pmcid": "PMC12132522",
       "preprint_dois": [{"doi": "10.1101/2025.05.13.653896", "server": "biorxiv"}],
       "publication_status": "published"}),
@@ -384,7 +385,15 @@ def test_a_preprint_server_s_doi_is_a_preprint_s(tmp_path, identifier, expected)
     assert paper["header"]["identifiers"] == expected
 
 
-def test_a_second_doi_of_the_paper_is_an_alternative_not_a_failure(tmp_path):
+def test_two_doi_rows_of_a_version_of_record_are_not_reduced_to_one(tmp_path):
+    """The catalog holds two `doi` rows for 298 articles, most of them two works fused; only
+    a repair says one is the other's alternative."""
+    with pytest.raises(ValueError, match="two DOIs of a version of record"):
+        _written(tmp_path, Identifier(doi="10.1002/hbm.25137"),
+                 dois=["10.1002/hbm.25137", "10.1371/journal.pone.0041873"])
+
+
+def test_a_second_doi_the_catalog_holds_as_an_alternative_is_not_a_failure(tmp_path):
     paper, _, _ = _written(tmp_path, Identifier(
         doi="10.1002/hbm.25137", alternative_dois=["10.1371/journal.pone.0041873"]))
     assert paper["header"]["identifiers"] == {
@@ -406,7 +415,8 @@ PREPRINT_RECORD = [("Preprint", "D000076942"), ("Journal Article", "D016428")]
 
 @pytest.mark.parametrize("identifier, ids, expected", [
     # guzoq7cqzesu: PubMed's and PMC's records of a medRxiv preprint (PMID 34845462).
-    (Identifier(pmid="34845462", pmcid="PMC8629206", doi="10.1101/2021.11.23.21266761"),
+    (Identifier(pmid="34845462", pmcid="PMC8629206",
+                preprint_dois=["10.1101/2021.11.23.21266761"]),
      [("pubmed", "34845462"), ("pmc", "PMC8629206"), ("doi", "10.1101/2021.11.23.21266761")],
      {"preprint_dois": [{"doi": "10.1101/2021.11.23.21266761", "server": "medrxiv"}],
       "preprint_pmids": ["34845462"], "preprint_pmcids": ["PMC8629206"],
@@ -415,7 +425,8 @@ PREPRINT_RECORD = [("Preprint", "D000076942"), ("Journal Article", "D016428")]
     (Identifier(pmid="34845462"), [("pubmed", "34845462")],
      {"preprint_pmids": ["34845462"], "publication_status": "preprint"}),
     # A PMC copy the preprint's PubMed record does not list is the version of record's.
-    (Identifier(pmid="34845462", pmcid="PMC3407125", doi="10.1101/2021.11.23.21266761"),
+    (Identifier(pmid="34845462", pmcid="PMC3407125",
+                preprint_dois=["10.1101/2021.11.23.21266761"]),
      [("pubmed", "34845462"), ("doi", "10.1101/2021.11.23.21266761")],
      {"pmcid": "PMC3407125", "preprint_pmids": ["34845462"],
       "preprint_dois": [{"doi": "10.1101/2021.11.23.21266761", "server": "medrxiv"}],

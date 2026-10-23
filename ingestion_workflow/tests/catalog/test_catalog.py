@@ -24,7 +24,9 @@ def test_identity_survives_enrichment(catalog):
 
     assert first.id == second.id == third.id
     assert catalog.count_articles() == 1
-    assert catalog.identifier(first.id).doi == "10.1101/2023.10.21.563317"
+    held = catalog.identifier(first.id)
+    assert (held.doi, held.preprint_dois) == (None, ("10.1101/2023.10.21.563317",))
+    assert held.asking_doi == "10.1101/2023.10.21.563317"
 
 
 def test_separate_articles_stay_separate(catalog):

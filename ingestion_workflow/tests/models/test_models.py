@@ -214,25 +214,52 @@ def test_an_id_is_in_one_slot_only() -> None:
     assert (identifier.preprint_pmcids, identifier.alternative_pmcids) == (("PMC7181890",), ())
 
 
-def test_a_preprint_server_s_doi_is_filed_as_the_preprint_s_only_when_routed() -> None:
-    provider = Identifier(doi="10.1101/2025.05.13.653896", pmid="40462995")
-    assert provider.doi == "10.1101/2025.05.13.653896"
-    routed = provider.routed()
-    assert (routed.doi, routed.preprint_dois) == (None, ("10.1101/2025.05.13.653896",))
-    assert routed.pmid == "40462995"
+def test_doi_is_the_version_of_record_s_and_a_paper_known_only_by_a_preprint_is_asked_by_that() -> None:
+    preprint_only = Identifier(preprint_dois=["10.21203/rs.3.rs-2556690/v2", "10.1101/2019.12.17.19014415"])
+    assert preprint_only.doi is None
+    # of two, the shortest, then the lowest: the same one wherever a provider is asked
+    assert preprint_only.asking_doi == "10.1101/2019.12.17.19014415"
+    assert preprint_only.asking("doi") == "10.1101/2019.12.17.19014415"
+    assert preprint_only.asking("pmid") is None
+    paper = Identifier(doi="10.1016/j.neuroimage.2023.120450",
+                       preprint_dois=["10.1101/2023.10.21.563317"])
+    assert paper.asking_doi == "10.1016/j.neuroimage.2023.120450"
+    assert Identifier().asking_doi is None
+
+
+def test_a_preprint_server_s_doi_is_never_the_doi_whoever_gives_it() -> None:
+    given = Identifier(doi="10.1101/2025.05.13.653896", pmid="40462995")
+    assert (given.doi, given.preprint_dois) == (None, ("10.1101/2025.05.13.653896",))
+
+    enriched = Identifier(pmid="40462995")
+    enriched.doi = "https://doi.org/10.1101/2025.05.13.653896"
+    assert (enriched.doi, enriched.preprint_dois) == (None, ("10.1101/2025.05.13.653896",))
+    enriched.doi = "10.1101/2025.05.13.653896"
+    assert enriched.preprint_dois == ("10.1101/2025.05.13.653896",)
+    enriched.doi = "10.1016/j.neuroimage.2025.121234"
+    assert enriched.doi == "10.1016/j.neuroimage.2025.121234"
+
     # a Cold Spring Harbor journal shares bioRxiv's prefix, and eLife's DOIs are its journal's
-    assert Identifier(doi="10.1101/lm.022889.111").routed().doi == "10.1101/lm.022889.111"
-    assert Identifier(doi="10.7554/elife.92563").routed().preprint_dois == ()
-    # an alternative that is a preprint's is a preprint's
-    moved = Identifier(doi="10.1016/j.neuroimage.2023.120450",
-                       alternative_dois=["10.1101/2023.10.21.563317"]).routed()
-    assert (moved.preprint_dois, moved.alternative_dois) == (("10.1101/2023.10.21.563317",), ())
+    assert Identifier(doi="10.1101/lm.022889.111").doi == "10.1101/lm.022889.111"
+    assert Identifier(doi="10.7554/elife.92563").doi == "10.7554/elife.92563"
+
+
+def test_an_identifier_never_writes_a_doi_twice(tmp_path) -> None:
+    identifier = Identifier(pmid="36993482", preprint_dois=["10.1101/2023.02.15.528738"])
+    written = identifier.to_dict()
+    assert written["doi"] is None
+    assert written["preprint_dois"] == ["10.1101/2023.02.15.528738"]
+    # the one provider-facing reader is derived, not stored
+    assert "asking_doi" not in written
+
+
+def test_lookups_by_doi_find_a_paper_by_its_preprint_s_doi() -> None:
+    held = Identifier(pmid="36993482", preprint_dois=["10.1101/2023.02.15.528738"])
+    assert Identifiers([held]).lookup("10.1101/2023.02.15.528738", key="doi") is held
 
 
 @pytest.mark.parametrize("identifier, status", [
     (Identifier(preprint_dois=["10.1101/2025.05.13.653896"]), "preprint"),
-    # presented by its preprint's DOI, the paper is still known only as a preprint
-    (Identifier(doi="10.1101/2025.05.13.653896"), "preprint"),
     (Identifier(preprint_pmids=["34845462"]), "preprint"),
     (Identifier(pmid="40462995", preprint_dois=["10.1101/2025.05.13.653896"]), "published"),
     (Identifier(doi="10.1016/j.neuroimage.2023.120450",
@@ -254,6 +281,9 @@ def test_a_preprint_only_paper_is_not_nameless() -> None:
     assert Identifier(preprint_pmids=["34845462"]).slug == Identifier(pmid="34845462").slug
     # the slug of an article is the same whether its preprint's DOI is `doi` or a preprint's
     assert one.slug == Identifier(doi="10.1101/2025.05.13.653896").slug
+    # of two preprints, the shortest DOI names it, as it asks providers
+    two = Identifier(preprint_dois=["10.21203/rs.3.rs-2556690/v2", "10.1101/2019.12.17.19014415"])
+    assert two.slug == Identifier(doi="10.1101/2019.12.17.19014415").slug
     # a paper's other ids do not rename it
     assert Identifier(pmid="1", alternative_pmids=["2"]).slug == Identifier(pmid="1").slug
 
