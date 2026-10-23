@@ -447,6 +447,11 @@ class PubMedClient:
     ) -> Dict[str, object]:
         return self._request_json(self.BASE_URL, params)
 
+    def _get(self, url: str, params: Mapping[str, str] | Sequence[Tuple[str, str]]) -> httpx.Response:
+        # NCBI reads a bare  as an address that is empty, not as none given.
+        pairs = params.items() if isinstance(params, Mapping) else params
+        return self._client.get(url, params=[(k, v) for k, v in pairs if v not in (None, "")])
+
     @retry(
         retry=retry_if_exception(_retryable),
         stop=stop_after_attempt(6),
@@ -459,7 +464,7 @@ class PubMedClient:
         params: Mapping[str, str] | Sequence[Tuple[str, str]],
     ) -> Dict[str, object]:
         self._rate_limit_sleep()
-        response = self._client.get(url, params=params)
+        response = self._get(url, params)
         response.raise_for_status()
         try:
             return response.json()
@@ -490,7 +495,7 @@ class PubMedClient:
         params: Mapping[str, str] | Sequence[Tuple[str, str]],
     ) -> Dict[str, Any]:
         self._rate_limit_sleep()
-        response = self._client.get(url, params=params)
+        response = self._get(url, params)
         response.raise_for_status()
         return xmltodict.parse(response.text)
 
