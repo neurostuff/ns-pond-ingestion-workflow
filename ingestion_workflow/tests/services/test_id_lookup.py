@@ -104,3 +104,21 @@ def test_pubmed_lookup_restores_missing_ids(
     assert restored.doi == original.doi
     assert restored.pmid == original.pmid
     assert restored.pmcid == original.pmcid
+
+
+def test_hydrate_carries_the_catalog_s_preprint_and_alternative_ids(tmp_path):
+    settings = _settings(tmp_path)
+    with Catalog.open(settings.catalog_root) as catalog:
+        catalog.register(Identifier(
+            pmid="42663321", doi="10.7554/elife.106070",
+            preprint_dois=["10.1101/2025.02.05.636581"],
+            alternative_dois=["10.7554/elife.106070.1"]))
+        service = _DummyLookup(settings, catalog)
+
+        partial = Identifier(pmid="42663321")
+        service._hydrate_from_cache(Identifiers([partial]))
+
+        assert partial.doi == "10.7554/elife.106070"
+        assert partial.preprint_dois == ("10.1101/2025.02.05.636581",)
+        assert partial.alternative_dois == ("10.7554/elife.106070.1",)
+

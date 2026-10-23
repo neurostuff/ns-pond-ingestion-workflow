@@ -704,8 +704,8 @@ def show(
             raise typer.Exit(code=1)
 
         aliases = " · ".join(
-            f"{kind} {value}"
-            for kind, value in vars(ref.identifier).items()
+            f"{kind} {', '.join(value) if isinstance(value, list) else value}"
+            for kind, value in ref.identifier.to_dict().items()
             if value and kind != "other_ids"
         )
         typer.echo(f"article {ref.id}\n  aliases   {aliases}")

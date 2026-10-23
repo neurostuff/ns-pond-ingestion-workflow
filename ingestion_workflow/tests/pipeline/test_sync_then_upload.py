@@ -590,7 +590,7 @@ def test_the_header_holds_every_doi_the_catalog_has_for_the_article(env, monkeyp
     settings, catalog, _ = env
     ctx, ref = _prose_article(env, monkeypatch, "45", "BS45", doi="10.1101/2020.03.25.008318")
     catalog.add_aliases([(ref.id, "doi", "10.1002/hbm.25137")])
-    _, (synced,) = _run(SyncStage(settings), ctx, catalog, ref)
+    _, (synced,) = _run(SyncStage(settings), ctx, catalog, catalog.ref(ref.id))
     assert synced.status is Status.OK, synced.error
 
     header = json.loads(

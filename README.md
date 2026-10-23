@@ -187,21 +187,32 @@ DOI it sends to an agency over plain HTTP is one the registry cannot be read for
 - A PMID that arrives with other ids is not added in two cases. One is when its
   PubMed record gives a DOI another article holds, and the registry gives that DOI
   the record's work. The other is when the registry cannot be read for the DOI.
-- A second journal DOI is kept as an alternate DOI when the registry gives both DOIs
+- A second journal DOI is kept as an alternative DOI when the registry gives both DOIs
   one work (a publisher's new DOI, an alias spelling). Otherwise it is refused.
 
 Each refused id is printed at the end of the command and kept, once, in the
 catalog's `refusals` table.
 
-An article holds one of each id kind. Beside them it may hold:
+An article holds its ids in three buckets, the same three that `header.identifiers` and
+study_schema have:
 
-- a preprint's PMID and PMCID (`preprint_pmid`, `preprint_pmcid`);
-- other DOIs of the paper (`alternate_doi`);
-- the PMIDs and PMCIDs of duplicate PubMed and PMC records (`duplicate_pmid`,
-  `duplicate_pmcid`).
+- the version of record's `doi`, `pmid` and `pmcid`, one of each;
+- a preprint's `preprint_doi` (one for each version a server registers), `preprint_pmid` and
+  `preprint_pmcid`. A DOI is a preprint's when `utils/preprints.py` names a server for it, and
+  is filed as one wherever it is registered;
+- every other id of the paper's, as `alternative_doi`, `alternative_pmid` and
+  `alternative_pmcid`: another version's DOI, a duplicate PubMed or PMC record, a
+  publisher's earlier DOI. There is no kind for why.
 
-Each of these finds the article. An article presents its journal DOI, not an
-alternate or a preprint's.
+Each of these finds the article, whichever kind it is looked up as. An article presents the
+version of record's `doi`; one known only by a preprint is presented by the preprint's DOI,
+which providers are asked by, and is a `preprint`. A PubMed or PMC record of a preprint
+is `preprint_pmid` or `preprint_pmcid` only once it is filed as one.
+
+Catalog schema 4 holds the ids this way. Opening an older catalog copies it first
+(`catalog.pre-v<n>.sqlite`), then moves each preprint server's DOI from `doi` to `preprint_doi`
+and renames `alternate_doi`, `duplicate_pmid` and `duplicate_pmcid` to the alternative kinds.
+No id changes article.
 
 `ingest repair-identity PLAN` repairs articles that already hold another paper's ids.
 `PLAN` is a reviewed plan: JSON lines, one operation each (add, reassign, remove,

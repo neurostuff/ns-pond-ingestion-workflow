@@ -110,6 +110,20 @@ def is_preprint_doi(doi: Optional[str]) -> bool:
     return preprint_server(doi) is not None
 
 
+#: eLife's reviewed preprints and its published articles share 10.7554, so no pattern can
+#: tell them apart. Crossref types a reviewed preprint's base DOI `posted-content`; a
+#: producer that has read that files the DOI as a preprint's, and only then is it eLife's.
+ELIFE_PREFIX = "10.7554/"
+
+
+def server_of_filed_preprint_doi(doi: str) -> Optional[str]:
+    """The server of a DOI already filed as a preprint's: the registry's, else eLife's."""
+    canonical = normalize_doi(doi)
+    if canonical is not None and canonical.startswith(ELIFE_PREFIX):
+        return "elife"
+    return preprint_server(canonical)
+
+
 def _server_of_host(host: str) -> Optional[PreprintServer]:
     return next((s for s in PREPRINT_SERVERS for h in s.hosts
                  if host == h or host.endswith("." + h)), None)

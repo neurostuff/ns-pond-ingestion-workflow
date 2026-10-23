@@ -145,7 +145,8 @@ class MetadataStage:
         # In the order the sources are tried, so the first held copy's record speaks first.
         order = {source: i for i, source in enumerate(self.settings.download_sources)}
         for slug, work in by_slug.items():
-            dois[slug] = ctx.catalog.aliases(work.article_id, "doi")
+            dois[slug] = (ctx.catalog.aliases(work.article_id, "doi")
+                          + ctx.catalog.aliases(work.article_id, "preprint_doi"))
             for source, download in sorted(downloads.get(work.article_id, {}).items(),
                                            key=lambda item: (order.get(item[0], len(order)),
                                                              item[0])):

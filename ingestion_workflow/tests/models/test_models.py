@@ -148,3 +148,136 @@ def test_an_extracted_table_s_coordinates_carry_no_other_statistics_key():
     (written,) = table.to_dict()["coordinates"]
     assert "other_statistics" not in written
     assert ExtractedTable.from_dict(table.to_dict()).to_dict() == table.to_dict()
+
+
+#: One PMID as providers and people write it: PubMed bare, a spreadsheet's zero-padded,
+#: Europe PMC and OpenAlex prefixed or as an address.
+PMID_SPELLINGS = [
+    "37961286",
+    " 37961286 ",
+    "0037961286",
+    "PMID:37961286",
+    "pmid: 37961286",
+    "PMID:0037961286",
+    "https://pubmed.ncbi.nlm.nih.gov/37961286",
+    "https://pubmed.ncbi.nlm.nih.gov/37961286/",
+]
+
+
+@pytest.mark.parametrize("spelling", PMID_SPELLINGS)
+def test_every_spelling_of_a_pmid_is_canonical_however_it_is_set(spelling) -> None:
+    assert Identifier(pmid=spelling).pmid == "37961286"
+
+    enriched = Identifier(doi="10.1016/j.neuroimage.2023.120450")
+    enriched.pmid = spelling
+    assert enriched.pmid == "37961286"
+
+    mapped = Identifier(doi="10.1016/j.neuroimage.2023.120450")
+    mapped["PMID"] = spelling
+    assert mapped.pmid == "37961286"
+
+    held = Identifier(pmid="37961286")
+    assert Identifiers([held]).lookup(spelling, key="pmid") is held
+    assert Identifier(alternative_pmids=[spelling]).alternative_pmids == ("37961286",)
+
+
+def test_what_is_not_a_spelling_of_a_pmid_is_kept_as_given() -> None:
+    # The Neurosynth import's duplicate markers are catalog aliases; rewriting one would
+    # give the duplicate its paper's id.
+    assert Identifier(pmid="10196461-DUPLICATE").pmid == "10196461-DUPLICATE"
+    assert Identifier(pmid="   ").pmid is None
+
+
+def test_a_paper_has_its_ids_in_three_buckets() -> None:
+    # 10.7554/eLife.106070: its journal ids, its bioRxiv preprint, and its other versions.
+    identifier = Identifier(
+        pmid="42663321", pmcid="PMC13524378", doi="10.7554/eLife.106070",
+        preprint_dois=["10.1101/2025.02.05.636581"],
+        alternative_dois=["10.7554/eLife.106070.2", "10.7554/eLife.106070.1",
+                          "10.7554/eLife.106070.10"])
+    assert identifier.doi == "10.7554/elife.106070"
+    assert identifier.preprint_dois == ("10.1101/2025.02.05.636581",)
+    # versions sort as numbers, so the latest is last
+    assert identifier.alternative_dois == (
+        "10.7554/elife.106070.1", "10.7554/elife.106070.2", "10.7554/elife.106070.10")
+    assert identifier.publication_status == "published"
+
+
+def test_an_id_is_in_one_slot_only() -> None:
+    identifier = Identifier(
+        pmid="32341955", doi="10.3934/Neuroscience.2018.2.97",
+        alternative_pmids=["32341955", "32341954"],
+        alternative_dois=["10.3934/neuroscience.2018.2.97"],
+        preprint_pmcids=["PMC7181890"], alternative_pmcids=["PMC7181890"])
+    assert identifier.alternative_pmids == ("32341954",)
+    assert identifier.alternative_dois == ()
+    assert (identifier.preprint_pmcids, identifier.alternative_pmcids) == (("PMC7181890",), ())
+
+
+def test_a_preprint_server_s_doi_is_filed_as_the_preprint_s_only_when_routed() -> None:
+    provider = Identifier(doi="10.1101/2025.05.13.653896", pmid="40462995")
+    assert provider.doi == "10.1101/2025.05.13.653896"
+    routed = provider.routed()
+    assert (routed.doi, routed.preprint_dois) == (None, ("10.1101/2025.05.13.653896",))
+    assert routed.pmid == "40462995"
+    # a Cold Spring Harbor journal shares bioRxiv's prefix, and eLife's DOIs are its journal's
+    assert Identifier(doi="10.1101/lm.022889.111").routed().doi == "10.1101/lm.022889.111"
+    assert Identifier(doi="10.7554/elife.92563").routed().preprint_dois == ()
+    # an alternative that is a preprint's is a preprint's
+    moved = Identifier(doi="10.1016/j.neuroimage.2023.120450",
+                       alternative_dois=["10.1101/2023.10.21.563317"]).routed()
+    assert (moved.preprint_dois, moved.alternative_dois) == (("10.1101/2023.10.21.563317",), ())
+
+
+@pytest.mark.parametrize("identifier, status", [
+    (Identifier(preprint_dois=["10.1101/2025.05.13.653896"]), "preprint"),
+    # presented by its preprint's DOI, the paper is still known only as a preprint
+    (Identifier(doi="10.1101/2025.05.13.653896"), "preprint"),
+    (Identifier(preprint_pmids=["34845462"]), "preprint"),
+    (Identifier(pmid="40462995", preprint_dois=["10.1101/2025.05.13.653896"]), "published"),
+    (Identifier(doi="10.1016/j.neuroimage.2023.120450",
+                preprint_dois=["10.1101/2023.10.21.563317"]), "published"),
+    # alternative ids never count: eLife's `.1` may be a reviewed preprint's version
+    (Identifier(preprint_dois=["10.7554/elife.112197"],
+                alternative_dois=["10.7554/elife.112197.1"]), "preprint"),
+    (Identifier(pmid="1"), "published"),
+])
+def test_a_paper_is_a_preprint_while_only_a_preprint_s_ids_are_known(identifier, status) -> None:
+    assert identifier.publication_status == status
+
+
+def test_a_preprint_only_paper_is_not_nameless() -> None:
+    # Every one of these once had the slug `--`, and slugs key metadata and downloads.
+    one = Identifier(preprint_dois=["10.1101/2025.05.13.653896"])
+    two = Identifier(preprint_dois=["10.1101/2019.12.17.19014415"])
+    assert one.slug != two.slug != "--"
+    assert Identifier(preprint_pmids=["34845462"]).slug == Identifier(pmid="34845462").slug
+    # the slug of an article is the same whether its preprint's DOI is `doi` or a preprint's
+    assert one.slug == Identifier(doi="10.1101/2025.05.13.653896").slug
+    # a paper's other ids do not rename it
+    assert Identifier(pmid="1", alternative_pmids=["2"]).slug == Identifier(pmid="1").slug
+
+
+def test_an_identifier_holding_only_preprint_ids_is_not_empty() -> None:
+    identifier = Identifier(preprint_dois=["10.1101/2025.05.13.653896"])
+    assert identifier and len(identifier) == 1
+    assert identifier["preprint_dois"] == ("10.1101/2025.05.13.653896",)
+    assert not Identifier()
+
+
+def test_the_buckets_survive_a_dict_and_a_file(tmp_path) -> None:
+    identifier = Identifier(
+        pmid="42663321", doi="10.7554/elife.106070", preprint_dois=["10.1101/2025.02.05.636581"],
+        alternative_dois=["10.7554/elife.106070.1"], alternative_pmids=["1"])
+    assert Identifier.from_dict(identifier.to_dict()) == identifier
+    # a bucket is written only when it holds ids, so an identifier without any is as before
+    assert set(Identifier(pmid="1").to_dict()) == {"neurostore", "pmid", "doi", "pmcid", "other_ids"}
+    path = tmp_path / "ids.jsonl"
+    Identifiers([identifier]).save(path)
+    assert Identifiers.load(path).identifiers == [identifier]
+
+
+def test_the_pmids_of_a_paper_are_its_pmid_and_its_other_records() -> None:
+    assert Identifier(pmid="32341955", alternative_pmids=["32341954"]).pmids == [
+        "32341955", "32341954"]
+    assert Identifier(preprint_pmids=["34845462"]).pmids == []

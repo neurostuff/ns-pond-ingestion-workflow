@@ -82,11 +82,15 @@ triage rejected keeps that reading.
   `openalex`, or `elsevier` and `jats` for the record read from a held Elsevier or JATS file.
   `abstract_provider` is the provider whose abstract was kept. A record that names no
   provider is not parsed.
-- `header.identifiers` holds every DOI the catalog has for the article. A DOI that
-  `utils/preprints.py` names a preprint server for is in `preprint_dois` with its server; the
-  other is `doi`. An article with two DOIs that are neither preprint's is not parsed.
-- A PMID whose PubMed record is typed `Preprint` is `preprint_pmid`, and the PMCID that record
-  lists is `preprint_pmcid`.
+- `header.identifiers` holds every id the catalog has for the article, in study_schema's three
+  buckets. `doi`, `pmid` and `pmcid` are the version of record's. A DOI that
+  `utils/preprints.py` names a preprint server for is in `preprint_dois` with its server, and
+  so is an eLife DOI the catalog holds as a preprint's, which no pattern can tell from eLife's
+  journal DOIs. Every other id of the paper is in `alternative_dois`, `alternative_pmids` or
+  `alternative_pmcids`; a second DOI of the version of record is one of them, and does not fail
+  the parse.
+- A PMID whose PubMed record is typed `Preprint` is in `preprint_pmids`, and the PMCID that
+  record lists is in `preprint_pmcids`.
 - `publication_status` is `preprint` when only a preprint's identifiers are known, and
   `published` otherwise.
 - `header.neurostore_base_study_id` is the paper's neurostore base study, once sync knows it.

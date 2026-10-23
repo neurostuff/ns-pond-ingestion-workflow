@@ -38,13 +38,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Collection, Dict, Iterator, List, Set, Tuple, Union
 
-from ingestion_workflow.models.ids import PREPRINT_PMCID, PREPRINT_PMID
 from ingestion_workflow.utils.doi import normalize_doi
 from ingestion_workflow.utils.preprints import is_preprint_doi
 
 from .evidence import Unreadable as RegistryUnreadable
 from .evidence import same_work
-from .models import ALTERNATE_DOI, DUPLICATE_PMCID, DUPLICATE_PMID, SECOND_KINDS, Artifact
+from .models import SECOND_KINDS, Artifact
 from .store import Catalog, _artifact
 
 #: Enough of an XML file to hold its front matter.
@@ -55,8 +54,8 @@ _PMC_DIR = re.compile(r"pmcid_(\d+)/")
 _ELSEVIER_DOI = re.compile(r"<prism:doi>\s*([^<\s]+)")
 _JATS_DOI = re.compile(r"<article-id[^>]*pub-id-type=\"doi\"[^>]*>\s*([^<\s]+)")
 
-_ONE_EACH = (("pmids", "pmid"), ("pmcids", "pmcid"), ("preprint-pmids", PREPRINT_PMID),
-             ("preprint-pmcids", PREPRINT_PMCID), ("base-studies", "neurostore"))
+_ONE_EACH = (("pmids", "pmid"), ("pmcids", "pmcid"), ("preprint-pmids", "preprint_pmid"),
+             ("preprint-pmcids", "preprint_pmcid"), ("base-studies", "neurostore"))
 
 
 @dataclass(frozen=True)
@@ -75,17 +74,17 @@ class Unreadable(Exception):
 
 
 def suspects(catalog: Catalog) -> Set[str]:
-    """Every live article holding two of an id kind other than an alternate DOI or a
-    duplicate record's.
+    """Every live article holding two of an id kind other than the alternative kinds and a
+    preprint's DOI, of which a paper has one for each version a server registers.
 
     Only these can break the one-of-a-kind rules, so they are checked with the
     articles a repair touched, which covers those rules for the whole catalog.
     """
     rows = catalog._conn.execute(
         "SELECT a.article_id FROM aliases a JOIN articles r ON r.id = a.article_id "
-        "WHERE r.merged_into IS NULL AND a.kind NOT IN (?, ?, ?) "
+        "WHERE r.merged_into IS NULL AND a.kind NOT IN (?, ?, ?, ?) "
         "GROUP BY a.article_id, a.kind HAVING COUNT(*) > 1",
-        (ALTERNATE_DOI, DUPLICATE_PMID, DUPLICATE_PMCID))
+        ("alternative_doi", "alternative_pmid", "alternative_pmcid", "preprint_doi"))
     return {row[0] for row in rows}
 
 
@@ -107,9 +106,9 @@ def neighbourhood(catalog: Catalog, article_ids: Collection[str]) -> Set[str]:
     evidence = _evidence(catalog)
     live = {a for a in article_ids if catalog.live(a)}
     held = {a: _held(catalog, a) for a in live}
-    dois = sorted({d for h in held.values() for d in h["doi"] + h[ALTERNATE_DOI]})
-    pmids = sorted({p for h in held.values() for p in h["pmid"] + h[PREPRINT_PMID]})
-    pmcids = sorted({c for h in held.values() for c in h["pmcid"] + h[PREPRINT_PMCID]})
+    dois = sorted({d for h in held.values() for d in h["doi"] + h["alternative_doi"]})
+    pmids = sorted({p for h in held.values() for p in h["pmid"] + h["preprint_pmid"]})
+    pmcids = sorted({c for h in held.values() for c in h["pmcid"] + h["preprint_pmcid"]})
     found = set(live)
     every_id = set()
     for article_id in live:
@@ -193,13 +192,13 @@ def violations(catalog: Catalog, article_ids: Collection[str]) -> List[Violation
     live = sorted({a for a in article_ids if catalog.live(a)})
     held = {a: _held(catalog, a) for a in live}
     summaries = evidence.summaries(sorted({p for h in held.values()
-                                           for p in h["pmid"] + h[PREPRINT_PMID]}))
-    pmc = evidence.pmc(sorted({c for h in held.values() for c in h["pmcid"] + h[PREPRINT_PMCID]}))
+                                           for p in h["pmid"] + h["preprint_pmid"]}))
+    pmc = evidence.pmc(sorted({c for h in held.values() for c in h["pmcid"] + h["preprint_pmcid"]}))
     pmc_records = evidence.summaries(sorted({r.pmid for r in pmc.values() if r.pmid}))
     found: List[Violation] = []
     for article_id in live:
         h = held[article_id]
-        dois, alternates = set(h["doi"]), set(h[ALTERNATE_DOI])
+        dois, alternates = set(h["doi"]), set(h["alternative_doi"])
         mine = dois | alternates
 
         def elsewhere(kind: str, value: str) -> bool:
@@ -222,7 +221,7 @@ def violations(catalog: Catalog, article_ids: Collection[str]) -> List[Violation
                 for doi in h["doi"]:
                     held |= {catalog.holder("doi", v)
                              for v in asking(lambda: evidence.versions(doi)) or ()}
-                for pmid in h["pmid"] + h[PREPRINT_PMID]:
+                for pmid in h["pmid"] + h["preprint_pmid"]:
                     held |= {catalog.holder("pmid", p) for p in evidence.title_versions(pmid)}
                 versions_of.append(held - {None, article_id})
             return versions_of[0]
@@ -246,9 +245,9 @@ def violations(catalog: Catalog, article_ids: Collection[str]) -> List[Violation
         for rule, kind in _ONE_EACH:
             if len(h[kind]) > 1:
                 add(rule, f"holds {', '.join(h[kind])}")
-        own_pmc = {(r.pmid, normalize_doi(r.doi)) for c in h["pmcid"] + h[PREPRINT_PMCID]
+        own_pmc = {(r.pmid, normalize_doi(r.doi)) for c in h["pmcid"] + h["preprint_pmcid"]
                    if (r := pmc.get(c)) and r.doi}
-        for pmid in h["pmid"] + h[PREPRINT_PMID]:
+        for pmid in h["pmid"] + h["preprint_pmid"]:
             summary = summaries.get(pmid)
             doi = normalize_doi(summary.doi) if summary else None
             if not doi or doi in dois or not judged(doi):
@@ -267,7 +266,7 @@ def violations(catalog: Catalog, article_ids: Collection[str]) -> List[Violation
                     f"{catalog.holder('doi', doi)} holds")
             elif h["doi"]:
                 add("pmid-doi", f"pmid {pmid} is {doi} in PubMed, not {', '.join(h['doi'])}")
-        for pmcid in h["pmcid"] + h[PREPRINT_PMCID]:
+        for pmcid in h["pmcid"] + h["preprint_pmcid"]:
             record = pmc.get(pmcid)
             if record is None:
                 continue
@@ -297,7 +296,7 @@ def violations(catalog: Catalog, article_ids: Collection[str]) -> List[Violation
                 if asking(lambda: _other_work(evidence, alternate, doi)):
                     add("alternate-doi", f"alternate DOI {alternate} is another work than {doi}")
         preprints = [d for d in h["doi"] if is_preprint_doi(d)]
-        preprints += [normalize_doi(s.doi) for p in h[PREPRINT_PMID] + h["pmid"]
+        preprints += [normalize_doi(s.doi) for p in h["preprint_pmid"] + h["pmid"]
                       if (s := summaries.get(p)) and s.preprint and s.doi]
         for doi in dict.fromkeys(d for d in preprints if d):
             for version in asking(lambda: evidence.versions(doi)) or ():
@@ -305,7 +304,7 @@ def violations(catalog: Catalog, article_ids: Collection[str]) -> List[Violation
                     holder = catalog.holder("doi", version)
                     add("two-versions", f"preprint {doi} is {version}'s, which {holder} holds",
                         accepted=based(holder))
-        for pmid in h["pmid"] + h[PREPRINT_PMID]:
+        for pmid in h["pmid"] + h["preprint_pmid"]:
             if (summary := summaries.get(pmid)) and summary.preprint:
                 for other in evidence.title_versions(pmid):
                     if elsewhere("pmid", other):
@@ -354,12 +353,15 @@ def _evidence(catalog: Catalog):
 
 
 def _held(catalog: Catalog, article_id: str) -> Dict[str, List[str]]:
+    """The article's ids by kind. `doi` is every DOI it holds as its own, a preprint server's
+    included, which the rules below tell apart with `is_preprint_doi`."""
     held = {}
-    for kind in ("pmid", "pmcid", "doi", "neurostore",
-                 PREPRINT_PMID, PREPRINT_PMCID, ALTERNATE_DOI):
+    for kind in ("pmid", "pmcid", "doi", "neurostore", "preprint_doi",
+                 "preprint_pmid", "preprint_pmcid", "alternative_doi"):
         values = catalog.aliases(article_id, kind)
         held[kind] = sorted({normalize_doi(v) or v for v in values}
-                            if kind in ("doi", ALTERNATE_DOI) else values)
+                            if kind in ("doi", "preprint_doi", "alternative_doi") else values)
+    held["doi"] = sorted(set(held["doi"]) | set(held.pop("preprint_doi")))
     return held
 
 

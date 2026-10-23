@@ -14,6 +14,7 @@ from ingestion_workflow.clients.pubmed import PubMedClient
 from ingestion_workflow.clients.semantic_scholar import SemanticScholarClient
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models import Identifier, Identifiers
+from ingestion_workflow.models.ids import BUCKETS
 from ingestion_workflow.services import logging
 
 LookupOrder = Sequence[str]
@@ -131,6 +132,10 @@ class IDLookupService:
         if source.neurostore and not target.neurostore:
             target.neurostore = source.neurostore
             updated = True
+        for name in BUCKETS:
+            held = getattr(target, name)
+            setattr(target, name, (*held, *getattr(source, name)))
+            updated = updated or getattr(target, name) != held
 
         if source.other_ids:
             if target.other_ids is None:

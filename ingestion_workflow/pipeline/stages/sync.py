@@ -558,7 +558,6 @@ def _parse_inputs(
     return paper_parse.ParseInputs(
         article_id=work.article_id,
         text_copy=text_copy,
-        dois=ctx.catalog.aliases(work.article_id, "doi"),
         base_study_id=base_study_id,
         triage=payload("triage"),
         excluded=excluded or {},

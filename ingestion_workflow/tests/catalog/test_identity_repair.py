@@ -271,7 +271,8 @@ def test_merge_keeps_a_preprint_beside_its_journal_doi(catalog):
     a = catalog.register(Identifier(doi="10.1101/2023.10.21.563317")).id
     b = catalog.register(Identifier(doi="10.1016/j.neuroimage.2024.120001")).id
     survivor = catalog.merge([a, b])
-    assert len(catalog.aliases(survivor, "doi")) == 2
+    assert catalog.aliases(survivor, "doi") == ["10.1016/j.neuroimage.2024.120001"]
+    assert catalog.aliases(survivor, "preprint_doi") == ["10.1101/2023.10.21.563317"]
 
 
 def test_merge_needs_two_live_articles(catalog):
@@ -289,7 +290,7 @@ def _preprint_duplicate(catalog):
     # eLife paper, and a PDF of it.
     paper = catalog.register(Identifier(doi="10.7554/elife.92563", pmid="38345852",
                                         pmcid="PMC10942577")).id
-    _hold(catalog, paper, "doi", "10.1101/2023.09.27.559792")
+    _hold(catalog, paper, "preprint_doi", "10.1101/2023.09.27.559792")
     preprint = catalog.register(Identifier(pmid="37808793")).id
     _download(catalog, preprint, "pdf")
     return paper, preprint
@@ -304,7 +305,7 @@ def test_a_preprint_s_record_merges_into_its_paper_as_the_preprint_s(catalog):
     assert catalog.aliases(survivor, "preprint_pmid") == ["37808793"]
     identifier = catalog.identifier(survivor)
     assert identifier.pmid == "38345852"
-    assert identifier.other_ids == {"preprint_pmid": "37808793"}
+    assert identifier.preprint_pmids == ("37808793",)
     assert _artifacts(catalog, survivor) == [("download", "pdf"), ("extract", "pdf")]
 
 
@@ -339,8 +340,8 @@ def test_a_pmid_and_a_pmcid_are_held_as_the_preprint_s(catalog):
 
     catalog.rekind_aliases([("pmid", "37808793", a), ("pmcid", "PMC10592780", a)])
 
-    assert catalog.identifier(a).other_ids == {"preprint_pmid": "37808793",
-                                               "preprint_pmcid": "PMC10592780"}
+    held = catalog.identifier(a)
+    assert (held.preprint_pmids, held.preprint_pmcids) == (("37808793",), ("PMC10592780",))
     assert catalog.resolve(Identifier(pmcid="PMC10592780")).id == a
 
 
@@ -454,7 +455,7 @@ def test_a_merge_drops_a_second_pubmed_record_of_the_paper(catalog):
     survivor = catalog.merge([paper, duplicate], drop=[("pmid", "37401785")])
 
     assert catalog.aliases(survivor, "pmid") == ["35770780"]
-    assert catalog.aliases(survivor, "duplicate_pmid") == ["37401785"]
+    assert catalog.aliases(survivor, "alternative_pmid") == ["37401785"]
     assert catalog.register(Identifier(pmid="37401785")).id == survivor
     assert catalog.identifier(survivor).pmids == ["35770780", "37401785"]
     assert _artifacts(catalog, survivor) == [("download", "pubget"), ("extract", "pubget")]
@@ -546,7 +547,7 @@ def test_a_split_may_not_leave_the_journal_doi_only_as_an_alternate(catalog):
     # round had made an alternate; splitting the cardiology paper off left it no journal DOI
     a = catalog.register(Identifier(pmid="28292861", doi="10.1161/circimaging.116.005695")).id
     catalog.add_aliases([(a, "pmcid", "PMC5329009"),
-                         (a, "alternate_doi", "10.3389/fnmol.2017.00052")])
+                         (a, "alternative_doi", "10.3389/fnmol.2017.00052")])
     before = _snapshot(catalog)
     with pytest.raises(IdentityError, match="only as an alternate"):
         catalog.split(a, [("pmid", "28292861"), ("doi", "10.1161/circimaging.116.005695")])
@@ -582,6 +583,6 @@ def test_a_merge_drops_a_second_pmc_record_of_the_paper(catalog):
         Identifier(doi="10.1684/epd.2022.1433", pmid="35770780", pmcid="PMC100")).id
     duplicate = catalog.register(Identifier(pmcid="PMC200")).id
     survivor = catalog.merge([paper, duplicate], drop=[("pmcid", "PMC200")])
-    assert catalog.aliases(survivor, "duplicate_pmcid") == ["PMC200"]
+    assert catalog.aliases(survivor, "alternative_pmcid") == ["PMC200"]
     assert catalog.register(Identifier(pmcid="PMC200")).id == survivor
     assert not (catalog.identifier(survivor).other_ids or {}).get("duplicate_pubmed_records")
