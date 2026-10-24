@@ -360,14 +360,15 @@ class CrossrefIDLookupService(IDLookupService):
         self.catalog.record_lookups(asked, self.extractor_name)
 
     def _rekind(self, article: str, identifier: Identifier) -> None:
-        held = [(kind, value, article)
-                for kind, values in (("pmid", identifier.preprint_pmids),
-                                     ("pmcid", identifier.preprint_pmcids))
+        held = [(kind, value, article, *as_kind)
+                for kind, values, as_kind in (("pmid", identifier.preprint_pmids, ()),
+                                              ("pmcid", identifier.preprint_pmcids, ()),
+                                              ("doi", identifier.preprint_dois, ("preprint_doi",)))
                 for value in values if value in self.catalog.aliases(article, kind)]
         try:
             self.catalog.rekind_aliases(held)
         except IdentityError as exc:
-            for kind, value, _ in held:
+            for kind, value, *_ in held:
                 self.catalog.refuse(kind, value, article, f"not held as the preprint's: {exc}")
 
     # -- Filing ----------------------------------------------------------

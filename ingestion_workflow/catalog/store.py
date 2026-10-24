@@ -780,15 +780,19 @@ class Catalog:
                 self._require_journal_doi(conn, article_id)
         return [(article_id, kind, value) for kind, value, article_id in rows]
 
-    #: The kind each kind may be held as instead: a Preprint-typed PubMed record's
-    #: PMID and PMC's PMCID of it beside the version of record's, a DOI as an
+    #: The kind each kind is held as instead, unless a row names another: a Preprint-typed
+    #: PubMed record's PMID and PMC's PMCID of it beside the version of record's, a DOI as an
     #: alternate DOI of the paper.
     REKIND = {"pmid": "preprint_pmid", "pmcid": "preprint_pmcid", "doi": "alternative_doi"}
+    #: Every kind a kind may be held as: a DOI is also a preprint's.
+    REKIND_TO = {"pmid": ("preprint_pmid",), "pmcid": ("preprint_pmcid",),
+                 "doi": ("alternative_doi", "preprint_doi")}
     #: The kind a merge holds a duplicate record's id as.
     DROP = {"pmid": "alternative_pmid", "pmcid": "alternative_pmcid"}
 
-    def rekind_aliases(self, rows: Sequence[Tuple[str, str, str]]) -> None:
-        """Hold each alias, given as (kind, value, article), as the kind `REKIND` gives.
+    def rekind_aliases(self, rows: Sequence[Tuple[str, ...]]) -> None:
+        """Hold each alias, given as (kind, value, article) or (kind, value, article, as_kind),
+        as the kind `REKIND` gives, or as `as_kind`, one of `REKIND_TO`.
 
         Refused when an alias is not the article's, the kind has no other, the
         article is not live, or it would be left with no pmid, pmcid or doi, with
@@ -796,21 +800,23 @@ class Catalog:
         the version of record's DOI is the one an article presents.
         """
         with self._write() as conn:
-            for kind, value, article_id in rows:
-                self._rekind(conn, kind, value, article_id)
-            for article_id in dict.fromkeys(a for _, _, a in rows):
+            for kind, value, article_id, *as_kind in rows:
+                self._rekind(conn, kind, value, article_id, *as_kind)
+            for article_id in dict.fromkeys(row[2] for row in rows):
                 self._require_named(conn, article_id)
                 self._require_journal_doi(conn, article_id)
 
-    def _rekind(self, conn: sqlite3.Connection, kind: str, value: str, article_id: str) -> None:
+    def _rekind(self, conn: sqlite3.Connection, kind: str, value: str, article_id: str,
+                as_kind: Optional[str] = None) -> None:
         if kind not in self.REKIND:
             raise IdentityError(f"a {kind} is held as no other kind")
+        as_kind = as_kind or self.REKIND[kind]
+        if as_kind not in self.REKIND_TO[kind]:
+            raise IdentityError(f"a {kind} is not held as a {as_kind}")
         self._require_live(article_id)
         self._require_held(conn, kind, value, article_id)
-        conn.execute("UPDATE aliases SET kind=? WHERE kind=? AND value=?",
-                     (self.REKIND[kind], kind, value))
-        logger.warning("catalog: %s %s of %s held as %s",
-                       kind, value, article_id, self.REKIND[kind])
+        conn.execute("UPDATE aliases SET kind=? WHERE kind=? AND value=?", (as_kind, kind, value))
+        logger.warning("catalog: %s %s of %s held as %s", kind, value, article_id, as_kind)
 
     def _require_journal_doi(self, conn: sqlite3.Connection, article_id: str) -> None:
         alternates = self._aliases(conn, article_id, "alternative_doi")

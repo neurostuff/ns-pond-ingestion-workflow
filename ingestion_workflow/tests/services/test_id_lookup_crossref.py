@@ -286,6 +286,23 @@ def test_a_refiled_pmid_is_held_by_the_catalog_as_the_preprint_s(service, catalo
 
 
 @pytest.mark.vcr()
+def test_a_doi_crossref_types_a_preprint_is_held_by_the_catalog_as_the_preprint_s(
+        service, catalog):
+    # an eLife reviewed preprint with no version of record, held as `doi` by a catalog that
+    # could not tell it from a published eLife paper
+    article = catalog.register(Identifier(doi="10.7554/elife.112197")).id
+
+    _looked_up(service, catalog.ref(article).identifier)
+
+    assert catalog.aliases(article, "doi") == []
+    assert {"10.7554/elife.112197", "10.7554/elife.112197.1"} <= set(
+        catalog.aliases(article, "preprint_doi"))
+    assert catalog.aliases(article, "alternative_doi") == []
+    assert catalog.identifier(article).publication_status == "preprint"
+    assert catalog.refused == []
+
+
+@pytest.mark.vcr()
 def test_a_pmcid_that_is_not_the_preprint_s_stays_the_article_s(service):
     found = _looked_up(service, Identifier(pmid="38013996", pmcid="PMC12964139"))
 
