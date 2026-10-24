@@ -22,7 +22,7 @@ from ingestion_workflow.models import (
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.models.metadata import ArticleMetadata
 from ingestion_workflow.pipeline.stage import Context, metadata_digests
-from ingestion_workflow.pipeline.stages.metadata import MetadataStage
+from ingestion_workflow.pipeline.stages.metadata import MetadataStage, held_dois
 
 COPIES = Path(__file__).parents[1] / "data" / "copies"
 #: PMC10518222: the NIH manuscript, offered for text mining only, of an article whose
@@ -151,13 +151,15 @@ def test_a_re_extracted_pdf_makes_the_metadata_stale(env):
     ref = _held(catalog, TDM_MANUSCRIPT, source="pdf", fixture=None)
     stage = MetadataStage(settings)
     downloads = catalog.artifacts([ref.id], "download")[ref.id]
-    first = stage.fingerprint_for(downloads, catalog.artifacts([ref.id], "extract")[ref.id])
+    ids = (ref.identifier.pmid, held_dois(catalog, ref.id))
+    first = stage.fingerprint_for(ids, downloads, catalog.artifacts([ref.id], "extract")[ref.id])
     catalog.record([Outcome(article_id=ref.id, stage="extract", source="pdf", fingerprint="ex-2",
                             payload={"slug": ref.identifier.slug, "source": "pdf", "tables": [],
                                      "identifier": ref.identifier.to_dict(),
                                      "extracted_at": "2026-10-23T00:00:00"},
                             summary={"tables": 0})])
-    second = stage.fingerprint_for(downloads, catalog.artifacts([ref.id], "extract")[ref.id])
+    second = stage.fingerprint_for(ids, downloads,
+                                   catalog.artifacts([ref.id], "extract")[ref.id])
     assert second != first
 
 def test_a_new_or_changed_download_makes_the_licences_stale(env):

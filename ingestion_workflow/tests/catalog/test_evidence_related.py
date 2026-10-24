@@ -14,8 +14,8 @@ def test_a_version_doi_s_other_side_is_asked_by_the_publisher_s_spelling(evidenc
     # and the version's own record gives that spelling as its alternative-id
     related = evidence.related("10.7554/elife.106070.3")
 
-    assert related.versions == ("10.7554/elife.106070.1", "10.7554/elife.106070.2",
-                                "10.7554/elife.106070")
+    assert related.versions == ("10.7554/elife.106070.1", "10.7554/elife.106070.2")
+    assert related.aliases == ("10.7554/elife.106070",)
 
 
 @pytest.mark.vcr()

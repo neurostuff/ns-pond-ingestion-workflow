@@ -31,7 +31,7 @@ from ingestion_workflow.clients.crossref import CrossrefClient
 from ingestion_workflow.clients.doi_registry import DoiRegistry
 from ingestion_workflow.clients.pubmed import PubMedClient
 from ingestion_workflow.config import Settings, load_settings
-from ingestion_workflow.models.ids import Identifier, Identifiers
+from ingestion_workflow.models.ids import BUCKETS, Identifier, Identifiers
 from ingestion_workflow.pipeline import (
     Context,
     Select,
@@ -219,8 +219,11 @@ def add(
         "--enrich/--no-enrich",
         help=(
             "Fill in missing pmcid/doi from Semantic Scholar, PubMed and "
-            "OpenAlex. A PubMed search returns PMIDs only, and pubget needs a "
-            "PMCID, so without this those articles cannot be downloaded."
+            "OpenAlex, then file each article's preprint and other ids from PubMed "
+            "and Crossref (held as the preprint's in the catalog, ids another article "
+            "holds left off and listed in its refusals). A PubMed search returns PMIDs "
+            "only, and pubget needs a PMCID, so without this those articles cannot be "
+            "downloaded."
         ),
     ),
     from_neurostore: bool = typer.Option(
@@ -461,18 +464,19 @@ def _enrich(settings: Settings, catalog: Catalog, refs: Sequence[ArticleRef]) ->
         if not service.can_run():
             typer.echo(f"  {name}: not configured, skipping")
             continue
-        before = _complete(identifiers)
+        before = _held(identifiers)
         service.find_identifiers(identifiers)
-        gained = _complete(identifiers) - before
-        typer.echo(f"  {name}: completed {gained:,} more")
+        typer.echo(f"  {name}: found {len(_held(identifiers) - before):,} more ids")
 
     return catalog.register_many(list(identifiers.identifiers))
 
 
-def _complete(identifiers: Identifiers) -> int:
-    return sum(
-        1 for i in identifiers.identifiers if i.pmid and i.doi and i.pmcid
-    )
+def _held(identifiers: Identifiers) -> set:
+    """Every id the identifiers hold, by the identifier holding it, whichever kind of id."""
+    return {(i, value) for i, identifier in enumerate(identifiers.identifiers)
+            for field in ("doi", "pmid", "pmcid", *BUCKETS)
+            for value in ((getattr(identifier, field),) if field in ("doi", "pmid", "pmcid")
+                          else getattr(identifier, field)) if value}
 
 
 def _upload_source(settings: Settings) -> str:

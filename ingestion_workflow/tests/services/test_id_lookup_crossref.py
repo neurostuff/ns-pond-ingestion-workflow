@@ -8,7 +8,7 @@ carrying the placeholder email.
 from __future__ import annotations
 
 import pytest
-import requests
+import tenacity
 from ingestion_workflow.catalog import Catalog
 from ingestion_workflow.catalog.evidence import Evidence
 from ingestion_workflow.clients.crossref import CrossrefClient
@@ -400,45 +400,72 @@ def test_an_id_two_articles_of_one_batch_are_given_goes_to_neither(service, cata
     assert all("in this batch, holds it" in why for _, _, _, why in catalog.refused)
 
 
-@pytest.mark.vcr()
-def test_an_article_one_failing_request_leaves_does_not_stop_the_batch(
-        service, catalog, monkeypatch):
-    work = CrossrefClient.work
+# A request that fails is not one Crossref will fail on demand, so these two cassettes are
+# composed: the recorded answers for eLife.106070, and for 10.1162/imag.a.1156 an answer made
+# up by hand (four 503s, which the client asks for in turn; a 200 with no DOI in it).
 
-    def fail_for_one(client, doi):
-        if doi == "10.1162/imag.a.1156":
-            raise requests.ConnectionError("Crossref is unreachable")
-        return work(client, doi)
-    monkeypatch.setattr(CrossrefClient, "work", fail_for_one)
-    unreachable = Identifier(pmid="41799680", doi="10.1162/imag.a.1156")
-    reachable = Identifier(doi="10.7554/eLife.106070")
-
-    service.find_identifiers(Identifiers([unreachable, reachable]))
-
-    assert unreachable.preprint_dois == ()
-    assert reachable.preprint_dois == ("10.1101/2025.02.05.636581",)
-    assert not catalog.was_looked_up(catalog.resolve(unreachable).id, "crossref")
-    assert catalog.was_looked_up(catalog.resolve(reachable).id, "crossref")
+@pytest.fixture()
+def no_waiting(monkeypatch):
+    monkeypatch.setattr(CrossrefClient.work.retry, "wait", tenacity.wait_none())
 
 
 @pytest.mark.vcr()
-def test_an_article_crossref_was_asked_of_is_not_asked_again(service, catalog, monkeypatch):
-    sent = []
-    send = requests.Session.send
-    monkeypatch.setattr(requests.Session, "send",
-                        lambda self, request, **kw: sent.append(request.url) or send(
-                            self, request, **kw))
+def test_an_article_crossref_answers_503_for_does_not_stop_the_batch(
+        service, catalog, no_waiting):
+    failing = Identifier(doi="10.1162/imag.a.1156")
+    filed = Identifier(doi="10.7554/eLife.106070")
+
+    service.find_identifiers(Identifiers([failing, filed]))
+
+    assert failing.preprint_dois == ()
+    assert filed.preprint_dois == ("10.1101/2025.02.05.636581",)
+    assert not catalog.was_looked_up(catalog.resolve(failing).id, "crossref")
+    assert catalog.was_looked_up(catalog.resolve(filed).id, "crossref")
+
+
+@pytest.mark.vcr()
+def test_an_article_whose_answer_is_not_a_work_does_not_stop_the_batch(service, catalog):
+    failing = Identifier(doi="10.1162/imag.a.1156")
+    filed = Identifier(doi="10.7554/eLife.106070")
+
+    service.find_identifiers(Identifiers([failing, filed]))
+
+    assert failing.preprint_dois == ()
+    assert filed.preprint_dois == ("10.1101/2025.02.05.636581",)
+    assert not catalog.was_looked_up(catalog.resolve(failing).id, "crossref")
+    assert catalog.was_looked_up(catalog.resolve(filed).id, "crossref")
+
+
+@pytest.mark.vcr()
+def test_a_rekind_the_catalog_refuses_is_recorded_not_swallowed(service, catalog):
+    # the article holds only the preprint's PMID, and the bioRxiv DOI PubMed gives it is
+    # another article's: with no DOI to name it, it cannot be held as the preprint's
+    other = catalog.register(Identifier(doi="10.1101/2023.11.12.566592")).id
+    article = catalog.register(Identifier(pmid="38013996")).id
+
+    _looked_up(service, catalog.ref(article).identifier)
+
+    assert catalog.aliases(article, "pmid") == ["38013996"]
+    refused = {(kind, value): why for kind, value, _, why in catalog.refused}
+    assert refused[("doi", "10.1101/2023.11.12.566592")] == f"{other} holds it"
+    assert "not held as the preprint's" in refused[("pmid", "38013996")]
+    assert "no pmcid, pmid, doi" in refused[("pmid", "38013996")]
+
+
+@pytest.mark.vcr()
+def test_an_article_crossref_was_asked_of_is_not_asked_again(service, catalog, caplog):
     article = catalog.register(Identifier(doi="10.7554/eLife.106070")).id
     _looked_up(service, catalog.ref(article).identifier)
-    asked = len(sent)
 
-    # a catalog opened again has no answers in hand, only what it was told
+    # a catalog opened again has no answers in hand, only what it was told; a request it made
+    # would have no recording to play, and the article would be logged as failed
     with PubMedClient(email=EMAIL) as pubmed:
         registry = DoiRegistry(CrossrefClient(EMAIL))
         with Catalog.open(catalog.root, evidence=Evidence(pubmed, registry)) as again:
-            found = _looked_up(CrossrefIDLookupService(service.settings, again),
-                               again.ref(article).identifier)
+            with caplog.at_level("WARNING"):
+                found = _looked_up(CrossrefIDLookupService(service.settings, again),
+                                   again.ref(article).identifier)
         registry.close()
 
-    assert asked > 0 and len(sent) == asked
+    assert [r.message for r in caplog.records if "lookup" in r.message] == []
     assert found.preprint_dois == ("10.1101/2025.02.05.636581",)

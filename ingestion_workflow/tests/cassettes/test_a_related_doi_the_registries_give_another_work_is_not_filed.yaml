@@ -26,7 +26,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 22:54:21 GMT
+      - Sat, 24 Oct 2026 00:41:51 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -78,7 +78,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 22:54:21 GMT
+      - Sat, 24 Oct 2026 00:41:51 GMT
       Transfer-Encoding:
       - chunked
       access-control-allow-headers:
@@ -132,7 +132,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 22:54:21 GMT
+      - Sat, 24 Oct 2026 00:41:51 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -187,15 +187,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4f452bacdac6b45-DFW
+      - a4f4f0339d7569c6-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Fri, 23 Oct 2026 22:54:21 GMT
+      - Sat, 24 Oct 2026 00:41:52 GMT
       expires:
-      - Fri, 23 Oct 2026 23:53:09 GMT
+      - Sat, 24 Oct 2026 01:27:31 GMT
       location:
       - https://api.crossref.org/v1/works/10.1524%2Fsrsr.1992.15.1.43/transform
       nel:
@@ -203,7 +203,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=NXvaZamGlY8XPPgC8Z9TmxA%2B6AP3anbMsIhHsrGRmkExP3TTAd14wYehZbAQ3rsWS7KZIeFmOzvZcai%2FYXzZKw3enqDcqjF9xvSkY%2BDqbWLuMhxmvX9kPew%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=pyXZ%2Fxk8BlA72tVevDB3C4A%2B%2BZY0%2BAwwhz1xSnS1Z6VWhnLdAOPWRpJi2FuXv2bXjOtBINfwY%2FP4F1meBkgL8TMMMwSnRNpKRak6eLRazqK21QZNN5TFQa8%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -264,7 +264,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Fri, 23 Oct 2026 22:54:22 GMT
+      - Sat, 24 Oct 2026 00:41:52 GMT
       permissions-policy:
       - interest-cohort=()
       server:
@@ -310,15 +310,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4f452bbee866b45-DFW
+      - a4f4f035188d69c6-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Fri, 23 Oct 2026 22:54:22 GMT
+      - Sat, 24 Oct 2026 00:41:52 GMT
       expires:
-      - Fri, 23 Oct 2026 23:08:08 GMT
+      - Sat, 24 Oct 2026 00:53:09 GMT
       location:
       - https://api.crossref.org/v1/works/10.20378%2Firb-56286/transform
       nel:
@@ -326,7 +326,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=5NWuPJHpxjzpc%2F2%2BTt7eajN%2Fwps2zEdvPPQOFxqxF%2FdTv9cqNUYOU%2FLaG%2F6TRULltsJUUjyJ0GUmkUeA%2B2pOd%2BmVO2Csn48AKTHTvdckALKAZBzFiCl%2FwxQ%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=g%2FokKUlUN%2BsgoiSqsRAOinXFHayoBdPcXSLVEvUHhMhWhrk78SYTJbD6xrnoiWe6KiTNQectzgOIlhag73zPoMJPecvX22PO9yZ%2FLJex1nW9m5xqEOIkKIo%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -386,7 +386,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Fri, 23 Oct 2026 22:54:22 GMT
+      - Sat, 24 Oct 2026 00:41:52 GMT
       permissions-policy:
       - interest-cohort=()
       server:

@@ -9,6 +9,7 @@ One-off tools that are not part of the `ingest` command.
 | `symbols_as_digits_manifest.py` | list the articles whose stored PDF text the pdf extractor now repairs or sets aside, for `--refresh extract:pdf` |
 | `backfill_download_copies.py` | record the copy (route, version, access, url) of each download stored before the download stage recorded it; a dry run unless `--apply --backup <path>` |
 | `rekey_metadata_reads.py` | give triage and prose, and what is made from them, the fingerprints of what they now read of the metadata, where the former formula matches; run once, before the metadata stage re-runs; a dry run unless `--apply --backup <path>` |
+| `rekey_metadata_fingerprints.py` | give each metadata artifact the fingerprint of the ids, downloads, extractions and cached provider records it was made from, where the former formula (with the settings' provider list) matches, without asking a provider; run once, before the lookup that files preprint DOIs; a dry run unless `--apply --backup <path>` |
 | `rekey_analyses_reads.py` | give analyses, and what is made from them, the fingerprints of what analyses now reads (triage's verdict, the extraction, the title and abstract), read from a copy of the catalog from before triage ran again; run once, before analyses re-runs; a dry run unless `--apply --backup <path>` |
 | `repair_doi_collisions.py` | settle the DOIs two catalog articles hold in different case, by `doi_collisions.tsv`; run once, before the schema version 3 migration |
 

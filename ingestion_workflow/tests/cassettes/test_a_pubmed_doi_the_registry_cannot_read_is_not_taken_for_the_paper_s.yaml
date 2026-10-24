@@ -49,11 +49,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 23 Oct 2026 22:54:33 GMT
+      - Sat, 24 Oct 2026 00:42:04 GMT
       ncbi-phid:
-      - 1D32B8BB86A02F15000026981EB73F00.1.1.m_1
+      - 1D33ABE4FCD277E5000059CFD5C5A5C1.1.1.m_1
       ncbi-sid:
-      - EC37B8328C3040C2_91F4SID
+      - 7682F10E1412407A_B15ESID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -67,7 +67,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '0'
+      - '1'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -101,15 +101,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4f45306ba517ca9-DFW
+      - a4f4f0845da18c94-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Fri, 23 Oct 2026 22:54:34 GMT
+      - Sat, 24 Oct 2026 00:42:05 GMT
       expires:
-      - Fri, 23 Oct 2026 23:11:53 GMT
+      - Sat, 24 Oct 2026 01:30:49 GMT
       location:
       - http://122.115.55.36:8000/doi/10.7507%2F1001-5515.201511032
       nel:
@@ -117,7 +117,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=HHPD6JyvXuXSfQYVHkrahEslul%2FlDWtw6%2FnC4pX94E96zeg2tIPVzKKtIxfl3mSQXMGbiZZjP3RGOkFgwJnGdzXjHlcNzntle77iAqfqKtmOic39DQj3%2Fgk%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=enFxU1twE78qB7tu80RSNY5CQJG3qRzPkTIFtERKA0CFM6abXZDUn1PdS%2FKs2EIjHsPEmjxSQEKZ5SudTm7uxJ%2BjUfZHnyLLnljOtqAAeFlvikR1UjSfttI%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:

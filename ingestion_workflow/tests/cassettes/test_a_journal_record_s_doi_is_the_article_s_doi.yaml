@@ -47,11 +47,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 23 Oct 2026 22:54:11 GMT
+      - Sat, 24 Oct 2026 00:41:41 GMT
       ncbi-phid:
-      - 1D32B8BB86A02F1500006097F2D70112.1.1.m_1
+      - 1D3460167182AD9500005BCEB20BC39B.1.1.m_1
       ncbi-sid:
-      - 30544F0C71486DCC_88BASID
+      - ADABCFDDB99E28B9_0929SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -99,15 +99,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4f4527f0ca870cc-DFW
+      - a4f4eff3acf4259a-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Fri, 23 Oct 2026 22:54:12 GMT
+      - Sat, 24 Oct 2026 00:41:41 GMT
       expires:
-      - Fri, 23 Oct 2026 23:27:31 GMT
+      - Sat, 24 Oct 2026 01:08:08 GMT
       location:
       - https://api.crossref.org/v1/works/10.1093%2Fbrain%2F124.5.1003/transform
       nel:
@@ -115,7 +115,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=pQ8jb%2FSWnwUpgNTQfhNvVHX1QO%2F0zfTQc0vJFcooEiP3YiXXJuvm4QmaThH1Km%2Fn7xQSx%2B5NnBojNug2DgcKw8%2FjPvWakHV9ENpKI%2F%2BP9imQI3Rmcic9Eg4%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=kYe5H8zpQsqxcpMOxIJeW4qOlbfqQWBlXNgvfab6Y6OBtYiATB%2BvSp03hwYhfjE2tLN0R9erxtxaxGBwwdvzBtbzHir7eDSeZ9rC27onRD2OZyGOLaZUVtQ%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -177,7 +177,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Fri, 23 Oct 2026 22:54:12 GMT
+      - Sat, 24 Oct 2026 00:41:41 GMT
       permissions-policy:
       - interest-cohort=()
       server:
@@ -225,7 +225,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 22:54:12 GMT
+      - Sat, 24 Oct 2026 00:41:41 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -277,7 +277,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 23 Oct 2026 22:54:12 GMT
+      - Sat, 24 Oct 2026 00:41:42 GMT
       Transfer-Encoding:
       - chunked
       access-control-allow-headers:

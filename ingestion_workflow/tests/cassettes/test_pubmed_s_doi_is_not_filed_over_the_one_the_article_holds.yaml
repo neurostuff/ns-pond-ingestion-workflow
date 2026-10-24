@@ -48,11 +48,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Fri, 23 Oct 2026 22:54:32 GMT
+      - Sat, 24 Oct 2026 00:42:03 GMT
       ncbi-phid:
-      - 1D33ABE4FCD277E5000031AE83CA73AB.1.1.m_1
+      - 1D33ABE4FCD277E5000031CFD3419EDF.1.1.m_1
       ncbi-sid:
-      - 847AEFD243CD923C_C4F8SID
+      - 69C1C5F0CBCA7D3A_7C26SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -100,15 +100,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4f45300bec9a8a1-DFW
+      - a4f4f07daca3259a-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Fri, 23 Oct 2026 22:54:33 GMT
+      - Sat, 24 Oct 2026 00:42:03 GMT
       expires:
-      - Fri, 23 Oct 2026 23:34:32 GMT
+      - Sat, 24 Oct 2026 01:08:08 GMT
       location:
       - https://api.crossref.org/v1/works/10.1007%2Fbf03337758/transform
       nel:
@@ -116,7 +116,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=yCq9TqbAU%2BvM6vp3gn1YrAerxK4jq5jiA1KT%2FwZAd9CVlQ6ZmLgYeFVO5KsfZcW%2BmtrDgBjkDYkNa0%2FRqJkE0tUJFFgQeYWE4CsdyiTTD%2FJywwxCSnnjm8g%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=lmE3zahnO9SdCQI5bJmAuEDiSUy6T4phX0scbZoMosNoB1w1%2FO5d8E%2BjC%2BI2vKklkVjxx%2B5MDR9iFMcl0%2BFwsAUZ8kF6BmPC12mnVfzc43Gp9opzzUnswYg%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -197,7 +197,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Fri, 23 Oct 2026 22:54:33 GMT
+      - Sat, 24 Oct 2026 00:42:03 GMT
       permissions-policy:
       - interest-cohort=()
       server:
@@ -240,7 +240,7 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Fri, 23 Oct 2026 22:54:33 GMT
+      - Sat, 24 Oct 2026 00:42:04 GMT
       Transfer-Encoding:
       - chunked
       access-control-allow-headers:

@@ -40,8 +40,10 @@ LONG_TITLE_WORDS = 8
 
 #: Crossref relations joining a preprint and its version of record.
 _VERSION_OF = ("is-preprint-of", "has-preprint")
-#: Crossref relations joining two ids of one work: a publisher's versions of it, and its aliases.
-_SAME_WORK = ("is-version-of", "has-version", "is-same-as", "is-identical-to")
+#: Crossref relations joining a work to its versions, and to the other DOIs that are it.
+_VERSIONS = ("is-version-of", "has-version")
+_ALIASES = ("is-same-as", "is-identical-to")
+_SAME_WORK = _VERSIONS + _ALIASES
 #: The version number a publisher appends to a version's DOI.
 _VERSIONED = re.compile(r"\.\d{1,2}$")
 
@@ -79,8 +81,10 @@ class Related:
     preprints: Tuple[str, ...] = ()
     #: The papers the DOI is a preprint of.
     papers: Tuple[str, ...] = ()
-    #: Other ids of the same work: its versions and aliases.
+    #: Versions of the same work (is-version-of, has-version).
     versions: Tuple[str, ...] = ()
+    #: Other DOIs that are the same work (is-same-as, is-identical-to).
+    aliases: Tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -392,8 +396,10 @@ class Evidence:
             self._related[doi] = Related(
                 preprints=gather((own, "has-preprint"), (named, "is-preprint-of")),
                 papers=gather((own, "is-preprint-of"), (named, "has-preprint")),
-                versions=gather(*[(source, kind) for kind in _SAME_WORK
-                                  for source in (own, named)]))
+                versions=gather(*[(source, kind) for kind in _VERSIONS
+                                  for source in (own, named)]),
+                aliases=gather(*[(source, kind) for kind in _ALIASES
+                                 for source in (own, named)]))
         return self._related[doi]
 
     def versions(self, doi: str) -> List[str]:

@@ -11,9 +11,6 @@ from __future__ import annotations
 import json
 from typing import Dict, List, Optional, Sequence, Set, Tuple
 
-import httpx
-import requests
-
 from ingestion_workflow.catalog.evidence import Unreadable, unversioned
 from ingestion_workflow.catalog.store import IdentityError
 from ingestion_workflow.clients.openalex import OpenAlexClient
@@ -277,8 +274,6 @@ _NEW_VERSIONS = {"new_version", "major_revision", "minor_revision"}
 #: Where each field's ids are held by the catalog, for finding whom an id already belongs to.
 _KIND = {"doi": "doi", "preprint_dois": "doi", "alternative_dois": "doi",
          "preprint_pmids": "pmid", "preprint_pmcids": "pmcid"}
-#: Failures of PubMed or Crossref that leave one article's ids unfiled, not the batch.
-_UNREACHABLE = (requests.RequestException, httpx.HTTPError)
 
 
 class CrossrefIDLookupService(IDLookupService):
@@ -340,7 +335,7 @@ class CrossrefIDLookupService(IDLookupService):
                     self._file_pubmed(identifier, article)
                 else:
                     self._file_crossref_dois(identifier, article)
-            except _UNREACHABLE as exc:
+            except Exception as exc:  # noqa: BLE001 - this article fails, and the pass goes on
                 self._failed.add(id(identifier))
                 self._log_lookup_failure(id_type, [identifier], exc)
             identifier.normalize()
@@ -360,10 +355,11 @@ class CrossrefIDLookupService(IDLookupService):
         self.catalog.record_lookups(asked, self.extractor_name)
 
     def _rekind(self, article: str, identifier: Identifier) -> None:
-        held = [(kind, value, article, *as_kind)
-                for kind, values, as_kind in (("pmid", identifier.preprint_pmids, ()),
-                                              ("pmcid", identifier.preprint_pmcids, ()),
-                                              ("doi", identifier.preprint_dois, ("preprint_doi",)))
+        held = [(kind, value, article, as_kind)
+                for kind, values, as_kind in (("pmid", identifier.preprint_pmids, "preprint_pmid"),
+                                              ("pmcid", identifier.preprint_pmcids,
+                                               "preprint_pmcid"),
+                                              ("doi", identifier.preprint_dois, "preprint_doi"))
                 for value in values if value in self.catalog.aliases(article, kind)]
         try:
             self.catalog.rekind_aliases(held)
@@ -438,7 +434,7 @@ class CrossrefIDLookupService(IDLookupService):
             if updated == doi:
                 continue
             if kind in _NEW_VERSIONS:
-                self._add_alternative(identifier, updated, article)
+                self._add_other_id(identifier, updated, article, version=True)
             else:
                 self._omit("doi", updated, article, f"{doi} is a {kind or 'notice'} of it, "
                            "which is another work")
@@ -447,19 +443,28 @@ class CrossrefIDLookupService(IDLookupService):
             self._add(identifier, "preprint_dois", preprint, article)
         for paper in related.papers:
             self._add_paper(identifier, paper, article)
-        for version in related.versions:
-            self._add_version(identifier, version, article)
+        for other in related.versions:
+            self._add_other_id(identifier, other, article, version=True)
+        for other in related.aliases:
+            self._add_other_id(identifier, other, article, version=False)
 
-    def _add_version(self, identifier: Identifier, doi: str, article: Optional[str]) -> None:
-        """Another id of the work: a preprint server's copy is a preprint's, whichever server
-        and however Crossref types it, but a work with a version of record has its own
-        per-version DOIs (eLife's .1, .2, .3) as alternatives, though Crossref types the
-        reviewed preprints among them posted-content."""
+    def _add_other_id(self, identifier: Identifier, doi: str, article: Optional[str],
+                      version: bool) -> None:
+        """Another DOI of the work, which Crossref relates as one of its versions (`version`) or
+        as the same work.
+
+        A work with a version of record has its own versions (eLife's .1, .2, .3) as
+        alternatives, though Crossref types the reviewed preprints among them posted-content:
+        the work is the one the article holds, Crossref relates the DOI to it as a version,
+        and it is that DOI's own version. Otherwise a DOI on a preprint server's pattern, or
+        that Crossref types a preprint, is a preprint's, and any other an alternative.
+        """
+        if (version and identifier.doi is not None
+                and unversioned(doi) == unversioned(identifier.doi)):
+            self._add(identifier, "alternative_dois", doi, article)
+            return
         record = None if is_preprint_doi(doi) else self.catalog.evidence.record(doi)
-        own_version = identifier.doi is not None and (
-            unversioned(doi) == unversioned(identifier.doi))
-        if is_preprint_doi(doi) or (record is not None and _is_preprint(record)
-                                    and not own_version):
+        if is_preprint_doi(doi) or (record is not None and _is_preprint(record)):
             self._add(identifier, "preprint_dois", doi, article)
         else:
             self._add_alternative(identifier, doi, article)
@@ -474,10 +479,10 @@ class CrossrefIDLookupService(IDLookupService):
 
     def _add_alternative(self, identifier: Identifier, doi: str,
                          article: Optional[str]) -> None:
-        """Another DOI of the article's version of record: a version of the DOI it holds, or
-        one the registries give one work with it."""
+        """Another DOI of the article's version of record, if the registries give it and the
+        one the article holds one work."""
         held = identifier.doi
-        if held is None or doi == held or unversioned(doi) == unversioned(held):
+        if held is None or doi == held:
             self._add(identifier, "alternative_dois", doi, article)
             return
         try:

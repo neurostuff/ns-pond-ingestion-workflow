@@ -101,9 +101,9 @@ def _refuse_returns(operations: List[Tuple[int, Operation]]) -> None:
             move(o["value"], None, (o["article"], o["kind"]), number)
         elif o["op"] == "remove":
             move(o["value"], (o["article"], o["kind"]), None, number)
-        elif o["op"] == "rekind" and o["kind"] in Catalog.REKIND:
+        elif o["op"] == "rekind" and o["kind"] in Catalog.REKIND_TO:
             move(o["value"], (o["article"], o["kind"]),
-                 (o["article"], Catalog.REKIND[o["kind"]]), number)
+                 (o["article"], _rekinded(o["kind"])), number)
         elif o["op"] == "reassign":
             for m in o["moves"]:
                 move(m["value"], (m["from"], m["kind"]), (m["to"], m["kind"]), number)
@@ -330,11 +330,18 @@ def _run_forget_artifacts(catalog, op, outcome):
 
 def _run_merge(catalog, op, outcome):
     return [catalog.merge(op["articles"], _pairs(op.get("drop", ())),
-                          _pairs(op.get("rekind", ())))]
+                          [(kind, value, _rekinded(kind))
+                           for kind, value in _pairs(op.get("rekind", ()))])]
+
+
+def _rekinded(kind):
+    """The kind a plan's `rekind` holds an alias of `kind` as: a PMID or PMCID as the
+    preprint's, a DOI as an alternate DOI (the first of the kinds it may be held as)."""
+    return Catalog.REKIND_TO[kind][0]
 
 
 def _run_rekind(catalog, op, outcome):
-    catalog.rekind_aliases([(op["kind"], str(op["value"]), op["article"])])
+    catalog.rekind_aliases([(op["kind"], str(op["value"]), op["article"], _rekinded(op["kind"]))])
     return [op["article"]]
 
 

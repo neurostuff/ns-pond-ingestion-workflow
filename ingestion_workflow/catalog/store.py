@@ -780,38 +780,33 @@ class Catalog:
                 self._require_journal_doi(conn, article_id)
         return [(article_id, kind, value) for kind, value, article_id in rows]
 
-    #: The kind each kind is held as instead, unless a row names another: a Preprint-typed
-    #: PubMed record's PMID and PMC's PMCID of it beside the version of record's, a DOI as an
-    #: alternate DOI of the paper.
-    REKIND = {"pmid": "preprint_pmid", "pmcid": "preprint_pmcid", "doi": "alternative_doi"}
-    #: Every kind a kind may be held as: a DOI is also a preprint's.
+    #: The kinds a kind may be held as instead: a Preprint-typed PubMed record's PMID and
+    #: PMC's PMCID of it beside the version of record's, a DOI as an alternate DOI of the
+    #: paper or as a preprint's.
     REKIND_TO = {"pmid": ("preprint_pmid",), "pmcid": ("preprint_pmcid",),
                  "doi": ("alternative_doi", "preprint_doi")}
     #: The kind a merge holds a duplicate record's id as.
     DROP = {"pmid": "alternative_pmid", "pmcid": "alternative_pmcid"}
 
-    def rekind_aliases(self, rows: Sequence[Tuple[str, ...]]) -> None:
-        """Hold each alias, given as (kind, value, article) or (kind, value, article, as_kind),
-        as the kind `REKIND` gives, or as `as_kind`, one of `REKIND_TO`.
+    def rekind_aliases(self, rows: Sequence[Tuple[str, str, str, str]]) -> None:
+        """Hold each alias, given as (kind, value, article, as_kind), as `as_kind`, one of
+        `REKIND_TO[kind]`.
 
-        Refused when an alias is not the article's, the kind has no other, the
+        Refused when an alias is not the article's, the kind is not held as `as_kind`, the
         article is not live, or it would be left with no pmid, pmcid or doi, with
         a journal DOI only as an alternate:
         the version of record's DOI is the one an article presents.
         """
         with self._write() as conn:
-            for kind, value, article_id, *as_kind in rows:
-                self._rekind(conn, kind, value, article_id, *as_kind)
+            for row in rows:
+                self._rekind(conn, *row)
             for article_id in dict.fromkeys(row[2] for row in rows):
                 self._require_named(conn, article_id)
                 self._require_journal_doi(conn, article_id)
 
     def _rekind(self, conn: sqlite3.Connection, kind: str, value: str, article_id: str,
-                as_kind: Optional[str] = None) -> None:
-        if kind not in self.REKIND:
-            raise IdentityError(f"a {kind} is held as no other kind")
-        as_kind = as_kind or self.REKIND[kind]
-        if as_kind not in self.REKIND_TO[kind]:
+                as_kind: str) -> None:
+        if as_kind not in self.REKIND_TO.get(kind, ()):
             raise IdentityError(f"a {kind} is not held as a {as_kind}")
         self._require_live(article_id)
         self._require_held(conn, kind, value, article_id)
@@ -930,12 +925,12 @@ class Catalog:
         self,
         article_ids: Sequence[str],
         drop: Sequence[Tuple[str, str]] = (),
-        rekind: Sequence[Tuple[str, str]] = (),
+        rekind: Sequence[Tuple[str, str, str]] = (),
     ) -> str:
         """Merge articles that are one paper into the oldest; return its id.
 
         Before the merge, each PMID or PMCID in `drop`, as (kind, value), is held as
-        a duplicate record's, and each alias in `rekind` as the kind `REKIND` gives;
+        a duplicate record's, and each alias in `rekind`, as (kind, value, as_kind), as `as_kind`;
         each must be held by one of the articles. `drop` is for a second PubMed or
         PMC record of the paper, or of its preprint beside the one kept: it still
         finds the paper, so registering it again does not make another article.
@@ -950,7 +945,7 @@ class Catalog:
             raise IdentityError("a merge needs two articles")
         with self._write() as conn:
             self._require_live(*article_ids)
-            for kind, value in list(drop) + list(rekind):
+            for kind, value, *_ in list(drop) + list(rekind):
                 row = conn.execute("SELECT article_id FROM aliases WHERE kind=? AND value=?",
                                    (kind, value)).fetchone()
                 if row is None or row["article_id"] not in article_ids:
@@ -963,10 +958,10 @@ class Catalog:
                              (self.DROP[kind], kind, value))
                 logger.warning("catalog: %s %s held as %s in merging %s", kind, value,
                                self.DROP[kind], article_ids)
-            for kind, value in rekind:
+            for kind, value, as_kind in rekind:
                 holder = conn.execute("SELECT article_id FROM aliases WHERE kind=? AND value=?",
                                       (kind, value)).fetchone()["article_id"]
-                self._rekind(conn, kind, value, holder)
+                self._rekind(conn, kind, value, holder, as_kind)
             if not self._compatible(conn, article_ids, {}):
                 raise IdentityError(f"{', '.join(article_ids)} would hold two of a PMID, PMCID, "
                                     "preprint PMID or PMCID, base study or journal DOI")
