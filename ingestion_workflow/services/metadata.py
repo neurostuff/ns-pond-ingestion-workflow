@@ -113,6 +113,9 @@ class MetadataService:
         self.undecided: Dict[str, Undecided] = {}
         #: Article slug -> the catalog conflict it was not asked about for, for the last batch.
         self.conflicts: Dict[str, str] = {}
+        #: Article slug -> the cache files its metadata was made from (a provider's record of
+        #: each identifier asked, an author's ORCID record), for the last batch.
+        self.records_read: Dict[str, List[Path]] = {}
 
         # Initialize clients if credentials available
         if settings.semantic_scholar_api_key:
@@ -162,6 +165,7 @@ class MetadataService:
         self.require_licence_providers()
         self.undecided = {}
         self.conflicts = {}
+        self.records_read = {}
         if not extracted_contents:
             return {}
 
@@ -300,6 +304,15 @@ class MetadataService:
             if item.identifier is None:
                 continue
             main_ident = _by_journal_doi(item.identifier, journal[slug])
+            self.records_read[slug] = [
+                self._cache_file(MetadataSource.semantic_scholar.value, item.identifier.slug),
+                *([self._cache_file(MetadataSource.pubmed.value, item.identifier.slug)]
+                  if self._pubmed_client else []),
+                *(self._cache_file(MetadataSource.crossref.value, i.slug)
+                  for _, i in by_doi[slug]),
+                *(self._cache_file(MetadataSource.openalex.value, i)
+                  for i in dict.fromkeys([main_ident.slug, *(i.slug for d, i in by_doi[slug]
+                                                             if d != main_ident.asking_doi)]))]
             asked = [item.identifier.slug, main_ident.slug,
                      *(ident.slug for _, ident in by_doi[slug])]
             waiting = {name: why for a in asked for name, why in unanswered.get(a, {}).items()}
@@ -325,20 +338,30 @@ class MetadataService:
             _decide_authors(metadata, answers.get(slug, {}), openalex.get(main_ident.slug),
                             _decide_corresponding(metadata, held.get(slug, ()),
                                                   openalex.get(main_ident.slug)))
-        self._add_orcid_emails(results.values())
+        for slug, read in zip(results, self._add_orcid_emails(results.values())):
+            self.records_read[slug].extend(read)
         return results
 
-    def _add_orcid_emails(self, records: Iterable[ArticleMetadata]) -> None:
+    def _cache_file(self, name: str, slug: str) -> Path:
+        """Where provider `name`'s record of the identifier with this slug is cached."""
+        return (self.settings.get_cache_dir("metadata") / PROVIDER_CACHE_DIRS[name]
+                / f"{slug}.json")
+
+    def _add_orcid_emails(self, records: Iterable[ArticleMetadata]) -> List[List[Path]]:
         """Give each corresponding author no source gave an address the public ones on
         their ORCID record, each iD asked once and cached. A record that cannot be read
-        leaves its author without, and is asked again on a later run."""
+        leaves its author without, and is asked again on a later run. Returns, for each
+        record, the cache files it read."""
         cache_dir = self.settings.get_cache_dir("metadata") / ORCID_CACHE_DIR
         cache_dir.mkdir(parents=True, exist_ok=True)
+        read: List[List[Path]] = []
         for record in records:
+            read.append([])
             for author in record.authors:
                 if not (author.corresponding and author.orcid and not author.emails):
                     continue
                 cache_file = cache_dir / f"{author.orcid}.json"
+                read[-1].append(cache_file)
                 if cache_file.exists():
                     author.emails = json.loads(cache_file.read_text())
                     continue
@@ -348,6 +371,7 @@ class MetadataService:
                     logger.warning("ORCID did not give %s's addresses: %s", author.orcid, exc)
                     continue
                 cache_file.write_text(json.dumps(author.emails))
+        return read
 
     def require_licence_providers(self) -> None:
         """Raise unless Semantic Scholar and OpenAlex are configured: without either, no
@@ -393,7 +417,7 @@ class MetadataService:
         A licence provider whose request fails is noted in `unanswered` for each article
         it did not answer for.
         """
-        cache_dir = self.settings.get_cache_dir("metadata") / PROVIDER_CACHE_DIRS[name]
+        cache_dir = self._cache_file(name, "").parent
         cache_dir.mkdir(parents=True, exist_ok=True)
 
         def missed(slugs, why: str) -> None:
@@ -404,7 +428,7 @@ class MetadataService:
         results: Dict[str, ArticleMetadata] = {}
         uncached: List[Identifier] = []
         for identifier in identifiers:
-            cache_file = cache_dir / f"{identifier.slug}.json"
+            cache_file = self._cache_file(name, identifier.slug)
             if not cache_file.exists():
                 uncached.append(identifier)
                 continue
@@ -428,7 +452,7 @@ class MetadataService:
                        else f"refused the request ({causes[0] if causes else exc})")
             for slug, metadata in fresh_results.items():
                 try:
-                    (cache_dir / f"{slug}.json").write_text(
+                    self._cache_file(name, slug).write_text(
                         json.dumps(metadata.to_dict(), indent=2), encoding="utf-8"
                     )
                 except Exception as exc:

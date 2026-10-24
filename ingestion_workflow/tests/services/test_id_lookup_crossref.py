@@ -208,6 +208,17 @@ def test_a_new_version_names_the_versions_it_replaces(service):
 
 
 @pytest.mark.vcr()
+def test_a_new_version_the_registries_give_another_work_is_not_filed(service, catalog):
+    # a Cochrane review's update-to new_version names the earlier entry, a reference entry
+    found = _looked_up(service, Identifier(doi="10.1002/14651858.cd005090.pub2"))
+
+    assert found.alternative_dois == ()
+    assert [(kind, value) for kind, value, _, _ in catalog.refused] == [
+        ("doi", "10.1002/14651858.cd005090")]
+    assert "do not give it and the article's" in catalog.refused[0][3]
+
+
+@pytest.mark.vcr()
 def test_a_correction_is_a_notice_of_another_work_and_is_recorded(service, catalog):
     notice = "10.1074/jbc.aac119.012166"
     found = _looked_up(service, Identifier(doi=notice))
