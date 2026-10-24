@@ -13,6 +13,7 @@ from ingestion_workflow.config import Settings
 from ingestion_workflow.extractors.figure_captions import captions_digest
 from ingestion_workflow.models import DownloadedFile, DownloadResult, DownloadSource, FileType
 from ingestion_workflow.models.ids import Identifier
+from ingestion_workflow.cli.main import _render_refingerprint
 from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.refingerprint import refingerprint
 from ingestion_workflow.pipeline.stages import (
@@ -397,4 +398,222 @@ def test_a_model_stopped_between_the_plans_counts_its_artifacts_as_running_again
                           catalog.empty_fingerprints())
 
     assert found.stages["roles"].lost == 2
+    assert found.rerun() == {"roles": 2}
+
+
+def _download_of(catalog, ref, tmp_path, source):
+    """A download of `source` as the migration imported it: no fingerprint."""
+    path = tmp_path / f"{ref.id}.{source}.xml"
+    path.write_text("<article/>")
+    file = DownloadedFile(file_path=path, file_type=FileType.XML,
+                          content_type="application/xml", source=DownloadSource(source))
+    payload = DownloadResult(identifier=ref.identifier, source=DownloadSource(source),
+                             success=True, files=[file]).to_dict()
+    catalog.record([Outcome(article_id=ref.id, stage="download", source=source,
+                            payload=payload)])
+    return catalog.artifact(ref.id, "download", source)
+
+
+def _no_text(**summary):
+    return {"payload": {"tables": [], "figure_captions": []},
+            "summary": {"tables": 0, "has_text": False, "captions_sha256": captions_digest(()),
+                        **summary}}
+
+
+@pytest.fixture()
+def elsevier(env):
+    """The env with elsevier first in the download order, as the production catalog has it."""
+    settings, catalog, stages, tmp_path = env
+    settings.download_sources = ["elsevier", "pubget"]
+    stages = [DownloadStage(settings) if s.name == "download" else s for s in stages]
+    return settings, catalog, stages, tmp_path
+
+
+def _held(catalog, tmp_path, number):
+    """An article read from elsevier, whose extraction is fresh once the download's
+    fingerprint is stored."""
+    ref = catalog.register(Identifier(pmid=str(number), pmcid=f"PMC{number}"))
+    download = _download_of(catalog, ref, tmp_path, "elsevier")
+    catalog.record([Outcome(article_id=ref.id, stage="extract", source="elsevier",
+                            fingerprint=extraction_fingerprint("elsevier", download),
+                            **_no_text())])
+    return ref
+
+
+def _stale_extraction(catalog, ref, source, **summary):
+    catalog.record([Outcome(article_id=ref.id, stage="extract", source=source,
+                            fingerprint="5042cb9aebec", **_no_text(**summary))])
+
+
+def _refingerprint(elsevier, *refs):
+    settings, catalog, stages, _ = elsevier
+    return refingerprint(Context(settings, catalog), stages, list(refs),
+                         catalog.empty_fingerprints())
+
+
+def test_an_extraction_with_no_download_of_its_source_is_reported_not_a_reason_to_stop(elsevier):
+    """Production, 2026-10-20: an ace extraction on an article whose only download is
+    elsevier's. No plan asks about it, and no run reads it."""
+    _, catalog, _, tmp_path = elsevier
+    ref = _held(catalog, tmp_path, 7)
+    _stale_extraction(catalog, ref, "ace", download_source="elsevier")
+    found = _refingerprint(elsevier, ref)
+
+    assert found.stages["extract"].unreachable == 1
+    assert found.stages["extract"].unasked == 0
+    assert found.rerun() == {}
+    assert [line.split(":")[0].strip() for line in _render_refingerprint(found).splitlines()
+            if "unreachable" in line] == ["extract"]
+
+
+def test_a_pdf_extraction_read_from_a_wiley_download_is_not_unreachable(elsevier):
+    """11,444 production pdf extractions are read from a wiley download, which `pdf`
+    stands for. Planned with extract alone, as a later stage asks about it otherwise, the
+    stale pdf extraction is left unasked, and is still a reason to stop."""
+    settings, catalog, stages, tmp_path = elsevier
+    ref = _held(catalog, tmp_path, 7)
+    _download_of(catalog, ref, tmp_path, "wiley")
+    _stale_extraction(catalog, ref, "pdf", download_source="wiley")
+    found = refingerprint(Context(settings, catalog),
+                          [s for s in stages if s.name in ("download", "extract")], [ref],
+                          catalog.empty_fingerprints())
+
+    assert found.stages["extract"].unreachable == 0
+    assert found.stages["extract"].unasked == 1
+    assert found.rerun() == {"extract": 1}
+
+
+def test_a_verdict_read_from_an_extraction_that_failed_is_left_as_it_is(elsevier):
+    """Production, 2026-10-05: triage verdicts read from an ace extraction that has since
+    failed as a page that is not the article. The ace download is OK, metadata is filled
+    in, and no plan asks about the verdict, but nothing it was made from is rewritten."""
+    _, catalog, _, tmp_path = elsevier
+    ref = catalog.register(Identifier(pmid="8", pmcid="PMC8"))
+    _download_of(catalog, ref, tmp_path, "ace")
+    catalog.record([
+        Outcome.failure(ref.id, "extract", "ace", "download failed validation: error_page",
+                        fingerprint="62972a9c3dfa9bd64c3363d3250b7562",
+                        summary={"bad_page": "error_page"}),
+        Outcome(article_id=ref.id, stage="metadata", source="",
+                payload={"title": "T", "abstract": "A"},
+                summary={"digests": metadata_digests({"title": "T", "abstract": "A"})}),
+        Outcome(article_id=ref.id, stage="triage", source="", fingerprint="2996adc13528",
+                payload={"source": "ace", "tables": []},
+                summary={"source": "ace", "tables": 0, "passed": 0, "passed_tables": []}),
+    ])
+    found = _refingerprint(elsevier, ref)
+
+    assert found.stages["metadata"].filled == 1
+    assert found.stages["triage"].failed_read == 1
+    assert found.stages["triage"].unasked == 0
+    assert found.rerun() == {}
+    assert [line.split(":")[0].strip() for line in _render_refingerprint(found).splitlines()
+            if "failed" in line] == ["triage"]
+
+
+def test_passages_read_from_an_extraction_that_is_not_failed_still_stop_the_repair(elsevier):
+    """Left stale where the extraction they chain on changes: the passages are read from
+    the elsevier extraction, which is OK and whose fingerprint is carried."""
+    _, catalog, _, tmp_path = elsevier
+    ref = _held(catalog, tmp_path, 7)
+    catalog.record([Outcome(article_id=ref.id, stage="passages", source="",
+                            fingerprint="2ba7e68e00ce", payload={"source": "elsevier",
+                                                                  "passages": []},
+                            summary={"source": "elsevier", "passages": 0})])
+    found = _refingerprint(elsevier, ref)
+
+    assert found.stages["extract"].carried == 1
+    assert found.stages["passages"].unasked == 1
+    assert found.rerun() == {"passages": 1}
+
+
+def _imported_without_text(catalog, tmp_path, **summary):
+    """Production, 2026-10-23: an article whose pubget extraction was imported with no text
+    file, beside an ace extraction that has it and the passages read from that."""
+    ref = catalog.register(Identifier(pmid="7", pmcid="PMC7"))
+    _download(catalog, ref, tmp_path)
+    text = tmp_path / f"{ref.id}.txt"
+    text.write_text(TEXT, encoding="utf-8")
+    catalog.record([
+        Outcome(article_id=ref.id, stage="extract", source="pubget",
+                payload={"full_text_path": None, "tables": [], "figure_captions": []},
+                summary={"migrated": True, **summary}),
+        Outcome(article_id=ref.id, stage="extract", source="ace", fingerprint="5042cb9aebec",
+                payload={"full_text_path": str(text), "tables": [], "figure_captions": []},
+                summary={"tables": 7, "has_text": True, "captions_sha256": captions_digest(()),
+                         "text_sha256": file_sha256(text)}),
+        Outcome(article_id=ref.id, stage="passages", source="", fingerprint="70f0ccca2ae7",
+                payload={"source": "ace", "passages": []},
+                summary={"source": "ace", "passages": 0}),
+    ])
+    return ref
+
+
+def test_an_extraction_imported_without_its_text_is_not_stored_as_current(env):
+    """Stored, it would be chosen over the ace extraction that has the text, and passages
+    would wait on a text it cannot read. It is left to run again."""
+    settings, catalog, stages, tmp_path = env
+    ref = _imported_without_text(catalog, tmp_path)
+    found = refingerprint(Context(settings, catalog), stages, [ref], catalog.empty_fingerprints())
+
+    assert found.stages["extract"].filled == 0
+    assert found.stages["extract"].empty_rerun == 1
+    assert "passages" not in found.stages
+    assert found.rerun() == {"extract": 1}
+    assert ("extract", "pubget", ref.id) not in {(k[1], k[2], k[0]) for k in found.rewrites}
+
+
+def test_an_extraction_that_says_it_holds_no_text_is_stored(env):
+    settings, catalog, stages, tmp_path = env
+    ref = _imported_without_text(catalog, tmp_path, has_text=False)
+    found = refingerprint(Context(settings, catalog), stages, [ref], catalog.empty_fingerprints())
+
+    assert found.stages["extract"].filled == 1
+    assert found.stages["extract"].empty_rerun == 0
+
+
+def test_an_extraction_imported_with_its_text_is_stored(env):
+    """Production, 2026-10-23: an import with no fingerprint whose text file is there is
+    the one a run would have made, and is stored."""
+    settings, catalog, stages, tmp_path = env
+    ref = catalog.register(Identifier(pmid="7", pmcid="PMC7"))
+    _download(catalog, ref, tmp_path)
+    text = tmp_path / f"{ref.id}.txt"
+    text.write_text(TEXT, encoding="utf-8")
+    catalog.record([Outcome(
+        article_id=ref.id, stage="extract", source="pubget",
+        payload={"full_text_path": str(text), "tables": [], "figure_captions": []},
+        summary={"migrated": True, "text_sha256": file_sha256(text),
+                 "captions_sha256": captions_digest(())})])
+    found = refingerprint(Context(settings, catalog), stages, [ref], catalog.empty_fingerprints())
+
+    assert found.stages["extract"].filled == 1
+    assert found.stages["extract"].empty_rerun == 0
+
+
+def test_an_extraction_whose_download_failed_is_not_unreachable(elsevier):
+    """A failed download still names the source the extraction was read from, as the stages
+    that choose among extractions count it. Planned with extract alone, as a later stage
+    asks about it otherwise, the stale extraction still stops the repair."""
+    settings, catalog, stages, tmp_path = elsevier
+    ref = _held(catalog, tmp_path, 7)
+    catalog.record([Outcome.failure(ref.id, "download", "ace", "did not return a payload")])
+    _stale_extraction(catalog, ref, "ace")
+    found = refingerprint(Context(settings, catalog),
+                          [s for s in stages if s.name in ("download", "extract")], [ref],
+                          catalog.empty_fingerprints())
+
+    assert found.stages["extract"].unreachable == 0
+    assert found.stages["extract"].unasked == 1
+    assert found.rerun() == {"extract": 1}
+
+
+def test_a_stage_that_blocks_on_its_model_still_stops_the_repair(migrated):
+    """Roles asks about nothing while its models are not served, and what it made would
+    go stale: its artifacts are not read from an extraction, so none is left alone."""
+    settings, catalog, stages, (tables, prose_only, lost, stale) = migrated
+    unserved = [RolesStage(settings) if s.name == "roles" else s for s in stages]
+    found = refingerprint(Context(settings, catalog), unserved, [tables, prose_only],
+                          catalog.empty_fingerprints())
+    assert found.stages["roles"].unreachable == 0
     assert found.rerun() == {"roles": 2}

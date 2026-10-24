@@ -965,6 +965,14 @@ def _render_refingerprint(found) -> str:
         lines.append(f"  {stage:<11}{n.filled:>10,}{n.carried:>10,}"
                      f"{n.empty_rerun:>19,}{n.empty_unplanned:>18,}{n.lost:>19,}"
                      f"{n.unasked:>18,}")
+    for stage in STAGE_ORDER:
+        n = found.stages.get(stage)
+        if n is not None and n.unreachable:
+            lines.append(f"  {stage}: {n.unreachable:,} stale and unreachable: no plan asks about "
+                         "them, so they are left as they are")
+        if n is not None and n.failed_read:
+            lines.append(f"  {stage}: {n.failed_read:,} read from an extraction that has since "
+                         "failed: no plan asks about them, so they are left as they are")
     return "\n".join(lines)
 
 

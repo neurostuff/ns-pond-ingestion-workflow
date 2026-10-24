@@ -15,10 +15,12 @@ from __future__ import annotations
 from dataclasses import dataclass, field, replace
 from typing import Any, Dict, Mapping, NamedTuple, Optional, Sequence, Set, Tuple
 
-from ingestion_workflow.catalog import ArticleRef, Artifact, Catalog
+from ingestion_workflow.catalog import ArticleRef, Artifact, Catalog, Status
 
 from .scheduler import RunReport, run_stages
 from .stage import NO_TEXT, Context, Stage
+from .stages.extract import extraction_inputs, unusable
+from .stages.passages import text_of
 
 Key = Tuple[str, str, str]
 
@@ -116,6 +118,14 @@ class _After(Context):
         self.asked.add(key)
         if key in self.rewrites or (artifact.fingerprint and key not in self.fresh_before):
             return super().is_fresh(artifact, expected)
+        if artifact.stage == "extract" and artifact.ok and not artifact.fingerprint \
+                and artifact.summary.get("has_text", True) and not unusable(artifact) \
+                and text_of(self, artifact)[0] is None:
+            # An import that kept no text and was not set aside claims some: stored as
+            # current it would be chosen over a source that has the text, and no plan
+            # could read it.
+            self.empty_asked.add(key)
+            return False
         now = replace(artifact, fingerprint=expected, summary=self._copied(artifact))
         fresh = super().is_fresh(now, expected)
         if not fresh:
@@ -126,6 +136,13 @@ class _After(Context):
         else:
             self.still_fresh.add(key)
         return fresh
+
+
+def _read_from(artifact: Artifact) -> Optional[str]:
+    """The extraction source the passages or triage verdict `artifact` was read from."""
+    if artifact.stage in ("passages", "triage"):
+        return (artifact.summary or {}).get("source") or None
+    return None
 
 
 @dataclass
@@ -146,6 +163,12 @@ class StageCounts:
     #: Made from an artifact that is rewritten, and not asked about, so left to go
     #: stale. A stage whose model is not served blocks, and asks about nothing.
     unasked: int = 0
+    #: Extractions left stale that no plan can ask about, the article having no download
+    #: of their source. Reported; a run never reads them, so they are no reason to refuse.
+    unreachable: int = 0
+    #: Passages and triage verdicts read from an extraction that has since failed: kept as
+    #: they are, with or without this repair. Reported; no reason to refuse.
+    failed_read: int = 0
 
 
 @dataclass
@@ -190,13 +213,26 @@ def refingerprint(ctx: Context, stages: Sequence[Stage], refs: Sequence[ArticleR
     for article_id, stage, _ in rewrites:
         made.setdefault(stage, set()).add(article_id)
     for stage in stages:
-        for by_source in ctx.catalog.artifacts(sorted(made.get(stage.requires, ())),
-                                               stage.name).values():
+        stale = ctx.catalog.artifacts(sorted(made.get(stage.requires, ())), stage.name)
+        downloads = ctx.catalog.artifacts(sorted(stale), "download")
+        extractions = ctx.catalog.artifacts(sorted(stale), "extract")
+        for article_id, by_source in stale.items():
+            readable = extraction_inputs(downloads.get(article_id, {}))
             for artifact in by_source.values():
                 key = _key(artifact)
                 if (artifact.ok and artifact.fingerprint not in ("", NO_TEXT)
                         and key not in after.asked and key not in fresh_before):
-                    counts.setdefault(stage.name, StageCounts()).unasked += 1
+                    read = extractions.get(article_id, {}).get(_read_from(artifact))
+                    if read is not None and read.status is not Status.OK:
+                        # The verdict stays while its extraction is failed, with or
+                        # without this repair: no plan reads it, and nothing chains on it.
+                        counts.setdefault(stage.name, StageCounts()).failed_read += 1
+                        continue
+                    found = counts.setdefault(stage.name, StageCounts())
+                    if artifact.stage == "extract" and artifact.source not in readable:
+                        found.unreachable += 1
+                    else:
+                        found.unasked += 1
     for stage, n in empty.items():
         found = counts.setdefault(stage, StageCounts())
         found.empty_unplanned = n - found.filled - found.empty_rerun
