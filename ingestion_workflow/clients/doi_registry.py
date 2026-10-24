@@ -17,7 +17,7 @@ from urllib.parse import quote
 import httpx
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
-from .crossref import CROSSREF_REQUEST_LIMIT, CrossrefClient
+from .crossref import CROSSREF_REQUEST_LIMIT, CrossrefClient, CrossrefWork
 from .pubmed import in_supplement
 
 logger = logging.getLogger(__name__)
@@ -149,9 +149,6 @@ class DoiRegistry:
         """The DOIs Crossref relates to this one by one of `kinds`, from their side."""
         return self._crossref.relating(doi, kinds)
 
-    def relations(self, doi: str) -> Dict[str, List[str]]:
-        """The DOIs Crossref relates this one to, by relation type; {} for a DOI it lacks."""
-        work = self._crossref.work(doi) or {}
-        return {kind: [r["id"].lower() for r in related
-                       if r.get("id-type") == "doi" and r.get("id")]
-                for kind, related in (work.get("relation") or {}).items()}
+    def record(self, doi: str) -> Optional[CrossrefWork]:
+        """Crossref's own record of the DOI: its type, relations and updates."""
+        return self._crossref.record(doi)

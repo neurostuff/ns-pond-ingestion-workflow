@@ -299,7 +299,7 @@ def _preprint_duplicate(catalog):
 def test_a_preprint_s_record_merges_into_its_paper_as_the_preprint_s(catalog):
     paper, preprint = _preprint_duplicate(catalog)
 
-    survivor = catalog.merge([paper, preprint], rekind=[("pmid", "37808793")])
+    survivor = catalog.merge([paper, preprint], rekind=[("pmid", "37808793", "preprint_pmid")])
 
     assert catalog.aliases(survivor, "pmid") == ["38345852"]
     assert catalog.aliases(survivor, "preprint_pmid") == ["37808793"]
@@ -311,7 +311,7 @@ def test_a_preprint_s_record_merges_into_its_paper_as_the_preprint_s(catalog):
 
 def test_the_preprint_s_pmid_still_finds_its_paper(catalog):
     paper, preprint = _preprint_duplicate(catalog)
-    survivor = catalog.merge([paper, preprint], rekind=[("pmid", "37808793")])
+    survivor = catalog.merge([paper, preprint], rekind=[("pmid", "37808793", "preprint_pmid")])
     articles = catalog.count_articles()
 
     assert catalog.resolve(Identifier(pmid="37808793")).id == survivor
@@ -338,7 +338,8 @@ def test_a_pmid_and_a_pmcid_are_held_as_the_preprint_s(catalog):
     _hold(catalog, a, "pmid", "37808793")
     _hold(catalog, a, "pmcid", "PMC10592780")
 
-    catalog.rekind_aliases([("pmid", "37808793", a), ("pmcid", "PMC10592780", a)])
+    catalog.rekind_aliases([("pmid", "37808793", a, "preprint_pmid"),
+                            ("pmcid", "PMC10592780", a, "preprint_pmcid")])
 
     held = catalog.identifier(a)
     assert (held.preprint_pmids, held.preprint_pmcids) == (("37808793",), ("PMC10592780",))
@@ -357,7 +358,7 @@ def test_a_move_may_give_an_article_two_preprint_pmids(catalog):
 def test_a_rekind_may_not_leave_an_article_without_a_paper_id(catalog):
     a = catalog.register(Identifier(pmid="37808793")).id
     with pytest.raises(IdentityError, match="no pmcid, pmid, doi"):
-        catalog.rekind_aliases([("pmid", "37808793", a)])
+        catalog.rekind_aliases([("pmid", "37808793", a, "preprint_pmid")])
     assert catalog.aliases(a, "pmid") == ["37808793"]
 
 
@@ -365,16 +366,16 @@ def test_a_rekind_may_give_an_article_two_preprint_pmids(catalog):
     a = catalog.register(Identifier(doi="10.7554/elife.92563", pmid="38345852")).id
     _hold(catalog, a, "preprint_pmid", "37808794")
     _hold(catalog, a, "pmid", "37808793")
-    catalog.rekind_aliases([("pmid", "37808793", a)])
+    catalog.rekind_aliases([("pmid", "37808793", a, "preprint_pmid")])
     assert catalog.aliases(a, "preprint_pmid") == ["37808793", "37808794"]
 
 
 def test_only_the_article_s_alias_is_rekinded(catalog):
     paper, preprint = _preprint_duplicate(catalog)
     with pytest.raises(IdentityError, match="pmid 37808793 is held by .*, not"):
-        catalog.rekind_aliases([("pmid", "37808793", paper)])
-    with pytest.raises(IdentityError, match="a neurostore is held as no other kind"):
-        catalog.rekind_aliases([("neurostore", "x", paper)])
+        catalog.rekind_aliases([("pmid", "37808793", paper, "preprint_pmid")])
+    with pytest.raises(IdentityError, match="a neurostore is not held as a preprint_pmid"):
+        catalog.rekind_aliases([("neurostore", "x", paper, "preprint_pmid")])
     assert catalog.aliases(preprint, "pmid") == ["37808793"]
 
 
@@ -382,7 +383,7 @@ def test_a_doi_held_as_an_alternate_still_finds_its_article(catalog):
     # mxp7s3fbegzb: PubMed's DOI for the paper, and the publisher's alias spelling
     a = catalog.register(Identifier(doi="10.1176/appi.neuropsych.21.3.307")).id
     _hold(catalog, a, "doi", "10.1176/jnp.2009.21.3.307")
-    catalog.rekind_aliases([("doi", "10.1176/appi.neuropsych.21.3.307", a)])
+    catalog.rekind_aliases([("doi", "10.1176/appi.neuropsych.21.3.307", a, "alternative_doi")])
     assert catalog.aliases(a, "doi") == ["10.1176/jnp.2009.21.3.307"]
     assert catalog.resolve(Identifier(doi="10.1176/appi.neuropsych.21.3.307")).id == a
     assert catalog.identifier(a).doi == "10.1176/jnp.2009.21.3.307"
@@ -501,7 +502,7 @@ def test_a_rekind_may_not_hide_the_journal_doi_behind_a_preprint_s(catalog):
     catalog.add_aliases([(a, "doi", "10.1101/2021.10.29.21265645")])
     before = _snapshot(catalog)
     with pytest.raises(IdentityError, match="only as an alternate"):
-        catalog.rekind_aliases([("doi", "10.1016/j.neuroimage.2022.119210", a)])
+        catalog.rekind_aliases([("doi", "10.1016/j.neuroimage.2022.119210", a, "alternative_doi")])
     assert _snapshot(catalog) == before
     assert catalog.identifier(a).doi == "10.1016/j.neuroimage.2022.119210"
 
@@ -512,7 +513,7 @@ def test_a_merge_may_not_hide_the_journal_doi_behind_a_preprint_s(catalog):
     preprint = catalog.register(Identifier(doi="10.64898/2025.12.17.694941")).id
     before = _snapshot(catalog)
     with pytest.raises(IdentityError, match="only as an alternate"):
-        catalog.merge([paper, preprint], rekind=[("doi", "10.1002/epi.70276")])
+        catalog.merge([paper, preprint], rekind=[("doi", "10.1002/epi.70276", "alternative_doi")])
     assert _snapshot(catalog) == before
 
 

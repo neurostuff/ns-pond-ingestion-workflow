@@ -1,0 +1,235 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.7554/eLife.106070.1?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"institution":[{"id":[{"id":"https:\/\/ror.org\/04rjz5883","id-type":"ROR","asserted-by":"publisher"}],"name":"eLife"}],"indexed":{"date-parts":[[2026,7,30]],"date-time":"2026-07-30T18:21:03Z","timestamp":1785435663593,"version":"3.56.0"},"posted":{"date-parts":[[2025,6,23]]},"reference-count":73,"publisher":"eLife
+        Sciences Publications, Ltd","license":[{"start":{"date-parts":[[2025,6,23]],"date-time":"2025-06-23T00:00:00Z","timestamp":1750636800000},"content-version":"unspecified","delay-in-days":0,"URL":"https:\/\/creativecommons.org\/licenses\/by\/4.0\/"}],"content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"abstract":"<jats:p>Abstract<\/jats:p>\n                <jats:p>The
+        experience of emotions is that of dynamic, time changing processes. Yet, many
+        fMRI studies of emotion average across time to focus on maps of static activations,
+        overlooking the temporal dimension of emotional responses. In this study,
+        we used time-resolved fMRI, group spatial independent component analysis (ICA),
+        dual regression, and Gaussian curve fitting to examine both the spatial and
+        temporal properties of whole-brain networks during a behavioral task. This
+        task included trials that spanned over 25 seconds of watching short, emotionally
+        evocative movie clips, making emotion-related decisions, and an intertrial
+        rest period. We identified four whole-brain networks with unique spatial and
+        temporal features that mapped onto different stages of the task. A network
+        activated early in the course of the task included perceptual and affective
+        evaluation regions, while two later networks supported semantic interpretation
+        and decision-making, and a final network aligned with default mode activity.
+        Both spatial and temporal properties of all four networks were modulated by
+        the emotional content of the movie clips. Our findings extend current models
+        of emotion by integrating temporal dynamics with large-scale network activity,
+        offering a richer framework for understanding how emotions unfold across distributed
+        circuits. Such temporal-spatial markers of emotional processing may prove
+        valuable for identifying and tracking alterations in clinical populations.<\/jats:p>","DOI":"10.7554\/elife.106070.1","type":"posted-content","created":{"date-parts":[[2025,6,23]],"date-time":"2025-06-23T11:31:03Z","timestamp":1750678263000},"source":"Crossref","is-referenced-by-count":0,"title":["Dynamic
+        fMRI networks of emotion"],"prefix":"10.7554","author":[{"ORCID":"https:\/\/orcid.org\/0000-0001-9770-4458","authenticated-orcid":false,"given":"Niels","family":"Janssen","sequence":"first","affiliation":[{"id":[{"id":"https:\/\/ror.org\/01r9z8p25","id-type":"ROR","asserted-by":"publisher"}],"name":"Department
+        of Psychology, Universidad de la Laguna","place":["Spain"]},{"id":[{"id":"https:\/\/ror.org\/01r9z8p25","id-type":"ROR","asserted-by":"publisher"}],"name":"Institute
+        of Biomedical Technologies, Universidad de La Laguna","place":["Spain"]},{"id":[{"id":"https:\/\/ror.org\/01r9z8p25","id-type":"ROR","asserted-by":"publisher"}],"name":"Institute
+        of Neurosciences, Universidad de la Laguna","place":["Spain"]}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Uriel
+        KA","family":"Elvira","sequence":"additional","affiliation":[{"id":[{"id":"https:\/\/ror.org\/01r9z8p25","id-type":"ROR","asserted-by":"publisher"}],"name":"Department
+        of Psychology, Universidad de la Laguna","place":["Spain"]}],"role":[{"vocabulary":"crossref","role":"author"}]},{"ORCID":"https:\/\/orcid.org\/0000-0001-7613-2067","authenticated-orcid":false,"given":"Joost","family":"Janssen","sequence":"additional","affiliation":[{"id":[{"id":"https:\/\/ror.org\/0111es613","id-type":"ROR","asserted-by":"publisher"}],"name":"Department
+        of Child and Adolescent Psychiatry, Institute of Psychiatry and Mental Health,
+        Hospital General Universitario Gregorio Mara\u00f1\u00f3n","place":["Spain"]},{"name":"Ciber
+        del \u00c1rea de Salud Mental, Instituto de Investigaci\u00f3n Sanitaria Gregorio
+        Mara\u00f1\u00f3n","place":["Spain"]},{"id":[{"id":"https:\/\/ror.org\/0575yy874","id-type":"ROR","asserted-by":"publisher"}],"name":"Department
+        of Psychiatry, UMCU Brain Center, University Medical Center Utrecht","place":["Netherlands"]}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Theo
+        GM","family":"van Erp","sequence":"additional","affiliation":[{"id":[{"id":"https:\/\/ror.org\/04gyf1771","id-type":"ROR","asserted-by":"publisher"}],"name":"Clinical
+        Translational Neuroscience Laboratory, Department of Psychiatry and Human
+        Behavior, University of California Irvine","place":["United States"]},{"id":[{"id":"https:\/\/ror.org\/04gyf1771","id-type":"ROR","asserted-by":"publisher"}],"name":"Center
+        for the Neurobiology of Learning and Memory, University of California Irvine","place":["United
+        States"]}],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"4374","reference":[{"issue":"1","key":"c1","doi-asserted-by":"crossref","first-page":"21","DOI":"10.1177\/1534582302001001003","type":"journal-article","article-title":"Recognizing
+        emotion from facial expressions: psychological and neurological mechanisms","volume":"1","author":"Adolphs","year":"2002","journal-title":"Behavioral
+        and cognitive neuroscience reviews"},{"issue":"4","key":"c2","doi-asserted-by":"crossref","first-page":"360","DOI":"10.1006\/nimg.1998.0369","type":"journal-article","article-title":"The
+        variability of human, bold hemodynamic responses","volume":"8","author":"Aguirre","year":"1998","journal-title":"Neuroimage"},{"issue":"1","key":"c3","doi-asserted-by":"publisher","first-page":"1","DOI":"10.18637\/jss.v067.i01","type":"journal-article","article-title":"Fitting
+        linear mixed-effects models using lme4","volume":"67","author":"Bates","year":"2015","journal-title":"Journal
+        of Statistical Software"},{"issue":"2","key":"c4","doi-asserted-by":"crossref","first-page":"891","DOI":"10.1016\/j.neuroimage.2012.02.020","type":"journal-article","article-title":"Modelling
+        with independent components","volume":"62","author":"Beckmann","year":"2012","journal-title":"Neuroimage"},{"issue":"Suppl
+        1","key":"c5","doi-asserted-by":"crossref","first-page":"S148","DOI":"10.1016\/S1053-8119(09)71511-3","type":"journal-article","article-title":"Group
+        comparison of resting-state fmri data using multi-subject ica and dual regression","volume":"47","author":"Beckmann","year":"2009","journal-title":"Neuroimage"},{"issue":"2","key":"c6","doi-asserted-by":"crossref","first-page":"137","DOI":"10.1109\/TMI.2003.822821","type":"journal-article","article-title":"Probabilistic
+        independent component analysis for functional magnetic resonance imaging","volume":"23","author":"Beckmann","year":"2004","journal-title":"IEEE
+        transactions on medical imaging"},{"issue":"1","key":"c7","doi-asserted-by":"crossref","first-page":"1","DOI":"10.1196\/annals.1440.011","type":"journal-article","article-title":"The
+        brain\u2019s default network: anatomy, function, and relevance to disease","volume":"1124","author":"Buckner","year":"2008","journal-title":"Annals
+        of the new York Academy of Sciences"},{"issue":"1","key":"c8","doi-asserted-by":"crossref","first-page":"43","DOI":"10.1002\/hbm.1024","type":"journal-article","article-title":"Spatial
+        and temporal independent component analysis of functional mri data containing
+        a pair of task-related waveforms","volume":"13","author":"Calhoun","year":"2001","journal-title":"Human
+        brain mapping"},{"issue":"9","key":"c9","doi-asserted-by":"crossref","first-page":"1348","DOI":"10.1038\/nn.3470","type":"journal-article","article-title":"Multi-task
+        connectivity reveals flexible hubs for adaptive task control","volume":"16","author":"Cole","year":"2013","journal-title":"Nature
+        neuroscience"},{"issue":"3","key":"c10","doi-asserted-by":"crossref","first-page":"968","DOI":"10.1016\/j.neuroimage.2006.01.021","type":"journal-article","article-title":"An
+        automated labeling system for subdividing the human cerebral cortex on mri
+        scans into gyral based regions of interest","volume":"31","author":"Desikan","year":"2006","journal-title":"Neuroimage"},{"key":"c11","doi-asserted-by":"crossref","first-page":"493","DOI":"10.3389\/fnhum.2013.00493","type":"journal-article","article-title":"Task
+        vs. rest\u2014different network configurations between the coactivation and
+        the resting-state brain networks","volume":"7","author":"Di","year":"2013","journal-title":"Frontiers
+        in human neuroscience"},{"key":"c12","first-page":"1","type":"journal-article","article-title":"The
+        brain\u2019s action-mode network","author":"Dosenbach","year":"2025","journal-title":"Nature
+        Reviews Neuroscience"},{"issue":"4","key":"c13","doi-asserted-by":"publisher","first-page":"823","DOI":"10.1006\/nimg.2001.1049","type":"journal-article","article-title":"Single-trial
+        variability in event-related BOLD signals","volume":"15","author":"Duann","year":"2002","journal-title":"NeuroImage"},{"key":"c14","type":"software","volume-title":"minpack.lm:
+        R interface to the levenberg-marquardt nonlinear least-squares algorithm [Computer
+        software manual]","author":"Elzhov","year":"2022","unstructured":"Elzhov T.
+        V., Mullen K. M., Spiess A.-N., Bolker B. 2022. minpack.lm: R interface to
+        the levenberg-marquardt nonlinear least-squares algorithm [Computer software
+        manual]. https:\/\/CRAN.R-project.org\/package=minpack.lm."},{"issue":"11","key":"c15","doi-asserted-by":"crossref","first-page":"693","DOI":"10.1038\/nrn4044","type":"journal-article","article-title":"The
+        neural bases of emotion regulation","volume":"16","author":"Etkin","year":"2015","journal-title":"Nature
+        reviews neuroscience"},{"key":"c16","doi-asserted-by":"crossref","first-page":"117963","DOI":"10.1016\/j.neuroimage.2021.117963","type":"journal-article","article-title":"Movie-watching
+        outperforms rest for functional connectivity-based prediction of behavior","volume":"235","author":"Finn","year":"2021","journal-title":"NeuroImage"},{"issue":"2","key":"c17","doi-asserted-by":"crossref","first-page":"774","DOI":"10.1016\/j.neuroimage.2012.01.021","type":"journal-article","article-title":"Freesurfer","volume":"62","author":"Fischl","year":"2012","journal-title":"Neuroimage"},{"key":"c18","doi-asserted-by":"crossref","first-page":"105","DOI":"10.1016\/j.neuroimage.2013.04.127","type":"journal-article","article-title":"The
+        minimal preprocessing pipelines for the human connectome project","volume":"80","author":"Glasser","year":"2013","journal-title":"Neuroimage"},{"key":"c19","doi-asserted-by":"crossref","first-page":"526","DOI":"10.1016\/j.neuroimage.2017.08.006","type":"journal-article","article-title":"Task-based
+        dynamic functional connectivity: Recent findings and open questions","volume":"180","author":"Gonzalez-Castillo","year":"2018","journal-title":"Neuroimage"},{"issue":"3","key":"c20","doi-asserted-by":"crossref","first-page":"141","DOI":"10.1016\/j.pneurobio.2008.09.004","type":"journal-article","article-title":"The
+        cognitive functions of the caudate nucleus","volume":"86","author":"Grahn","year":"2008","journal-title":"Progress
+        in neurobiology"},{"key":"c21","doi-asserted-by":"crossref","first-page":"232","DOI":"10.1016\/j.neuroimage.2014.03.034","type":"journal-article","article-title":"Ica-based
+        artefact removal and accelerated fmri acquisition for improved resting state
+        network imaging","volume":"95","author":"Griffanti","year":"2014","journal-title":"Neuroimage"},{"key":"c22","type":"journal-article","article-title":"Connectivity
+        analyses for task-based fmri","author":"Huang","year":"2024","journal-title":"Physics
+        of Life Reviews"},{"key":"c23","doi-asserted-by":"crossref","first-page":"360","DOI":"10.1016\/j.neuroimage.2013.05.079","type":"journal-article","article-title":"Dynamic
+        functional connectivity: promise, issues, and interpretations","volume":"80","author":"Hutchison","year":"2013","journal-title":"Neuroimage"},{"issue":"7600","key":"c24","doi-asserted-by":"crossref","first-page":"453","DOI":"10.1038\/nature17637","type":"journal-article","article-title":"Natural
+        speech reveals the semantic maps that tile human cerebral cortex","volume":"532","author":"Huth","year":"2016","journal-title":"Nature"},{"key":"c25","doi-asserted-by":"crossref","first-page":"117445","DOI":"10.1016\/j.neuroimage.2020.117445","type":"journal-article","article-title":"Movies
+        and narratives as naturalistic stimuli in neuroimaging","volume":"224","author":"J\u00e4\u00e4skel\u00e4inen","year":"2021","journal-title":"NeuroImage"},{"key":"c26","doi-asserted-by":"crossref","first-page":"92","DOI":"10.1016\/j.neuroimage.2018.01.076","type":"journal-article","article-title":"Improving
+        the signal detection accuracy of functional magnetic resonance imaging","volume":"176","author":"Janssen","year":"2018","journal-title":"NeuroImage"},{"issue":"1","key":"c27","doi-asserted-by":"crossref","first-page":"241","DOI":"10.1093\/cercor\/bhz084","type":"journal-article","article-title":"The
+        dynamics of speech motor control revealed with time-resolved fmri","volume":"30","author":"Janssen","year":"2020","journal-title":"Cerebral
+        Cortex"},{"issue":"2","key":"c28","doi-asserted-by":"crossref","first-page":"825","DOI":"10.1006\/nimg.2002.1132","type":"journal-article","article-title":"Improved
+        optimization for the robust and accurate linear registration and motion correction
+        of brain images","volume":"17","author":"Jenkinson","year":"2002","journal-title":"Neuroimage"},{"issue":"4","key":"c29","doi-asserted-by":"crossref","first-page":"960","DOI":"10.1162\/netn_a_00230","type":"journal-article","article-title":"It\u2019s
+        about time: Linking dynamical systems with human neuroimaging to understand
+        the brain","volume":"6","author":"John","year":"2022","journal-title":"Network
+        Neuroscience"},{"issue":"4","key":"c30","doi-asserted-by":"crossref","first-page":"243","DOI":"10.1002\/(SICI)1097-0193(1997)5:4<243::AID-HBM7>3.0.CO;2-3","type":"journal-article","article-title":"Event-related
+        fmri","volume":"5","author":"Josephs","year":"1997","journal-title":"Human
+        brain mapping"},{"issue":"4","key":"c31","doi-asserted-by":"crossref","first-page":"631","DOI":"10.1002\/mrm.1910370427","type":"journal-article","article-title":"Limitations
+        of temporal resolution in functional mri","volume":"37","author":"Kim","year":"1997","journal-title":"Magnetic
+        resonance in medicine"},{"issue":"2","key":"c32","doi-asserted-by":"crossref","first-page":"998","DOI":"10.1016\/j.neuroimage.2008.03.059","type":"journal-article","article-title":"Functional
+        grouping and cortical\u2013subcortical interactions in emotion: a meta-analysis
+        of neuroimaging studies","volume":"42","author":"Kober","year":"2008","journal-title":"Neuroimage"},{"issue":"4","key":"c33","doi-asserted-by":"crossref","first-page":"787","DOI":"10.1002\/(SICI)1522-2594(199910)42:4<787::AID-MRM22>3.0.CO;2-V","type":"journal-article","article-title":"Modeling
+        the hemodynamic response in single-trial functional mri experiments","volume":"42","author":"Kruggel","year":"1999","journal-title":"Magnetic
+        Resonance in Medicine"},{"issue":"2","key":"c34","doi-asserted-by":"crossref","first-page":"173","DOI":"10.1006\/nimg.2000.0604","type":"journal-article","article-title":"Nonlinear
+        regression of functional mri data: an item recognition task study","volume":"12","author":"Kruggel","year":"2000","journal-title":"NeuroImage"},{"key":"c35","doi-asserted-by":"crossref","first-page":"22","DOI":"10.1016\/j.copsyc.2017.06.004","type":"journal-article","article-title":"Emotion
+        dynamics","volume":"17","author":"Kuppens","year":"2017","journal-title":"Current
+        Opinion in Psychology"},{"issue":"13","key":"c36","doi-asserted-by":"crossref","first-page":"1","DOI":"10.18637\/jss.v082.i13","type":"journal-article","article-title":"lmertest
+        package: tests in linear mixed effects models","volume":"82","author":"Kuznetsova","year":"2017","journal-title":"Journal
+        of statistical software"},{"issue":"10","key":"c37","doi-asserted-by":"crossref","first-page":"6846","DOI":"10.1523\/JNEUROSCI.15-10-06846.1995","type":"journal-article","article-title":"Impaired
+        fear conditioning following unilateral temporal lobectomy in humans","volume":"15","author":"LaBar","year":"1995","journal-title":"Journal
+        of neuroscience"},{"issue":"1","key":"c38","first-page":"3","type":"journal-article","article-title":"Emmeans:
+        Estimated marginal means, aka least-squares means","volume":"1","author":"Lenth","year":"2018","journal-title":"R
+        package version"},{"issue":"3","key":"c39","doi-asserted-by":"crossref","first-page":"121","DOI":"10.1017\/S0140525X11000446","type":"journal-article","article-title":"The
+        brain basis of emotion: a meta-analytic review","volume":"35","author":"Lindquist","year":"2012","journal-title":"Behavioral
+        and brain sciences"},{"key":"c40","doi-asserted-by":"crossref","first-page":"179","DOI":"10.1016\/j.neubiorev.2021.09.024","type":"journal-article","article-title":"Reexamining
+        the neural network involved in perception of facial expression: A meta-analysis","volume":"131","author":"Liu","year":"2021","journal-title":"Neuroscience
+        & Biobehavioral Reviews"},{"issue":"1","key":"c41","doi-asserted-by":"crossref","first-page":"60","DOI":"10.1016\/j.mri.2012.06.034","type":"journal-article","article-title":"Separating
+        4d multi-task fmri data of multiple subjects by independent component analysis
+        with projection","volume":"31","author":"Long","year":"2013","journal-title":"Magnetic
+        Resonance Imaging"},{"issue":"1","key":"c42","doi-asserted-by":"crossref","first-page":"5004","DOI":"10.1038\/s41467-020-18717-w","type":"journal-article","article-title":"Movie
+        viewing elicits rich and reliable brain state dynamics","volume":"11","author":"Meer","year":"2020","journal-title":"Nature
+        communications"},{"issue":"18","key":"c43","doi-asserted-by":"crossref","first-page":"10902","DOI":"10.1073\/pnas.95.18.10902","type":"journal-article","article-title":"Mental
+        chronometry using latency-resolved functional mri","volume":"95","author":"Menon","year":"1998","journal-title":"Proceedings
+        of the National Academy of Sciences"},{"key":"c44","type":"journal-article","article-title":"Automatic
+        choice of dimensionality for pca","volume":"13","author":"Minka","year":"2000","journal-title":"Advances
+        in neural information processing systems"},{"issue":"1","key":"c45","doi-asserted-by":"crossref","first-page":"nsad063","DOI":"10.1093\/scan\/nsad063","type":"journal-article","article-title":"Probing
+        neurodynamics of experienced emotions\u2014a hitchhiker\u2019s guide to film
+        fmri","volume":"18","author":"Morgenroth","year":"2023","journal-title":"Social
+        Cognitive and Affective Neuroscience"},{"issue":"3","key":"c46","first-page":"207","type":"journal-article","article-title":"Functional
+        neuroanatomy of emotions: a meta-analysis. Cognitive, affective","volume":"3","author":"Murphy","year":"2003","journal-title":"&
+        behavioral neuroscience"},{"issue":"8","key":"c47","doi-asserted-by":"crossref","first-page":"1215","DOI":"10.1162\/089892902760807212","type":"journal-article","article-title":"Rethinking
+        feelings: an fmri study of the cognitive regulation of emotion","volume":"14","author":"Ochsner","year":"2002","journal-title":"Journal
+        of cognitive neuroscience"},{"issue":"2","key":"c48","doi-asserted-by":"crossref","first-page":"153","DOI":"10.1111\/j.1467-8721.2008.00566.x","type":"journal-article","article-title":"Cognitive
+        emotion regulation: Insights from social cognitive and affective neuroscience","volume":"17","author":"Ochsner","year":"2008","journal-title":"Current
+        directions in psychological science"},{"issue":"13","key":"c49","doi-asserted-by":"crossref","first-page":"5951","DOI":"10.1073\/pnas.89.13.5951","type":"journal-article","article-title":"Intrinsic
+        signal changes accompanying sensory stimulation: functional brain mapping
+        with magnetic resonance imaging","volume":"89","author":"Ogawa","year":"1992","journal-title":"Proceedings
+        of the National Academy of Sciences"},{"issue":"12","key":"c50","doi-asserted-by":"crossref","first-page":"e8160","DOI":"10.1371\/journal.pone.0008160","type":"journal-article","article-title":"Distortion
+        and signal loss in medial temporal lobe","volume":"4","author":"Olman","year":"2009","journal-title":"PloS
+        one"},{"issue":"2","key":"c51","doi-asserted-by":"crossref","first-page":"673","DOI":"10.1007\/s00429-021-02331-7","type":"journal-article","article-title":"A
+        short review on emotion processing: a lateralized network of neuronal networks","volume":"227","author":"Palomero-Gallagher","year":"2022","journal-title":"Brain
+        Structure and Function"},{"key":"c52","doi-asserted-by":"crossref","first-page":"434","DOI":"10.1016\/j.media.2016.08.006","type":"journal-article","article-title":"Optimal
+        slice timing correction and its interaction with fmri parameters and artifacts","volume":"35","author":"Parker","year":"2017","journal-title":"Medical
+        image analysis"},{"issue":"5","key":"c53","doi-asserted-by":"crossref","first-page":"357","DOI":"10.1016\/j.tics.2017.03.002","type":"journal-article","article-title":"A
+        network model of the emotional brain","volume":"21","author":"Pessoa","year":"2017","journal-title":"Trends
+        in cognitive sciences"},{"issue":"4","key":"c54","doi-asserted-by":"crossref","first-page":"383","DOI":"10.1177\/1073858416671936","type":"journal-article","article-title":"Dynamic
+        networks in the emotional brain","volume":"23","author":"Pessoa","year":"2017","journal-title":"The
+        Neuroscientist"},{"issue":"2","key":"c55","doi-asserted-by":"crossref","first-page":"331","DOI":"10.1006\/nimg.2002.1087","type":"journal-article","article-title":"Functional
+        neuroanatomy of emotion: a meta-analysis of emotion activation studies in
+        pet and fmri","volume":"16","author":"Phan","year":"2002","journal-title":"Neuroimage"},{"issue":"6","key":"c56","doi-asserted-by":"crossref","first-page":"2514","DOI":"10.1002\/hbm.24018","type":"journal-article","article-title":"Dissociable
+        meta-analytic brain networks contribute to coordinated emotional processing","volume":"39","author":"Riedel","year":"2018","journal-title":"Human
+        brain mapping"},{"key":"c57","doi-asserted-by":"crossref","first-page":"407","DOI":"10.1016\/j.neuroimage.2017.12.059","type":"journal-article","article-title":"Quantitative
+        assessment of structural image quality","volume":"169","author":"Rosen","year":"2018","journal-title":"Neuroimage"},{"key":"c58","doi-asserted-by":"crossref","first-page":"675068","DOI":"10.3389\/fnhum.2021.675068","type":"journal-article","article-title":"Naturalistic
+        stimuli in affective neuroimaging: A review","volume":"15","author":"Saarim\u00e4ki","year":"2021","journal-title":"Frontiers
+        in human neuroscience"},{"issue":"10","key":"c59","doi-asserted-by":"crossref","first-page":"851","DOI":"10.1016\/j.tics.2019.07.003","type":"journal-article","article-title":"The
+        default mode network\u2019s role in discrete emotion","volume":"23","author":"Satpute","year":"2019","journal-title":"Trends
+        in cognitive sciences"},{"issue":"50","key":"c60","doi-asserted-by":"crossref","first-page":"9878","DOI":"10.1523\/JNEUROSCI.1138-17.2019","type":"journal-article","article-title":"The
+        salience network: a neural system for perceiving and responding to homeostatic
+        demands","volume":"39","author":"Seeley","year":"2019","journal-title":"Journal
+        of Neuroscience"},{"issue":"2","key":"c61","doi-asserted-by":"crossref","first-page":"588","DOI":"10.1016\/j.neuroimage.2011.06.078","type":"journal-article","article-title":"Slice-timing
+        effects and their correction in functional mri","volume":"58","author":"Sladky","year":"2011","journal-title":"Neuroimage"},{"issue":"31","key":"c62","doi-asserted-by":"crossref","first-page":"13040","DOI":"10.1073\/pnas.0905267106","type":"journal-article","article-title":"Correspondence
+        of the brain\u2019s functional architecture during activation and rest","volume":"106","author":"Smith","year":"2009","journal-title":"Proceedings
+        of the national academy of sciences"},{"issue":"8","key":"c63","doi-asserted-by":"crossref","first-page":"699","DOI":"10.1016\/j.tics.2019.05.004","type":"journal-article","article-title":"Naturalistic
+        stimuli in neuroscience: critically acclaimed","volume":"23","author":"Sonkusare","year":"2019","journal-title":"Trends
+        in cognitive sciences"},{"key":"c64","doi-asserted-by":"crossref","first-page":"32","DOI":"10.1016\/j.bandc.2014.12.006","type":"journal-article","article-title":"Evidence
+        of stimulus correlated empathy modes\u2013group ica of fmri data","volume":"94","author":"Vemuri","year":"2015","journal-title":"Brain
+        and cognition"},{"issue":"8","key":"c65","doi-asserted-by":"crossref","first-page":"1766","DOI":"10.1162\/jocn_a_00244","type":"journal-article","article-title":"Both
+        the middle temporal gyrus and the ventral anterior temporal area are crucial
+        for multimodal semantic processing: distortion-corrected fmri evidence for
+        a double gradient of information convergence in the temporal lobes","volume":"24","author":"Visser","year":"2012","journal-title":"Journal
+        of cognitive neuroscience"},{"key":"c66","doi-asserted-by":"crossref","first-page":"1","DOI":"10.1162\/imag_a_00289","type":"journal-article","article-title":"Cross-modal
+        decoding of emotional expressions in fmri\u2014cross-session and cross-sample
+        replication","volume":"2","author":"Wallenwein","year":"2024","journal-title":"Imaging
+        Neuroscience"},{"issue":"4","key":"c67","doi-asserted-by":"crossref","first-page":"323","DOI":"10.1177\/1754073915590615","type":"journal-article","article-title":"Temporal
+        dynamics of emotional processing in the brain","volume":"7","author":"Waugh","year":"2015","journal-title":"Emotion
+        Review"},{"issue":"4","key":"c68","doi-asserted-by":"crossref","first-page":"557","DOI":"10.1002\/(SICI)1099-0992(199607)26:4<557::AID-EJSP769>3.0.CO;2-4","type":"journal-article","article-title":"Relative
+        effectiveness and validity of mood induction procedures: A meta-analysis","volume":"26","author":"Westermann","year":"1996","journal-title":"European
+        Journal of social psychology"},{"issue":"1","key":"c69","doi-asserted-by":"crossref","first-page":"222","DOI":"10.1016\/j.jneumeth.2007.11.033","type":"journal-article","article-title":"Time-resolved
+        analysis of fmri signal changes using brain activation movies","volume":"169","author":"Windischberger","year":"2008","journal-title":"Journal
+        of neuroscience methods"},{"key":"c70","doi-asserted-by":"crossref","first-page":"119941","DOI":"10.1016\/j.neuroimage.2023.119941","type":"journal-article","article-title":"Functional
+        connectivity profiles of the default mode and visual networks reflect temporal
+        accumulative effects of sustained naturalistic emotional experience","volume":"269","author":"Xu","year":"2023","journal-title":"NeuroImage"},{"key":"c71","type":"journal-article","article-title":"The
+        organization of the human cerebral cortex estimated by intrinsic functional
+        connectivity","author":"Yeo","year":"2011","journal-title":"Journal of neurophysiology"},{"key":"c72","volume-title":"Forrest
+        gump","author":"Zemeckis","year":"1994","type":"book"},{"issue":"1","key":"c73","doi-asserted-by":"crossref","first-page":"6643","DOI":"10.1038\/s41467-021-26977-3","type":"journal-article","article-title":"A
+        distributed fmri-based signature for the subjective experience of fear","volume":"12","author":"Zhou","year":"2021","journal-title":"Nature
+        communications"}],"container-title":[],"original-title":[],"link":[{"URL":"https:\/\/cdn.elifesciences.org\/preprints\/106070\/elife-preprint-106070-v1.pdf","content-type":"application\/pdf","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/cdn.elifesciences.org\/preprints\/106070\/elife-preprint-106070-v1.xml","content-type":"application\/xml","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/elifesciences.org\/reviewed-preprints\/106070v1\/pdf","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2026,5,1]],"date-time":"2026-05-01T14:57:33Z","timestamp":1777647453000},"score":1,"resource":{"primary":{"URL":"https:\/\/elifesciences.org\/reviewed-preprints\/106070v1"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2025,6,23]]},"references-count":73,"version":{"version":"1","language":"en"},"URL":"https:\/\/doi.org\/10.7554\/elife.106070.1","relation":{"is-version-of":[{"id-type":"doi","id":"10.1101\/2025.02.05.636581","asserted-by":"subject"}],"has-review":[{"id-type":"doi","id":"10.7554\/eLife.106070.1.sa2","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.106070.1.sa0","asserted-by":"object"},{"id-type":"doi","id":"10.7554\/eLife.106070.1.sa1","asserted-by":"object"}],"has-version":[{"id-type":"doi","id":"10.7554\/eLife.106070.2","asserted-by":"object"}]},"subject":[],"published":{"date-parts":[[2025,6,23]]},"subtype":"preprint"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '7542'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Oct 2026 23:14:06 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+version: 1

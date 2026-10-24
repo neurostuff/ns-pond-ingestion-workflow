@@ -30,7 +30,6 @@ def config(tmp_path):
                 "log_to_file": False,
                 "show_progress": False,
                 "pubmed_email": "replay@example.com",
-                "metadata_providers": ["pubmed"],
             }
         ),
         encoding="utf-8",
@@ -65,6 +64,7 @@ def patched(monkeypatch):
     monkeypatch.setattr(lookup, "PubMedIDLookupService", FakeLookup, raising=False)
     monkeypatch.setattr(lookup, "SemanticScholarIDLookupService", FakeLookup, raising=False)
     monkeypatch.setattr(lookup, "OpenAlexIDLookupService", FakeLookup, raising=False)
+    monkeypatch.setattr(lookup, "CrossrefIDLookupService", FakeLookup, raising=False)
 
 
 def run(*args):
@@ -109,5 +109,36 @@ def test_an_unconfigured_provider_is_skipped_not_fatal(config, tmp_path, monkeyp
             return False
 
     monkeypatch.setattr(lookup, "PubMedIDLookupService", CannotRun, raising=False)
+    monkeypatch.setattr(lookup, "CrossrefIDLookupService", CannotRun, raising=False)
     out = run("add", "111", "--config", str(config))
     assert "not configured" in out
+
+
+def test_add_asks_each_provider_in_turn_and_crossref_last(config, monkeypatch):
+    import ingestion_workflow.services.id_lookup as lookup
+
+    asked = []
+
+    def provider(name):
+        class Recording(FakeLookup):
+            def find_identifiers(self, identifiers):
+                asked.append(name)
+                if name == "crossref":
+                    # a preprint's PMID is refiled, and a preprint's DOI is found
+                    for identifier in identifiers.identifiers:
+                        identifier.preprint_pmids = (identifier.pmid,)
+                        identifier.pmid = None
+                        identifier.preprint_dois = ("10.1101/2024.01.01.000001",)
+                return identifiers
+        return Recording
+
+    for name, cls in (("semantic_scholar", "SemanticScholarIDLookupService"),
+                      ("pubmed", "PubMedIDLookupService"), ("openalex", "OpenAlexIDLookupService"),
+                      ("crossref", "CrossrefIDLookupService")):
+        monkeypatch.setattr(lookup, cls, provider(name), raising=False)
+
+    out = run("add", "111", "--config", str(config))
+
+    assert asked == ["semantic_scholar", "pubmed", "openalex", "crossref"]
+    # one id is new; the refiled PMID is not a loss
+    assert "crossref: found 1 more ids" in out

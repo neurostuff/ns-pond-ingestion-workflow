@@ -1,0 +1,619 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1101/2020.05.06.058792?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"institution":[{"name":"bioRxiv"}],"indexed":{"date-parts":[[2026,1,15]],"date-time":"2026-01-15T15:35:50Z","timestamp":1768491350173,"version":"3.49.0"},"posted":{"date-parts":[[2020,5,8]]},"group-title":"Genetics","reference-count":68,"publisher":"openRxiv","license":[{"start":{"date-parts":[[2020,5,8]],"date-time":"2020-05-08T00:00:00Z","timestamp":1588896000000},"content-version":"vor","delay-in-days":0,"URL":"https:\/\/www.biorxiv.org\/about\/FAQ#license"}],"content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"accepted":{"date-parts":[[2020,5,7]]},"abstract":"<jats:title>Abstract<\/jats:title>\n                <jats:p>\n                  Associations
+        between altered DNA methylation of the serotonin transporter (5-HTT)-encoding
+        gene\n                  <jats:italic>SLC6A4<\/jats:italic>\n                  and
+        early life adversity, mood and anxiety disorders, and amygdala reactivity
+        have been reported. However, few studies have examined epigenetic alterations
+        of\n                  <jats:italic>SLC6A4<\/jats:italic>\n                  in
+        schizophrenia (SZ). We examined CpG sites of\n                  <jats:italic>SLC6A4<\/jats:italic>\n                  ,
+        whose DNA methylation levels have been reported to be altered in bipolar disorder,
+        using three independent cohorts of patients with SZ and age-matched controls.
+        We found significant hypermethylation of a CpG site in\n                  <jats:italic>SLC6A4<\/jats:italic>\n                  in
+        male patients with SZ in all three cohorts. We showed that chronic administration
+        of risperidone did not affect the DNA methylation status at this CpG site
+        using common marmosets, and that\n                  <jats:italic>in vitro<\/jats:italic>\n                  DNA
+        methylation at this CpG site diminished the promoter activity of\n                  <jats:italic>SLC6A4<\/jats:italic>\n                  .
+        We then genotyped the 5-HTT-linked polymorphic region (5-HTTLPR) and investigated
+        the relationship among 5-HTTLPR, DNA methylation, and amygdala volume using
+        brain imaging data. We found that patients harboring low-activity 5-HTTLPR
+        alleles showed hypermethylation and they showed a negative correlation between
+        DNA methylation levels and left amygdala volumes. These results suggest that
+        hypermethylation of the CpG site in\n                  <jats:italic>SLC6A4<\/jats:italic>\n                  is
+        involved in the pathophysiology of SZ, especially in male patients harboring
+        low-activity 5-HTTLPR alleles.\n                <\/jats:p>","DOI":"10.1101\/2020.05.06.058792","type":"posted-content","created":{"date-parts":[[2020,5,8]],"date-time":"2020-05-08T08:36:23Z","timestamp":1588926983000},"source":"Crossref","is-referenced-by-count":1,"title":["Promoter
+        activity-based case-control association study on\n                  <i>SLC6A4<\/i>\n                  highlighting
+        hypermethylation and altered amygdala volume in male patients with schizophrenia"],"prefix":"10.64898","author":[{"given":"Tempei","family":"Ikegame","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Miki","family":"Bundo","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Naohiro","family":"Okada","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Yui","family":"Murata","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Shinsuke","family":"Koike","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Hiroko","family":"Sugawara","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Takeo","family":"Saito","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Masashi","family":"Ikeda","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Keiho","family":"Owada","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Masaki","family":"Fukunaga","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Fumio","family":"Yamashita","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Daisuke","family":"Koshiyama","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Tatsunobu","family":"Natsubori","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Norichika","family":"Iwashiro","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Tatsuro","family":"Asai","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Akane","family":"Yoshikawa","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Fumichika","family":"Nishimura","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Yoshiya","family":"Kawamura","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Jun","family":"Ishigooka","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Chihiro","family":"Kakiuchi","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Tsukasa","family":"Sasaki","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Osamu","family":"Abe","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Ryota","family":"Hashimoto","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Nakao","family":"Iwata","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Hidenori","family":"Yamasue","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Tadafumi","family":"Kato","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Kiyoto","family":"Kasai","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Kazuya","family":"Iwamoto","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"54368","reference":[{"key":"2024080407041243000_2020.05.06.058792v1.1","doi-asserted-by":"publisher","DOI":"10.1016\/j.tics.2006.02.011"},{"key":"2024080407041243000_2020.05.06.058792v1.2","doi-asserted-by":"publisher","DOI":"10.1038\/sj.mp.4000698"},{"key":"2024080407041243000_2020.05.06.058792v1.3","doi-asserted-by":"publisher","DOI":"10.1007\/BF01281159"},{"key":"2024080407041243000_2020.05.06.058792v1.4","doi-asserted-by":"publisher","DOI":"10.1046\/j.1471-4159.1996.66062621.x"},{"key":"2024080407041243000_2020.05.06.058792v1.5","doi-asserted-by":"publisher","DOI":"10.1126\/science.1083968"},{"key":"2024080407041243000_2020.05.06.058792v1.6","doi-asserted-by":"publisher","DOI":"10.1038\/mp.2009.123"},{"key":"2024080407041243000_2020.05.06.058792v1.7","doi-asserted-by":"publisher","DOI":"10.1001\/archgenpsychiatry.2010.189"},{"key":"2024080407041243000_2020.05.06.058792v1.8","doi-asserted-by":"crossref","first-page":"89","DOI":"10.1016\/j.bbr.2014.07.030","article-title":"An
+        update on the interaction between the serotonin transporter promoter variant
+        (5-HTTLPR), stress and depression, plus an exploration of non-confirming findings","volume":"273","year":"2014","journal-title":"Behav
+        Brain Res"},{"key":"2024080407041243000_2020.05.06.058792v1.9","doi-asserted-by":"publisher","DOI":"10.1038\/sj.mp.4001157"},{"key":"2024080407041243000_2020.05.06.058792v1.10","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2008.06.009"},{"key":"2024080407041243000_2020.05.06.058792v1.11","doi-asserted-by":"publisher","DOI":"10.1001\/jama.2009.878"},{"issue":"1","key":"2024080407041243000_2020.05.06.058792v1.12","doi-asserted-by":"crossref","first-page":"133","DOI":"10.1038\/mp.2017.44","article-title":"Collaborative
+        meta-analysis finds no evidence of a strong interaction between stress and
+        5-HTTLPR genotype contributing to the development of depression","volume":"23","year":"2018","journal-title":"Mol
+        Psychiatry"},{"key":"2024080407041243000_2020.05.06.058792v1.13","doi-asserted-by":"publisher","DOI":"10.1176\/appi.ajp.2018.18070881"},{"issue":"2","key":"2024080407041243000_2020.05.06.058792v1.14","first-page":"710","article-title":"Methylation
+        at SLC6A4 is linked to family history of child abuse: an examination of the
+        Iowa Adoptee sample","volume":"153","year":"2010","journal-title":"American
+        journal of medical genetics Part B, Neuropsychiatric genetics: the official
+        publication of the International Society of Psychiatric Genetics"},{"key":"2024080407041243000_2020.05.06.058792v1.15","doi-asserted-by":"publisher","DOI":"10.1097\/PSY.0b013e3181fdd074"},{"key":"2024080407041243000_2020.05.06.058792v1.16","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pone.0039501"},{"key":"2024080407041243000_2020.05.06.058792v1.17","doi-asserted-by":"crossref","first-page":"e402","DOI":"10.1038\/tp.2014.37","article-title":"Effects
+        of genetic and early environmental risk factors for depression on serotonin
+        transporter expression and methylation profiles","volume":"4","year":"2014","journal-title":"Translational
+        psychiatry"},{"key":"2024080407041243000_2020.05.06.058792v1.18","doi-asserted-by":"publisher","DOI":"10.1017\/S0033291712002784"},{"key":"2024080407041243000_2020.05.06.058792v1.19","doi-asserted-by":"crossref","first-page":"28","DOI":"10.1016\/j.biopsycho.2013.10.006","article-title":"Differential
+        impact of cumulative SES risk on methylation of protein-protein interaction
+        pathways as a function of SLC6A4 genetic variation in African American young
+        adults","volume":"96","year":"2014","journal-title":"Biological psychology"},{"issue":"2","key":"2024080407041243000_2020.05.06.058792v1.20","doi-asserted-by":"crossref","first-page":"209","DOI":"10.1038\/mp.2016.82","article-title":"An
+        epigenetic mechanism links socioeconomic status to changes in depression-related
+        brain function in high-risk adolescents","volume":"22","year":"2017","journal-title":"Molecular
+        psychiatry"},{"key":"2024080407041243000_2020.05.06.058792v1.21","doi-asserted-by":"crossref","first-page":"2","DOI":"10.1186\/s13587-015-0017-x","article-title":"Influence
+        of life stress, 5-HTTLPR genotype, and SLC6A4 methylation on gene expression
+        and stress response in healthy Caucasian males","volume":"5","year":"2015","journal-title":"Biology
+        of mood & anxiety disorders"},{"issue":"3","key":"2024080407041243000_2020.05.06.058792v1.22","doi-asserted-by":"crossref","first-page":"246","DOI":"10.1097\/PSY.0000000000000159","article-title":"Adverse
+        life events and allele-specific methylation of the serotonin transporter gene
+        (SLC6A4) in adolescents: the TRAILS study","volume":"77","year":"2015","journal-title":"Psychosomatic
+        medicine"},{"issue":"1","key":"2024080407041243000_2020.05.06.058792v1.23","doi-asserted-by":"crossref","first-page":"19","DOI":"10.1159\/000435778","article-title":"Epigenetic
+        Dysregulation in the Prefrontal Cortex of Suicide Completers","volume":"146","year":"2015","journal-title":"Cytogenetic
+        and genome research"},{"key":"2024080407041243000_2020.05.06.058792v1.24","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsycho.2009.12.003"},{"key":"2024080407041243000_2020.05.06.058792v1.25","doi-asserted-by":"publisher","DOI":"10.1097\/PSY.0b013e3182924cf4"},{"key":"2024080407041243000_2020.05.06.058792v1.26","doi-asserted-by":"crossref","first-page":"120","DOI":"10.1016\/j.socscimed.2015.10.035","article-title":"Neighborhood
+        crime and depressive symptoms among African American women: Genetic moderation
+        and epigenetic mediation of effects","volume":"146","year":"2015","journal-title":"Social
+        science & medicine (1982)"},{"issue":"5","key":"2024080407041243000_2020.05.06.058792v1.27","first-page":"543","article-title":"The
+        relationship of 5HTT (SLC6A4) methylation and genotype on mRNA expression
+        and liability to major depression and alcohol dependence in subjects from
+        the Iowa Adoption Studies","volume":"147","year":"2008","journal-title":"American
+        journal of medical genetics Part B, Neuropsychiatric genetics: the official
+        publication of the International Society of Psychiatric Genetics"},{"key":"2024080407041243000_2020.05.06.058792v1.28","doi-asserted-by":"publisher","DOI":"10.1016\/j.pnpbp.2013.01.006"},{"issue":"5","key":"2024080407041243000_2020.05.06.058792v1.29","doi-asserted-by":"crossref","first-page":"296","DOI":"10.1503\/jpn.140180","article-title":"DNA
+        methylation of the serotonin transporter gene (SLC6A4) is associated with
+        brain function involved in processing emotional stimuli","volume":"40","year":"2015","journal-title":"Journal
+        of psychiatry & neuroscience: JPN"},{"issue":"3","key":"2024080407041243000_2020.05.06.058792v1.30","doi-asserted-by":"crossref","first-page":"193","DOI":"10.1002\/hup.2527","article-title":"Association
+        study of polymorphism in the serotonin transporter gene promoter, methylation
+        profiles, and expression in patients with major depressive disorder","volume":"31","year":"2016","journal-title":"Human
+        psychopharmacology"},{"key":"2024080407041243000_2020.05.06.058792v1.31","doi-asserted-by":"crossref","first-page":"e24","DOI":"10.1038\/tp.2011.26","article-title":"Hypermethylation
+        of serotonin transporter gene in bipolar disorder detected by epigenome analysis
+        of discordant monozygotic twins","volume":"1","year":"2011","journal-title":"Translational
+        psychiatry"},{"key":"2024080407041243000_2020.05.06.058792v1.32","doi-asserted-by":"crossref","first-page":"190","DOI":"10.1016\/j.neubiorev.2016.11.011","article-title":"An
+        integrative review of methylation at the serotonin transporter gene and its
+        dialogue with environmental risk factors, psychopathology and 5-HTTLPR","volume":"72","year":"2017","journal-title":"Neuroscience
+        and biobehavioral reviews"},{"issue":"4","key":"2024080407041243000_2020.05.06.058792v1.33","doi-asserted-by":"crossref","first-page":"245","DOI":"10.1111\/pcn.12645","article-title":"DNA
+        methylation analyses of the candidate genes identified by a methylome-wide
+        association study revealed common epigenetic alterations in schizophrenia
+        and bipolar disorder","volume":"72","year":"2018","journal-title":"Psychiatry
+        Clin Neurosci"},{"key":"2024080407041243000_2020.05.06.058792v1.34","doi-asserted-by":"publisher","DOI":"10.1038\/mp.2015.209"},{"key":"2024080407041243000_2020.05.06.058792v1.35","doi-asserted-by":"crossref","unstructured":"Taniguchi
+        I , Iwaya C , Ohnaka K , Shibata H , Yamamoto K. Genome-wide DNA methylation
+        analysis reveals hypomethylation in the low-CpG promoter regions in lymphoblastoid
+        cell lines. Hum Genomics May 12 2017;11(1):8.","DOI":"10.1186\/s40246-017-0106-6"},{"key":"2024080407041243000_2020.05.06.058792v1.36","doi-asserted-by":"publisher","DOI":"10.4161\/epi.6.4.14876"},{"key":"2024080407041243000_2020.05.06.058792v1.37","doi-asserted-by":"publisher","DOI":"10.1523\/JNEUROSCI.14-11-06744.1994"},{"key":"2024080407041243000_2020.05.06.058792v1.38","doi-asserted-by":"publisher","DOI":"10.1086\/503850"},{"key":"2024080407041243000_2020.05.06.058792v1.39","doi-asserted-by":"publisher","DOI":"10.1038\/mp.2010.130"},{"key":"2024080407041243000_2020.05.06.058792v1.40","doi-asserted-by":"publisher","DOI":"10.1038\/mp.2012.19"},{"key":"2024080407041243000_2020.05.06.058792v1.41","doi-asserted-by":"publisher","DOI":"10.1038\/mp.2015.63"},{"key":"2024080407041243000_2020.05.06.058792v1.42","doi-asserted-by":"publisher","DOI":"10.1038\/nn.3778"},{"key":"2024080407041243000_2020.05.06.058792v1.43","doi-asserted-by":"publisher","DOI":"10.4161\/epi.20117"},{"key":"2024080407041243000_2020.05.06.058792v1.44","doi-asserted-by":"crossref","first-page":"44547","DOI":"10.1038\/srep44547","article-title":"Sex
+        differences in DNA methylation of the cord blood are related to sex-bias psychiatric
+        diseases","volume":"7","year":"2017","journal-title":"Scientific reports"},{"key":"2024080407041243000_2020.05.06.058792v1.45","doi-asserted-by":"crossref","first-page":"8","DOI":"10.1186\/s40479-015-0029-6","article-title":"New-born
+        females show higher stress-and genotype-independent methylation of SLC6A4
+        than males","volume":"2","year":"2015","journal-title":"Borderline Personal
+        Disord Emot Dysregul"},{"key":"2024080407041243000_2020.05.06.058792v1.46","doi-asserted-by":"crossref","first-page":"43","DOI":"10.1186\/s13072-015-0035-3","article-title":"Characterization
+        of whole-genome autosomal differences of DNA methylation between men and women","volume":"8","year":"2015","journal-title":"Epigenetics
+        & chromatin"},{"key":"2024080407041243000_2020.05.06.058792v1.47","doi-asserted-by":"publisher","DOI":"10.1093\/hmg\/ddt516"},{"issue":"10","key":"2024080407041243000_2020.05.06.058792v1.48","doi-asserted-by":"crossref","first-page":"2622","DOI":"10.1096\/fj.07-8227com","article-title":"Phosphatidylethanolamine
+        N-methyltransferase (PEMT) gene expression is induced by estrogen in human
+        and mouse primary hepatocytes","volume":"21","year":"2007","journal-title":"FASEB
+        journal: official publication of the Federation of American Societies for
+        Experimental Biology"},{"key":"2024080407041243000_2020.05.06.058792v1.49","doi-asserted-by":"publisher","DOI":"10.3945\/ajcn.2010.30064"},{"key":"2024080407041243000_2020.05.06.058792v1.50","doi-asserted-by":"publisher","DOI":"10.1016\/j.ymgme.2013.08.022"},{"issue":"1","key":"2024080407041243000_2020.05.06.058792v1.51","doi-asserted-by":"crossref","first-page":"105","DOI":"10.1007\/s12263-012-0300-z","article-title":"Dietary
+        supplementation with methyl donors reduces fatty liver and modifies the fatty
+        acid synthase DNA methylation profile in rats fed an obesogenic diet","volume":"8","year":"2013","journal-title":"Genes
+        & nutrition"},{"issue":"1","key":"2024080407041243000_2020.05.06.058792v1.52","doi-asserted-by":"crossref","first-page":"43","DOI":"10.1096\/fj.05-4707com","article-title":"Dietary
+        choline deficiency alters global and gene-specific DNA methylation in the
+        developing hippocampus of mouse fetal brains","volume":"20","year":"2006","journal-title":"FASEB
+        journal: official publication of the Federation of American Societies for
+        Experimental Biology"},{"key":"2024080407041243000_2020.05.06.058792v1.53","doi-asserted-by":"publisher","DOI":"10.1016\/S0306-4530(02)00125-7"},{"issue":"10","key":"2024080407041243000_2020.05.06.058792v1.54","doi-asserted-by":"crossref","first-page":"2285","DOI":"10.1017\/S1461145713000710","article-title":"Effect
+        of mood stabilizers on DNA methylation in human neuroblastoma cells","volume":"16","year":"2013","journal-title":"The
+        international journal of neuropsychopharmacology"},{"key":"2024080407041243000_2020.05.06.058792v1.55","doi-asserted-by":"publisher","DOI":"10.1016\/j.jpsychires.2013.04.010"},{"issue":"6","key":"2024080407041243000_2020.05.06.058792v1.56","doi-asserted-by":"crossref","first-page":"575","DOI":"10.1111\/j.1601-183X.2010.00588.x","article-title":"Epigenetic
+        regulation of serotonin transporter expression and behavior in infant rhesus
+        macaques","volume":"9","year":"2010","journal-title":"Genes, brain, and behavior"},{"key":"2024080407041243000_2020.05.06.058792v1.57","doi-asserted-by":"publisher","DOI":"10.1016\/j.biopsych.2013.02.006"},{"issue":"8","key":"2024080407041243000_2020.05.06.058792v1.58","doi-asserted-by":"crossref","first-page":"5510","DOI":"10.1007\/s12035-015-9409-6","article-title":"Role
+        of the 5-HTTLPR and SNP Promoter Polymorphisms on Serotonin Transporter Gene
+        Expression: a Closer Look at Genetic Architecture and In Vitro Functional
+        Studies of Common and Uncommon Allelic Variants","volume":"53","year":"2016","journal-title":"Molecular
+        neurobiology"},{"issue":"17","key":"2024080407041243000_2020.05.06.058792v1.59","doi-asserted-by":"crossref","first-page":"2870","DOI":"10.1002\/1873-3468.12331","article-title":"DNA
+        G-quadruplexes show strong interaction with DNA methyltransferases in vitro","volume":"590","year":"2016","journal-title":"FEBS
+        letters"},{"issue":"2-3","key":"2024080407041243000_2020.05.06.058792v1.60","doi-asserted-by":"crossref","first-page":"373","DOI":"10.1016\/j.schres.2013.12.007","article-title":"DNA
+        hypermethylation of serotonin transporter gene promoter in drug naive patients
+        with schizophrenia","volume":"152","year":"2014","journal-title":"Schizophrenia
+        research"},{"issue":"8","key":"2024080407041243000_2020.05.06.058792v1.61","doi-asserted-by":"crossref","first-page":"e105565","DOI":"10.1371\/journal.pone.0105565","article-title":"Change
+        in DNA methylation patterns of SLC6A4 gene in the gastric mucosa in functional
+        dyspepsia","volume":"9","year":"2014","journal-title":"PloS one"},{"key":"2024080407041243000_2020.05.06.058792v1.62","doi-asserted-by":"publisher","DOI":"10.1038\/nn1463"},{"key":"2024080407041243000_2020.05.06.058792v1.63","doi-asserted-by":"crossref","first-page":"e37","DOI":"10.1038\/tp.2011.29","article-title":"How
+        the serotonin transporter 5-HTTLPR polymorphism influences amygdala function:
+        the roles of in vivo serotonin transporter expression and amygdala structure","volume":"1","year":"2011","journal-title":"Translational
+        psychiatry"},{"key":"2024080407041243000_2020.05.06.058792v1.64","unstructured":"Hill
+        SY , Wang S , Carter H , McDermott MD , Zezza N , Stiffler S. Amygdala Volume
+        in Offspring from Multiplex for Alcohol Dependence Families: The Moderating
+        Influence of Childhood Environment and 5-HTTLPR Variation. Journal of alcoholism
+        and drug dependence Dec 12 2013;Suppl 1."},{"key":"2024080407041243000_2020.05.06.058792v1.65","doi-asserted-by":"crossref","first-page":"481","DOI":"10.1111\/j.1749-6632.2003.tb07105.x","article-title":"Relationships
+        between amygdala volume and activity during emotional information processing
+        tasks in depressed and never-depressed individuals: an fMRI investigation","volume":"985","year":"2003","journal-title":"Annals
+        of the New York Academy of Sciences"},{"key":"2024080407041243000_2020.05.06.058792v1.66","unstructured":"Jia
+        T , Chu C , Liu Y , et al. Epigenome-wide meta-analysis of blood DNA methylation
+        and its association with subcortical volumes: findings from the ENIGMA Epigenetics
+        Working Group. Mol Psychiatry Dec 6 2019."},{"key":"2024080407041243000_2020.05.06.058792v1.67","doi-asserted-by":"publisher","DOI":"10.1371\/journal.pone.0041361"},{"key":"2024080407041243000_2020.05.06.058792v1.68","doi-asserted-by":"crossref","unstructured":"Moore
+        SR , Kobor MS. Variability in DNA methylation at the serotonin transporter
+        gene promoter: epigenetic mechanism or cell-type artifact? Mol Psychiatry.
+        England; 2018.","DOI":"10.1038\/s41380-018-0121-6"}],"container-title":[],"original-title":[],"link":[{"URL":"https:\/\/syndication.highwire.org\/content\/doi\/10.1101\/2020.05.06.058792","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2026,1,15]],"date-time":"2026-01-15T00:20:54Z","timestamp":1768436454000},"score":1,"resource":{"primary":{"URL":"http:\/\/biorxiv.org\/lookup\/doi\/10.1101\/2020.05.06.058792"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2020,5,8]]},"references-count":68,"URL":"https:\/\/doi.org\/10.1101\/2020.05.06.058792","relation":{},"subject":[],"published":{"date-parts":[[2020,5,8]]},"subtype":"preprint"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '5886'
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 24 Oct 2026 00:41:36 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1101%2F2020.05.06.058792%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTU5MDU5MjE4NjAwMCwxMC4xMDkzJTJGc2NoYnVsJTJGc2JhYTA3NQ==","total-results":1,"items":[{"DOI":"10.1093\/schbul\/sbaa075","relation":{"has-preprint":[{"id-type":"doi","id":"10.1101\/2020.05.06.058792","asserted-by":"object"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 24 Oct 2026 00:41:36 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1093/schbul/sbaa075?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,4,13]],"date-time":"2026-04-13T14:57:29Z","timestamp":1776092249630,"version":"3.50.1"},"reference-count":68,"publisher":"Oxford
+        University Press (OUP)","issue":"6","license":[{"start":{"date-parts":[[2020,6,19]],"date-time":"2020-06-19T00:00:00Z","timestamp":1592524800000},"content-version":"vor","delay-in-days":0,"URL":"https:\/\/academic.oup.com\/journals\/pages\/open_access\/funder_policies\/chorus\/standard_publication_model"}],"funder":[{"name":"JSPS
+        KAKENHI","award":["16H06395"],"award-info":[{"award-number":["16H06395"]}]},{"name":"JSPS
+        KAKENHI","award":["16H06399"],"award-info":[{"award-number":["16H06399"]}]},{"name":"JSPS
+        KAKENHI","award":["16K21720"],"award-info":[{"award-number":["16K21720"]}]},{"name":"JSPS
+        KAKENHI","award":["17H01573"],"award-info":[{"award-number":["17H01573"]}]},{"name":"JSPS
+        KAKENHI","award":["18H02753"],"award-info":[{"award-number":["18H02753"]}]},{"name":"JSPS
+        KAKENHI","award":["18H05428"],"award-info":[{"award-number":["18H05428"]}]},{"name":"JSPS
+        KAKENHI","award":["18H05430"],"award-info":[{"award-number":["18H05430"]}]},{"name":"JSPS
+        KAKENHI","award":["18H05435"],"award-info":[{"award-number":["18H05435"]}]},{"name":"JSPS
+        KAKENHI","award":["18K07567"],"award-info":[{"award-number":["18K07567"]}]},{"name":"JSPS
+        KAKENHI","award":["19H03579"],"award-info":[{"award-number":["19H03579"]}]},{"name":"JSPS
+        KAKENHI","award":["19K17056"],"award-info":[{"award-number":["19K17056"]}]},{"DOI":"10.13039\/100009619","name":"AMED","doi-asserted-by":"publisher","award":["JP18dm0207006"],"award-info":[{"award-number":["JP18dm0207006"]}],"id":[{"id":"10.13039\/100009619","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100009619","name":"AMED","doi-asserted-by":"publisher","award":["JP19dm0107097"],"award-info":[{"award-number":["JP19dm0107097"]}],"id":[{"id":"10.13039\/100009619","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100009619","name":"AMED","doi-asserted-by":"publisher","award":["JP19dm0107120"],"award-info":[{"award-number":["JP19dm0107120"]}],"id":[{"id":"10.13039\/100009619","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100009619","name":"AMED","doi-asserted-by":"publisher","award":["JP19dm0107123"],"award-info":[{"award-number":["JP19dm0107123"]}],"id":[{"id":"10.13039\/100009619","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100009619","name":"AMED","doi-asserted-by":"publisher","award":["JP19dm0207069"],"award-info":[{"award-number":["JP19dm0207069"]}],"id":[{"id":"10.13039\/100009619","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100009619","name":"AMED","doi-asserted-by":"publisher","award":["JP19dm0207074"],"award-info":[{"award-number":["JP19dm0207074"]}],"id":[{"id":"10.13039\/100009619","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100009619","name":"AMED","doi-asserted-by":"publisher","award":["JP19dm0307001"],"award-info":[{"award-number":["JP19dm0307001"]}],"id":[{"id":"10.13039\/100009619","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100009619","name":"AMED","doi-asserted-by":"publisher","award":["JP19dm0307002"],"award-info":[{"award-number":["JP19dm0307002"]}],"id":[{"id":"10.13039\/100009619","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100009619","name":"AMED","doi-asserted-by":"publisher","award":["JP19dm0307004"],"award-info":[{"award-number":["JP19dm0307004"]}],"id":[{"id":"10.13039\/100009619","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100009619","name":"AMED","doi-asserted-by":"publisher","award":["JP19km0405201"],"award-info":[{"award-number":["JP19km0405201"]}],"id":[{"id":"10.13039\/100009619","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/100009619","name":"AMED","doi-asserted-by":"publisher","award":["JP19km0405208"],"award-info":[{"award-number":["JP19km0405208"]}],"id":[{"id":"10.13039\/100009619","id-type":"DOI","asserted-by":"publisher"}]},{"name":"UTokyo
+        Center for Integrative Science of Human Behavior"},{"name":"International
+        Research Center for Neurointelligence"}],"content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"published-print":{"date-parts":[[2020,12,1]]},"abstract":"<jats:title>Abstract<\/jats:title>\n                  <jats:p>Associations
+        between altered DNA methylation of the serotonin transporter (5-HTT)-encoding
+        gene SLC6A4 and early life adversity, mood and anxiety disorders, and amygdala
+        reactivity have been reported. However, few studies have examined epigenetic
+        alterations of SLC6A4 in schizophrenia (SZ). We examined CpG sites of SLC6A4,
+        whose DNA methylation levels have been reported to be altered in bipolar disorder,
+        using 3 independent cohorts of patients with SZ and age-matched controls.
+        We found significant hypermethylation of a CpG site in SLC6A4 in male patients
+        with SZ in all 3 cohorts. We showed that chronic administration of risperidone
+        did not affect the DNA methylation status at this CpG site using common marmosets,
+        and that in vitro DNA methylation at this CpG site diminished the promoter
+        activity of SLC6A4. We then genotyped the 5-HTT-linked polymorphic region
+        (5-HTTLPR) and investigated the relationship among 5-HTTLPR, DNA methylation,
+        and amygdala volume using brain imaging data. We found that patients harboring
+        low-activity 5-HTTLPR alleles showed hypermethylation and they showed a negative
+        correlation between DNA methylation levels and left amygdala volumes. These
+        results suggest that hypermethylation of the CpG site in SLC6A4 is involved
+        in the pathophysiology of SZ, especially in male patients harboring low-activity
+        5-HTTLPR alleles.<\/jats:p>","DOI":"10.1093\/schbul\/sbaa075","type":"journal-article","created":{"date-parts":[[2020,5,27]],"date-time":"2020-05-27T15:09:46Z","timestamp":1590592186000},"page":"1577-1586","source":"Crossref","is-referenced-by-count":30,"title":["Promoter
+        Activity-Based Case-Control Association Study on\n                    <i>SLC6A4<\/i>\n                    Highlighting
+        Hypermethylation and Altered Amygdala Volume in Male Patients With Schizophrenia"],"prefix":"10.1093","volume":"46","author":[{"ORCID":"https:\/\/orcid.org\/0000-0002-1196-6471","authenticated-orcid":false,"given":"Tempei","family":"Ikegame","sequence":"first","affiliation":[{"name":"Department
+        of Neuropsychiatry, Graduate School of Medicine, The University of Tokyo,
+        Tokyo, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Miki","family":"Bundo","sequence":"additional","affiliation":[{"name":"Department
+        of Molecular Brain Science, Graduate School of Medical Sciences, Kumamoto
+        University, Kumamoto, Japan"},{"name":"PRESTO, Japan Science and Technology
+        Agency, Tokyo, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Naohiro","family":"Okada","sequence":"additional","affiliation":[{"name":"Department
+        of Neuropsychiatry, Graduate School of Medicine, The University of Tokyo,
+        Tokyo, Japan"},{"name":"International Research Center for Neurointelligence
+        (WPI-IRCN), The University of Tokyo Institutes for Advanced Study (UTIAS),
+        The University of Tokyo, Tokyo, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Yui","family":"Murata","sequence":"additional","affiliation":[{"name":"Department
+        of Molecular Brain Science, Graduate School of Medical Sciences, Kumamoto
+        University, Kumamoto, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Shinsuke","family":"Koike","sequence":"additional","affiliation":[{"name":"Department
+        of Neuropsychiatry, Graduate School of Medicine, The University of Tokyo,
+        Tokyo, Japan"},{"name":"UTokyo Institute for Diversity and Adaptation of Human
+        Mind (UTIDAHM), The University of Tokyo, Tokyo, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Hiroko","family":"Sugawara","sequence":"additional","affiliation":[{"name":"Department
+        of Neuropsychiatry, Graduate School of Medical Sciences, Kumamoto University,
+        Kumamoto, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Takeo","family":"Saito","sequence":"additional","affiliation":[{"name":"Department
+        of Psychiatry, Fujita Health University School of Medicine, Aichi, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Masashi","family":"Ikeda","sequence":"additional","affiliation":[{"name":"Department
+        of Psychiatry, Fujita Health University School of Medicine, Aichi, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Keiho","family":"Owada","sequence":"additional","affiliation":[{"name":"Department
+        of Child Neuropsychiatry, Graduate School of Medicine, The University of Tokyo,
+        Tokyo, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Masaki","family":"Fukunaga","sequence":"additional","affiliation":[{"name":"Division
+        of Cerebral Integration, National Institute for Physiological Sciences, Aichi,
+        Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Fumio","family":"Yamashita","sequence":"additional","affiliation":[{"name":"Division
+        of Ultrahigh Field MRI, Institute for Biomedical Sciences, Iwate Medical University,
+        Iwate, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Daisuke","family":"Koshiyama","sequence":"additional","affiliation":[{"name":"Department
+        of Neuropsychiatry, Graduate School of Medicine, The University of Tokyo,
+        Tokyo, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Tatsunobu","family":"Natsubori","sequence":"additional","affiliation":[{"name":"Department
+        of Neuropsychiatry, Graduate School of Medicine, The University of Tokyo,
+        Tokyo, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Norichika","family":"Iwashiro","sequence":"additional","affiliation":[{"name":"Department
+        of Neuropsychiatry, Graduate School of Medicine, The University of Tokyo,
+        Tokyo, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Tatsuro","family":"Asai","sequence":"additional","affiliation":[{"name":"Department
+        of Neuropsychiatry, Graduate School of Medicine, The University of Tokyo,
+        Tokyo, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Akane","family":"Yoshikawa","sequence":"additional","affiliation":[{"name":"Department
+        of Neuropsychiatry, Graduate School of Medicine, The University of Tokyo,
+        Tokyo, Japan"},{"name":"Schizophrenia Research Project, Tokyo Metropolitan
+        Institute of Medical Science, Tokyo, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Fumichika","family":"Nishimura","sequence":"additional","affiliation":[{"name":"Department
+        of Neuropsychiatry, Graduate School of Medicine, The University of Tokyo,
+        Tokyo, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Yoshiya","family":"Kawamura","sequence":"additional","affiliation":[{"name":"Heartful
+        Kawasaki Hospital, Kanagawa, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Jun","family":"Ishigooka","sequence":"additional","affiliation":[{"name":"Institute
+        of CNS Pharmacology, Tokyo, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Chihiro","family":"Kakiuchi","sequence":"additional","affiliation":[{"name":"Department
+        of Neuropsychiatry, Graduate School of Medicine, The University of Tokyo,
+        Tokyo, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Tsukasa","family":"Sasaki","sequence":"additional","affiliation":[{"name":"Laboratory
+        of Health Education, Graduate School of Education, The University of Tokyo,
+        Tokyo, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Osamu","family":"Abe","sequence":"additional","affiliation":[{"name":"Department
+        of Radiology, Graduate School of Medicine, The University of Tokyo, Tokyo,
+        Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Ryota","family":"Hashimoto","sequence":"additional","affiliation":[{"name":"Department
+        of Pathology of Mental Diseases, National Institute of Mental Health, National
+        Center of Neurology and Psychiatry, Tokyo, Japan"},{"name":"Department of
+        Psychiatry, Osaka University Graduate School of Medicine, Osaka, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Nakao","family":"Iwata","sequence":"additional","affiliation":[{"name":"Department
+        of Psychiatry, Fujita Health University School of Medicine, Aichi, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Hidenori","family":"Yamasue","sequence":"additional","affiliation":[{"name":"Department
+        of Neuropsychiatry, Graduate School of Medicine, The University of Tokyo,
+        Tokyo, Japan"},{"name":"Department of Psychiatry, Hamamatsu University School
+        of Medicine, Shizuoka, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Tadafumi","family":"Kato","sequence":"additional","affiliation":[{"name":"Laboratory
+        for Molecular Dynamics of Mental Disorders, RIKEN CBS, Saitama, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Kiyoto","family":"Kasai","sequence":"additional","affiliation":[{"name":"Department
+        of Neuropsychiatry, Graduate School of Medicine, The University of Tokyo,
+        Tokyo, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"ORCID":"https:\/\/orcid.org\/0000-0002-1780-692X","authenticated-orcid":false,"given":"Kazuya","family":"Iwamoto","sequence":"additional","affiliation":[{"name":"Department
+        of Molecular Brain Science, Graduate School of Medical Sciences, Kumamoto
+        University, Kumamoto, Japan"}],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"286","published-online":{"date-parts":[[2020,6,19]]},"reference":[{"issue":"4","key":"2020120111081160100_CIT0001","doi-asserted-by":"crossref","first-page":"182","DOI":"10.1016\/j.tics.2006.02.011","article-title":"Genetics
+        of emotional regulation: the role of the serotonin transporter in neural function","volume":"10","author":"Hariri","year":"2006","journal-title":"Trends
+        Cogn Sci."},{"issue":"1","key":"2020120111081160100_CIT0002","doi-asserted-by":"crossref","first-page":"32","DOI":"10.1038\/sj.mp.4000698","article-title":"The
+        human serotonin transporter gene linked polymorphism (5-HTTLPR) shows ten
+        novel allelic variants","volume":"5","author":"Nakamura","year":"2000","journal-title":"Mol
+        Psychiatry."},{"issue":"3","key":"2020120111081160100_CIT0003","doi-asserted-by":"crossref","first-page":"247","DOI":"10.1007\/BF01281159","article-title":"Functional
+        promoter and polyadenylation site mapping of the human serotonin (5-HT) transporter
+        gene","volume":"102","author":"Heils","year":"1995","journal-title":"J Neural
+        Transm Gen Sect."},{"issue":"6","key":"2020120111081160100_CIT0004","doi-asserted-by":"crossref","first-page":"2621","DOI":"10.1046\/j.1471-4159.1996.66062621.x","article-title":"Allelic
+        variation of human serotonin transporter gene expression","volume":"66","author":"Heils","year":"1996","journal-title":"J
+        Neurochem."},{"issue":"5631","key":"2020120111081160100_CIT0005","doi-asserted-by":"crossref","first-page":"386","DOI":"10.1126\/science.1083968","article-title":"Influence
+        of life stress on depression: moderation by a polymorphism in the 5-HTT gene","volume":"301","author":"Caspi","year":"2003","journal-title":"Science."},{"issue":"1","key":"2020120111081160100_CIT0006","doi-asserted-by":"crossref","first-page":"18","DOI":"10.1038\/mp.2009.123","article-title":"The
+        moderation by the serotonin transporter gene of environmental adversity in
+        the etiology of depression: 2009 update","volume":"15","author":"Uher","year":"2010","journal-title":"Mol
+        Psychiatry."},{"issue":"5","key":"2020120111081160100_CIT0007","doi-asserted-by":"crossref","first-page":"444","DOI":"10.1001\/archgenpsychiatry.2010.189","article-title":"The
+        serotonin transporter promoter variant (5-HTTLPR), stress, and depression
+        meta-analysis revisited: evidence of genetic moderation","volume":"68","author":"Karg","year":"2011","journal-title":"Arch
+        Gen Psychiatry."},{"key":"2020120111081160100_CIT0008","doi-asserted-by":"crossref","first-page":"89","DOI":"10.1016\/j.bbr.2014.07.030","article-title":"An
+        update on the interaction between the serotonin transporter promoter variant
+        (5-HTTLPR), stress and depression, plus an exploration of non-confirming findings","volume":"273","author":"Sharpley","year":"2014","journal-title":"Behav
+        Brain Res."},{"issue":"10","key":"2020120111081160100_CIT0009","doi-asserted-by":"crossref","first-page":"1058","DOI":"10.1038\/sj.mp.4001157","article-title":"Serotonin
+        transporter gene polymorphism, differential early rearing, and behavior in
+        rhesus monkey neonates","volume":"7","author":"Champoux","year":"2002","journal-title":"Mol
+        Psychiatry."},{"issue":"3","key":"2020120111081160100_CIT0010","doi-asserted-by":"crossref","first-page":"211","DOI":"10.1016\/j.biopsych.2008.06.009","article-title":"Gene
+        X environment interactions at the serotonin transporter locus","volume":"65","author":"Munaf\u00f2","year":"2009","journal-title":"Biol
+        Psychiatry."},{"issue":"23","key":"2020120111081160100_CIT0011","doi-asserted-by":"crossref","first-page":"2462","DOI":"10.1001\/jama.2009.878","article-title":"Interaction
+        between the serotonin transporter gene (5-HTTLPR), stressful life events,
+        and risk of depression: a meta-analysis","volume":"301","author":"Risch","year":"2009","journal-title":"JAMA."},{"issue":"1","key":"2020120111081160100_CIT0012","doi-asserted-by":"crossref","first-page":"133","DOI":"10.1038\/mp.2017.44","article-title":"Collaborative
+        meta-analysis finds no evidence of a strong interaction between stress and
+        5-HTTLPR genotype contributing to the development of depression","volume":"23","author":"Culverhouse","year":"2018","journal-title":"Mol
+        Psychiatry."},{"issue":"5","key":"2020120111081160100_CIT0013","doi-asserted-by":"crossref","first-page":"376","DOI":"10.1176\/appi.ajp.2018.18070881","article-title":"No
+        support for historical candidate gene or candidate gene-by-interaction hypotheses
+        for major depression across multiple large samples","volume":"176","author":"Border","year":"2019","journal-title":"Am
+        J Psychiatry."},{"issue":"2","key":"2020120111081160100_CIT0014","doi-asserted-by":"crossref","first-page":"710","DOI":"10.1002\/ajmg.b.31028","article-title":"Methylation
+        at SLC6A4 is linked to family history of child abuse: an examination of the
+        Iowa Adoptee sample","volume":"153B","author":"Beach","year":"2010","journal-title":"Am
+        J Med Genet B Neuropsychiatr Genet."},{"issue":"1","key":"2020120111081160100_CIT0015","doi-asserted-by":"crossref","first-page":"83","DOI":"10.1097\/PSY.0b013e3181fdd074","article-title":"Methylation
+        at 5HTT mediates the impact of child sex abuse on women\u2019s antisocial
+        behavior: an examination of the Iowa adoptee sample","volume":"73","author":"Beach","year":"2011","journal-title":"Psychosom
+        Med."},{"issue":"6","key":"2020120111081160100_CIT0016","doi-asserted-by":"crossref","first-page":"e39501","DOI":"10.1371\/journal.pone.0039501","article-title":"Peripheral
+        SLC6A4 DNA methylation is associated with in vivo measures of human brain
+        serotonin synthesis and childhood physical aggression","volume":"7","author":"Wang","year":"2012","journal-title":"PLoS
+        One."},{"key":"2020120111081160100_CIT0017","doi-asserted-by":"crossref","first-page":"e402","DOI":"10.1038\/tp.2014.37","article-title":"Effects
+        of genetic and early environmental risk factors for depression on serotonin
+        transporter expression and methylation profiles","volume":"4","author":"Wankerl","year":"2014","journal-title":"Transl
+        Psychiatry."},{"issue":"9","key":"2020120111081160100_CIT0018","doi-asserted-by":"crossref","first-page":"1813","DOI":"10.1017\/S0033291712002784","article-title":"Increased
+        serotonin transporter gene (SERT) DNA methylation is associated with bullying
+        victimization and blunted cortisol response to stress in childhood: a longitudinal
+        study of discordant monozygotic twins","volume":"43","author":"Ouellet-Morin","year":"2013","journal-title":"Psychol
+        Med."},{"key":"2020120111081160100_CIT0019","doi-asserted-by":"crossref","first-page":"28","DOI":"10.1016\/j.biopsycho.2013.10.006","article-title":"Differential
+        impact of cumulative SES risk on methylation of protein-protein interaction
+        pathways as a function of SLC6A4 genetic variation in African American young
+        adults","volume":"96","author":"Beach","year":"2014","journal-title":"Biol
+        Psychol."},{"issue":"2","key":"2020120111081160100_CIT0020","doi-asserted-by":"crossref","first-page":"209","DOI":"10.1038\/mp.2016.82","article-title":"An
+        epigenetic mechanism links socioeconomic status to changes in depression-related
+        brain function in high-risk adolescents","volume":"22","author":"Swartz","year":"2017","journal-title":"Mol
+        Psychiatry."},{"key":"2020120111081160100_CIT0021","doi-asserted-by":"crossref","first-page":"2","DOI":"10.1186\/s13587-015-0017-x","article-title":"Influence
+        of life stress, 5-HTTLPR genotype, and SLC6A4 methylation on gene expression
+        and stress response in healthy Caucasian males","volume":"5","author":"Duman","year":"2015","journal-title":"Biol
+        Mood Anxiety Disord."},{"issue":"3","key":"2020120111081160100_CIT0022","doi-asserted-by":"crossref","first-page":"246","DOI":"10.1097\/PSY.0000000000000159","article-title":"Adverse
+        life events and allele-specific methylation of the serotonin transporter gene
+        (SLC6A4) in adolescents: the TRAILS study","volume":"77","author":"van der
+        Knaap","year":"2015","journal-title":"Psychosom Med."},{"issue":"1","key":"2020120111081160100_CIT0023","doi-asserted-by":"crossref","first-page":"19","DOI":"10.1159\/000435778","article-title":"Epigenetic
+        dysregulation in the prefrontal cortex of suicide completers","volume":"146","author":"Schneider","year":"2015","journal-title":"Cytogenet
+        Genome Res."},{"issue":"2","key":"2020120111081160100_CIT0024","doi-asserted-by":"crossref","first-page":"159","DOI":"10.1016\/j.biopsycho.2009.12.003","article-title":"Prospects
+        for epigenetic research within cohort studies of psychological disorder: a
+        pilot investigation of a peripheral cell marker of epigenetic risk for depression","volume":"83","author":"Olsson","year":"2010","journal-title":"Biol
+        Psychol."},{"issue":"6","key":"2020120111081160100_CIT0025","doi-asserted-by":"crossref","first-page":"523","DOI":"10.1097\/PSY.0b013e3182924cf4","article-title":"Association
+        between promoter methylation of serotonin transporter gene and depressive
+        symptoms: a monozygotic twin study","volume":"75","author":"Zhao","year":"2013","journal-title":"Psychosom
+        Med."},{"key":"2020120111081160100_CIT0026","doi-asserted-by":"crossref","first-page":"120","DOI":"10.1016\/j.socscimed.2015.10.035","article-title":"Neighborhood
+        crime and depressive symptoms among African American women: genetic moderation
+        and epigenetic mediation of effects","volume":"146","author":"Lei","year":"2015","journal-title":"Soc
+        Sci Med."},{"issue":"5","key":"2020120111081160100_CIT0027","doi-asserted-by":"crossref","first-page":"543","DOI":"10.1002\/ajmg.b.30657","article-title":"The
+        relationship of 5HTT (SLC6A4) methylation and genotype on mRNA expression
+        and liability to major depression and alcohol dependence in subjects from
+        the Iowa Adoption Studies","volume":"147B","author":"Philibert","year":"2008","journal-title":"Am
+        J Med Genet B Neuropsychiatr Genet."},{"key":"2020120111081160100_CIT0028","doi-asserted-by":"crossref","first-page":"23","DOI":"10.1016\/j.pnpbp.2013.01.006","article-title":"Association
+        of SLC6A4 methylation with early adversity, characteristics and outcomes in
+        depression","volume":"44","author":"Kang","year":"2013","journal-title":"Prog
+        Neuropsychopharmacol Biol Psychiatry."},{"issue":"5","key":"2020120111081160100_CIT0029","doi-asserted-by":"crossref","first-page":"296","DOI":"10.1503\/jpn.140180","article-title":"DNA
+        methylation of the serotonin transporter gene (SLC6A4) is associated with
+        brain function involved in processing emotional stimuli","volume":"40","author":"Frodl","year":"2015","journal-title":"J
+        Psychiatry Neurosci."},{"issue":"3","key":"2020120111081160100_CIT0030","doi-asserted-by":"crossref","first-page":"193","DOI":"10.1002\/hup.2527","article-title":"Association
+        study of polymorphism in the serotonin transporter gene promoter, methylation
+        profiles, and expression in patients with major depressive disorder","volume":"31","author":"Iga","year":"2016","journal-title":"Hum
+        Psychopharmacol."},{"key":"2020120111081160100_CIT0031","doi-asserted-by":"crossref","first-page":"e24","DOI":"10.1038\/tp.2011.26","article-title":"Hypermethylation
+        of serotonin transporter gene in bipolar disorder detected by epigenome analysis
+        of discordant monozygotic twins","volume":"1","author":"Sugawara","year":"2011","journal-title":"Transl
+        Psychiatry."},{"key":"2020120111081160100_CIT0032","doi-asserted-by":"crossref","first-page":"190","DOI":"10.1016\/j.neubiorev.2016.11.011","article-title":"An
+        integrative review of methylation at the serotonin transporter gene and its
+        dialogue with environmental risk factors, psychopathology and 5-HTTLPR","volume":"72","author":"Palma-Gudiel","year":"2017","journal-title":"Neurosci
+        Biobehav Rev."},{"issue":"4","key":"2020120111081160100_CIT0033","doi-asserted-by":"crossref","first-page":"245","DOI":"10.1111\/pcn.12645","article-title":"DNA
+        methylation analyses of the candidate genes identified by a methylome-wide
+        association study revealed common epigenetic alterations in schizophrenia
+        and bipolar disorder","volume":"72","author":"Sugawara","year":"2018","journal-title":"Psychiatry
+        Clin Neurosci."},{"issue":"10","key":"2020120111081160100_CIT0034","doi-asserted-by":"crossref","first-page":"1460","DOI":"10.1038\/mp.2015.209","article-title":"Abnormal
+        asymmetries in subcortical brain volume in schizophrenia","volume":"21","author":"Okada","year":"2016","journal-title":"Mol
+        Psychiatry."},{"issue":"1","key":"2020120111081160100_CIT0035","doi-asserted-by":"crossref","first-page":"8","DOI":"10.1186\/s40246-017-0106-6","article-title":"Genome-wide
+        DNA methylation analysis reveals hypomethylation in the low-CpG promoter regions
+        in lymphoblastoid cell lines","volume":"11","author":"Taniguchi","year":"2017","journal-title":"Hum
+        Genomics."},{"issue":"4","key":"2020120111081160100_CIT0036","doi-asserted-by":"crossref","first-page":"508","DOI":"10.4161\/epi.6.4.14876","article-title":"Comprehensive
+        DNA methylation analysis of human peripheral blood leukocytes and lymphoblastoid
+        cell lines","volume":"6","author":"Sugawara","year":"2011","journal-title":"Epigenetics."},{"issue":"11
+        Pt 1","key":"2020120111081160100_CIT0037","doi-asserted-by":"crossref","first-page":"6744","DOI":"10.1523\/JNEUROSCI.14-11-06744.1994","article-title":"Distinct
+        regulatory pathways control neurofilament expression and neurotransmitter
+        synthesis in immortalized serotonergic neurons","volume":"14","author":"White","year":"1994","journal-title":"J
+        Neurosci."},{"issue":"5","key":"2020120111081160100_CIT0038","doi-asserted-by":"crossref","first-page":"815","DOI":"10.1086\/503850","article-title":"Serotonin
+        transporter promoter gain-of-function genotypes are linked to obsessive-compulsive
+        disorder","volume":"78","author":"Hu","year":"2006","journal-title":"Am J
+        Hum Genet."},{"issue":"2","key":"2020120111081160100_CIT0039","doi-asserted-by":"crossref","first-page":"185","DOI":"10.1038\/mp.2010.130","article-title":"Identification
+        and functional characterization of three novel alleles for the serotonin transporter-linked
+        polymorphic region","volume":"17","author":"Ehli","year":"2012","journal-title":"Mol
+        Psychiatry."},{"issue":"4","key":"2020120111081160100_CIT0040","doi-asserted-by":"crossref","first-page":"512","DOI":"10.1038\/mp.2012.19","article-title":"The
+        effect of the serotonin transporter polymorphism (5-HTTLPR) on amygdala function:
+        a meta-analysis","volume":"18","author":"Murphy","year":"2013","journal-title":"Mol
+        Psychiatry."},{"issue":"4","key":"2020120111081160100_CIT0041","doi-asserted-by":"crossref","first-page":"547","DOI":"10.1038\/mp.2015.63","article-title":"Subcortical
+        brain volume abnormalities in 2028 individuals with schizophrenia and 2540
+        healthy controls via the ENIGMA consortium","volume":"21","author":"van Erp","year":"2016","journal-title":"Mol
+        Psychiatry."},{"issue":"9","key":"2020120111081160100_CIT0042","doi-asserted-by":"crossref","first-page":"1153","DOI":"10.1038\/nn.3778","article-title":"Beyond
+        genotype: serotonin transporter epigenetic modification predicts human brain
+        function","volume":"17","author":"Nikolova","year":"2014","journal-title":"Nat
+        Neurosci."},{"issue":"6","key":"2020120111081160100_CIT0043","doi-asserted-by":"crossref","first-page":"594","DOI":"10.4161\/epi.20117","article-title":"Individual
+        variation and longitudinal pattern of genome-wide DNA methylation from birth
+        to the first two years of life","volume":"7","author":"Wang","year":"2012","journal-title":"Epigenetics."},{"key":"2020120111081160100_CIT0044","doi-asserted-by":"crossref","first-page":"44547","DOI":"10.1038\/srep44547","article-title":"Sex
+        differences in DNA methylation of the cord blood are related to sex-bias psychiatric
+        diseases","volume":"7","author":"Maschietto","year":"2017","journal-title":"Sci
+        Rep."},{"key":"2020120111081160100_CIT0045","doi-asserted-by":"crossref","first-page":"8","DOI":"10.1186\/s40479-015-0029-6","article-title":"New-born
+        females show higher stress- and genotype-independent methylation of SLC6A4
+        than males","volume":"2","author":"Dukal","year":"2015","journal-title":"Borderline
+        Personal Disord Emot Dysregul."},{"key":"2020120111081160100_CIT0046","doi-asserted-by":"crossref","first-page":"43","DOI":"10.1186\/s13072-015-0035-3","article-title":"Characterization
+        of whole-genome autosomal differences of DNA methylation between men and women","volume":"8","author":"Singmann","year":"2015","journal-title":"Epigenetics
+        Chromatin."},{"issue":"5","key":"2020120111081160100_CIT0047","doi-asserted-by":"crossref","first-page":"1260","DOI":"10.1093\/hmg\/ddt516","article-title":"Sex-biased
+        methylome and transcriptome in human prefrontal cortex","volume":"23","author":"Xu","year":"2014","journal-title":"Hum
+        Mol Genet."},{"issue":"10","key":"2020120111081160100_CIT0048","doi-asserted-by":"crossref","first-page":"2622","DOI":"10.1096\/fj.07-8227com","article-title":"Phosphatidylethanolamine
+        N-methyltransferase (PEMT) gene expression is induced by estrogen in human
+        and mouse primary hepatocytes","volume":"21","author":"Resseguie","year":"2007","journal-title":"FASEB
+        J."},{"issue":"5","key":"2020120111081160100_CIT0049","doi-asserted-by":"crossref","first-page":"1113","DOI":"10.3945\/ajcn.2010.30064","article-title":"Dietary
+        choline requirements of women: effects of estrogen and genetic variation","volume":"92","author":"Fischer","year":"2010","journal-title":"Am
+        J Clin Nutr."},{"issue":"3","key":"2020120111081160100_CIT0050","doi-asserted-by":"crossref","first-page":"388","DOI":"10.1016\/j.ymgme.2013.08.022","article-title":"Transcriptomic
+        and epigenetic changes in early liver steatosis associated to obesity: effect
+        of dietary methyl donor supplementation","volume":"110","author":"Cordero","year":"2013","journal-title":"Mol
+        Genet Metab."},{"issue":"1","key":"2020120111081160100_CIT0051","doi-asserted-by":"crossref","first-page":"105","DOI":"10.1007\/s12263-012-0300-z","article-title":"Dietary
+        supplementation with methyl donors reduces fatty liver and modifies the fatty
+        acid synthase DNA methylation profile in rats fed an obesogenic diet","volume":"8","author":"Cordero","year":"2013","journal-title":"Genes
+        Nutr."},{"issue":"1","key":"2020120111081160100_CIT0052","doi-asserted-by":"crossref","first-page":"43","DOI":"10.1096\/fj.05-4707com","article-title":"Dietary
+        choline deficiency alters global and gene-specific DNA methylation in the
+        developing hippocampus of mouse fetal brains","volume":"20","author":"Niculescu","year":"2006","journal-title":"FASEB
+        J."},{"key":"2020120111081160100_CIT0053","doi-asserted-by":"crossref","first-page":"17","DOI":"10.1016\/S0306-4530(02)00125-7","article-title":"Gender
+        differences in schizophrenia","volume":"28","author":"H\u00e4fner","year":"2003","journal-title":"Psychoneuroendocrinology."},{"issue":"10","key":"2020120111081160100_CIT0054","doi-asserted-by":"crossref","first-page":"2285","DOI":"10.1017\/S1461145713000710","article-title":"Effect
+        of mood stabilizers on DNA methylation in human neuroblastoma cells","volume":"16","author":"Asai","year":"2013","journal-title":"Int
+        J Neuropsychopharmacol."},{"issue":"9","key":"2020120111081160100_CIT0055","doi-asserted-by":"crossref","first-page":"1222","DOI":"10.1016\/j.jpsychires.2013.04.010","article-title":"A
+        longitudinal study of SLC6A4 DNA promoter methylation and poststroke depression","volume":"47","author":"Kim","year":"2013","journal-title":"J
+        Psychiatr Res."},{"issue":"6","key":"2020120111081160100_CIT0056","doi-asserted-by":"crossref","first-page":"575","DOI":"10.1111\/j.1601-183X.2010.00588.x","article-title":"Epigenetic
+        regulation of serotonin transporter expression and behavior in infant rhesus
+        macaques","volume":"9","author":"Kinnally","year":"2010","journal-title":"Genes
+        Brain Behav."},{"issue":"12","key":"2020120111081160100_CIT0057","doi-asserted-by":"crossref","first-page":"879","DOI":"10.1016\/j.biopsych.2013.02.006","article-title":"Worldwide
+        population variation and haplotype analysis at the serotonin transporter gene
+        SLC6A4 and implications for association studies","volume":"74","author":"Murdoch","year":"2013","journal-title":"Biol
+        Psychiatry."},{"issue":"8","key":"2020120111081160100_CIT0058","doi-asserted-by":"crossref","first-page":"5510","DOI":"10.1007\/s12035-015-9409-6","article-title":"Role
+        of the 5-HTTLPR and SNP promoter polymorphisms on serotonin transporter gene
+        expression: a closer look at genetic architecture and in vitro functional
+        studies of common and uncommon allelic variants","volume":"53","author":"Iurescia","year":"2016","journal-title":"Mol
+        Neurobiol."},{"issue":"17","key":"2020120111081160100_CIT0059","doi-asserted-by":"crossref","first-page":"2870","DOI":"10.1002\/1873-3468.12331","article-title":"DNA
+        G-quadruplexes show strong interaction with DNA methyltransferases in vitro","volume":"590","author":"Cree","year":"2016","journal-title":"FEBS
+        Lett."},{"issue":"2\u20133","key":"2020120111081160100_CIT0060","doi-asserted-by":"crossref","first-page":"373","DOI":"10.1016\/j.schres.2013.12.007","article-title":"DNA
+        hypermethylation of serotonin transporter gene promoter in drug na\u00efve
+        patients with schizophrenia","volume":"152","author":"Abdolmaleky","year":"2014","journal-title":"Schizophr
+        Res."},{"issue":"8","key":"2020120111081160100_CIT0061","doi-asserted-by":"crossref","first-page":"e105565","DOI":"10.1371\/journal.pone.0105565","article-title":"Change
+        in DNA methylation patterns of SLC6A4 gene in the gastric mucosa in functional
+        dyspepsia","volume":"9","author":"Tahara","year":"2014","journal-title":"PLoS
+        One."},{"issue":"6","key":"2020120111081160100_CIT0062","doi-asserted-by":"crossref","first-page":"828","DOI":"10.1038\/nn1463","article-title":"5-HTTLPR
+        polymorphism impacts human cingulate-amygdala interactions: a genetic susceptibility
+        mechanism for depression","volume":"8","author":"Pezawas","year":"2005","journal-title":"Nat
+        Neurosci."},{"key":"2020120111081160100_CIT0063","doi-asserted-by":"crossref","first-page":"e37","DOI":"10.1038\/tp.2011.29","article-title":"How
+        the serotonin transporter 5-HTTLPR polymorphism influences amygdala function:
+        the roles of in vivo serotonin transporter expression and amygdala structure","volume":"1","author":"Kobiella","year":"2011","journal-title":"Transl
+        Psychiatry."},{"key":"2020120111081160100_CIT0064","article-title":"Amygdala
+        volume in offspring from multiplex for alcohol dependence families: the moderating
+        influence of childhood environment and 5-HTTLPR variation","author":"Hill","year":"2013","journal-title":"J
+        Alcohol Drug Depend."},{"key":"2020120111081160100_CIT0065","doi-asserted-by":"crossref","first-page":"481","DOI":"10.1111\/j.1749-6632.2003.tb07105.x","article-title":"Relationships
+        between amygdala volume and activity during emotional information processing
+        tasks in depressed and never-depressed individuals: an fMRI investigation","volume":"985","author":"Siegle","year":"2003","journal-title":"Ann
+        N Y Acad Sci."},{"key":"2020120111081160100_CIT0066","article-title":"Epigenome-wide
+        meta-analysis of blood DNA methylation and its association with subcortical
+        volumes: findings from the ENIGMA Epigenetics Working Group [published online
+        ahead of print December 6, 2019]","author":"Jia","journal-title":"Mol Psychiatry."},{"issue":"7","key":"2020120111081160100_CIT0067","doi-asserted-by":"crossref","first-page":"e41361","DOI":"10.1371\/journal.pone.0041361","article-title":"Differential
+        DNA methylation in purified human blood cells: implications for cell lineage
+        and studies on disease susceptibility","volume":"7","author":"Reinius","year":"2012","journal-title":"PLoS
+        One."},{"key":"2020120111081160100_CIT0068","article-title":"Variability in
+        DNA methylation at the serotonin transporter gene promoter: epigenetic mechanism
+        or cell-type artifact? [published online ahead of print August 6, 2018]","author":"Moore","journal-title":"Mol
+        Psychiatry."}],"container-title":["Schizophrenia Bulletin"],"original-title":[],"language":"en","link":[{"URL":"http:\/\/academic.oup.com\/schizophreniabulletin\/article-pdf\/46\/6\/1577\/34627153\/sbaa075.pdf","content-type":"application\/pdf","content-version":"vor","intended-application":"syndication"},{"URL":"http:\/\/academic.oup.com\/schizophreniabulletin\/article-pdf\/46\/6\/1577\/34627153\/sbaa075.pdf","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2024,8,6]],"date-time":"2024-08-06T10:19:21Z","timestamp":1722939561000},"score":1,"resource":{"primary":{"URL":"https:\/\/academic.oup.com\/schizophreniabulletin\/article\/46\/6\/1577\/5859552"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2020,6,19]]},"references-count":68,"journal-issue":{"issue":"6","published-online":{"date-parts":[[2020,6,19]]},"published-print":{"date-parts":[[2020,12,1]]}},"URL":"https:\/\/doi.org\/10.1093\/schbul\/sbaa075","relation":{"has-preprint":[{"id-type":"doi","id":"10.1101\/2020.05.06.058792","asserted-by":"object"}]},"ISSN":["0586-7614","1745-1701"],"issn-type":[{"value":"0586-7614","type":"print"},{"value":"1745-1701","type":"electronic"}],"subject":[],"published-other":{"date-parts":[[2020,11,1]]},"published":{"date-parts":[[2020,6,19]]}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '8902'
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 24 Oct 2026 00:41:36 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1093%2Fschbul%2Fsbaa075%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 24 Oct 2026 00:41:37 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+version: 1

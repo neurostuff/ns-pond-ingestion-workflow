@@ -1,0 +1,115 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.32920/30757796?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"institution":[{"name":"Toronto
+        Metropolitan University"}],"indexed":{"date-parts":[[2025,12,2]],"date-time":"2025-12-02T17:28:53Z","timestamp":1764696533879,"version":"3.46.0"},"posted":{"date-parts":[[2025,12,2]]},"reference-count":0,"publisher":"Ryerson
+        University Library and Archives","license":[{"start":{"date-parts":[[2025,12,2]],"date-time":"2025-12-02T00:00:00Z","timestamp":1764633600000},"content-version":"unspecified","delay-in-days":0,"URL":"https:\/\/creativecommons.org\/licenses\/by\/4.0\/"}],"content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"abstract":"<jats:p>&lt;p
+        dir=\"ltr\"&gt;&lt;b&gt;Third \u2018virtual\u2019 working paper session&lt;\/b&gt;&lt;\/p&gt;&lt;p
+        dir=\"ltr\"&gt;The International Criminal Justice Voluntary Sector Research
+        Network (CRIMVOL) hosted their third virtual event on Thursday 3rd September
+        2020, with a presentation from Dr Kjersti Lohne (University of Oslo). After
+        the presentation and discussion, we discussed some issues around (re)submitting
+        journal articles and choosing journals.&lt;\/p&gt;<\/jats:p>","DOI":"10.32920\/30757796","type":"posted-content","created":{"date-parts":[[2025,12,2]],"date-time":"2025-12-02T17:25:07Z","timestamp":1764696307000},"source":"Crossref","is-referenced-by-count":0,"title":["Third
+        working paper session"],"prefix":"10.32920","author":[{"given":"Cathie","family":"Traynor","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Kjersti","family":"Lohne","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"18300","container-title":[],"original-title":[],"deposited":{"date-parts":[[2025,12,2]],"date-time":"2025-12-02T17:25:07Z","timestamp":1764696307000},"score":1,"resource":{"primary":{"URL":"https:\/\/rshare.library.torontomu.ca\/articles\/report\/Third_working_paper_session\/30757796"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2025,12,2]]},"references-count":0,"URL":"https:\/\/doi.org\/10.32920\/30757796","relation":{},"subject":[],"published":{"date-parts":[[2025,12,2]]},"subtype":"other"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '998'
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 24 Oct 2026 00:41:54 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.32920%2F30757796%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 24 Oct 2026 00:41:54 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+version: 1

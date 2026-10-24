@@ -1,0 +1,830 @@
+interactions:
+- request:
+    body: '{"ids": ["DOI:10.7554/elife.92563"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '36'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '{"error":"No valid paper ids given"}
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '37'
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 24 Oct 2026 04:26:36 GMT
+      Via:
+      - 1.1 535c2b5354e6ba6798fd64420ee97a2c.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - 4pcqIbVH16E8xfAG2vfLWVOGM8ncxv8dk_hzum6_FqX_xEX0pamkzg==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Error from cloudfront
+      x-amz-apigw-id:
+      - Fuz7hHWAvHcEiAg=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '37'
+      x-amzn-Remapped-Date:
+      - Sat, 24 Oct 2026 04:26:36 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - f4da512d-37fa-4847-b17b-a3ab3cc84173
+    status:
+      code: 400
+      message: Bad Request
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&email=replay%40example.com&id=38345852&retmode=xml&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        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
+        AwCxiEprzrcAAA==
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - text/xml; charset=UTF-8
+      date:
+      - Sat, 24 Oct 2026 04:26:36 GMT
+      ncbi-phid:
+      - 1D33876048E798350000620918B922FF.1.1.m_6
+      ncbi-sid:
+      - AA551305D2EDE2E2_8EEFSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '10'
+      x-ratelimit-remaining:
+      - '9'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.1101%2F2023.09.27.559792%2Cdoi%3A10.7554%2Felife.92563&rows=2&select=DOI%2Clicense
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":2,"items":[{"DOI":"10.7554\/elife.92563","license":[{"start":{"date-parts":[[2024,2,12]],"date-time":"2024-02-12T00:00:00Z","timestamp":1707696000000},"content-version":"vor","delay-in-days":0,"URL":"http:\/\/creativecommons.org\/licenses\/by\/4.0\/"},{"start":{"date-parts":[[2024,2,12]],"date-time":"2024-02-12T00:00:00Z","timestamp":1707696000000},"content-version":"am","delay-in-days":0,"URL":"http:\/\/creativecommons.org\/licenses\/by\/4.0\/"},{"start":{"date-parts":[[2024,2,12]],"date-time":"2024-02-12T00:00:00Z","timestamp":1707696000000},"content-version":"tdm","delay-in-days":0,"URL":"http:\/\/creativecommons.org\/licenses\/by\/4.0\/"}]},{"DOI":"10.1101\/2023.09.27.559792"}],"items-per-page":2,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '345'
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 24 Oct 2026 04:26:37 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - public-array
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=doi%3A10.7554%2Felife.92563%7C10.1101%2F2023.09.27.559792&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
+  response:
+    body:
+      string: '{"meta": {"count": 2, "db_response_time_ms": 21, "page": 1, "per_page":
+        100, "groups_count": null, "x_query": {"oql": "get works where DOI is (10.1101/2023.09.27.559792
+        or 10.7554/elife.92563)", "x_new_oql": "get works where DOI is (10.1101/2023.09.27.559792
+        or 10.7554/elife.92563)", "oqo": {"get_rows": "works", "filter_rows": [{"join":
+        "or", "filters": [{"column_id": "doi", "value": "10.1101/2023.09.27.559792"},
+        {"column_id": "doi", "value": "10.7554/elife.92563"}]}]}, "url": "/works?filter=doi:10.1101%2F2023.09.27.559792|10.7554%2Felife.92563&per_page=100",
+        "order": "most cited (age-adjusted) first", "order_default": true}, "cost_usd":
+        0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W4388233378",
+        "doi": "https://doi.org/10.7554/elife.92563", "pmid": "https://pubmed.ncbi.nlm.nih.gov/38345852"},
+        "display_name": "Circuit-based intervention corrects excessive dentate gyrus
+        output in the fragile X mouse model", "authorships": [{"author_position":
+        "first", "author": {"id": "https://openalex.org/A5008013732", "display_name":
+        "Pan\u2010Yue Deng", "orcid": "https://orcid.org/0000-0002-9577-9074", "observed_orcids":
+        ["https://orcid.org/0000-0002-9577-9074"]}, "institutions": [{"id": "https://openalex.org/I204465549",
+        "display_name": "Washington University in St. Louis", "ror": "https://ror.org/01yc7t268",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I204465549"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Pan-Yue
+        Deng", "raw_affiliation_strings": ["Department of Cell Biology and Physiology,
+        Washington University School of Medicine", "Department of Neuroscience, Washington
+        University School of Medicine, St Louis, Missouri, 63110, USA", "Department
+        of Cell Biology and Physiology,Washington University School of Medicine, St
+        Louis, Missouri, 63110, USA"], "raw_orcid": "https://orcid.org/0000-0002-9577-9074",
+        "affiliations": [{"raw_affiliation_string": "Department of Cell Biology and
+        Physiology, Washington University School of Medicine", "institution_ids":
+        ["https://openalex.org/I204465549"]}, {"raw_affiliation_string": "Department
+        of Neuroscience, Washington University School of Medicine, St Louis, Missouri,
+        63110, USA", "institution_ids": ["https://openalex.org/I204465549"]}, {"raw_affiliation_string":
+        "Department of Cell Biology and Physiology,Washington University School of
+        Medicine, St Louis, Missouri, 63110, USA", "institution_ids": ["https://openalex.org/I204465549"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5000955664",
+        "display_name": "Ajeet Kumar", "orcid": "https://orcid.org/0000-0002-8818-3539",
+        "observed_orcids": ["https://orcid.org/0000-0002-8818-3539"]}, "institutions":
+        [{"id": "https://openalex.org/I204465549", "display_name": "Washington University
+        in St. Louis", "ror": "https://ror.org/01yc7t268", "country_code": "US", "type":
+        "education", "lineage": ["https://openalex.org/I204465549"]}], "countries":
+        ["US"], "is_corresponding": false, "raw_author_name": "Ajeet Kumar", "raw_affiliation_strings":
+        ["Department of Neuroscience, Washington University School of Medicine", "Department
+        of Neuroscience, Washington University School of Medicine, St Louis, Missouri,
+        63110, USA", "Department of Cell Biology and Physiology,Washington University
+        School of Medicine, St Louis, Missouri, 63110, USA"], "raw_orcid": null, "affiliations":
+        [{"raw_affiliation_string": "Department of Neuroscience, Washington University
+        School of Medicine", "institution_ids": ["https://openalex.org/I204465549"]},
+        {"raw_affiliation_string": "Department of Neuroscience, Washington University
+        School of Medicine, St Louis, Missouri, 63110, USA", "institution_ids": ["https://openalex.org/I204465549"]},
+        {"raw_affiliation_string": "Department of Cell Biology and Physiology,Washington
+        University School of Medicine, St Louis, Missouri, 63110, USA", "institution_ids":
+        ["https://openalex.org/I204465549"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5001384115", "display_name": "Valeria Cavalli",
+        "orcid": "https://orcid.org/0000-0001-9978-050X", "observed_orcids": ["https://orcid.org/0000-0001-9978-050X"]},
+        "institutions": [{"id": "https://openalex.org/I204465549", "display_name":
+        "Washington University in St. Louis", "ror": "https://ror.org/01yc7t268",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I204465549"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Valeria
+        Cavalli", "raw_affiliation_strings": ["Department of Neuroscience, Washington
+        University School of Medicine", "Department of Neuroscience, Washington University
+        School of Medicine, St Louis, Missouri, 63110, USA", "Department of Cell Biology
+        and Physiology,Washington University School of Medicine, St Louis, Missouri,
+        63110, USA"], "raw_orcid": "https://orcid.org/0000-0001-9978-050X", "affiliations":
+        [{"raw_affiliation_string": "Department of Neuroscience, Washington University
+        School of Medicine", "institution_ids": ["https://openalex.org/I204465549"]},
+        {"raw_affiliation_string": "Department of Neuroscience, Washington University
+        School of Medicine, St Louis, Missouri, 63110, USA", "institution_ids": ["https://openalex.org/I204465549"]},
+        {"raw_affiliation_string": "Department of Cell Biology and Physiology,Washington
+        University School of Medicine, St Louis, Missouri, 63110, USA", "institution_ids":
+        ["https://openalex.org/I204465549"]}]}, {"author_position": "last", "author":
+        {"id": "https://openalex.org/A5028515965", "display_name": "Vitaly A. Klyachko",
+        "orcid": "https://orcid.org/0000-0003-3449-243X", "observed_orcids": ["https://orcid.org/0000-0003-3449-243X"]},
+        "institutions": [{"id": "https://openalex.org/I204465549", "display_name":
+        "Washington University in St. Louis", "ror": "https://ror.org/01yc7t268",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I204465549"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Vitaly
+        A Klyachko", "raw_affiliation_strings": ["Department of Cell Biology and Physiology,
+        Washington University School of Medicine", "Department of Neuroscience, Washington
+        University School of Medicine, St Louis, Missouri, 63110, USA", "Department
+        of Cell Biology and Physiology,Washington University School of Medicine, St
+        Louis, Missouri, 63110, USA"], "raw_orcid": "https://orcid.org/0000-0003-3449-243X",
+        "affiliations": [{"raw_affiliation_string": "Department of Cell Biology and
+        Physiology, Washington University School of Medicine", "institution_ids":
+        ["https://openalex.org/I204465549"]}, {"raw_affiliation_string": "Department
+        of Neuroscience, Washington University School of Medicine, St Louis, Missouri,
+        63110, USA", "institution_ids": ["https://openalex.org/I204465549"]}, {"raw_affiliation_string":
+        "Department of Cell Biology and Physiology,Washington University School of
+        Medicine, St Louis, Missouri, 63110, USA", "institution_ids": ["https://openalex.org/I204465549"]}]}],
+        "publication_year": 2023, "abstract_inverted_index": {"Abnormal": [0], "cellular":
+        [1], "and": [2, 30, 40, 66, 133, 156, 192], "circuit": [3, 38, 47, 199], "excitability":
+        [4, 78, 90, 186], "is": [5, 20, 34, 101], "believed": [6], "to": [7, 86, 137,
+        163, 183], "drive": [8, 116, 152], "many": [9], "core": [10], "phenotypes":
+        [11], "in": [12, 43, 49, 92, 95, 107, 126, 130, 146, 161, 180, 188], "fragile":
+        [13], "X": [14], "syndrome": [15], "(FXS).": [16], "The": [17], "dentate":
+        [18, 37, 46, 80, 139, 159], "gyrus": [19], "a": [21, 83, 177], "brain": [22],
+        "area": [23], "performing": [24], "critical": [25], "computations": [26],
+        "essential": [27], "for": [28], "learning": [29], "memory.": [31], "However,":
+        [32], "little": [33], "known": [35, 89], "about": [36], "defects": [39, 91,
+        187], "their": [41, 194], "mechanisms": [42], "FXS.": [44, 96], "Understanding":
+        [45], "dysfunction": [48], "FXS": [50], "has": [51], "been": [52], "complicated":
+        [53], "by": [54, 103], "the": [55, 63, 114, 158, 198], "presence": [56], "of":
+        [57, 60, 74, 79, 122, 143], "two": [58], "types": [59, 191], "excitatory":
+        [61, 93, 115], "neurons,": [62], "granule": [64, 131, 154], "cells": [65,
+        124, 132, 155], "mossy": [67, 81, 98, 123], "cells.": [68], "Here": [69],
+        "we": [70], "report": [71], "that": [72, 172], "loss": [73], "FMRP": [75],
+        "markedly": [76], "decreased": [77], "cells,": [82], "change": [84], "opposite":
+        [85], "all": [87], "other": [88], "neurons": [94], "This": [97], "cell": [99,
+        190], "hypo-excitability": [100, 121], "caused": [102], "increased": [104,
+        127], "Kv7": [105, 144], "function": [106], "Fmr1": [108, 147], "knockout":
+        [109], "(KO)": [110], "mice.": [111], "By": [112], "reducing": [113], "onto":
+        [117, 153], "local": [118], "hilar": [119], "interneurons,": [120], "results":
+        [125], "excitation/inhibition": [128], "ratio": [129], "thus": [134], "paradoxically":
+        [135], "leads": [136], "excessive": [138], "output.": [140], "Circuit-wide":
+        [141], "inhibition": [142], "channels": [145], "KO": [148], "mice": [149],
+        "increases": [150], "inhibitory": [151], "normalizes": [157], "output": [160],
+        "response": [162], "physiologically": [164], "relevant": [165], "theta\u2013gamma":
+        [166], "coupling": [167], "stimulation.": [168], "Our": [169], "study": [170],
+        "suggests": [171], "circuit-based": [173], "interventions": [174], "may":
+        [175], "provide": [176], "promising": [178], "strategy": [179], "this": [181],
+        "disorder": [182], "bypass": [184], "irreconcilable": [185], "different":
+        [189], "restore": [193], "pathophysiological": [195], "consequences": [196],
+        "at": [197], "level.": [200]}, "primary_location": {"id": "doi:10.7554/elife.92563",
+        "doi": "https://doi.org/10.7554/elife.92563", "is_oa": true, "landing_page_url":
+        "https://doi.org/10.7554/elife.92563", "pdf_url": "https://github.com/elifesciences/enhanced-preprints-data/raw/master/data/92563/v1/92563-v1.pdf",
+        "source": {"id": "https://openalex.org/S1336409049", "display_name": "eLife",
+        "issn_l": "2050-084X", "issn": ["2050-084X"], "is_oa": true, "is_in_doaj":
+        true, "is_core": true, "listed_in": ["anvur-scientific", "cwts-core", "doaj",
+        "dongbi-a", "jufo-2", "ki-jl-2", "medline", "norway-2", "poland-200", "russia-white-list-1",
+        "vabb-shw"], "host_organization": "https://openalex.org/P4310311710", "host_organization_name":
+        "eLife Sciences Publications Ltd", "host_organization_lineage": ["https://openalex.org/P4310311710"],
+        "host_organization_lineage_names": ["eLife Sciences Publications Ltd"], "type":
+        "journal"}, "license": "cc-by", "license_id": "https://openalex.org/licenses/cc-by",
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "eLife", "raw_type": "journal-article"}, "best_oa_location":
+        {"id": "doi:10.7554/elife.92563", "doi": "https://doi.org/10.7554/elife.92563",
+        "is_oa": true, "landing_page_url": "https://doi.org/10.7554/elife.92563",
+        "pdf_url": "https://github.com/elifesciences/enhanced-preprints-data/raw/master/data/92563/v1/92563-v1.pdf",
+        "source": {"id": "https://openalex.org/S1336409049", "display_name": "eLife",
+        "issn_l": "2050-084X", "issn": ["2050-084X"], "is_oa": true, "is_in_doaj":
+        true, "is_core": true, "listed_in": ["anvur-scientific", "cwts-core", "doaj",
+        "dongbi-a", "jufo-2", "ki-jl-2", "medline", "norway-2", "poland-200", "russia-white-list-1",
+        "vabb-shw"], "host_organization": "https://openalex.org/P4310311710", "host_organization_name":
+        "eLife Sciences Publications Ltd", "host_organization_lineage": ["https://openalex.org/P4310311710"],
+        "host_organization_lineage_names": ["eLife Sciences Publications Ltd"], "type":
+        "journal"}, "license": "cc-by", "license_id": "https://openalex.org/licenses/cc-by",
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "eLife", "raw_type": "journal-article"}, "locations": [{"id":
+        "doi:10.7554/elife.92563", "doi": "https://doi.org/10.7554/elife.92563", "is_oa":
+        true, "landing_page_url": "https://doi.org/10.7554/elife.92563", "pdf_url":
+        "https://github.com/elifesciences/enhanced-preprints-data/raw/master/data/92563/v1/92563-v1.pdf",
+        "source": {"id": "https://openalex.org/S1336409049", "display_name": "eLife",
+        "issn_l": "2050-084X", "issn": ["2050-084X"], "is_oa": true, "is_in_doaj":
+        true, "is_core": true, "listed_in": ["anvur-scientific", "cwts-core", "doaj",
+        "dongbi-a", "jufo-2", "ki-jl-2", "medline", "norway-2", "poland-200", "russia-white-list-1",
+        "vabb-shw"], "host_organization": "https://openalex.org/P4310311710", "host_organization_name":
+        "eLife Sciences Publications Ltd", "host_organization_lineage": ["https://openalex.org/P4310311710"],
+        "host_organization_lineage_names": ["eLife Sciences Publications Ltd"], "type":
+        "journal"}, "license": "cc-by", "license_id": "https://openalex.org/licenses/cc-by",
+        "version": "publishedVersion", "is_accepted": true, "is_published": true,
+        "raw_source_name": "eLife", "raw_type": "journal-article"}, {"id": "pmid:38345852",
+        "doi": null, "is_oa": false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/38345852",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "eLife", "raw_type":
+        "Journal Article"}, {"id": "pmh:oai:pubmedcentral.nih.gov:10942577", "doi":
+        null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/10942577",
+        "pdf_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10942577/pdf/elife-92563.pdf",
+        "source": {"id": "https://openalex.org/S2764455111", "display_name": "PubMed
+        Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": "cc-by", "license_id": "https://openalex.org/licenses/cc-by",
+        "version": "submittedVersion", "is_accepted": false, "is_published": false,
+        "raw_source_name": "eLife", "raw_type": "Text"}, {"id": "pmh:oai:digitalcommons.wustl.edu:oa_4-4243",
+        "doi": null, "is_oa": true, "landing_page_url": "https://digitalcommons.wustl.edu/oa_4/3258",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400764", "display_name":
+        "Digital Commons@Becker (Washington University School of Medicine)", "issn_l":
+        null, "issn": null, "is_oa": false, "is_in_doaj": false, "is_core": false,
+        "listed_in": [], "host_organization": "https://openalex.org/I204465549", "host_organization_name":
+        "Washington University in St. Louis", "host_organization_lineage": ["https://openalex.org/I204465549"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": "cc-by",
+        "license_id": "https://openalex.org/licenses/cc-by", "version": "submittedVersion",
+        "is_accepted": false, "is_published": false, "raw_source_name": "2020-Current
+        year OA Pubs", "raw_type": "text"}, {"id": "pmh:oai:doaj.org/article:c2a91812bf7b41a9a3c16977a974f3d6",
+        "doi": null, "is_oa": true, "landing_page_url": "https://doaj.org/article/c2a91812bf7b41a9a3c16977a974f3d6",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306401280", "display_name":
+        "DOAJ (DOAJ: Directory of Open Access Journals)", "issn_l": null, "issn":
+        null, "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in":
+        [], "host_organization": null, "host_organization_name": null, "host_organization_lineage":
+        [], "host_organization_lineage_names": [], "type": "repository"}, "license":
+        "cc-by-sa", "license_id": "https://openalex.org/licenses/cc-by-sa", "version":
+        "submittedVersion", "is_accepted": false, "is_published": false, "raw_source_name":
+        "eLife, Vol 12 (2024)", "raw_type": "article"}], "open_access": {"is_oa":
+        true, "oa_status": "gold", "oa_url": "https://github.com/elifesciences/enhanced-preprints-data/raw/master/data/92563/v1/92563-v1.pdf",
+        "any_repository_has_fulltext": true}}, {"ids": {"openalex": "https://openalex.org/W4387081368",
+        "doi": "https://doi.org/10.1101/2023.09.27.559792", "pmid": "https://pubmed.ncbi.nlm.nih.gov/37808793"},
+        "display_name": "Circuit-based intervention corrects excessive dentate gyrus
+        output in the Fragile X mouse model", "authorships": [{"author_position":
+        "first", "author": {"id": "https://openalex.org/A5008013732", "display_name":
+        "Pan\u2010Yue Deng", "orcid": "https://orcid.org/0000-0002-9577-9074", "observed_orcids":
+        ["https://orcid.org/0000-0002-9577-9074"]}, "institutions": [{"id": "https://openalex.org/I204465549",
+        "display_name": "Washington University in St. Louis", "ror": "https://ror.org/01yc7t268",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I204465549"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Pan-Yue
+        Deng", "raw_affiliation_strings": ["Department of Cell Biology and Physiology,
+        Washington University School of Medicine, St Louis, Missouri, 63110, USA",
+        "Department of Cell Biology and Physiology, St Louis, Missouri, 630, USA"],
+        "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "Department
+        of Cell Biology and Physiology, Washington University School of Medicine,
+        St Louis, Missouri, 63110, USA", "institution_ids": ["https://openalex.org/I204465549"]},
+        {"raw_affiliation_string": "Department of Cell Biology and Physiology, St
+        Louis, Missouri, 630, USA", "institution_ids": []}]}, {"author_position":
+        "middle", "author": {"id": "https://openalex.org/A5000955664", "display_name":
+        "Ajeet Kumar", "orcid": "https://orcid.org/0000-0002-8818-3539", "observed_orcids":
+        ["https://orcid.org/0000-0002-8818-3539"]}, "institutions": [{"id": "https://openalex.org/I204465549",
+        "display_name": "Washington University in St. Louis", "ror": "https://ror.org/01yc7t268",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I204465549"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Ajeet
+        Kumar", "raw_affiliation_strings": ["Department of Neuroscience, Washington
+        University School of Medicine, St Louis, Missouri, 63110, USA"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "Department of Neuroscience,
+        Washington University School of Medicine, St Louis, Missouri, 63110, USA",
+        "institution_ids": ["https://openalex.org/I204465549"]}]}, {"author_position":
+        "middle", "author": {"id": "https://openalex.org/A5001384115", "display_name":
+        "Valeria Cavalli", "orcid": "https://orcid.org/0000-0001-9978-050X", "observed_orcids":
+        ["https://orcid.org/0000-0001-9978-050X"]}, "institutions": [{"id": "https://openalex.org/I204465549",
+        "display_name": "Washington University in St. Louis", "ror": "https://ror.org/01yc7t268",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I204465549"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Valeria
+        Cavalli", "raw_affiliation_strings": ["Department of Neuroscience, Washington
+        University School of Medicine, St Louis, Missouri, 63110, USA"], "raw_orcid":
+        "https://orcid.org/0000-0001-9978-050X", "affiliations": [{"raw_affiliation_string":
+        "Department of Neuroscience, Washington University School of Medicine, St
+        Louis, Missouri, 63110, USA", "institution_ids": ["https://openalex.org/I204465549"]}]},
+        {"author_position": "last", "author": {"id": "https://openalex.org/A5028515965",
+        "display_name": "Vitaly A. Klyachko", "orcid": "https://orcid.org/0000-0003-3449-243X",
+        "observed_orcids": ["https://orcid.org/0000-0003-3449-243X"]}, "institutions":
+        [{"id": "https://openalex.org/I204465549", "display_name": "Washington University
+        in St. Louis", "ror": "https://ror.org/01yc7t268", "country_code": "US", "type":
+        "education", "lineage": ["https://openalex.org/I204465549"]}], "countries":
+        ["US"], "is_corresponding": true, "raw_author_name": "Vitaly A. Klyachko",
+        "raw_affiliation_strings": ["Department of Cell Biology and Physiology, Washington
+        University School of Medicine, St Louis, Missouri, 63110, USA", "Department
+        of Cell Biology and Physiology, St Louis, Missouri, 630, USA"], "raw_orcid":
+        "https://orcid.org/0000-0003-3449-243X", "affiliations": [{"raw_affiliation_string":
+        "Department of Cell Biology and Physiology, Washington University School of
+        Medicine, St Louis, Missouri, 63110, USA", "institution_ids": ["https://openalex.org/I204465549"]},
+        {"raw_affiliation_string": "Department of Cell Biology and Physiology, St
+        Louis, Missouri, 630, USA", "institution_ids": []}]}], "publication_year":
+        2023, "abstract_inverted_index": {"Abstract": [0], "Abnormal": [1], "cellular":
+        [2], "and": [3, 31, 41, 67, 133, 156, 192], "circuit": [4, 39, 48, 199], "excitability":
+        [5, 79, 91, 186], "is": [6, 21, 35, 102], "believed": [7], "to": [8, 87, 137,
+        163, 183], "drive": [9, 116, 152], "many": [10], "core": [11], "phenotypes":
+        [12], "in": [13, 44, 50, 93, 96, 108, 126, 130, 146, 161, 180, 188], "fragile":
+        [14], "X": [15], "syndrome": [16], "(FXS).": [17], "The": [18], "dentate":
+        [19, 38, 47, 81, 139, 159], "gyrus": [20], "a": [22, 84, 177], "brain": [23],
+        "area": [24], "performing": [25], "critical": [26], "computations": [27],
+        "essential": [28], "for": [29], "learning": [30], "memory.": [32], "However,":
+        [33], "little": [34], "known": [36, 90], "about": [37], "defects": [40, 92,
+        187], "their": [42, 194], "mechanisms": [43], "FXS.": [45, 97], "Understanding":
+        [46], "dysfunction": [49], "FXS": [51], "has": [52], "been": [53], "complicated":
+        [54], "by": [55, 104], "the": [56, 64, 114, 158, 198], "presence": [57], "of":
+        [58, 61, 75, 80, 122, 143], "two": [59], "types": [60, 191], "excitatory":
+        [62, 94, 115], "neurons,": [63], "granule": [65, 131, 154], "cells": [66,
+        124, 132, 155], "mossy": [68, 82, 99, 123], "cells.": [69], "Here": [70],
+        "we": [71], "report": [72], "that": [73, 172], "loss": [74], "FMRP": [76],
+        "markedly": [77], "decreased": [78], "cells,": [83], "change": [85], "opposite":
+        [86], "all": [88], "other": [89], "neurons": [95], "This": [98], "cell": [100,
+        190], "hypo-excitability": [101, 121], "caused": [103], "increased": [105,
+        127], "Kv7": [106, 144], "function": [107], "Fmr1": [109, 147], "KO": [110,
+        148], "mice.": [111], "By": [112], "reducing": [113], "onto": [117, 153],
+        "local": [118], "hilar": [119], "interneurons,": [120], "results": [125],
+        "excitation/inhibition": [128], "ratio": [129], "thus": [134], "paradoxically":
+        [135], "leads": [136], "excessive": [138], "output.": [140], "Circuit-wide":
+        [141], "inhibition": [142], "channels": [145], "mice": [149], "increases":
+        [150], "inhibitory": [151], "normalizes": [157], "output": [160], "response":
+        [162], "physiologically": [164], "relevant": [165], "theta-gamma": [166],
+        "coupling": [167], "stimulation.": [168], "Our": [169], "study": [170], "suggests":
+        [171], "circuit-based": [173], "interventions": [174], "may": [175], "provide":
+        [176], "promising": [178], "strategy": [179], "this": [181], "disorder": [182],
+        "bypass": [184], "irreconcilable": [185], "different": [189], "restore": [193],
+        "pathophysiological": [195], "consequences": [196], "at": [197], "level.":
+        [200]}, "primary_location": {"id": "doi:10.1101/2023.09.27.559792", "doi":
+        "https://doi.org/10.1101/2023.09.27.559792", "is_oa": true, "landing_page_url":
+        "https://doi.org/10.1101/2023.09.27.559792", "pdf_url": "https://www.biorxiv.org/content/biorxiv/early/2023/11/13/2023.09.27.559792.full.pdf",
+        "source": {"id": "https://openalex.org/S4306402567", "display_name": "bioRxiv
+        (Cold Spring Harbor Laboratory)", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I2750212522", "host_organization_name": "Cold Spring
+        Harbor Laboratory", "host_organization_lineage": ["https://openalex.org/I2750212522"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": "cc-by-nc-nd",
+        "license_id": "https://openalex.org/licenses/cc-by-nc-nd", "version": "acceptedVersion",
+        "is_accepted": true, "is_published": false, "raw_source_name": "bioRxiv",
+        "raw_type": "posted-content"}, "best_oa_location": {"id": "doi:10.1101/2023.09.27.559792",
+        "doi": "https://doi.org/10.1101/2023.09.27.559792", "is_oa": true, "landing_page_url":
+        "https://doi.org/10.1101/2023.09.27.559792", "pdf_url": "https://www.biorxiv.org/content/biorxiv/early/2023/11/13/2023.09.27.559792.full.pdf",
+        "source": {"id": "https://openalex.org/S4306402567", "display_name": "bioRxiv
+        (Cold Spring Harbor Laboratory)", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I2750212522", "host_organization_name": "Cold Spring
+        Harbor Laboratory", "host_organization_lineage": ["https://openalex.org/I2750212522"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": "cc-by-nc-nd",
+        "license_id": "https://openalex.org/licenses/cc-by-nc-nd", "version": "acceptedVersion",
+        "is_accepted": true, "is_published": false, "raw_source_name": "bioRxiv",
+        "raw_type": "posted-content"}, "locations": [{"id": "doi:10.1101/2023.09.27.559792",
+        "doi": "https://doi.org/10.1101/2023.09.27.559792", "is_oa": true, "landing_page_url":
+        "https://doi.org/10.1101/2023.09.27.559792", "pdf_url": "https://www.biorxiv.org/content/biorxiv/early/2023/11/13/2023.09.27.559792.full.pdf",
+        "source": {"id": "https://openalex.org/S4306402567", "display_name": "bioRxiv
+        (Cold Spring Harbor Laboratory)", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I2750212522", "host_organization_name": "Cold Spring
+        Harbor Laboratory", "host_organization_lineage": ["https://openalex.org/I2750212522"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": "cc-by-nc-nd",
+        "license_id": "https://openalex.org/licenses/cc-by-nc-nd", "version": "acceptedVersion",
+        "is_accepted": true, "is_published": false, "raw_source_name": "bioRxiv",
+        "raw_type": "posted-content"}, {"id": "pmid:37808793", "doi": null, "is_oa":
+        false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/37808793", "pdf_url":
+        null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "bioRxiv : the
+        preprint server for biology", "raw_type": "Preprint"}, {"id": "pmh:oai:pubmedcentral.nih.gov:10557679",
+        "doi": null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/10557679",
+        "pdf_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10557679/pdf/nihpp-2023.09.27.559792v2.pdf",
+        "source": {"id": "https://openalex.org/S2764455111", "display_name": "PubMed
+        Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": "cc-by-nc-nd", "license_id": "https://openalex.org/licenses/cc-by-nc-nd",
+        "version": "submittedVersion", "is_accepted": false, "is_published": false,
+        "raw_source_name": "bioRxiv", "raw_type": "Text"}], "open_access": {"is_oa":
+        true, "oa_status": "green", "oa_url": "https://www.biorxiv.org/content/biorxiv/early/2023/11/13/2023.09.27.559792.full.pdf",
+        "any_repository_has_fulltext": true}}], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a4f6396dcf8b2cc4-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 24 Oct 2026 04:26:37 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '10000'
+      X-RateLimit-Limit-USD:
+      - '1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '9999'
+      X-RateLimit-Remaining-USD:
+      - '0.9999'
+      X-RateLimit-Reset:
+      - '70403'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=8MBf7%2FLFXp8vNckOeNRcMvZWqj%2Bc5rpK3v0MmDWrpC4%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1792815997"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=8MBf7%2FLFXp8vNckOeNRcMvZWqj%2Bc5rpK3v0MmDWrpC4%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1792815997"
+    status:
+      code: 200
+      message: OK
+version: 1

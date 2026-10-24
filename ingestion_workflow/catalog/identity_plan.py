@@ -12,14 +12,15 @@ method it calls; any other key (`why`, the evidence) is carried for the reader.
     {"op": "swap_artifacts", "articles": [A, B], "artifacts": [["download", "ace"]]}
     {"op": "forget_artifacts", "article": A, "artifacts": [["extract", "pubget"]]}
     {"op": "merge", "articles": [A, B], "drop": [["pmid", "37401785"]],
-     "rekind": [["pmid", "37808793"]]}
-    {"op": "rekind", "article": A, "kind": "pmid", "value": "37808793"}
+     "rekind": [["pmid", "37808793", "preprint_pmid"]]}
+    {"op": "rekind", "article": A, "kind": "pmid", "value": "37808793", "as": "preprint_pmid"}
 
 A plan in which an identifier comes back to an article and kind it left is refused
 whole: no operation of a reviewed plan undoes another. `add` takes only an identifier
 no article holds; `split`'s `add` attaches more
 such identifiers to the new article. `rekind` holds a PMID or PMCID as the
-preprint's, or a DOI as an alternate DOI.
+preprint's (`preprint_pmid`, `preprint_pmcid`), or a DOI as an alternate DOI or a
+preprint's (`alternative_doi`, `preprint_doi`): the kind is always named.
 
 An article whose extractions a plan forgets, moves or splits off, and which is left
 with none, has its passages taken back as `ingest run` takes them back when no
@@ -54,7 +55,7 @@ _FIELDS = {
     "swap_artifacts": ("articles", "artifacts"),
     "forget_artifacts": ("article", "artifacts"),
     "merge": ("articles",),
-    "rekind": ("article", "kind", "value"),
+    "rekind": ("article", "kind", "value", "as"),
 }
 
 
@@ -101,9 +102,8 @@ def _refuse_returns(operations: List[Tuple[int, Operation]]) -> None:
             move(o["value"], None, (o["article"], o["kind"]), number)
         elif o["op"] == "remove":
             move(o["value"], (o["article"], o["kind"]), None, number)
-        elif o["op"] == "rekind" and o["kind"] in Catalog.REKIND:
-            move(o["value"], (o["article"], o["kind"]),
-                 (o["article"], Catalog.REKIND[o["kind"]]), number)
+        elif o["op"] == "rekind":
+            move(o["value"], (o["article"], o["kind"]), (o["article"], o["as"]), number)
         elif o["op"] == "reassign":
             for m in o["moves"]:
                 move(m["value"], (m["from"], m["kind"]), (m["to"], m["kind"]), number)
@@ -330,11 +330,11 @@ def _run_forget_artifacts(catalog, op, outcome):
 
 def _run_merge(catalog, op, outcome):
     return [catalog.merge(op["articles"], _pairs(op.get("drop", ())),
-                          _pairs(op.get("rekind", ())))]
+                          [(str(k), str(v), str(a)) for k, v, a in op.get("rekind", ())])]
 
 
 def _run_rekind(catalog, op, outcome):
-    catalog.rekind_aliases([(op["kind"], str(op["value"]), op["article"])])
+    catalog.rekind_aliases([(op["kind"], str(op["value"]), op["article"], op["as"])])
     return [op["article"]]
 
 

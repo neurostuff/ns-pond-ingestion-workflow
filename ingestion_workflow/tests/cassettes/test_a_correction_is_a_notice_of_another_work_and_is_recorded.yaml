@@ -1,0 +1,111 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1074/jbc.aac119.012166?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2025,12,31]],"date-time":"2025-12-31T04:28:37Z","timestamp":1767155317692,"version":"build-2238731810"},"update-to":[{"DOI":"10.1074\/jbc.ra119.010298","type":"correction","label":"Correction","source":"publisher","updated":{"date-parts":[[2020,1,3]],"date-time":"2020-01-03T00:00:00Z","timestamp":1578009600000}}],"reference-count":0,"publisher":"Elsevier
+        BV","issue":"1","license":[{"start":{"date-parts":[[2020,1,1]],"date-time":"2020-01-01T00:00:00Z","timestamp":1577836800000},"content-version":"tdm","delay-in-days":0,"URL":"https:\/\/www.elsevier.com\/tdm\/userlicense\/1.0\/"},{"start":{"date-parts":[[2020,12,2]],"date-time":"2020-12-02T00:00:00Z","timestamp":1606867200000},"content-version":"vor","delay-in-days":336,"URL":"http:\/\/creativecommons.org\/licenses\/by\/4.0\/"}],"content-domain":{"domain":["jbc.org"],"crossmark-restriction":true},"short-container-title":["Journal
+        of Biological Chemistry"],"published-print":{"date-parts":[[2020,1]]},"DOI":"10.1074\/jbc.aac119.012166","type":"journal-article","created":{"date-parts":[[2020,1,3]],"date-time":"2020-01-03T08:25:15Z","timestamp":1578039915000},"page":"287","update-policy":"https:\/\/doi.org\/10.1074\/jbc.f110.005975","source":"Crossref","is-referenced-by-count":1,"title":["Correction:
+        The ACT domain in chloroplast precursor\u2013phosphorylating STY kinases binds
+        metabolites and allosterically regulates kinase activity."],"prefix":"10.1016","volume":"295","author":[{"given":"Ahmed","family":"Eisa","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Bettina","family":"B\u00f6lter","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Serena","family":"Schwenkert","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"78","container-title":["Journal
+        of Biological Chemistry"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S0021925817495676?httpAccept=text\/xml","content-type":"text\/xml","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/api.elsevier.com\/content\/article\/PII:S0021925817495676?httpAccept=text\/plain","content-type":"text\/plain","content-version":"vor","intended-application":"text-mining"},{"URL":"https:\/\/syndication.highwire.org\/content\/doi\/10.1074\/jbc.AAC119.012166","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2021,12,31]],"date-time":"2021-12-31T11:23:53Z","timestamp":1640949833000},"score":1,"resource":{"primary":{"URL":"https:\/\/linkinghub.elsevier.com\/retrieve\/pii\/S0021925817495676"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2020,1]]},"references-count":0,"journal-issue":{"issue":"1","published-print":{"date-parts":[[2020,1]]}},"alternative-id":["S0021925817495676"],"URL":"https:\/\/doi.org\/10.1074\/jbc.aac119.012166","relation":{},"ISSN":["0021-9258"],"issn-type":[{"value":"0021-9258","type":"print"}],"subject":[],"published":{"date-parts":[[2020,1]]}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1231'
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 24 Oct 2026 00:41:49 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1074%2Fjbc.aac119.012166%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 24 Oct 2026 00:41:49 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+version: 1

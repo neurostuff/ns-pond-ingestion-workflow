@@ -369,7 +369,7 @@ class Settings(BaseSettings):
     # ===== Metadata enrichment configuration =====
     metadata_providers: List[str] = Field(
         default_factory=lambda: ["semantic_scholar", "pubmed", "openalex"],
-        description="Ordered list of metadata providers to query",
+        description="Ordered list of providers searched by title when attaching local PDFs",
     )
 
     # ===== Parallelism configuration =====

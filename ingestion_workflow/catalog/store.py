@@ -432,7 +432,7 @@ class Catalog:
                 if pubmed_doi:
                     holder = self._holder(conn, "doi", pubmed_doi)
                     if holder is not None and holder not in owners.values():
-                        self._refuse(conn, "pmid", str(identifier.pmid), None, why)
+                        self.refuse("pmid", str(identifier.pmid), None, why, conn)
                         pairs = [p for p in pairs if p[0] != "pmid"]
                 # A preprint's PMID or PMCID is not the one its holder is judged by.
                 incoming = {k: v for k, v in pairs
@@ -495,8 +495,14 @@ class Catalog:
         self.conflicts += 1
         logger.warning("catalog: %s -- %s", identifier.slug, why)
 
-    def _refuse(self, conn: sqlite3.Connection, kind: str, value: str,
-                article_id: Optional[str], why: str) -> None:
+    def refuse(self, kind: str, value: str, article_id: Optional[str], why: str,
+               conn: Optional[sqlite3.Connection] = None) -> None:
+        """Record an identifier left off an article, and why, in the `refusals` table, in the
+        log and on `refused`; `conn` is the caller's open write transaction, if it has one."""
+        if conn is None:
+            with self._write() as own:
+                self.refuse(kind, value, article_id, why, own)
+            return
         self.conflicts += 1
         if (kind, value, article_id, why) not in self.refused:
             self.refused.append((kind, value, article_id, why))
@@ -529,8 +535,9 @@ class Catalog:
                     conn.execute("INSERT INTO aliases(kind, value, article_id) VALUES(?, ?, ?)",
                                  ("alternative_doi", doi, article_id))
                 else:
-                    self._refuse(conn, "doi", doi, article_id,
-                                 f"{article_id} holds the journal DOI {', '.join(held)}, {why}")
+                    self.refuse("doi", doi, article_id,
+                                f"{article_id} holds the journal DOI {', '.join(held)}, {why}",
+                                conn)
 
     def _pubmed_evidence(self, identifiers: Sequence[Identifier]) -> Dict[str, Tuple[str, str]]:
         """For each PMID a record would add beside its other ids, (the DOI, why) it is
@@ -773,37 +780,38 @@ class Catalog:
                 self._require_journal_doi(conn, article_id)
         return [(article_id, kind, value) for kind, value, article_id in rows]
 
-    #: The kind each kind may be held as instead: a Preprint-typed PubMed record's
-    #: PMID and PMC's PMCID of it beside the version of record's, a DOI as an
-    #: alternate DOI of the paper.
-    REKIND = {"pmid": "preprint_pmid", "pmcid": "preprint_pmcid", "doi": "alternative_doi"}
+    #: The kinds a kind may be held as instead: a Preprint-typed PubMed record's PMID and
+    #: PMC's PMCID of it beside the version of record's, a DOI as an alternate DOI of the
+    #: paper or as a preprint's.
+    REKIND_TO = {"pmid": ("preprint_pmid",), "pmcid": ("preprint_pmcid",),
+                 "doi": ("alternative_doi", "preprint_doi")}
     #: The kind a merge holds a duplicate record's id as.
     DROP = {"pmid": "alternative_pmid", "pmcid": "alternative_pmcid"}
 
-    def rekind_aliases(self, rows: Sequence[Tuple[str, str, str]]) -> None:
-        """Hold each alias, given as (kind, value, article), as the kind `REKIND` gives.
+    def rekind_aliases(self, rows: Sequence[Tuple[str, str, str, str]]) -> None:
+        """Hold each alias, given as (kind, value, article, as_kind), as `as_kind`, one of
+        `REKIND_TO[kind]`.
 
-        Refused when an alias is not the article's, the kind has no other, the
+        Refused when an alias is not the article's, the kind is not held as `as_kind`, the
         article is not live, or it would be left with no pmid, pmcid or doi, with
         a journal DOI only as an alternate:
         the version of record's DOI is the one an article presents.
         """
         with self._write() as conn:
-            for kind, value, article_id in rows:
-                self._rekind(conn, kind, value, article_id)
-            for article_id in dict.fromkeys(a for _, _, a in rows):
+            for row in rows:
+                self._rekind(conn, *row)
+            for article_id in dict.fromkeys(row[2] for row in rows):
                 self._require_named(conn, article_id)
                 self._require_journal_doi(conn, article_id)
 
-    def _rekind(self, conn: sqlite3.Connection, kind: str, value: str, article_id: str) -> None:
-        if kind not in self.REKIND:
-            raise IdentityError(f"a {kind} is held as no other kind")
+    def _rekind(self, conn: sqlite3.Connection, kind: str, value: str, article_id: str,
+                as_kind: str) -> None:
+        if as_kind not in self.REKIND_TO.get(kind, ()):
+            raise IdentityError(f"a {kind} is not held as a {as_kind}")
         self._require_live(article_id)
         self._require_held(conn, kind, value, article_id)
-        conn.execute("UPDATE aliases SET kind=? WHERE kind=? AND value=?",
-                     (self.REKIND[kind], kind, value))
-        logger.warning("catalog: %s %s of %s held as %s",
-                       kind, value, article_id, self.REKIND[kind])
+        conn.execute("UPDATE aliases SET kind=? WHERE kind=? AND value=?", (as_kind, kind, value))
+        logger.warning("catalog: %s %s of %s held as %s", kind, value, article_id, as_kind)
 
     def _require_journal_doi(self, conn: sqlite3.Connection, article_id: str) -> None:
         alternates = self._aliases(conn, article_id, "alternative_doi")
@@ -917,12 +925,12 @@ class Catalog:
         self,
         article_ids: Sequence[str],
         drop: Sequence[Tuple[str, str]] = (),
-        rekind: Sequence[Tuple[str, str]] = (),
+        rekind: Sequence[Tuple[str, str, str]] = (),
     ) -> str:
         """Merge articles that are one paper into the oldest; return its id.
 
         Before the merge, each PMID or PMCID in `drop`, as (kind, value), is held as
-        a duplicate record's, and each alias in `rekind` as the kind `REKIND` gives;
+        a duplicate record's, and each alias in `rekind`, as (kind, value, as_kind), as `as_kind`;
         each must be held by one of the articles. `drop` is for a second PubMed or
         PMC record of the paper, or of its preprint beside the one kept: it still
         finds the paper, so registering it again does not make another article.
@@ -937,7 +945,7 @@ class Catalog:
             raise IdentityError("a merge needs two articles")
         with self._write() as conn:
             self._require_live(*article_ids)
-            for kind, value in list(drop) + list(rekind):
+            for kind, value, *_ in list(drop) + list(rekind):
                 row = conn.execute("SELECT article_id FROM aliases WHERE kind=? AND value=?",
                                    (kind, value)).fetchone()
                 if row is None or row["article_id"] not in article_ids:
@@ -950,10 +958,10 @@ class Catalog:
                              (self.DROP[kind], kind, value))
                 logger.warning("catalog: %s %s held as %s in merging %s", kind, value,
                                self.DROP[kind], article_ids)
-            for kind, value in rekind:
+            for kind, value, as_kind in rekind:
                 holder = conn.execute("SELECT article_id FROM aliases WHERE kind=? AND value=?",
                                       (kind, value)).fetchone()["article_id"]
-                self._rekind(conn, kind, value, holder)
+                self._rekind(conn, kind, value, holder, as_kind)
             if not self._compatible(conn, article_ids, {}):
                 raise IdentityError(f"{', '.join(article_ids)} would hold two of a PMID, PMCID, "
                                     "preprint PMID or PMCID, base study or journal DOI")
@@ -1440,6 +1448,25 @@ class Catalog:
                 "VALUES (?, ?, ?, ?, ?, ?)",
                 attempts,
             )
+
+    #: The stage under which `attempts` holds that a provider was asked for an article's ids.
+    LOOKUP_STAGE = "id_lookup"
+
+    def record_lookups(self, article_ids: Sequence[str], provider: str) -> None:
+        """Note that `provider` was asked for each article's ids. It is an attempt, not an
+        artifact: no stage is waiting on it, so no stage count shows it, and a merge or a
+        split carries it with the article."""
+        now = utcnow()
+        with self._write() as conn:
+            conn.executemany(
+                "INSERT INTO attempts(article_id, stage, source, attempted_at, ok, error) "
+                "VALUES (?, ?, ?, ?, 1, NULL)",
+                [(article_id, self.LOOKUP_STAGE, provider, now) for article_id in article_ids])
+
+    def was_looked_up(self, article_id: str, provider: str) -> bool:
+        return self._conn.execute(
+            "SELECT 1 FROM attempts WHERE article_id=? AND stage=? AND source=? AND ok=1 LIMIT 1",
+            (article_id, self.LOOKUP_STAGE, provider)).fetchone() is not None
 
     def attempt_counts(
         self, article_ids: Sequence[str], stage: str, source: str

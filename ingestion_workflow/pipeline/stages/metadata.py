@@ -15,9 +15,11 @@ so a new or changed download makes the artifact stale.
 
 from __future__ import annotations
 
+import hashlib
 import logging
 from datetime import datetime
-from typing import Dict, Iterator, List, Optional, Sequence
+from pathlib import Path
+from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import DownloadResult, DownloadSource, ExtractedContent
@@ -35,6 +37,17 @@ METADATA_VERSION = 6
 
 #: Kept in the catalog row for display and for the upload stage.
 SUMMARY_FIELDS = ("title", "journal", "publication_year", "oa_status")
+
+def record_digests(settings, paths) -> Dict[str, str]:
+    """A digest of each cache file the metadata was made from, by its path under
+    `<cache>/metadata`; empty for a file not held, which a later run may find."""
+    root = settings.get_cache_dir("metadata")
+    return {str(Path(path).relative_to(root)): _digest(Path(path)) for path in paths}
+
+
+def _digest(path: Path) -> str:
+    return hashlib.blake2b(path.read_bytes(), digest_size=16).hexdigest() if path.exists() else ""
+
 
 def held_dois(catalog, article_id: str) -> List[str]:
     """Every DOI the catalog holds for the article as its own: the version of record's and
@@ -58,18 +71,34 @@ class MetadataStage:
             self._service = MetadataService(self.settings)
         return self._service
 
-    def fingerprint_for(self, downloads: Dict[str, Artifact],
-                        extractions: Optional[Dict[str, Artifact]] = None) -> str:
-        """The version, the providers, the article's ok downloads, whose copies each get a
-        licence, and the extractions of its PDFs, whose text names the corresponding
-        authors."""
+    def fingerprint_for(self, ids: Tuple[Optional[str], Sequence[str]],
+                        downloads: Dict[str, Artifact],
+                        extractions: Optional[Dict[str, Artifact]] = None,
+                        records: Optional[Dict[str, str]] = None) -> str:
+        """The version, the ids the stage asks by (the PMID, and the DOIs held as the
+        article's own and its preprints'), the article's ok downloads, whose copies each get
+        a licence, the extractions of its PDFs, whose text names the corresponding authors,
+        and the cache files its metadata was made from, by digest."""
+        pmid, dois = ids
         held = sorted((source, artifact.fingerprint) for source, artifact in downloads.items()
                       if artifact.status is Status.OK)
         texts = sorted((source, artifact.fingerprint)
                        for source, artifact in (extractions or {}).items()
                        if source in PDF_SOURCES and artifact.status is Status.OK)
-        return fingerprint("metadata", METADATA_VERSION, tuple(self.settings.metadata_providers),
-                           tuple(held), *([tuple(texts)] if texts else []))
+        return fingerprint("metadata", METADATA_VERSION, (pmid, tuple(sorted(dois))),
+                           tuple(held), *([tuple(texts)] if texts else []),
+                           tuple(sorted((records or {}).items())))
+
+    def inputs_of(self, ctx: Context, ref: ArticleRef, downloads: Dict[str, Artifact],
+                  extractions: Dict[str, Artifact],
+                  existing: Optional[Artifact] = None) -> str:
+        """The fingerprint of the metadata made of what the catalog holds now and the cache
+        files the stored metadata was made from, as they are now."""
+        read = ((existing.summary or {}).get("records") or {}) if existing else {}
+        root = self.settings.get_cache_dir("metadata")
+        return self.fingerprint_for(
+            (ref.identifier.pmid, held_dois(ctx.catalog, ref.id)), downloads, extractions,
+            {path: _digest(root / path) for path in read})
 
     def plan(
         self,
@@ -93,7 +122,8 @@ class MetadataStage:
                     with_passages[article_id] = found
         for ref in refs:
             existing = artifacts.get(ref.id, {}).get("")
-            fp = self.fingerprint_for(downloads.get(ref.id, {}), upstream.get(ref.id, {}))
+            fp = self.inputs_of(ctx, ref, downloads.get(ref.id, {}), upstream.get(ref.id, {}),
+                                existing)
             if ctx.is_fresh(existing, fp) and not _embargo_lifted(existing, ctx.now):
                 plan.fresh += 1
                 continue
@@ -208,12 +238,17 @@ class MetadataStage:
                 )
                 continue
             payload = metadata.to_dict()
+            # The files are in the cache now, whether or not they were when planned.
+            records = record_digests(self.settings, self.service.records_read.get(slug, ()))
             yield Outcome(
                 article_id=work.article_id,
                 stage=self.name,
                 source="",
                 status=Status.OK,
-                fingerprint=work.fingerprint,
+                fingerprint=self.fingerprint_for(
+                    (work.ref.identifier.pmid, held_dois(ctx.catalog, work.article_id)),
+                    downloads.get(work.article_id, {}), extracted.get(work.article_id, {}),
+                    records),
                 payload=payload,
                 summary={
                     name: getattr(metadata, name, None) for name in SUMMARY_FIELDS
@@ -221,7 +256,8 @@ class MetadataStage:
                 | {"authors": len(metadata.authors),
                    "corresponding_authors": sum(1 for a in metadata.authors if a.corresponding),
                    "sufficient": is_sufficient(metadata),
-                   "digests": metadata_digests(payload)},
+                   "digests": metadata_digests(payload),
+                   "records": records},
             )
 
 

@@ -39,7 +39,7 @@ pubmed_batch_size: 500  # Number of records per PubMed API request
 pubmed_tool: "IngestionWorkflowProject"  # Optional tool name reported to NCBI; if not provided, API calls may use a library default
 semantic_scholar_api_key: "MY_SEMANTIC_SCHOLAR_API_KEY"  # Optional API key for Semantic Scholar (increases rate limits)
 openalex_email: "MY_EMAIL_ADDRESS"  # Contact email for OpenAlex API (enables polite pool)
-metadata_providers:  # Ordered list of metadata providers to query
+metadata_providers:  # Ordered list of providers searched by title when attaching local PDFs
   - semantic_scholar
   - pubmed
   - openalex

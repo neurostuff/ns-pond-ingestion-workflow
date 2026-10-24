@@ -1,0 +1,788 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1002/14651858.cd005090.pub2?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,3,10]],"date-time":"2026-03-10T17:23:17Z","timestamp":1773163397153,"version":"3.50.1"},"update-to":[{"DOI":"10.1002\/14651858.cd005090","type":"new_version","label":"New
+        version","source":"publisher","updated":{"date-parts":[[2007,1,24]],"date-time":"2007-01-24T00:00:00Z","timestamp":1169596800000}}],"reference-count":56,"publisher":"Wiley","issue":"7","content-domain":{"domain":["wiley.com","cochranelibrary.com"],"crossmark-restriction":true},"short-container-title":[],"DOI":"10.1002\/14651858.cd005090.pub2","type":"journal-article","created":{"date-parts":[[2007,1,25]],"date-time":"2007-01-25T13:35:23Z","timestamp":1169732123000},"update-policy":"https:\/\/doi.org\/10.1002\/crossmark_policy","source":"Crossref","is-referenced-by-count":32,"title":["The
+        effect of inotropes on morbidity and mortality in preterm infants with low
+        systemic or organ blood flow"],"prefix":"10.1002","volume":"2010","author":[{"given":"David
+        A","family":"Osborn","sequence":"first","affiliation":[{"name":"Royal Prince
+        Alfred Hospital; Royal Prince Alfred Newborn Care; Missenden Road Camperdown
+        New South Wales Australia 2050"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Mary","family":"Paradisis","sequence":"additional","affiliation":[{"name":"Royal
+        North Shore Hospital, The University of Sydney; Pediatrics and Child Health;
+        Sydney NSW Australia 2006"}],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Nicholas
+        J","family":"Evans","sequence":"additional","affiliation":[{"name":"Royal
+        Prince Alfred Hospital; Neonatal Medicine; Missenden Rd Camperdown NSW Australia
+        2050"}],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"311","published-online":{"date-parts":[[2007,1,24]]},"reference":[{"key":"10.1002\/14651858.CD005090.pub2-BIB0009|cit1","first-page":"A","article-title":"Randomized
+        trial of dobutamine versus dopamine in preterm infants with low systemic blood
+        flow - 3 year follow up","volume":"57","author":"Osborn","year":"2005","journal-title":"Pediatric
+        Research"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0003|cit2","first-page":"386A","article-title":"Dopamine
+        but not dobutamine increases left ventricular (LV) stress, but neither improves
+        LV contractility in very preterm infants","volume":"51","author":"Osborn","year":"2002","journal-title":"Pediatric
+        Research"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0002|cit3","unstructured":"Osborn
+        DA Evans N Kluckow M Dopamine but not dobutamine increases left ventricular
+        (LV) stress, but neither improves LV contractility in very preterm infants
+        Proceedings Perinatal Society of Australia and New Zealand 6th Annual Congress
+        2002 A145"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0004|cit4","doi-asserted-by":"crossref","first-page":"335","DOI":"10.1203\/pdr.0b013e318030d1e1","article-title":"Left
+        ventricular contractility in extremely premature infants in the first day
+        and response to inotropes","volume":"61","author":"Osborn","year":"2007","journal-title":"Pediatric
+        Research"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0005|cit5","doi-asserted-by":"crossref","first-page":"183","DOI":"10.1067\/mpd.2002.120834","article-title":"Randomized
+        trial of dobutamine versus dopamine in preterm infants with low systemic blood
+        flow","volume":"140","author":"Osborn","year":"2002","journal-title":"Journal
+        of Pediatrics"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0001|cit6","doi-asserted-by":"crossref","first-page":"372","DOI":"10.1542\/peds.2006-3398","article-title":"Low
+        superior vena cava flow and effect of inotropes on neurodevelopment to 3 years
+        in preterm infants","volume":"120","author":"Osborn","year":"2007","journal-title":"Pediatrics"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0007|cit7","first-page":"422A","article-title":"Randomized
+        trial of dobutamine and dopamine in preterm infants with low systemic blood
+        flow","volume":"47","author":"Osborn","year":"2000","journal-title":"Pediatric
+        Research"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0006|cit8","unstructured":"Osborn
+        DA Kluckow M Evans N Randomized trial of dobutamine and dopamine in preterm
+        infants with low systemic blood flow Proceedings Perinatal Society of Australia
+        and New Zealand 4th Annual Congress 2000 85"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0008|cit9","unstructured":"Osborn
+        DA Kluckow M Evans N Randomized trial of dobutamine versus dopamine in preterm
+        infants with low systemic blood flow - 3 year follow up Proceedings Perinatal
+        Society of Australia and New Zealand 9th Annual Congress 2005 All"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0010|cit10","doi-asserted-by":"crossref","first-page":"F174","DOI":"10.1136\/fn.76.3.F174","article-title":"Randomised
+        trial of dopamine compared with hydrocortisone for the treatment of hypotensive
+        very low birthweight infants","volume":"76","author":"Bourchier","year":"1997","journal-title":"Archives
+        of Disease in Childhood Fetal Neonatal Ed"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0011|cit11","first-page":"119A","article-title":"Randomized
+        double-blind trial of dopamine versus epinephrine for treatment of hypotension
+        in premature infants with respiratory distress syndrome","volume":"47","author":"Cason","year":"1999","journal-title":"Journal
+        of Investigative Medicine"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0012|cit12","doi-asserted-by":"crossref","first-page":"772","DOI":"10.1016\/S0022-3476(81)80409-X","article-title":"The
+        cardiovascular effects of dopamine in the severely asphyxiated neonate","volume":"99","author":"DiSessa","year":"1981","journal-title":"Journal
+        of Pediatrics"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0013|cit13","first-page":"447A","article-title":"Cardiovascular
+        effects of low dose dopamine in the severely asphyxiated infant","volume":"14","author":"Leitner","year":"1980","journal-title":"Pediatric
+        Research"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0014|cit14","doi-asserted-by":"crossref","first-page":"284","DOI":"10.1136\/adc.69.3_Spec_No.284","article-title":"Randomised
+        controlled trial of plasma protein fraction versus dopamine in hypotensive
+        very low birthweight infants","volume":"69","author":"Gill","year":"1993","journal-title":"Archives
+        of Disease in Childhood"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0015|cit15","first-page":"273
+        (Abstract A","article-title":"Randomised controlled trial to compare plasma
+        protein fraction (PPF) and dopamine in the hypotensive very low birthweight
+        (VLBW) infant","volume":"35","author":"Gill","year":"1994","journal-title":"Pediatric
+        Research"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0016|cit16","doi-asserted-by":"crossref","first-page":"925","DOI":"10.1007\/BF01957532","article-title":"Randomized
+        trial comparing dopamine and dobutamine in preterm infants","volume":"152","author":"Greenough","year":"1993","journal-title":"European
+        Journal of Pediatrics"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0017|cit17","doi-asserted-by":"crossref","first-page":"318","DOI":"10.1159\/000244252","article-title":"Impact
+        on blood pressure and intestinal perfusion of dobutamine or dopamine in hypotensive
+        preterm infants","volume":"68","author":"Hentschel","year":"1995","journal-title":"Biology
+        of the Neonate"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0018|cit18","doi-asserted-by":"crossref","first-page":"65","DOI":"10.1007\/BF01728334","article-title":"Circulatory
+        and diuretic effects of dopexamine infusion in low-birth-weight infants with
+        respiratory failure","volume":"22","author":"Kawczynski","year":"1996","journal-title":"Intensive
+        Care Medicine"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0019|cit19","doi-asserted-by":"crossref","first-page":"117","DOI":"10.1016\/S0022-3476(94)70137-7","article-title":"Randomized,
+        blind trial of dopamine versus dobutamine for treatment of hypotension in
+        preterm infants with respiratory distress syndrome","volume":"125","author":"Klarr","year":"1994","journal-title":"Journal
+        of Pediatrics"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0020|cit20","doi-asserted-by":"crossref","first-page":"157","DOI":"10.1016\/S0378-3782(00)00048-7","article-title":"The
+        haemodynamic effects of dopamine and volume expansion in sick preterm infants","volume":"57","author":"Lundstrom","year":"2000","journal-title":"Early
+        Human Development"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0021|cit21","first-page":"500","article-title":"A
+        randomized, controlled study of the influence of dopamine and volume expansion
+        on CBF, LVO and MABP in hypotensive, preterm infants","author":"Lundstrom","year":"1994","journal-title":"Proceedings
+        of 14th European Congress of Perinatal Medicine, Helsinki, Finland"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0022|cit22","doi-asserted-by":"crossref","first-page":"472","DOI":"10.1016\/S0022-3476(05)81101-1","article-title":"Pharmacokinetics
+        of dopamine in critically ill newborn infants","volume":"117","author":"Padbury","year":"1990","journal-title":"Journal
+        of Pediatrics"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0023|cit23","doi-asserted-by":"crossref","first-page":"189","DOI":"10.1016\/j.jpeds.2008.07.059","article-title":"Randomized
+        trial of milrinone versus placebo for prevention of low systemic blood flow
+        in very preterm infants","volume":"154","author":"Paradisis","year":"2009","journal-title":"Journal
+        of Pediatrics"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0024|cit24","doi-asserted-by":"crossref","first-page":"F204","DOI":"10.1136\/adc.2005.092817","article-title":"Population
+        pharmacokinetics and dosing regimen design of milrinone in preterm infants","volume":"92","author":"Paradisis","year":"2007","journal-title":"Archives
+        of Disease in Childhood. Fetal and Neonatal Edition"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0025|cit25","doi-asserted-by":"crossref","first-page":"F164","DOI":"10.1136\/adc.2008.138487","article-title":"Intramuscular
+        adrenaline does not reduce the incidence of respiratory distress and hypoglycaemia
+        in neonates delivered by elective caesarean section at term","volume":"94","author":"Pedersen","year":"2009","journal-title":"Archives
+        of Disease in Childhood. Fetal and Neonatal Edition"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0026|cit26","doi-asserted-by":"crossref","first-page":"1369","DOI":"10.1542\/peds.2008-0673","article-title":"Early
+        systemic hypotension and vasopressor support in low birth weight infants:
+        impact on neurodevelopment","volume":"123","author":"Pellicer","year":"2009","journal-title":"Pediatrics"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0027|cit27","first-page":"Abstract
+        2364","article-title":"Randomized blinded controlled trial on the effects
+        on brain hemodynamics of dopamine v epinephrine for inotropic support in preterm
+        infants","volume":"53","author":"Pellicer","year":"2003","journal-title":"Pediatric
+        Research"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0028|cit28","doi-asserted-by":"crossref","first-page":"1501","DOI":"10.1542\/peds.2004-1396","article-title":"Cardiovascular
+        support for low birth weight infants and cerebral hemodynamics: a randomized,
+        blinded, clinical trial","volume":"115","author":"Pellicer","year":"2005","journal-title":"Pediatrics"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0029|cit29","doi-asserted-by":"crossref","first-page":"e1213","DOI":"10.1542\/peds.2005-2108","article-title":"Dopamine
+        versus epinephrine for cardiovascular support in low birth weight infants:
+        analysis of systemic effects and neonatal clinical outcomes","volume":"117","author":"Valverde","year":"2006","journal-title":"Pediatrics"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0030|cit30","first-page":"238A","article-title":"Dopamine
+        versus epinephrine for inotropic support in the neonate: A randomized double
+        blinded controlled trial","volume":"39","author":"Phillipos","year":"1996","journal-title":"Pediatric
+        Research"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0031|cit31","first-page":"425A","article-title":"A
+        randomized double blinded controlled trial of dopamine versus epinephrine
+        for inotropic support in premature infants <1750 grams","volume":"47","author":"Phillipos","year":"2000","journal-title":"Pediatric
+        Research"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0032|cit32","doi-asserted-by":"crossref","first-page":"897","DOI":"10.1136\/adc.64.7_Spec_No.897","article-title":"Cerebral
+        blood flow velocity variability after cardiovascular support in premature
+        babies","volume":"64","author":"Rennie","year":"1989","journal-title":"Archives
+        of Disease in Childhood"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0033|cit33","first-page":"221A","article-title":"High
+        dose dopamine for the treatment of neonatal hypotension","volume":"45","author":"Repetto","year":"1999","journal-title":"Pediatric
+        Research"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0034|cit34","doi-asserted-by":"crossref","first-page":"59","DOI":"10.1136\/adc.69.1_Spec_No.59","article-title":"Response
+        to dobutamine and dopamine in the hypotensive very preterm infant","volume":"69","author":"Roze","year":"1993","journal-title":"Archives
+        of Disease in Childhood"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0035|cit35","doi-asserted-by":"crossref","first-page":"1777","DOI":"10.1007\/s00134-009-1602-5","article-title":"Dopamine
+        therapy promotes cerebral flow-metabolism coupling in preterm infants","volume":"35","author":"Wong","year":"2009","journal-title":"Intensive
+        Care Medicine"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0036|cit36","doi-asserted-by":"crossref","first-page":"F88","DOI":"10.1136\/fn.74.2.F88","article-title":"Early
+        determinants of right and left ventricular output in ventilated preterm infants","volume":"74","author":"Evans","year":"1996","journal-title":"Archives
+        of Disease in Childhood Fetal and Neonatal Edition"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0037|cit37","doi-asserted-by":"crossref","unstructured":"Higgins
+        JPT Green S Cochrane Handbook for Systematic Reviews of Interventions Version
+        5.0.1 [updated September 2008]. The Cochrane Collaboration, 2008 Available
+        from www.cochrane-handbook.org","DOI":"10.1002\/9780470712184"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0038|cit38","first-page":"336A","article-title":"Low
+        superior vena cava flow in the first 24 hours of life and 3 year neurodevelopmental
+        outcome","volume":"49","author":"Hunt","year":"2001","journal-title":"Pediatric
+        Research"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0039|cit39","doi-asserted-by":"crossref","first-page":"506","DOI":"10.1016\/S0022-3476(96)70114-2","article-title":"Relationship
+        between blood pressure and cardiac output in preterm infants requiring mechanical
+        ventilation","volume":"129","author":"Kluckow","year":"1996","journal-title":"Journal
+        of Pediatrics"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0040|cit40","doi-asserted-by":"crossref","first-page":"F188","DOI":"10.1136\/fn.82.3.F188","article-title":"Low
+        superior vena cava flow and intraventricular haemorrhage in preterm infants","volume":"82","author":"Kluckow","year":"2000","journal-title":"Archives
+        of Disease in Childhood Fetal and Neonatal Edition"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0041|cit41","doi-asserted-by":"crossref","first-page":"F182","DOI":"10.1136\/fn.82.3.F182","article-title":"Superior
+        vena cava flow in newborn infants: a novel marker of systemic blood flow","volume":"82","author":"Kluckow","year":"2000","journal-title":"Archives
+        of Disease in Childhood Fetal and Neonatal Edition"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0042|cit42","doi-asserted-by":"crossref","first-page":"227","DOI":"10.1067\/mpd.2001.115315","article-title":"Low
+        systemic blood flow and hyperkalemia in preterm infants","volume":"139","author":"Kluckow","year":"2001","journal-title":"Journal
+        of Pediatrics"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0043|cit43","doi-asserted-by":"crossref","first-page":"292","DOI":"10.1007\/s002469900177","article-title":"Supranormal
+        cardiac output in the dopamine- and dobutamine-dependent preterm infant","volume":"18","author":"Lopez","year":"1997","journal-title":"Pediatric
+        Cardiology"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0044|cit44","doi-asserted-by":"crossref","first-page":"F15","DOI":"10.1136\/fn.81.1.F15","article-title":"Low
+        cerebral blood flow is a risk factor for severe intraventricular haemorrhage","volume":"81","author":"Meek","year":"1999","journal-title":"Archives
+        of Disease in Childhood Fetal and Neonatal Edition"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0045|cit45","doi-asserted-by":"crossref","first-page":"1068","DOI":"10.1136\/adc.62.10.1068","article-title":"Mean
+        arterial blood pressure and neonatal cerebral lesions","volume":"62","author":"Miall-Allen","year":"1987","journal-title":"Archives
+        of Disease in Childhood"},{"issue":"2","key":"10.1002\/14651858.CD005090.pub2-BIB0046|cit46","doi-asserted-by":"publisher","DOI":"10.1002\/14651858.CD002056","article-title":"Early
+        volume expansion versus inotrope for prevention of morbidity and mortality
+        in very preterm infants","author":"Osborn","year":"2001","journal-title":"Cochrane
+        Database of Systematic Reviews"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0047|cit47","first-page":"386A","article-title":"Left
+        ventricular (LV) contractility and wall stress in very preterm infants in
+        the first day of life","volume":"51","author":"Osborn","year":"2002","journal-title":"Pediatric
+        Research"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0048|cit48","doi-asserted-by":"crossref","first-page":"33","DOI":"10.1542\/peds.112.1.33","article-title":"Hemodynamic
+        and antecedent risk factors of early and late peri\/intraventricular hemorrhage
+        in premature infants","volume":"112","author":"Osborn","year":"2003","journal-title":"Pediatrics"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0049|cit49","doi-asserted-by":"crossref","first-page":"F168","DOI":"10.1136\/adc.2002.023796","article-title":"Clinical
+        detection of low upper body blood flow in very premature infants using blood
+        pressure, capillary refill time, and central-peripheral temperature difference","volume":"89","author":"Osborn","year":"2004","journal-title":"Archives
+        of Disease in Childhood Fetal and Neonatal Edition"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0050|cit50","doi-asserted-by":"crossref","first-page":"109","DOI":"10.1542\/neo.5-3-e109","article-title":"Diagnosis
+        and treatment of low systemic blood flow in preterm infants","volume":"5","author":"Osborn","year":"2004","journal-title":"NeoReviews"},{"issue":"2","key":"10.1002\/14651858.CD005090.pub2-BIB0051|cit51","doi-asserted-by":"publisher","DOI":"10.1002\/14651858.CD002055.pub2","article-title":"Early
+        volume expansion for prevention of morbidity and mortality in very preterm
+        infants","author":"Osborn","year":"2004","journal-title":"Cochrane Database
+        of Systematic Reviews"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0052|cit52","doi-asserted-by":"crossref","first-page":"293","DOI":"10.1016\/S0022-3476(87)80176-2","article-title":"Dopamine
+        pharmacokinetics in critically ill newborn infants","volume":"110","author":"Padbury","year":"1987","journal-title":"Journal
+        of Pediatrics"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0053|cit53","doi-asserted-by":"crossref","first-page":"728","DOI":"10.1016\/S0022-3476(98)70141-6","article-title":"Regional
+        hemodynamic effects of dopamine in the sick preterm neonate","volume":"133","author":"Seri","year":"1998","journal-title":"Journal
+        of Pediatrics"},{"key":"10.1002\/14651858.CD005090.pub2-BIB0054|cit54","doi-asserted-by":"crossref","first-page":"85","DOI":"10.1053\/siny.2000.0034","article-title":"Circulatory
+        support of the sick preterm infant","volume":"6","author":"Seri","year":"2001","journal-title":"Seminars
+        in Neonatology"},{"issue":"3","key":"10.1002\/14651858.CD005090.pub2-BIB0055|cit55","doi-asserted-by":"publisher","DOI":"10.1002\/14651858.CD001242","article-title":"Dopamine
+        versus dobutamine for hypotensive preterm infants","author":"Subhedar","year":"2003","journal-title":"Cochrane
+        Database of Systematic Reviews"},{"issue":"1","key":"10.1002\/14651858.CD005090.pub2-BIB0056|cit56","doi-asserted-by":"publisher","DOI":"10.1002\/14651858.CD005090.pub2","article-title":"The
+        effect of inotropes on morbidity and mortality in preterm infants with low
+        systemic or organ blood flow","author":"Osborn","year":"2007","journal-title":"Cochrane
+        Database of Systematic Reviews"}],"container-title":["Cochrane Database of
+        Systematic Reviews"],"original-title":[],"language":"en","link":[{"URL":"http:\/\/onlinelibrary.wiley.com\/wol1\/doi\/10.1002\/14651858.CD005090.pub2\/fullpdf","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2022,2,22]],"date-time":"2022-02-22T00:21:49Z","timestamp":1645489309000},"score":1,"resource":{"primary":{"URL":"http:\/\/doi.wiley.com\/10.1002\/14651858.CD005090.pub2"}},"subtitle":[],"editor":[{"name":"Cochrane
+        Neonatal Group","sequence":"additional","affiliation":[],"role":[{"role":"editor","vocabulary":"crossref"}]}],"short-title":[],"issued":{"date-parts":[[2007,1,24]]},"references-count":56,"journal-issue":{"issue":"7","published-online":{"date-parts":[[2010,7]]}},"URL":"https:\/\/doi.org\/10.1002\/14651858.cd005090.pub2","relation":{},"ISSN":["1465-1858"],"issn-type":[{"value":"1465-1858","type":"electronic"}],"subject":[],"published":{"date-parts":[[2007,1,24]]}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '4873'
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 24 Oct 2026 02:24:24 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1002/14651858.cd005090?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2025,12,30]],"date-time":"2025-12-30T22:47:52Z","timestamp":1767134872611,"version":"build-2238731810"},"publisher-location":"Chichester,
+        UK","reference-count":17,"publisher":"John Wiley & Sons, Ltd","content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"DOI":"10.1002\/14651858.cd005090","type":"reference-entry","created":{"date-parts":[[2005,1,17]],"date-time":"2005-01-17T06:20:27Z","timestamp":1105942827000},"source":"Crossref","is-referenced-by-count":0,"title":["Inotropes
+        for reducing morbidity and mortality in preterm infants with low systemic
+        or organ blood flow"],"prefix":"10.1002","author":[{"given":"DA","family":"Osborn","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"M","family":"Paradisis","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"N","family":"Evans","sequence":"additional","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"311","published-online":{"date-parts":[[2005,1,24]]},"reference":[{"key":"10.1002\/14651858.CD005090-BIB1|cit1","doi-asserted-by":"crossref","first-page":"F88","DOI":"10.1136\/fn.74.2.F88","article-title":"Early
+        determinants of right and left ventricular output in ventilated preterm infants","volume":"74","author":"Evans","year":"1996","journal-title":"Archives
+        of Disease in Childhood Fetal and Neonatal Edition"},{"key":"10.1002\/14651858.CD005090-BIB2|cit2","first-page":"336A","article-title":"Low
+        superior vena cava flow in the first 24 hours of life and 3 year neurodevelopmetal
+        outcome","volume":"49","author":"Hunt","year":"2001","journal-title":"Pediatric
+        Research"},{"key":"10.1002\/14651858.CD005090-BIB3|cit3","doi-asserted-by":"crossref","first-page":"506","DOI":"10.1016\/S0022-3476(96)70114-2","article-title":"Relationship
+        between blood pressure and cardiac output in preterm infants requiring mechanical
+        ventilation","volume":"129","author":"Kluckow","year":"1996","journal-title":"Journal
+        of Pediatrics"},{"key":"10.1002\/14651858.CD005090-BIB4|cit4","doi-asserted-by":"crossref","first-page":"F188","DOI":"10.1136\/fn.82.3.F188","article-title":"Low
+        superior vena cava flow and intraventricular haemorrhage in preterm infants","volume":"82","author":"Kluckow","year":"2000","journal-title":"Archives
+        of Disease in Childhood Fetal and Neonatal Edition"},{"key":"10.1002\/14651858.CD005090-BIB5|cit5","doi-asserted-by":"crossref","first-page":"F182","DOI":"10.1136\/fn.82.3.F182","article-title":"Superior
+        vena cava flow in newborn infants: a novel marker of systemic blood flow","volume":"82","author":"Kluckow","year":"2000","journal-title":"Archives
+        of Disease in Childhood Fetal and Neonatal Edition"},{"key":"10.1002\/14651858.CD005090-BIB6|cit6","doi-asserted-by":"crossref","first-page":"227","DOI":"10.1067\/mpd.2001.115315","article-title":"Low
+        systemic blood flow and hyperkalemia in preterm infants","volume":"139","author":"Kluckow","year":"2001","journal-title":"Journal
+        of Pediatrics"},{"key":"10.1002\/14651858.CD005090-BIB7|cit7","doi-asserted-by":"crossref","first-page":"292","DOI":"10.1007\/s002469900177","article-title":"Supranormal
+        cardiac output in the dopamine- and dobutamine-dependent preterm infant","volume":"18","author":"Lopez","year":"1997","journal-title":"Pediatric
+        Cardiology"},{"key":"10.1002\/14651858.CD005090-BIB8|cit8","doi-asserted-by":"crossref","first-page":"F15","DOI":"10.1136\/fn.81.1.F15","article-title":"Low
+        cerebral blood flow is a risk factor for severe intraventricular haemorrhage","volume":"81","author":"Meek","year":"1999","journal-title":"Archives
+        of Disease in Childhood Fetal and Neonatal Edition"},{"key":"10.1002\/14651858.CD005090-BIB9|cit9","doi-asserted-by":"crossref","first-page":"1068","DOI":"10.1136\/adc.62.10.1068","article-title":"Mean
+        arterial blood pressure and neonatal cerebral lesions","volume":"62","author":"Miall-Allen","year":"1987","journal-title":"Archives
+        of Disease in Childhood"},{"key":"10.1002\/14651858.CD005090-BIB10|cit10","first-page":"386A","article-title":"Left
+        ventricular (LV) contractility and wall stress in very preterm infants in
+        the first day of life","volume":"51","author":"Osborn","year":"2002","journal-title":"Pediatric
+        Research"},{"key":"10.1002\/14651858.CD005090-BIB11|cit11","doi-asserted-by":"crossref","first-page":"33","DOI":"10.1542\/peds.112.1.33","article-title":"Hemodynamic
+        and antecedent risk factors of early and late peri\/intraventricular hemorrhage
+        in premature infants","volume":"112","author":"Osborn","year":"2003","journal-title":"Pediatrics"},{"key":"10.1002\/14651858.CD005090-BIB12|cit12","doi-asserted-by":"crossref","first-page":"F168","DOI":"10.1136\/adc.2002.023796","article-title":"Clinical
+        detection of low upper body blood flow in very premature infants using blood
+        pressure, capillary refill time, and central-peripheral temperature difference","volume":"89","author":"Osborn","year":"2004","journal-title":"Archives
+        of Disease in Childhood Fetal and Neonatal Edition"},{"key":"10.1002\/14651858.CD005090-BIB13|cit13","doi-asserted-by":"crossref","first-page":"109","DOI":"10.1542\/neo.5-3-e109","article-title":"Diagnosis
+        and treatment of low systemic blood flow in preterm infants","volume":"5","author":"Osborn","year":"2004","journal-title":"NeoReviews"},{"issue":"3","key":"10.1002\/14651858.CD005090-BIB14|cit14","article-title":"Early
+        volume expansion for prevention of morbidity and mortality in very preterm
+        infants (Cochrane Review)","author":"Osborn","year":"2004","journal-title":"Cochrane
+        Library"},{"issue":"3","key":"10.1002\/14651858.CD005090-BIB15|cit15","article-title":"Early
+        volume expansion versus inotrope for prevention of morbidity and mortality
+        in very preterm infants (Cochrane Review)","author":"Osborn","year":"2004","journal-title":"Cochrane
+        Library"},{"key":"10.1002\/14651858.CD005090-BIB16|cit16","doi-asserted-by":"crossref","first-page":"85","DOI":"10.1053\/siny.2000.0034","article-title":"Circulatory
+        support of the sick preterm infant","volume":"6","author":"Seri","year":"2001","journal-title":"Seminars
+        in Neonatology"},{"issue":"3","key":"10.1002\/14651858.CD005090-BIB17|cit17","article-title":"Dopamine
+        versus dobutamine for hypotensive preterm infants (Cochrane Review)","author":"Subhedar","year":"2004","journal-title":"The
+        Cochrane Library"}],"updated-by":[{"DOI":"10.1002\/14651858.cd005090.pub2","type":"new_version","label":"New
+        version","source":"publisher","updated":{"date-parts":[[2007,1,24]],"date-time":"2007-01-24T00:00:00Z","timestamp":1169596800000}}],"container-title":["Cochrane
+        Database of Systematic Reviews"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/onlinelibrary.wiley.com\/doi\/full\/10.1002\/14651858.CD005090","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2021,8,9]],"date-time":"2021-08-09T17:44:47Z","timestamp":1628531087000},"score":1,"resource":{"primary":{"URL":"https:\/\/doi.wiley.com\/10.1002\/14651858.CD005090"}},"subtitle":[],"editor":[{"given":"David","family":"Osborn","sequence":"additional","affiliation":[],"role":[{"role":"editor","vocabulary":"crossref"}]}],"short-title":[],"issued":{"date-parts":[[2005,1,24]]},"references-count":17,"URL":"https:\/\/doi.org\/10.1002\/14651858.cd005090","relation":{},"subject":[],"published":{"date-parts":[[2005,1,24]]}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2206'
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 24 Oct 2026 02:24:24 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.1002/14651858.cd005090.pub2
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://api.crossref.org/v1/works/10.1002%2F14651858.cd005090.pub2/transform">https://api.crossref.org/v1/works/10.1002%2F14651858.cd005090.pub2/transform</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4f586674d2e63a5-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Sat, 24 Oct 2026 02:24:24 GMT
+      expires:
+      - Sat, 24 Oct 2026 02:34:32 GMT
+      location:
+      - https://api.crossref.org/v1/works/10.1002%2F14651858.cd005090.pub2/transform
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=%2FYEHzbB%2BWiLPnCuBLugKm5duMJLeTn57twTpoKjm3RNXS0hV77RFpqf%2BCH%2BcldGnaDaYxAVjY9g%2FBrhrYIayudbkQAxViPWs%2BmGqS0QmO3C%2FqBDrdgqmstc%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/v1/works/10.1002%2F14651858.cd005090.pub2/transform
+  response:
+    body:
+      string: !!binary |
+        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
+        Uo55+2j9w/7+f5RgfZvVUgAA
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-length:
+      - '4806'
+      content-type:
+      - application/vnd.citationstyles.csl+json
+      date:
+      - Sat, 24 Oct 2026 02:24:24 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept, Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.1002/14651858.cd005090
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://api.crossref.org/v1/works/10.1002%2F14651858.cd005090/transform">https://api.crossref.org/v1/works/10.1002%2F14651858.cd005090/transform</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4f58668d8a563a5-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Sat, 24 Oct 2026 02:24:24 GMT
+      expires:
+      - Sat, 24 Oct 2026 02:34:32 GMT
+      location:
+      - https://api.crossref.org/v1/works/10.1002%2F14651858.cd005090/transform
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=tfyvy9QJPrzB2%2BEFIgjteHi%2BugZ9vMhwiyDAFb6KtjpY7eswlmTIllEcldEoPRa2DvrnhKR9R3c1IXfEj%2B2EcqGemH6SpiisRHrOz0Hu1eKEbtrxuL%2FqQTg%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/v1/works/10.1002%2F14651858.cd005090/transform
+  response:
+    body:
+      string: ''
+    headers:
+      connection:
+      - keep-alive
+      content-length:
+      - '0'
+      date:
+      - Sat, 24 Oct 2026 02:24:24 GMT
+    status:
+      code: 429
+      message: Too Many Requests
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.1002/14651858.cd005090
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://api.crossref.org/v1/works/10.1002%2F14651858.cd005090/transform">https://api.crossref.org/v1/works/10.1002%2F14651858.cd005090/transform</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a4f58670098963a5-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Sat, 24 Oct 2026 02:24:25 GMT
+      expires:
+      - Sat, 24 Oct 2026 02:53:09 GMT
+      location:
+      - https://api.crossref.org/v1/works/10.1002%2F14651858.cd005090/transform
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=crU2yuD13P6RxdjO9t1YWMBru%2F5pvXs8g2txyoWo6EgIfd44slbo7ijXN9gBu39tVnguiNADVqwFj8cVgaW1%2FRUwaR%2FoFhBRXxyd5fRx1TW6pIAyc3mp55g%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/v1/works/10.1002%2F14651858.cd005090/transform
+  response:
+    body:
+      string: !!binary |
+        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
+        u/0cAAA=
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-length:
+      - '2171'
+      content-type:
+      - application/vnd.citationstyles.csl+json
+      date:
+      - Sat, 24 Oct 2026 02:24:25 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept, Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1002%2F14651858.cd005090.pub2%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 24 Oct 2026 02:24:25 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+version: 1

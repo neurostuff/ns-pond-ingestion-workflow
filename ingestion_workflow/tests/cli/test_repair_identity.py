@@ -271,13 +271,14 @@ def cases(tmp_path):
         {"op": "merge", "articles": [ids["paper"], ids["duplicate"]],
          "drop": [["pmid", "37401785"]]},
         {"op": "merge", "articles": [ids["elife"], ids["preprint"]],
-         "rekind": [["pmid", "37808793"]]},
+         "rekind": [["pmid", "37808793", "preprint_pmid"]]},
         {"op": "move_artifacts", "from": ids["holder"], "to": ids["owner"],
          "artifacts": [["download", "elsevier"], ["extract", "elsevier"]]},
         {"op": "split", "article": ids["fused"], "aliases": [["doi", "10.1016/j.nlm.2011.06.006"]],
          "add": [["pmid", "21704176"]]},
         {"op": "forget_artifacts", "article": ids["fused"], "artifacts": [["download", "ace"]]},
-        {"op": "rekind", "article": ids["alias"], "kind": "doi", "value": "10.3275/7271"},
+        {"op": "rekind", "article": ids["alias"], "kind": "doi", "value": "10.3275/7271",
+         "as": "alternative_doi"},
     ]
     plan = tmp_path / "every-op.jsonl"
     plan.write_text("".join(json.dumps(line) + "\n" for line in lines), encoding="utf-8")
@@ -400,7 +401,7 @@ def test_an_alternate_doi_the_registry_cannot_describe_is_not_committed(tmp_path
             "INSERT INTO aliases VALUES ('doi', '10.1176/appi.neuropsych.21.3.307', ?)", (a,))
     plan = tmp_path / "plan.jsonl"
     line = {"op": "rekind", "article": a, "kind": "doi",
-            "value": "10.1176/appi.neuropsych.21.3.307"}
+            "value": "10.1176/appi.neuropsych.21.3.307", "as": "alternative_doi"}
     plan.write_text(json.dumps(line) + "\n", encoding="utf-8")
     result = _invoke(config, plan, "--apply", "--backup", tmp_path / "b.sqlite",
                      "--manifest", tmp_path / "m.jsonl")
@@ -608,7 +609,8 @@ def test_a_plan_in_which_an_operation_undoes_another_is_refused_whole(setup):
     a = ids["a"]
     plan = tmp_path / "cycle.jsonl"
     plan.write_text("".join(json.dumps(line) + "\n" for line in [
-        {"op": "rekind", "article": a, "kind": "doi", "value": "10.1016/j.ajog.2011.02.050"},
+        {"op": "rekind", "article": a, "kind": "doi", "value": "10.1016/j.ajog.2011.02.050",
+         "as": "alternative_doi"},
         {"op": "remove", "article": a, "kind": "alternative_doi",
          "value": "10.1016/j.ajog.2011.02.050"},
         {"op": "add", "article": a, "kind": "alternative_doi",
