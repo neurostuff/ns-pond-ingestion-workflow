@@ -35,20 +35,20 @@ interactions:
   response:
     body:
       string: '{"type": "about:blank", "title": "Not Found", "detail": "Not Found",
-        "status": 404, "request_id": "93b4f408d37e47e7", "timestamp": "2026-10-23T21:26:39.547086Z"}'
+        "status": 404, "request_id": "2811245bc1c34d46", "timestamp": "2026-10-25T08:12:40.635300Z"}'
     headers:
       content-length:
       - '161'
       content-type:
       - application/json
       date:
-      - Fri, 23 Oct 2026 21:26:38 GMT
+      - Sun, 25 Oct 2026 08:12:39 GMT
       server:
       - uvicorn
       vary:
       - Origin
       x-request-id:
-      - 93b4f408d37e47e7
+      - 2811245bc1c34d46
     status:
       code: 404
       message: Not Found

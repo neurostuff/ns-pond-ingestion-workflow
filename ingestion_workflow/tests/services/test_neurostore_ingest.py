@@ -1,8 +1,8 @@
 """Uploading a parse through neurostore's study_schema ingester.
 
 The network tests replay cassettes recorded against a private, local neurostore (master
-with the content-key ingester, its own Postgres and Redis, an admin and a non-admin
-user), never against staging or production. Requests match on their body too, so a
+with the identifier table and the content-key ingester, its own Postgres and Redis, an
+admin and a non-admin user), never against staging or production. Requests match on their body too, so a
 replay passes only if the client sends exactly the bytes it sent when recorded.
 
 To record one again, start that neurostore at `LOCAL` with the base study `BASE`, set
@@ -146,6 +146,63 @@ def test_a_paper_neurostore_does_not_hold_gets_a_base_study_from_its_parsed_pape
     assert (found["name"], found["pmid"], found["doi"]) == (
         "Faces and houses", "31000001", "10.5555/ingest.new.31000001")
     assert "parsed_paper" in json.loads(vcr.requests[0].body)
+
+
+def _identify(study, ids, status):
+    """The fixture paper as its parse names it by `ids`, filed under `status`."""
+    for name in ("coordinate_parse", "parsed_paper"):
+        _edit(study, name, lambda d: d["header"]["identifiers"].update(
+            ids, publication_status=status))
+
+
+@pytest.mark.vcr
+def test_an_upload_adds_the_ids_its_base_study_lacks_in_every_bucket(study, token):
+    """The base study held only its PMID: the parse's other ids, a preprint's and the
+    alternative ones too, are added to it, and its publication status is stored."""
+    held = httpx.get(f"{LOCAL}/api/base-studies/{BASE}").json()
+    assert (held["pmid"], held["doi"], held["pmcid"]) == ("22848644", None, None)
+    assert held["publication_status"] is None
+    assert held["preprint_dois"] == [] and held["alternative_dois"] == []
+    ids = {
+        "alternative_dois": ["10.1371/journal.pone.0041873.alt"],
+        "alternative_pmids": ["22848645"],
+        "alternative_pmcids": ["PMC3407126"],
+        "preprint_dois": [{"doi": "10.1101/2012.01.02.123456", "server": "biorxiv"}],
+        "preprint_pmids": ["31000009"],
+        "preprint_pmcids": ["PMC7000001"],
+    }
+    _identify(study, ids, "published")
+    with _ingester() as ingester:
+        artifact = ingester.upload(study)
+
+    assert artifact["status"] == "uploaded"
+    found = httpx.get(f"{LOCAL}/api/base-studies/{BASE}").json()
+    assert (found["pmid"], found["pmcid"], found["doi"]) == (
+        "22848644", "PMC3407125", "10.1371/journal.pone.0041873")
+    assert found["publication_status"] == "published"
+    for bucket, value in ids.items():
+        assert found[bucket] == value, bucket
+
+
+@pytest.mark.vcr
+def test_a_paper_known_only_by_its_preprint_gets_a_base_study_filed_as_a_preprint(
+    study, token
+):
+    preprint = {"doi": "10.1101/2012.05.06.654321", "server": "biorxiv"}
+    _identify(study, {"pmid": None, "pmcid": None, "doi": None, "preprint_dois": [preprint]},
+              "preprint")
+    for name in ("coordinate_parse", "parsed_paper"):
+        _edit(study, name, lambda d: d["header"].update(neurostore_base_study_id=None))
+    with _ingester() as ingester:
+        artifact = ingester.upload(study)
+
+    assert artifact["status"] == "uploaded"
+    created = artifact["summary"]["base_study_id"]
+    assert created and created != BASE
+    found = httpx.get(f"{LOCAL}/api/base-studies/{created}").json()
+    assert found["publication_status"] == "preprint"
+    assert found["preprint_dois"] == [preprint]
+    assert (found["doi"], found["pmid"], found["pmcid"]) == (None, None, None)
 
 
 @pytest.mark.vcr

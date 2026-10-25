@@ -35,28 +35,23 @@ interactions:
   response:
     body:
       string: '{"status": 500, "title": "Internal Server Error", "detail": "(psycopg2.OperationalError)
-        server closed the connection unexpectedly\n\tThis probably means the server
-        terminated abnormally\n\tbefore or while processing the request.\n\n[SQL:
-        SELECT users.active AS users_active, users.name AS users_name, users.external_id
-        AS users_external_id, users.id AS users_id, users.created_at AS users_created_at,
-        users.updated_at AS users_updated_at \nFROM users \nWHERE users.external_id
-        = %(external_id_1)s \n LIMIT %(param_1)s]\n[parameters: {''external_id_1'':
-        ''local-admin'', ''param_1'': 1}]\n(Background on this error at: https://sqlalche.me/e/21/e3q8)",
-        "type": "about:blank", "timestamp": "2026-10-23T21:26:59.438659Z", "request_id":
-        "05197db28b494575"}'
+        could not translate host name \"store-pgsql17\" to address: Temporary failure
+        in name resolution\n\n(Background on this error at: https://sqlalche.me/e/21/e3q8)",
+        "type": "about:blank", "timestamp": "2026-10-25T08:16:15.131723Z", "request_id":
+        "0b8be03c199946cd"}'
     headers:
       content-length:
-      - '746'
+      - '352'
       content-type:
       - application/json
       date:
-      - Fri, 23 Oct 2026 21:26:58 GMT
+      - Sun, 25 Oct 2026 08:16:14 GMT
       server:
       - uvicorn
       vary:
       - Origin
       x-request-id:
-      - 05197db28b494575
+      - 0b8be03c199946cd
     status:
       code: 500
       message: Internal Server Error
@@ -96,23 +91,23 @@ interactions:
   response:
     body:
       string: '{"status": 500, "title": "Internal Server Error", "detail": "(psycopg2.OperationalError)
-        connection to server at \"172.17.0.4\", port 5432 failed: No route to host\n\tIs
-        the server running on that host and accepting TCP/IP connections?\n\n(Background
-        on this error at: https://sqlalche.me/e/21/e3q8)", "type": "about:blank",
-        "timestamp": "2026-10-23T21:27:38.512441Z", "request_id": "b820d84e51f84033"}'
+        could not translate host name \"store-pgsql17\" to address: Temporary failure
+        in name resolution\n\n(Background on this error at: https://sqlalche.me/e/21/e3q8)",
+        "type": "about:blank", "timestamp": "2026-10-25T08:16:15.148961Z", "request_id":
+        "4477db4f166e4144"}'
     headers:
       content-length:
-      - '402'
+      - '352'
       content-type:
       - application/json
       date:
-      - Fri, 23 Oct 2026 21:26:58 GMT
+      - Sun, 25 Oct 2026 08:16:14 GMT
       server:
       - uvicorn
       vary:
       - Origin
       x-request-id:
-      - b820d84e51f84033
+      - 4477db4f166e4144
     status:
       code: 500
       message: Internal Server Error
@@ -152,23 +147,23 @@ interactions:
   response:
     body:
       string: '{"status": 500, "title": "Internal Server Error", "detail": "(psycopg2.OperationalError)
-        connection to server at \"172.17.0.4\", port 5432 failed: No route to host\n\tIs
-        the server running on that host and accepting TCP/IP connections?\n\n(Background
-        on this error at: https://sqlalche.me/e/21/e3q8)", "type": "about:blank",
-        "timestamp": "2026-10-23T21:27:41.638228Z", "request_id": "40657880e51f460a"}'
+        could not translate host name \"store-pgsql17\" to address: Temporary failure
+        in name resolution\n\n(Background on this error at: https://sqlalche.me/e/21/e3q8)",
+        "type": "about:blank", "timestamp": "2026-10-25T08:16:15.161508Z", "request_id":
+        "050fb1fa27ac41f9"}'
     headers:
       content-length:
-      - '402'
+      - '352'
       content-type:
       - application/json
       date:
-      - Fri, 23 Oct 2026 21:27:38 GMT
+      - Sun, 25 Oct 2026 08:16:14 GMT
       server:
       - uvicorn
       vary:
       - Origin
       x-request-id:
-      - 40657880e51f460a
+      - 050fb1fa27ac41f9
     status:
       code: 500
       message: Internal Server Error
@@ -208,23 +203,23 @@ interactions:
   response:
     body:
       string: '{"status": 500, "title": "Internal Server Error", "detail": "(psycopg2.OperationalError)
-        connection to server at \"172.17.0.4\", port 5432 failed: No route to host\n\tIs
-        the server running on that host and accepting TCP/IP connections?\n\n(Background
-        on this error at: https://sqlalche.me/e/21/e3q8)", "type": "about:blank",
-        "timestamp": "2026-10-23T21:27:44.712109Z", "request_id": "ba67b03d0add48fe"}'
+        could not translate host name \"store-pgsql17\" to address: Temporary failure
+        in name resolution\n\n(Background on this error at: https://sqlalche.me/e/21/e3q8)",
+        "type": "about:blank", "timestamp": "2026-10-25T08:16:15.176727Z", "request_id":
+        "5a26aa4bcb564d60"}'
     headers:
       content-length:
-      - '402'
+      - '352'
       content-type:
       - application/json
       date:
-      - Fri, 23 Oct 2026 21:27:41 GMT
+      - Sun, 25 Oct 2026 08:16:14 GMT
       server:
       - uvicorn
       vary:
       - Origin
       x-request-id:
-      - ba67b03d0add48fe
+      - 5a26aa4bcb564d60
     status:
       code: 500
       message: Internal Server Error
@@ -264,23 +259,23 @@ interactions:
   response:
     body:
       string: '{"status": 500, "title": "Internal Server Error", "detail": "(psycopg2.OperationalError)
-        connection to server at \"172.17.0.4\", port 5432 failed: No route to host\n\tIs
-        the server running on that host and accepting TCP/IP connections?\n\n(Background
-        on this error at: https://sqlalche.me/e/21/e3q8)", "type": "about:blank",
-        "timestamp": "2026-10-23T21:27:47.781868Z", "request_id": "59e8866ade0646ad"}'
+        could not translate host name \"store-pgsql17\" to address: Temporary failure
+        in name resolution\n\n(Background on this error at: https://sqlalche.me/e/21/e3q8)",
+        "type": "about:blank", "timestamp": "2026-10-25T08:16:15.191098Z", "request_id":
+        "3728d90c01554889"}'
     headers:
       content-length:
-      - '402'
+      - '352'
       content-type:
       - application/json
       date:
-      - Fri, 23 Oct 2026 21:27:44 GMT
+      - Sun, 25 Oct 2026 08:16:14 GMT
       server:
       - uvicorn
       vary:
       - Origin
       x-request-id:
-      - 59e8866ade0646ad
+      - 3728d90c01554889
     status:
       code: 500
       message: Internal Server Error
@@ -302,8 +297,8 @@ interactions:
   response:
     body:
       string: '{"type": "about:blank", "title": "Method Not Allowed", "detail": "Method
-        Not Allowed", "status": 405, "request_id": "6e72e3132b794d4a", "timestamp":
-        "2026-10-23T21:27:47.785830Z"}'
+        Not Allowed", "status": 405, "request_id": "b5cdc7aedbef4829", "timestamp":
+        "2026-10-25T08:16:15.193029Z"}'
     headers:
       allow:
       - POST
@@ -312,13 +307,13 @@ interactions:
       content-type:
       - application/json
       date:
-      - Fri, 23 Oct 2026 21:27:47 GMT
+      - Sun, 25 Oct 2026 08:16:14 GMT
       server:
       - uvicorn
       vary:
       - Origin
       x-request-id:
-      - 6e72e3132b794d4a
+      - b5cdc7aedbef4829
     status:
       code: 405
       message: Method Not Allowed
