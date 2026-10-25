@@ -62,13 +62,6 @@ def resolve_manifest(catalog: Catalog, path: Path) -> ManifestArticles:
     )
 
 
-def from_identifiers(
-    catalog: Catalog, identifiers: Sequence[Identifier], evidence: Evidence
-) -> Selection:
-    refs = catalog.register_many(list(identifiers), evidence)
-    return Selection(refs, f"{len(refs):,} articles")
-
-
 def everything(catalog: Catalog) -> Selection:
     refs = [catalog.ref(article_id) for article_id in catalog.all_article_ids()]
     return Selection(refs, f"all {len(refs):,} articles in the catalog")

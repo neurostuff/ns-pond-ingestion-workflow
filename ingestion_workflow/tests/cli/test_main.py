@@ -8,6 +8,7 @@ import pytest
 import typer
 from ingestion_workflow.catalog import Catalog
 from ingestion_workflow.cli.main import _parse_identifier, app
+from ingestion_workflow.models.ids import Identifier
 from typer.testing import CliRunner
 
 runner = CliRunner()
@@ -110,6 +111,27 @@ def test_a_command_that_registers_needs_the_email_registration_checks_with(confi
     result = runner.invoke(app, ["add", "37961286", "--config", str(config)])
     assert result.exit_code == 2
     assert "pubmed_email" in result.output
+
+
+def test_run_with_a_manifest_registers_the_articles_it_names(config, tmp_path):
+    manifest = tmp_path / "m.jsonl"
+    manifest.write_text(json.dumps({"pmid": "37961286"}) + "\n", encoding="utf-8")
+    run("run", "--stage", "download", "--dry-run", "--manifest", str(manifest),
+        "--config", str(config))
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        assert catalog.resolve(Identifier(pmid="37961286")) is not None
+
+
+def test_run_with_a_manifest_and_migrate_need_the_email_too(config, tmp_path):
+    _without_email(config)
+    manifest = tmp_path / "m.jsonl"
+    manifest.write_text(json.dumps({"pmid": "37961286"}) + "\n", encoding="utf-8")
+    old_cache = tmp_path / "old"
+    old_cache.mkdir()
+    for args in (["run", "--manifest", str(manifest)], ["migrate", str(old_cache)]):
+        result = runner.invoke(app, [*args, "--config", str(config)])
+        assert result.exit_code == 2, args
+        assert "pubmed_email" in result.output
 
 
 def test_status_reports_an_empty_catalog(config):

@@ -112,13 +112,6 @@ def test_a_doi_the_registries_give_one_of_the_two_journal_dois_an_article_holds_
     assert catalog.refused == []
 
 
-def test_registering_takes_the_evidence_it_checks_against(catalog):
-    with pytest.raises(TypeError, match="evidence"):
-        catalog.register(Identifier(pmid=BIOPSYCH[0], doi=BIOPSYCH[1]))
-    with pytest.raises(TypeError, match="evidence"):
-        catalog.register_many([Identifier(pmid=BIOPSYCH[0], doi=BIOPSYCH[1])])
-
-
 # -- a PMID is the article its PubMed DOI names ---------------------------------------
 
 @pytest.mark.vcr()

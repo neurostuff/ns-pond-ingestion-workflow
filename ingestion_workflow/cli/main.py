@@ -580,8 +580,8 @@ def _select(
     manifest: Optional[Path],
     mode: Select,
     stage,
-    refresh: Sequence[str] = (),
-    settings=None,
+    refresh: Sequence[str],
+    settings: Settings,
 ) -> Selection:
     if manifest:
         with _evidence(settings) as evidence:

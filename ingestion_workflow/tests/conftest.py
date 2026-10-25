@@ -49,19 +49,23 @@ def pubmed():
 @pytest.fixture()
 def evidence(pubmed):
     """NCBI and the registries, asked with the placeholder email and answered from the
-    test's cassette: every catalog is opened with this, so each test's registrations
-    are checked against recorded answers."""
+    test's cassette, so what a test registers is checked against recorded answers."""
     registry = DoiRegistry(CrossrefClient(cassette_secrets.REPLAY_EMAIL))
     yield Evidence(pubmed, registry)
     registry.close()
 
 
+#: Loopback is where a test starts its own server; the Hub is where docling's weights come
+#: from, a cache CI fills in its own step and never a cassette.
+IGNORED_HOSTS = ["localhost", "127.0.0.1", "huggingface.co"]
+
+
 def pytest_collection_modifyitems(items):
-    """A test that takes `evidence` asks NCBI and the registries, so it has a cassette; only
-    loopback, where a test starts its own server, is left out of it."""
+    """A test that takes `evidence` asks NCBI and the registries, so it has a cassette;
+    only IGNORED_HOSTS are left out of it."""
     for item in items:
         if "evidence" in item.fixturenames and item.get_closest_marker("vcr") is None:
-            item.add_marker(pytest.mark.vcr(ignore_hosts=["localhost", "127.0.0.1"]))
+            item.add_marker(pytest.mark.vcr(ignore_hosts=IGNORED_HOSTS))
 
 
 @pytest.fixture(scope="session", autouse=True)
