@@ -308,11 +308,12 @@ def _local(tmp_path, name, doi=None, supplement=False) -> LocalPdf:
     return pdf
 
 
-def test_an_attached_pdf_is_the_download_and_goes_straight_to_extraction(tmp_path, settings):
+def test_an_attached_pdf_is_the_download_and_goes_straight_to_extraction(
+        tmp_path, settings, evidence):
     pdf = _local(tmp_path, "a.pdf", doi="10.1/a")
     stage = DownloadStage(settings)
     fp = stage.fingerprint_for(DownloadSource.PDF)
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         ref = catalog.register(Identifier(doi="10.1/a"))
         assert attach(catalog, [pdf], fp, tmp_path / "pdfcache") == {pdf.path: "attached"}
 
@@ -332,22 +333,22 @@ def test_an_attached_pdf_is_the_download_and_goes_straight_to_extraction(tmp_pat
         assert copied.parent == tmp_path / "pdfcache"
 
 
-def test_in_place_the_catalog_points_at_the_file_itself(tmp_path, settings):
+def test_in_place_the_catalog_points_at_the_file_itself(tmp_path, settings, evidence):
     pdf = _local(tmp_path, "a.pdf", doi="10.1/a")
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         ref = catalog.register(Identifier(doi="10.1/a"))
         attach(catalog, [pdf], "fp")
         payload = catalog.payload(catalog.artifact(ref.id, "download", "pdf"))
     assert Path(payload["files"][0]["file_path"]) == pdf.path.resolve()
 
 
-def test_an_existing_download_supplements_and_repeats_are_left_alone(tmp_path, settings):
+def test_an_existing_download_supplements_and_repeats_are_left_alone(tmp_path, settings, evidence):
     first = _local(tmp_path, "a.pdf", doi="10.1/a")
     again = _local(tmp_path, "a - Copy.pdf", doi="10.1/A")
     supp = _local(tmp_path, "a supp.pdf", doi="10.1/a", supplement=True)
     other = _local(tmp_path, "b.pdf", doi="10.1/b")
     nothing = _local(tmp_path, "c.pdf")
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         a = catalog.register(Identifier(doi="10.1/a", pmid="1"))
         catalog.register(Identifier(doi="10.1/A", pmid="1"))
         b = catalog.register(Identifier(doi="10.1/b"))
@@ -367,10 +368,10 @@ def test_an_existing_download_supplements_and_repeats_are_left_alone(tmp_path, s
     }
 
 
-def test_a_pdf_is_attached_over_the_sources_it_should_outrank(tmp_path, settings):
+def test_a_pdf_is_attached_over_the_sources_it_should_outrank(tmp_path, settings, evidence):
     over_ace = _local(tmp_path, "a.pdf", doi="10.1/a")
     beside_pubget = _local(tmp_path, "b.pdf", doi="10.1/b")
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         a = catalog.register(Identifier(doi="10.1/a"))
         b = catalog.register(Identifier(doi="10.1/b"))
         catalog.record([

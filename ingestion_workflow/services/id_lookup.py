@@ -306,10 +306,10 @@ class CrossrefIDLookupService(IDLookupService):
         self._failed: Set[int] = set()
 
     def can_run(self) -> bool:
-        return self.catalog is not None and self.catalog.evidence is not None
+        return self.catalog is not None
 
     def _missing_credentials_reason(self) -> str:
-        return "the catalog was opened without PubMed and registry evidence"
+        return "no catalog was given"
 
     def find_identifiers(self, identifiers: Identifiers) -> Identifiers:
         self._batch = identifiers.identifiers

@@ -6,8 +6,8 @@ from ingestion_workflow.catalog import Catalog
 from ingestion_workflow.models.ids import Identifier
 
 
-def test_an_article_s_aliases_are_read_through_the_article_index(tmp_path):
-    with Catalog.open(tmp_path / "k") as catalog:
+def test_an_article_s_aliases_are_read_through_the_article_index(tmp_path, evidence):
+    with Catalog.open(tmp_path / "k", evidence=evidence) as catalog:
         ref = catalog.register(Identifier(pmid="28668221", doi="10.1016/j.cortex.2017.05.018"))
         for n in range(200):
             catalog.register(Identifier(doi=f"10.1016/j.neuroimage.2003.07.{n:03d}"))

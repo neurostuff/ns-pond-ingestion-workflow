@@ -37,14 +37,14 @@ def page(tmp_path, name):
 
 
 @pytest.fixture()
-def env(tmp_path):
+def env(tmp_path, evidence):
     gate = tmp_path / "gate.joblib"
     gate.write_bytes(b"a fitted gate")
     settings = Settings(
         data_root=tmp_path / "d", cache_root=tmp_path / "c", catalog_root=tmp_path / "k",
         download_sources=["pubget", "ace", "pdf"], coordinate_gate_path=gate,
     )
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         yield settings, catalog
 
 
@@ -187,20 +187,21 @@ def statuses(root):
             "SELECT stage, source, status FROM artifacts WHERE stage != 'metadata'"))
 
 
-def test_dry_run_writes_nothing_and_apply_backs_up_first(tmp_path, monkeypatch):
+def test_dry_run_writes_nothing_and_apply_backs_up_first(tmp_path, monkeypatch, evidence):
     from ingestion_workflow.extractors import ace_extractor
 
     monkeypatch.setattr(ace_extractor, "prepare_node", lambda settings: None)
     monkeypatch.setattr(DownloadStage, "extractor", lambda self, source: AnySource())
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", download_sources=["pubget", "ace", "pdf"])
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         article(catalog, settings, tmp_path, "1", PAYWALL, pubget=True)
     config = tmp_path / "settings.yaml"
     config.write_text(json.dumps({
         "data_root": str(settings.data_root), "cache_root": str(settings.cache_root),
         "catalog_root": str(settings.catalog_root), "download_sources": ["pubget", "ace", "pdf"],
         "log_to_file": False, "show_progress": False, "max_workers": 1,
+        "pubmed_email": "replay@example.com",
     }))
     db = settings.catalog_root / "catalog.sqlite"
     before = statuses(db)
@@ -260,17 +261,17 @@ def test_apply_leaves_a_row_another_run_rewrote_since_the_scan(env, tmp_path):
 
 
 def test_apply_checks_the_backup_path_before_scanning_and_skips_an_empty_run(
-        tmp_path, monkeypatch):
+        tmp_path, monkeypatch, evidence):
     from ingestion_workflow.services import download_revalidate as module
 
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k")
-    Catalog.open(settings.catalog_root).close()
+    Catalog.open(settings.catalog_root, evidence=evidence).close()
     config = tmp_path / "settings.yaml"
     config.write_text(json.dumps({
         "data_root": str(settings.data_root), "cache_root": str(settings.cache_root),
         "catalog_root": str(settings.catalog_root), "log_to_file": False,
-        "show_progress": False, "max_workers": 1,
+        "show_progress": False, "max_workers": 1, "pubmed_email": "replay@example.com",
     }))
     scans = []
     monkeypatch.setattr(module, "scan", lambda *a, **k: scans.append(1) or module.Revalidation())
@@ -291,14 +292,14 @@ def test_apply_checks_the_backup_path_before_scanning_and_skips_an_empty_run(
 
 
 @pytest.fixture()
-def two_bad_articles(tmp_path, monkeypatch):
+def two_bad_articles(tmp_path, monkeypatch, evidence):
     from ingestion_workflow.extractors import ace_extractor
 
     monkeypatch.setattr(ace_extractor, "prepare_node", lambda settings: None)
     monkeypatch.setattr(DownloadStage, "extractor", lambda self, source: AnySource())
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", download_sources=["pubget", "ace", "pdf"])
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         article(catalog, settings, tmp_path, "1", PAYWALL)
         article(catalog, settings, tmp_path, "2", PAYWALL)
     config = tmp_path / "settings.yaml"
@@ -306,6 +307,7 @@ def two_bad_articles(tmp_path, monkeypatch):
         "data_root": str(settings.data_root), "cache_root": str(settings.cache_root),
         "catalog_root": str(settings.catalog_root), "download_sources": ["pubget", "ace", "pdf"],
         "log_to_file": False, "show_progress": False, "max_workers": 1,
+        "pubmed_email": "replay@example.com",
     }))
     return settings, config
 
@@ -325,7 +327,7 @@ def failed_downloads(settings):
         ).fetchone()[0]
 
 
-def test_a_manifest_limits_the_check_to_its_articles(tmp_path, two_bad_articles):
+def test_a_manifest_limits_the_check_to_its_articles(tmp_path, two_bad_articles, evidence):
     settings, config = two_bad_articles
     runner = CliRunner()
     backup = tmp_path / "backup" / "catalog.sqlite"
@@ -340,7 +342,7 @@ def test_a_manifest_limits_the_check_to_its_articles(tmp_path, two_bad_articles)
                                   "-m", str(manifest_of(tmp_path, "1")), "-c", str(config)])
     assert applied.exit_code == 0, applied.output
     assert failed_downloads(settings) == 1
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         failed = catalog.artifact(catalog.resolve(Identifier(pmid="1")).id, "download", "ace")
         left = catalog.artifact(catalog.resolve(Identifier(pmid="2")).id, "download", "ace")
     assert failed.status == Status.FAILED and left.status == Status.OK
@@ -355,13 +357,12 @@ def test_without_a_manifest_every_article_is_checked(tmp_path, two_bad_articles)
 
 
 def test_a_manifest_entry_the_catalog_does_not_know_is_reported_and_not_registered(
-    tmp_path, two_bad_articles
-):
+    tmp_path, two_bad_articles, evidence):
     settings, config = two_bad_articles
     out = CliRunner().invoke(app, ["revalidate-downloads", "-m",
                                    str(manifest_of(tmp_path, "1", "999")), "-c", str(config)])
     assert out.exit_code == 0, out.output
     assert "not in the catalog, not checked: 1" in out.output and "999" in out.output
     assert "checked 1 stored downloads" in out.output
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         assert catalog.count_articles() == 2

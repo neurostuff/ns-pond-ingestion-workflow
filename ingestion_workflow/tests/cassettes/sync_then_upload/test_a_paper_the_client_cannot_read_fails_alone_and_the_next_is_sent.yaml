@@ -1,0 +1,195 @@
+interactions:
+- request:
+    body: '{"coordinate_parse":{"header":{"artifact_kind":"coordinate_parse","schema_version":"0.10.0","article_id":"rrxoibkwbxrr","identifiers":{"pmid":"21","pmcid":null,"doi":null,"alternative_pmids":null,"alternative_pmcids":null,"alternative_dois":null,"preprint_dois":null,"preprint_pmids":null,"preprint_pmcids":null,"publication_status":"published"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.10","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"parsed_paper","fingerprint":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","producer_version":null},{"artifact_kind":"analyses","fingerprint":"f41fd5d24aa95045e853d73c70b7de64","producer_version":null}],"created_at":null,"neurostore_base_study_id":"BS21"},"parse_id":"023d485787b4e848d8cc8d350f964efc27e70d2cae39c1614f67b11dcfb75895","text_sha256":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","revision_of":null,"analyses":[{"key":"analysis#e6e0af1672caaffa","cells":null,"text_spans":[{"start_char":144,"end_char":164,"text":null}],"origin":"text","table_id":null,"name":"patients
+      > controls","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":null,"prior_study_evidence":null,"role_confidence":1.0,"role_source":"by-name@1","split":null,"derived_from":null,"statistic":"t","statistic_df":null,"thresholds":null,"points":[{"coordinates":[-22.0,-4.0,-18.0],"space":null,"row":null,"column_group":null,"text_span":{"start_char":144,"end_char":164,"text":null},"values":[{"kind":"t","kind_as_printed":null,"value":4.1,"level":null,"correction":null}],"cluster_size":null,"cluster_measure":null,"is_subpeak":false,"label":null}]}],"tables":null,"omitted_analyses":null,"text_sweep":{"passages_found":1,"passages_read":1,"truncated":false,"points_dropped_as_table_restatements":0},"verdicts":null},"parsed_paper":{"header":{"artifact_kind":"parsed_paper","schema_version":"0.10.0","article_id":"rrxoibkwbxrr","identifiers":{"pmid":"21","pmcid":null,"doi":null,"alternative_pmids":null,"alternative_pmcids":null,"alternative_dois":null,"preprint_dois":null,"preprint_pmids":null,"preprint_pmcids":null,"publication_status":"published"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.10","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"extraction","fingerprint":"ex-1","producer_version":null},{"artifact_kind":"metadata","fingerprint":"me-1","producer_version":null},{"artifact_kind":"triage","fingerprint":"tr-1","producer_version":null}],"created_at":null,"neurostore_base_study_id":"BS21"},"source":"pubget","source_reason":null,"text_copy":{"route":"pmc","version":"vor","license":{"license_id":"all-rights-reserved","determination":"assumed","stated_by":null,"stated_as":null},"url":null,"preprint_server":null,"access":"public"},"reported_copies":null,"text_path":"processed/pubget/text.txt","text_sha256":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","text_length":313,"bibliography":{"title":"T","authors":null,"authors_provider":null,"correspondence_emails":null,"journal":null,"publication_year":null,"volume":null,"issue":null,"pages":null,"abstract":"A","abstract_provider":"pubmed","language":null,"publication_types":null,"keywords":null,"license":{"license_id":"all-rights-reserved","determination":"assumed","stated_by":null,"stated_as":null},"oa_status":null,"corrections":null,"provider":"pubmed"},"is_meta_analysis":false,"is_meta_analysis_basis":null,"sections":[{"kind":"other","heading":null,"start_char":0,"end_char":5},{"kind":"methods","heading":null,"start_char":5,"end_char":57},{"kind":"results","heading":null,"start_char":57,"end_char":239},{"kind":"discussion","heading":null,"start_char":239,"end_char":313}],"supplements":null,"references":null,"citations":null,"tables":[]}}'
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '3934'
+      content-type:
+      - application/json
+      host:
+      - 127.0.0.1:28084
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: http://127.0.0.1:28084/api/study-schema-uploads/
+  response:
+    body:
+      string: '{"kind":"parse","base_study_id":"BS21","parse_id":"023d485787b4e848d8cc8d350f964efc27e70d2cae39c1614f67b11dcfb75895","skeleton":{"created":1,"updated":0,"superseded":0,"orphaned_claims":[],"omitted_analyses":0},"set_aside_resolved":[],"study_id":"Q4BZuSviEST8","provenance":{"parse":{"result_id":"6mdGhLzA7ZW6","config_id":"7ToQiQQZgwUb","run_id":null,"pipeline":"coordinate-parse","version":"paper_parse.10","commit":null,"schema":{"name":"neuroimaging-paper-parse","version":"0.10.0"},"parse_version":{"name":"ns-pond-ingestion-workflow","model":null,"stage":"sync","version":"paper_parse.10","prompt_version":null},"date_executed":"2026-10-23T21:26:40.070093+00:00","created_at":"2026-10-23T21:26:40.037778+00:00","updated_at":null}}}
+
+        '
+    headers:
+      content-length:
+      - '738'
+      content-type:
+      - application/json
+      date:
+      - Fri, 23 Oct 2026 21:26:39 GMT
+      server:
+      - uvicorn
+      vary:
+      - Origin
+      x-request-id:
+      - 63d7e87273b04473
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=21&retmode=json&email=replay%40example.com&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAJRUyW7bMBD9FYKXJoCVyM6G+OagKeqmaQt0Oxg5UNTIYkORKjk0mhj9s976Yx2S
+        3pKgRXoRxOEsjzNv3pK3IGpwfLzkeNcDH3PwoeuEu+MDvgDnlTVkLA+O+M8Bd3SpMToHVXs+nvHR
+        kN8M4jfbyJX+B7wPVS0wphuen52wj9CTEbZWOnkbnIz/E3dvQHUKEXRjnZdtMHNyEAFbOlKVJTei
+        i65TL4Rk71eXK8CT5Ec2qYNHcAkFod1EfWoVdODY1bPi6DlaeMzVH0WjQh1DZxfKyhY6JYVmHkOt
+        wDNrmBSd7ZQGJm3XWwMG/eF0Oj1gU8MWCp3dOIvKBmTYAhMGVQ89KsmEREVud8w2bK8o9guh+1YU
+        lfLkrq1mexnVC8/QCeP1/s1B6qTDNbLq2cCYUoqp/8aVILEtpIyIrRFF1lgdUt9HJ3RS3od4OI+s
+        EHPwkRNHJ6PimMdG06SJRXNiIPXd6C4Y9T1AGkV5dDY6PS1zjkTCsjwujodno8ilbMpUywOd8Usz
+        18q3bFJ5QiORbt8Qywz1YuLoIdShm0hiaV1NE8YQwXwI1TXUrKBe1PCD/oiD7Pry5dvpu8ucfuMa
+        IYucKNN/yVW9YhP5dVBHsMlC4IbUCqHT42knIq9a5dHSZsXA3byb2J2dOSzPD8shK8txWSYy7waQ
+        t1YG/hoxfBJBE3dw/68SqTMNODAyDmlGZ4HoVBUwnflr4bedpdu+kxQgbTCYJ9EErb/lfq82b3e1
+        i1c7uw3aSoGkLXnpCJaVq0ZKhekmEttJaU3EQGPFjKmy9nZNdnKhTqjQ5X/6xSxXeW6RC+DWlR6Z
+        Vwhzla0qOehpm0zoqiiK0SIWQmlRaWic7YLT2brOSjegN094gpZs29wR+rasbEWP6yJxhR9q5oPh
+        ZIdGuR1d2mrhIr5GBh2pmRuzlifqN7DPhsr4kFoPtO8kB1eCxECDUaYVGj2xsmnAkExlrSqSJhRf
+        chiw37+oG4z0YSsKKfNX5W4pKatJOPY2cnXxBwAA//+ClQ3Fekq1tbVcAAAAAP//AwDr9CgxZAYA
+        AA==
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Sun, 25 Oct 2026 08:56:35 GMT
+      ncbi-phid:
+      - 1D345BABAD18B8E500005B62D6A369AF.1.1.m_1
+      ncbi-sid:
+      - 5E2FCA0F4C1B8D97_962ASID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+        Oct 2027 08:56:36 GMT
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=61&retmode=json&email=replay%40example.com&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAMxUS2/bMAz+K4JOG5CkttMkTW4dWqAt2mGH3YodZJmptcqSp0ewLNh/Hyk5j3YP
+        DNhlF1uk+PgofuSOtyAacHy142HbA19x8LHrhNvyEd+A88oaVBaTKf8+4g4vdSDjqBrPV498XvJP
+        I/pmHZriecT7WDciULhyuZixK5CsJD0cL1DyNjpJ53fKylZ1DP99u/XsUgaB9yKG1jrKs+NGdGR5
+        IzbQCcPuhusB9GWyRJ3U0QdwCQkiPvjdi411oP/SD0vSwoec/5V3UEGT620DJqi1kiLgGzG7ZqEF
+        VlYF66JnfSs8MGWSsgEptmTRgBZbaNhaR4znJRiZjHyvjJAtk622zvaU2zNhGuZjfaJjvXBBSQ14
+        6VNkZYJTxivJaiGfmQMhCc2EfUxpezBNyjGg07DBKpKg9hhtxhjarRbPFttKQcEZoVl/M0ldcmFf
+        tPqPix6y/mvNLRHf6phoc15coKi8jyRNidniCZCRvJovx1O61MI80SQA/pA3RnfRqC8REpWKqlzM
+        ymmOkQapKObjaVFUNAxZlcclE/KR3+FMEI7LXDSFdCCta5COIVLmD7F+wOccI+YGvtLDWscerq/u
+        b99f51gH03Niew6U53WHHRyoj3YdNIQsaRBJiYULnSrFIabhORg3Vp1aTo+WZTEpi3J+hoXNxtWi
+        unizmL1dFmW1HFcvY/TqRYzzY4xf+2Ll2LFgcRUR8NO6DthPlsxZWZ2VJSuKVVGkxKcOaK2Vgd96
+        lD95IM8dfPtTitSZNTgiG70tyiIgM+sYkoy7CjcZRnTIT+pj30l0kDaakNu+jlp/zv0e1tSwCHG+
+        GARW53VIksgbEbTNo5cXFaKzcnheqUK6oYl1UloaklrjA2ZotbXP+ylGE3wQFbt8xmPIaz7TB51a
+        cPtMr9QD0JzluMod9LgmTOxqcD8AAAD//4KIJJYlZuYkJuWkphXl55YW5UBEYaYCZVJz4F7AcC1Q
+        DGE2yOkIa5MzEgtKYJaAyibUugYljiAK0jKLkMpy5BqkDOSf5NIcUB6BBk1tbS0XAAAA//8DADtK
+        jqkWBwAA
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Sun, 25 Oct 2026 08:57:04 GMT
+      ncbi-phid:
+      - 1D32BD61E5CE12B500005050FCE9BAC9.1.1.m_1
+      ncbi-sid:
+      - 74CEB39FA6C4CF52_8C18SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+        Oct 2027 08:57:04 GMT
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

@@ -74,12 +74,6 @@ def test_merged_articles_are_not_checked_or_suspected(checked):
     assert suspects(checked) == set()
 
 
-def test_violations_need_evidence(tmp_path):
-    with Catalog.open(tmp_path / "cat") as catalog:
-        with pytest.raises(ValueError, match="evidence"):
-            violations(catalog, [])
-
-
 # -- PMIDs and their PubMed DOIs ------------------------------------------------------------
 
 @pytest.mark.vcr()

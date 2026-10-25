@@ -50,8 +50,8 @@ SEARCHED = {
 
 
 @pytest.fixture()
-def report(tmp_path):
-    with Catalog.open(tmp_path / "catalog") as catalog:
+def report(tmp_path, evidence):
+    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
         catalog.register_many([Identifier(pmid="3")])
         return _run(catalog, SEARCHED, enriched=[Identifier(pmid="2", doi="10.1/b")])
 
@@ -91,16 +91,16 @@ def test_a_record_without_an_id_is_counted_not_dropped(report):
     assert report.without_id == {"pubmed": 0, "openalex": 1, "semantic_scholar": 0}
 
 
-def test_the_same_title_without_the_same_id_stays_distinct(tmp_path):
+def test_the_same_title_without_the_same_id_stays_distinct(tmp_path, evidence):
     searched = {"a": [Identifier(doi="10.1/a"), Identifier(doi="10.1/b")]}
-    with Catalog.open(tmp_path / "catalog") as catalog:
+    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
         report = _run(catalog, searched, enriched=[])
     assert len(report.articles["a"]) == 2
 
 
-def test_a_hit_enrichment_merges_into_a_held_article_is_known(tmp_path):
+def test_a_hit_enrichment_merges_into_a_held_article_is_known(tmp_path, evidence):
     # the catalog holds the paper by DOI only; PubMed's hit is its PMID
-    with Catalog.open(tmp_path / "catalog") as catalog:
+    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
         catalog.register_many([Identifier(doi="10.1/x")])
         report = _run(
             catalog,
@@ -112,9 +112,9 @@ def test_a_hit_enrichment_merges_into_a_held_article_is_known(tmp_path):
     assert len(report.known) == 1
 
 
-def test_held_articles_chained_by_enrichment_are_one_known_article(tmp_path):
+def test_held_articles_chained_by_enrichment_are_one_known_article(tmp_path, evidence):
     # held as three articles: DOI x, PMID 1, PMCID 9; enrichment links x to 1 and 1 to 9
-    with Catalog.open(tmp_path / "catalog") as catalog:
+    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
         catalog.register_many(
             [Identifier(doi="10.1/x"), Identifier(pmid="1"), Identifier(pmcid="PMC9")]
         )
@@ -128,8 +128,8 @@ def test_held_articles_chained_by_enrichment_are_one_known_article(tmp_path):
     assert len(report.known) == 1  # never more known than distinct, so never fewer than 0 new
 
 
-def test_an_article_new_this_run_is_not_known(tmp_path):
-    with Catalog.open(tmp_path / "catalog") as catalog:
+def test_an_article_new_this_run_is_not_known(tmp_path, evidence):
+    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
         catalog.register_many([Identifier(doi="10.1/held")])
         report = _run(catalog, {"pubmed": [Identifier(pmid="5")]}, enriched=[])
     assert len(report.distinct) == 1 and not report.known

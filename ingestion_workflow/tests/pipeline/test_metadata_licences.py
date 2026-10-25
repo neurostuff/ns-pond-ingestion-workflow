@@ -31,14 +31,14 @@ TDM_MANUSCRIPT = Identifier(pmid="35820077", pmcid="PMC10518222", doi="10.1002/a
 
 
 @pytest.fixture()
-def env(tmp_path):
+def env(tmp_path, evidence):
     # The keys are dropped from the cassettes, so any value replays. No email is sent.
     settings = Settings(
         data_root=tmp_path / "d", cache_root=tmp_path / "c", catalog_root=tmp_path / "k",
         pubmed_email=None,
         semantic_scholar_api_key=os.environ.get("SEMANTIC_SCHOLAR_API_KEY", "replay"),
         openalex_api_key=os.environ.get("OPENALEX_API_KEY", "replay"))
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         yield settings, catalog
 
 

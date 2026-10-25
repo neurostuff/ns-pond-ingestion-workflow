@@ -1031,8 +1031,8 @@ def test_a_url_on_a_host_left_for_the_run_does_not_become_the_error(stub, other_
 
 
 @pytest.fixture
-def catalog(tmp_path):
-    with Catalog.open(tmp_path / "catalog") as opened:
+def catalog(tmp_path, evidence):
+    with Catalog.open(tmp_path / "catalog", evidence=evidence) as opened:
         yield opened
 
 

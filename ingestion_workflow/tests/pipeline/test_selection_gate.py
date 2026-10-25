@@ -18,8 +18,8 @@ def settings(tmp_path):
 
 
 @pytest.fixture()
-def catalog(tmp_path):
-    cat = Catalog.open(tmp_path / "cat")
+def catalog(tmp_path, evidence):
+    cat = Catalog.open(tmp_path / "cat", evidence=evidence)
     refs = {}
     for n, passed in (("a", 2), ("b", 0), ("c", 1), ("d", 0)):
         ref = cat.register(Identifier(pmid=f"100{n}"))
@@ -95,7 +95,8 @@ def test_there_is_no_second_gate_in_the_stage(catalog):
 
 
 @pytest.mark.parametrize("stage, upstream", [("space", "roles"), ("sync", "space")])
-def test_space_and_sync_are_gated_on_analyses_having_found_something(tmp_path, stage, upstream):
+def test_space_and_sync_are_gated_on_analyses_having_found_something(
+        tmp_path, stage, upstream, evidence):
     """An article the model read and found nothing in is a legitimate `ok`, so
     the status check does not exclude it. 30,741 of them would be planned to
     upload nothing. `space` carries the count through to `sync`, which runs
@@ -105,7 +106,7 @@ def test_space_and_sync_are_gated_on_analyses_having_found_something(tmp_path, s
     assert STAGE_TYPES[stage].requires == upstream
     assert STAGE_TYPES[stage].requires_flag == "tables"
 
-    cat = Catalog.open(tmp_path / "up")
+    cat = Catalog.open(tmp_path / "up", evidence=evidence)
     ids = {}
     for name, tables in (("has", 2), ("none", 0)):
         ref = cat.register(Identifier(pmid=f"200{name}"))

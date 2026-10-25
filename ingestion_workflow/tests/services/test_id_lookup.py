@@ -23,17 +23,17 @@ def _settings(tmp_path) -> Settings:
     )
 
 
-def test_hydrate_skips_an_identifier_that_needs_nothing(tmp_path):
+def test_hydrate_skips_an_identifier_that_needs_nothing(tmp_path, evidence):
     settings = _settings(tmp_path)
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         service = _DummyLookup(settings, catalog)
         complete = Identifiers([Identifier(pmid="123", doi="10.1000/xyz", pmcid="PMC456")])
         assert service._hydrate_from_cache(complete) == []
 
 
-def test_hydrate_fills_gaps_the_catalog_already_knows(tmp_path):
+def test_hydrate_fills_gaps_the_catalog_already_knows(tmp_path, evidence):
     settings = _settings(tmp_path)
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         catalog.register(Identifier(pmid="123", doi="10.1000/xyz", pmcid="PMC456"))
         service = _DummyLookup(settings, catalog)
 
@@ -45,17 +45,17 @@ def test_hydrate_fills_gaps_the_catalog_already_knows(tmp_path):
         assert partial.pmcid == "PMC456"
 
 
-def test_hydrate_returns_what_is_still_unknown(tmp_path):
+def test_hydrate_returns_what_is_still_unknown(tmp_path, evidence):
     settings = _settings(tmp_path)
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         service = _DummyLookup(settings, catalog)
         unknown = Identifier(pmid="999")
         assert service._hydrate_from_cache(Identifiers([unknown])) == [unknown]
 
 
-def test_discovered_ids_become_aliases(tmp_path):
+def test_discovered_ids_become_aliases(tmp_path, evidence):
     settings = _settings(tmp_path)
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         service = _DummyLookup(settings, catalog)
         service._persist_cache_entries([Identifier(pmid="55", pmcid="PMC55")])
         assert catalog.resolve(Identifier(pmcid="PMC55")) is not None
@@ -117,9 +117,9 @@ def test_a_preprint_only_paper_with_a_pmid_and_a_pmcid_still_needs_its_journal_d
                                            doi="10.1016/j.neuroimage.2025.121234"))
 
 
-def test_hydrate_carries_the_catalog_s_preprint_and_alternative_ids(tmp_path):
+def test_hydrate_carries_the_catalog_s_preprint_and_alternative_ids(tmp_path, evidence):
     settings = _settings(tmp_path)
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         catalog.register(Identifier(
             pmid="42663321", doi="10.7554/elife.106070",
             preprint_dois=["10.1101/2025.02.05.636581"],

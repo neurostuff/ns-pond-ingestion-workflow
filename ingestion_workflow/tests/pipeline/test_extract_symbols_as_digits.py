@@ -214,7 +214,7 @@ def test_the_pdf_extractor_sets_a_misread_text_aside(tmp_path):
 
 
 @pytest.fixture()
-def env(tmp_path):
+def env(tmp_path, evidence):
     gate = tmp_path / "gate.joblib"
     gate.write_bytes(b"a gate")
     settings = Settings(
@@ -224,7 +224,7 @@ def env(tmp_path):
         coordinate_gate_path=str(gate),
         download_sources=["wiley", "pdf", "ace"],
     )
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         yield settings, catalog, tmp_path
 
 

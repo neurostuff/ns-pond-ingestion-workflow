@@ -1,0 +1,130 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=111&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
+        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
+    headers:
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json
+      date:
+      - Sun, 25 Oct 2026 08:51:53 GMT
+      referrer-policy:
+      - origin-when-cross-origin
+      retry-after:
+      - '2'
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 429
+      message: Too Many Requests
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=111&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAHxUS27bMBDd9xQEN0kAO5WQpIa9S9EUaNCkgVcFjCwoamSxpUiVIt24hu/TnMMX
+        6wwpxXHTBjBgcjifN2/eaMNrECU4Pttwv26Bzzh0oWmEW/MRX4HrlDVozE7P+HbEHT5qT85BlR2f
+        LXie5/x+FP+SFZ3pMuJtKErhKWM+nVywa2HGH6HAB9i/4K2zwUk6vw9as7t6jRVb4Wur2Ry6Vjl2
+        fCuMXJ+grwhod1R3w41oKGpuC3Ce3fSvfQ+X0RFtUofOg4uw+BaBatH5lOYw2CuvKXLx5WG9BMNE
+        VSmj/JrZitUCGrvUtlCGHafgo455J0ynT+5PYxPODxns6wlSPBviiWWrQ+wl0qa6LsQLUSiWgN3y
+        yXScTzJO6M2SWK8cEOtGN8GoHwFif5N3eT49v0g54tCybDI+P5t+JdKTKc0lsbTg18i9EZpdOq8k
+        gh/xOawU/KTcDqR1JZLlA0G4C8UNlGzMlCnhAU8VNnFz9eHzp9urlPTJ9ZxmkTImkWy4KvvBoF8D
+        JUGMFoSUIwFCp5aRAJpRrTpvUYAU+TzxU/AzXb3NcvyxLJtlGSr0MAC9tTLw34j8RQQY7+DXayUi
+        NRU4MJJms8C78N6pIvjh3jYSXaQNxifKK5T2t8R1L1sSO3iUQwmsjZofJ9HbpQLmovCFt8oReNBW
+        Co+LmGSM4Kzs+ZTKxxfSoJPSGkKikb+EpLD2+6BLdEE+VGjSGY8+7XYaHwbV4IZKf5l71KnKfncd
+        tCh8E5qCviBkESuhtCg0VM42welkHbLiC+inFl6gRds+N0Hfl5W1aP1QhLbt8OtyMKLkUCn3701f
+        UTsyaJJoYuYyrerukaahj+rd47CtOBwcG9poqXe/DZzy7Xb75g8AAAD//wMAZXNszjYFAAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Sun, 25 Oct 2026 08:51:54 GMT
+      ncbi-phid:
+      - 1D32BD61E5CE12B50000604EFD256CCA.1.1.m_1
+      ncbi-sid:
+      - 5FB1B1362527E868_B8EFSID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

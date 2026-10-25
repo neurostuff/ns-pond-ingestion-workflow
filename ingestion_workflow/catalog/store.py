@@ -131,6 +131,8 @@ class Catalog:
     def __init__(
         self, connection: sqlite3.Connection, root: Path, evidence: Optional[Evidence] = None
     ) -> None:
+        # Only a read-only view or a pre-migration repair builds a Catalog without `open`, and
+        # neither registers; `open` always passes the evidence.
         self._conn = connection
         self.root = Path(root)
         self.blobs = BlobStore(self.root / "blobs")
@@ -142,13 +144,11 @@ class Catalog:
     # -- lifecycle -----------------------------------------------------------
 
     @classmethod
-    def open(cls, root: Path | str, evidence: Optional[Evidence] = None) -> "Catalog":
+    def open(cls, root: Path | str, evidence: Evidence) -> "Catalog":
         """Open the catalog at `root`, creating it if need be.
 
         `evidence` is what registration checks identifiers against: the PubMed
-        record of a PMID, and the registries' record of a DOI. The CLI always opens
-        the catalog with it; without it a PMID is added unchecked and a second
-        journal DOI is refused.
+        record of a PMID, and the registries' record of a DOI.
         """
         root = Path(root)
         root.mkdir(parents=True, exist_ok=True)
@@ -180,8 +180,8 @@ class Catalog:
         return catalog
 
     @property
-    def evidence(self) -> Optional[Evidence]:
-        """What this catalog was opened to check identifiers against, if anything."""
+    def evidence(self) -> Evidence:
+        """What this catalog was opened to check identifiers against."""
         return self._evidence
 
     def backup(self, target: Path | str) -> Path:
@@ -520,8 +520,7 @@ class Catalog:
         decided = []
         for article_id, doi, held in rows:
             try:
-                same = self._evidence is not None and any(
-                    self._evidence.same_dois(doi, h) for h in held)
+                same = any(self._evidence.same_dois(doi, h) for h in held)
                 why = "which the registries do not give the same work"
             except Unreadable as exc:
                 same = False
@@ -548,8 +547,6 @@ class Catalog:
         A PMID already held is not added, and a PMID alone cannot attach to another
         paper's article, so neither is asked about.
         """
-        if self._evidence is None:
-            return {}
         asked = sorted({
             str(i.pmid) for i in identifiers
             if i.pmid and len(_alias_pairs(i)) > 1

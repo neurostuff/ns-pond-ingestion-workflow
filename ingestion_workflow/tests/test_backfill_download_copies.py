@@ -92,7 +92,7 @@ def s2_cache(tmp_path):
 
 
 @pytest.fixture()
-def catalog_root(tmp_path):
+def catalog_root(tmp_path, evidence):
     """Downloads stored as production holds them: migrated ones with no fingerprint, a PDF
     labelled by the old version field, two untyped PDFs, one already recorded, one failed,
     one whose payload is gone, one whose file is gone."""
@@ -100,7 +100,7 @@ def catalog_root(tmp_path):
     lost = tmp_path / "lost" / "article.xml"
     lost.parent.mkdir()
     lost.write_bytes((COPIES / "pubget_manuscript" / "article.xml").read_bytes())
-    with Catalog.open(root) as catalog:
+    with Catalog.open(root, evidence=evidence) as catalog:
         ids = {name: catalog.register(Identifier(doi=DOIS.get(name, f"10.1/{name}"))).id
                for name in ("pmc", "elsevier", "pdf", "ucl", "koelsch", "alz", "s2only",
                             "recorded", "failed", "gone", "lost")}
@@ -189,7 +189,7 @@ def test_apply_needs_a_new_backup(catalog_root, openalex, tmp_path, s2_cache):
 
 
 def test_apply_records_each_copy_in_its_summary_and_nothing_else(catalog_root, openalex,
-                                                                 tmp_path, s2_cache):
+                                                                 tmp_path, s2_cache, evidence):
     root, ids = catalog_root
     before = _rows(root / "catalog.sqlite")
 
@@ -198,7 +198,7 @@ def test_apply_records_each_copy_in_its_summary_and_nothing_else(catalog_root, o
 
     assert counts == DRY_RUN
     after = _rows(root / "catalog.sqlite")
-    with Catalog.open(root) as catalog:
+    with Catalog.open(root, evidence=evidence) as catalog:
         def summary(name, source):
             return catalog.artifact(ids[name], "download", source).summary
 
@@ -230,7 +230,8 @@ def test_apply_records_each_copy_in_its_summary_and_nothing_else(catalog_root, o
 
 
 def test_a_row_written_while_the_copies_were_read_is_left_alone(catalog_root, openalex,
-                                                                monkeypatch, tmp_path, s2_cache):
+                                                                monkeypatch, tmp_path, s2_cache,
+                                                                        evidence):
     """The pipeline refreshes the pmc download between the read and the write."""
     root, ids = catalog_root
     read = backfill.copies_of
@@ -238,7 +239,7 @@ def test_a_row_written_while_the_copies_were_read_is_left_alone(catalog_root, op
 
     def refreshed_meanwhile(*args):
         found = read(*args)
-        with Catalog.open(root) as catalog:
+        with Catalog.open(root, evidence=evidence) as catalog:
             download = catalog.artifact(ids["pmc"], "download", "pmc")
             catalog.record([Outcome(ids["pmc"], "download", "pmc", fingerprint="fp-new",
                                     summary=refreshed, payload=catalog.payload(download))])
@@ -250,7 +251,7 @@ def test_a_row_written_while_the_copies_were_read_is_left_alone(catalog_root, op
     counts = backfill.run(root, openalex=openalex, semantic_scholar=s2_cache, apply=True, backup=tmp_path / "b.sqlite",
                           out=out)
 
-    with Catalog.open(root) as catalog:
+    with Catalog.open(root, evidence=evidence) as catalog:
         assert catalog.artifact(ids["pmc"], "download", "pmc").summary == refreshed
     assert counts == {**{k: n for k, n in DRY_RUN.items() if not k.startswith("pmc")},
                       "left: written meanwhile": 1}
@@ -267,7 +268,8 @@ class _Down(BaseHTTPRequestHandler):
 
 
 def test_rows_whose_openalex_lookup_failed_are_left_unwritten_for_a_rerun(catalog_root,
-                                                                         tmp_path, s2_cache):
+                                                                         tmp_path, s2_cache,
+                                                                                 evidence):
     root, ids = catalog_root
     server = HTTPServer(("localhost", 0), _Down)
     threading.Thread(target=server.serve_forever, daemon=True).start()
@@ -283,7 +285,7 @@ def test_rows_whose_openalex_lookup_failed_are_left_unwritten_for_a_rerun(catalo
 
     assert counts["left: OpenAlex lookup failed"] == 5
     assert "pdf\tunrecorded\t-\tpublic" not in counts
-    with Catalog.open(root) as catalog:
+    with Catalog.open(root, evidence=evidence) as catalog:
         for name in ("ucl", "koelsch"):
             assert "copy" not in catalog.artifact(ids[name], "download", "pdf").summary
     assert f"left\t{ids['ucl']}\tpdf\tOpenAlex lookup failed" in out.getvalue()

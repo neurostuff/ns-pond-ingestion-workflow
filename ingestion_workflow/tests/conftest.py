@@ -2,9 +2,14 @@ import json
 import os
 import tempfile
 from pathlib import Path
+from urllib.parse import urlparse
 
 import pytest
 from dotenv import load_dotenv
+from ingestion_workflow.catalog.evidence import Evidence
+from ingestion_workflow.clients.crossref import CrossrefClient
+from ingestion_workflow.clients.doi_registry import DoiRegistry
+from ingestion_workflow.clients.pubmed import PubMedClient
 from ingestion_workflow.models.ids import Identifier, Identifiers
 from ingestion_workflow.tests import cassette_secrets, upload_body, wiley_tdm
 
@@ -34,6 +39,38 @@ def vcr_config():
         "record_mode": "once",
         "ignore_hosts": ["localhost"],
     }
+
+
+@pytest.fixture()
+def pubmed():
+    with PubMedClient(email=cassette_secrets.REPLAY_EMAIL) as client:
+        yield client
+
+
+@pytest.fixture()
+def evidence(pubmed):
+    """NCBI and the registries, asked with the placeholder email and answered from the
+    test's cassette: every catalog is opened with this, so each test's registrations
+    are checked against recorded answers."""
+    registry = DoiRegistry(CrossrefClient(cassette_secrets.REPLAY_EMAIL))
+    yield Evidence(pubmed, registry)
+    registry.close()
+
+
+#: What `Evidence` asks: PubMed, the PMC id converter, and the DOI registries.
+EVIDENCE_HOSTS = {"eutils.ncbi.nlm.nih.gov", "www.ncbi.nlm.nih.gov", "api.crossref.org", "doi.org"}
+
+
+def _only_evidence(request):
+    """Leave any other host to the test: a server it starts is not something to record."""
+    return request if urlparse(request.uri).hostname in EVIDENCE_HOSTS else None
+
+
+def pytest_collection_modifyitems(items):
+    """A test that takes `evidence` asks NCBI and the registries, so it has a cassette."""
+    for item in items:
+        if "evidence" in item.fixturenames and item.get_closest_marker("vcr") is None:
+            item.add_marker(pytest.mark.vcr(before_record_request=_only_evidence))
 
 
 @pytest.fixture(scope="session", autouse=True)

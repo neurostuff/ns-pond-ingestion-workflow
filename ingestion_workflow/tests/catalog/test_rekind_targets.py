@@ -9,8 +9,8 @@ from ingestion_workflow.models.ids import Identifier
 
 
 @pytest.fixture()
-def catalog(tmp_path):
-    with Catalog.open(tmp_path / "cat") as cat:
+def catalog(tmp_path, evidence):
+    with Catalog.open(tmp_path / "cat", evidence=evidence) as cat:
         yield cat
 
 

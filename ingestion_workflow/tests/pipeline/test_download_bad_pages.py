@@ -59,13 +59,13 @@ def pdf(hosts, tmp_path, has_article=True):
 
 
 @pytest.fixture()
-def stage(tmp_path):
+def stage(tmp_path, evidence):
     settings = Settings(
         data_root=tmp_path / "d", cache_root=tmp_path / "c", catalog_root=tmp_path / "k",
         download_sources=["ace", "pdf"],
     )
     stage = DownloadStage(settings)
-    ctx = Context(settings, Catalog.open(settings.catalog_root))
+    ctx = Context(settings, Catalog.open(settings.catalog_root, evidence=evidence))
     return stage, ctx
 
 

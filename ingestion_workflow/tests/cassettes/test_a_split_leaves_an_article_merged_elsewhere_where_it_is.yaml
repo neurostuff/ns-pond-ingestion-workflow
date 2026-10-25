@@ -1,0 +1,134 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=22015111&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
+        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
+    headers:
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json
+      date:
+      - Sun, 25 Oct 2026 08:51:50 GMT
+      referrer-policy:
+      - origin-when-cross-origin
+      retry-after:
+      - '2'
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 429
+      message: Too Many Requests
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=22015111&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAKxTTW/bMAz9K4Quu9iBP9pkzS0tsA4dthUJtkuxg2JzMTFZ8iQqQxDsv4+ysw69
+        zUBPth/5/MSnx7PqULfo1fqs+DSgWisMse+1P6lMHdEHclbAYlGr35nyUjScmiO1Qa2fVFUV5XVZ
+        lupb9u99qgvtGcnUEPet5iQgWAUP2kKC8QVewueGobyRQnDRNwm+JWfgMZyajjSPx9KRO+eT/FlZ
+        3aemu05bJhN/IHy4dFzG2YzNgjUmBkY/nktmeaa+10Z7gu1M2o56auDjTNajSMlJEe7mMwfdusFF
+        4wJsZpLvSfcDIXsHX2dSt3FP+j9NlQwYHXi6nxdcJjaJ+M47yy4PLDbIs0GPezRyAdCegsdDNJol
+        cUAWZFqDoUHLAX4Rd9DiIPlLgYQ2erIH6B3TUcLTgmaWRiktxuh4/iv4fRSEiyC8vmBaE2fi6NUq
+        JZpCiOljDL0+oORUXd/ky5VK7thD2hqUh5hlTR8t/Yw4+ldUZV0tr6ZfjEtXFMu8rqo67ckElW9X
+        dV5dFdW0UdN1PKkHWRarDWw8UyNzZ2qLAbVvOtjFYRA/MvjkbP5lsVvAvTu+4ST/BwAA//+UVctO
+        wzAQvPMVVU8gQbJOH6Kc4YAECIkjp8RxqcGpIzepEKj/zqydpEkLAm7OZmdfnh07Ja3LcV9VzUU+
+        1tk9OrvALHL1jtPSutH9zfXd7cNNSNe5JrM5EyJkC0rwOdZ5ww54FirnPrwFdQsMKTV+LJ0kMMc6
+        SG5133+y9xcUCRLz+DXKtC1ZBiIWiogWEdFsGKXUgyjTfZSnbpanQpwRXS6mF5eesCu9qSxkhTvo
+        t4jhKL31bfT0KaZpnIgR0RWRzz2EbPXmGLGIafYDIpVSldW/IGCdUx8HAEFxkoxo/h2gu42/AuBt
+        9FoNEElMk3giWoQnzxK7tJbM72d8YyGczurKf0NUIVII6VLpqVYWEgBp63XFSnE+XtbGvAbWNkLD
+        Om9ftASNy77aK2Ol31G/JCDK1egXTqBwKxtKSF2lzZpunJQQA1RpcOeh6szat1Yq4ILWdV2EM45V
+        ePwC+QFaKdcWc2BueghZmrGNeUi8e+u6yPiJZUu6TbVJM6MgTEXtTLC2UfFHNSa0cFQtbPvYXPo+
+        rVylIFKThAVw+N7GBFa1vA0OS+16Un3wgG65JQlxdN10drvdyRcAAAD//wMABkMEiS8IAAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Sun, 25 Oct 2026 08:51:51 GMT
+      ncbi-phid:
+      - 1D32BD61E5CE12B50000224EF6F3323A.1.1.m_1
+      ncbi-sid:
+      - 54A974AFE8309A91_6DF5SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

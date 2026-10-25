@@ -118,8 +118,8 @@ def slept(monkeypatch):
     return slept
 
 
-def _catalog(settings, *identifiers):
-    ctx = Context(settings, Catalog.open(settings.catalog_root))
+def _catalog(settings, *identifiers, evidence):
+    ctx = Context(settings, Catalog.open(settings.catalog_root, evidence=evidence))
     refs = ctx.catalog.register_many(
         [i if isinstance(i, Identifier) else Identifier(doi=i) for i in identifiers])
     return ctx, refs
@@ -203,9 +203,9 @@ def test_springer_dois_are_asked_twenty_to_a_quoted_query(tmp_path, slept, vcr):
         assert (result.success, result.error_message) == (False, NOT_OPEN_ACCESS)
 
 
-def test_articles_springer_does_not_serve_are_not_asked_for_again(tmp_path, slept):
+def test_articles_springer_does_not_serve_are_not_asked_for_again(tmp_path, slept, evidence):
     settings = _settings(tmp_path)
-    ctx, refs = _catalog(settings, *TWENTY_ONE)
+    ctx, refs = _catalog(settings, *TWENTY_ONE, evidence=evidence)
     with _replay(TWO_QUERIES):
         run_stages(ctx, [DownloadStage(settings)], refs)
 
@@ -218,11 +218,11 @@ def test_articles_springer_does_not_serve_are_not_asked_for_again(tmp_path, slep
     _assert_key_kept_out(ctx, refs, settings.springer_api_key)
 
 
-def test_a_springer_article_is_read_into_its_springer_text(tmp_path, slept):
+def test_a_springer_article_is_read_into_its_springer_text(tmp_path, slept, evidence):
     """Download through the stage from the recorded answer, extract through the stage:
     pubget's code reads the JATS, sections, tables and figure captions."""
     settings = _settings(tmp_path)
-    ctx, refs = _catalog(settings, *TWENTY_ONE)
+    ctx, refs = _catalog(settings, *TWENTY_ONE, evidence=evidence)
     with _replay(TWO_QUERIES):
         run_stages(ctx, [DownloadStage(settings)], refs)
     case_report = next(ref for ref in refs if ref.identifier.doi.lower() == CASE_REPORT)
@@ -258,11 +258,11 @@ def test_a_springer_article_is_read_into_its_springer_text(tmp_path, slept):
 
 
 @pytest.mark.vcr(match_on=MATCH_ON)
-def test_a_refused_key_stops_the_download_stage(tmp_path, slept, vcr, caplog):
+def test_a_refused_key_stops_the_download_stage(tmp_path, slept, vcr, caplog, evidence):
     """The API refusing the key is not the articles' failure: none is charged a try,
     and the stage asks nothing more this run."""
     settings = _settings(tmp_path, springer_api_key="not-a-springer-key")
-    ctx, refs = _catalog(settings, CASE_REPORT, LAST)
+    ctx, refs = _catalog(settings, CASE_REPORT, LAST, evidence=evidence)
     stage = DownloadStage(settings)
 
     run_stages(ctx, [stage], refs)
@@ -278,9 +278,10 @@ def test_a_refused_key_stops_the_download_stage(tmp_path, slept, vcr, caplog):
 
 
 @pytest.mark.vcr(record_mode="none")
-def test_without_a_key_the_stage_stops_before_asking_or_charging_anyone(tmp_path, caplog):
+def test_without_a_key_the_stage_stops_before_asking_or_charging_anyone(
+        tmp_path, caplog, evidence):
     settings = _settings(tmp_path, springer_api_key=None)
-    ctx, refs = _catalog(settings, CASE_REPORT)
+    ctx, refs = _catalog(settings, CASE_REPORT, evidence=evidence)
 
     with pytest.raises(SourceMisconfigured, match="SPRINGER_API_KEY"):
         SpringerExtractor(settings).download(Identifiers([refs[0].identifier]))
@@ -302,12 +303,13 @@ def test_a_429_is_waited_out_for_as_long_as_springer_asks(tmp_path, slept):
     assert sum(result.success for result in results) == 2
 
 
-def test_a_spent_quota_leaves_the_rest_pending_and_springer_for_the_run(tmp_path, slept, caplog):
+def test_a_spent_quota_leaves_the_rest_pending_and_springer_for_the_run(
+        tmp_path, slept, caplog, evidence):
     """A 429 asking for longer than a run waits is the day's quota: the articles already
     answered are recorded, and the rest are charged nothing and not asked again this run."""
     cassette = _composed(tmp_path, (429, {"retry-after": ["86400"]}))
     settings = _settings(tmp_path)
-    ctx, refs = _catalog(settings, *TWENTY_ONE)
+    ctx, refs = _catalog(settings, *TWENTY_ONE, evidence=evidence)
     stage = DownloadStage(settings)
     last = next(ref for ref in refs if ref.identifier.doi.lower() == LAST.lower())
 
@@ -338,9 +340,10 @@ def test_a_spent_quota_raises_with_the_articles_already_answered(tmp_path, slept
 
 
 @pytest.mark.vcr(record_mode="none")
-def test_only_articles_with_a_springer_nature_doi_are_planned_for_springer(tmp_path):
+def test_only_articles_with_a_springer_nature_doi_are_planned_for_springer(tmp_path, evidence):
     settings = _settings(tmp_path)
-    ctx, refs = _catalog(settings, CASE_REPORT, OTHER_DOI, KLUWER, Identifier(pmid="16504543"))
+    ctx, refs = _catalog(settings, CASE_REPORT, OTHER_DOI, KLUWER, Identifier(pmid="16504543"),
+            evidence=evidence)
 
     plan = DownloadStage(settings).plan(ctx, refs, {}, {})
 
@@ -349,11 +352,12 @@ def test_only_articles_with_a_springer_nature_doi_are_planned_for_springer(tmp_p
     assert plan.skipped == 2
 
 
-def test_an_article_served_without_its_body_is_not_a_download_and_is_asked_again(tmp_path, slept):
+def test_an_article_served_without_its_body_is_not_a_download_and_is_asked_again(
+        tmp_path, slept, evidence):
     """The API's record of it is front matter only: no text, so not this source's
     full text, and not known to be final either."""
     settings = _settings(tmp_path)
-    ctx, refs = _catalog(settings, *FIVE)
+    ctx, refs = _catalog(settings, *FIVE, evidence=evidence)
     with _replay(FIVE_BMC) as played:
         run_stages(ctx, [DownloadStage(settings)], refs)
         assert played.play_count == 1
@@ -433,14 +437,14 @@ def test_a_server_error_is_retried_with_backoff(tmp_path, slept):
     assert slept == [2.0, 4.0]
 
 
-def test_a_batch_the_server_keeps_failing_fails_alone_and_is_retried(tmp_path, slept):
+def test_a_batch_the_server_keeps_failing_fails_alone_and_is_retried(tmp_path, slept, evidence):
     """Three 503s fail that batch's 20 articles for a later run, not for good, and the
     next batch is still asked; no failure quotes the URL or its key."""
     recorded = yaml.safe_load(TWO_QUERIES.read_text(encoding="utf-8"))
     first_uri = recorded["interactions"][0]["request"]["uri"]
     cassette = _cassette(tmp_path, *[_answer(first_uri, 503)] * 3, recorded["interactions"][1])
     settings = _settings(tmp_path)
-    ctx, refs = _catalog(settings, *TWENTY_ONE)
+    ctx, refs = _catalog(settings, *TWENTY_ONE, evidence=evidence)
 
     with _replay(cassette) as played:
         run_stages(ctx, [DownloadStage(settings)], refs)
@@ -473,12 +477,12 @@ def test_a_connection_that_keeps_failing_fails_the_batch_by_kind_alone(
     assert slept == [2.0, 4.0]
 
 
-def test_a_malformed_later_answer_fails_only_its_own_batch(tmp_path, slept):
+def test_a_malformed_later_answer_fails_only_its_own_batch(tmp_path, slept, evidence):
     recorded = yaml.safe_load(TWO_QUERIES.read_text(encoding="utf-8"))
     cassette = _cassette(tmp_path, recorded["interactions"][0],
                          _answer(_uri([LAST]), body=b"<response><records><article"))
     settings = _settings(tmp_path)
-    ctx, refs = _catalog(settings, *TWENTY_ONE)
+    ctx, refs = _catalog(settings, *TWENTY_ONE, evidence=evidence)
 
     with _replay(cassette):
         run_stages(ctx, [DownloadStage(settings)], refs)
@@ -491,11 +495,12 @@ def test_a_malformed_later_answer_fails_only_its_own_batch(tmp_path, slept):
         Status.FAILED, "Springer Nature sent an answer that is not XML")
 
 
-def test_a_404_that_does_not_say_no_data_is_not_taken_as_not_open_access(tmp_path, slept):
+def test_a_404_that_does_not_say_no_data_is_not_taken_as_not_open_access(
+        tmp_path, slept, evidence):
     """A gateway's or a moved path's 404 says nothing about the articles: retried."""
     cassette = _cassette(tmp_path, _answer(_uri([LAST]), 404, b"<html>Not Found</html>"))
     settings = _settings(tmp_path)
-    ctx, refs = _catalog(settings, LAST)
+    ctx, refs = _catalog(settings, LAST, evidence=evidence)
 
     with _replay(cassette) as played:
         run_stages(ctx, [DownloadStage(settings)], refs)
@@ -507,14 +512,14 @@ def test_a_404_that_does_not_say_no_data_is_not_taken_as_not_open_access(tmp_pat
 
 
 def test_a_query_refused_for_every_doi_alone_leaves_springer_with_nothing_charged(
-        tmp_path, slept, caplog):
+        tmp_path, slept, caplog, evidence):
     """Every DOI refused even alone is the query's fault, not theirs: none is final."""
     asked = [CASE_REPORT, MOLECULAR_PAIN, LAST]
     cassette = _cassette(tmp_path, *[
         _answer(_uri(dois), 400) for dois in
         (asked, asked[:1], asked[1:], asked[1:2], asked[2:])])
     settings = _settings(tmp_path)
-    ctx, refs = _catalog(settings, *asked)
+    ctx, refs = _catalog(settings, *asked, evidence=evidence)
     stage = DownloadStage(settings)
 
     with _replay(cassette) as played:
@@ -542,7 +547,8 @@ def test_429s_do_not_spend_the_server_error_tries(tmp_path, slept):
     assert result.success
 
 
-def test_a_refused_query_is_halved_until_the_doi_it_cannot_name_is_alone(tmp_path, slept):
+def test_a_refused_query_is_halved_until_the_doi_it_cannot_name_is_alone(
+        tmp_path, slept, evidence):
     """A 400 is one DOI's: the others in its query are still asked, and only it is final.
     A Markdown backslash and look-alike dashes are dropped from what is asked."""
     articles = _five_articles()
@@ -559,7 +565,7 @@ def test_a_refused_query_is_halved_until_the_doi_it_cannot_name_is_alone(tmp_pat
         _answer(_uri(asked[2:]), body=_response([articles["10.1186/s13195-026-02139-9"]])),
     )
     settings = _settings(tmp_path)
-    ctx, refs = _catalog(settings, CASE_REPORT, escaped, dashed)
+    ctx, refs = _catalog(settings, CASE_REPORT, escaped, dashed, evidence=evidence)
 
     with _replay(cassette) as played:
         run_stages(ctx, [DownloadStage(settings)], refs)
@@ -632,7 +638,7 @@ def test_a_fourth_429_in_a_row_is_the_quota_spent(tmp_path, slept):
 
 
 def test_a_403_is_the_quota_spent_leaving_every_article_pending_and_said_in_the_report(
-        tmp_path, slept, caplog):
+        tmp_path, slept, caplog, evidence):
     """A refusal of a key the API knows: nothing is charged, Springer is asked nothing
     more, the next source is still asked, and the run report says so."""
     message = "Account over its daily limit"
@@ -641,7 +647,7 @@ def test_a_403_is_the_quota_spent_leaving_every_article_pending_and_said_in_the_
         json.dumps({"status": "Fail", "message": message}).encode()))
     settings = _settings(tmp_path, download_sources=["springer", "wiley"], wiley_api_key=None)
     wiley_doi = "10.1111/j.1440-1614.2006.01765.x"
-    ctx, refs = _catalog(settings, CASE_REPORT, LAST, wiley_doi)
+    ctx, refs = _catalog(settings, CASE_REPORT, LAST, wiley_doi, evidence=evidence)
 
     with _replay(cassette) as played:
         report = run_stages(ctx, [DownloadStage(settings)], refs)
@@ -658,9 +664,9 @@ def test_a_403_is_the_quota_spent_leaving_every_article_pending_and_said_in_the_
     assert len(DownloadStage(settings).plan(ctx, refs[:2], {}, {}).pending) == 2
 
 
-def test_springer_is_not_asked_about_an_article_another_source_already_served(tmp_path):
+def test_springer_is_not_asked_about_an_article_another_source_already_served(tmp_path, evidence):
     settings = _settings(tmp_path, download_sources=["elsevier", "springer"])
-    ctx, refs = _catalog(settings, CASE_REPORT)
+    ctx, refs = _catalog(settings, CASE_REPORT, evidence=evidence)
     stage = DownloadStage(settings)
     ctx.catalog.record([Outcome(refs[0].id, "download", "elsevier", Status.OK,
                                 fingerprint=stage.fingerprint_for(DownloadSource.ELSEVIER),
@@ -672,9 +678,9 @@ def test_springer_is_not_asked_about_an_article_another_source_already_served(tm
     assert (plan.pending, plan.fresh) == ([], 1)
 
 
-def test_a_springer_extraction_has_the_jats_metadata_fallback(tmp_path, slept):
+def test_a_springer_extraction_has_the_jats_metadata_fallback(tmp_path, slept, evidence):
     settings = _settings(tmp_path)
-    ctx, refs = _catalog(settings, *FIVE)
+    ctx, refs = _catalog(settings, *FIVE, evidence=evidence)
     with _replay(FIVE_BMC):
         run_stages(ctx, [DownloadStage(settings)], refs)
     case = next(ref for ref in refs if ref.identifier.doi.lower() == CASE_REPORT)

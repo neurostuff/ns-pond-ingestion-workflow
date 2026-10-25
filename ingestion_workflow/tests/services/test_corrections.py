@@ -334,12 +334,12 @@ class _Upstream:
     summary = {}
 
 
-def _sync(tmp_path, *notices):
+def _sync(tmp_path, *notices, evidence):
     """A catalog with one article ready for sync, its notices as given."""
     from ingestion_workflow.catalog import Catalog, Outcome
     from ingestion_workflow.pipeline.stage import Context
 
-    cat = Catalog.open(tmp_path / "cat")
+    cat = Catalog.open(tmp_path / "cat", evidence=evidence)
     ref = cat.register(Identifier(pmid="1", neurostore="BASE1"))
     cat.record([Outcome(article_id=ref.id, stage="space", source="", fingerprint="sp",
                         summary={"tables": 1}),
@@ -391,18 +391,18 @@ def test_only_answered_notices_move_the_sync_fingerprint():
     assert answered != plain
 
 
-def test_a_retracted_paper_s_parsed_paper_carries_its_retraction(tmp_path):
+def test_a_retracted_paper_s_parsed_paper_carries_its_retraction(tmp_path, evidence):
     """Neurostore's ingester marks the base study retracted from these corrections."""
-    cat, ref, ctx = _sync(tmp_path, _answered(retracted=True))
+    cat, ref, ctx = _sync(tmp_path, _answered(retracted=True), evidence=evidence)
     with cat:
         assert len(_plan(cat, ref, ctx).pending) == 1
         assert _corrections(cat, ref, ctx) == [{"kind": "retraction", "pmid": "8", "doi": None}]
 
 
-def test_a_retraction_notice_is_never_synced_and_is_recorded_with_its_reason(tmp_path):
+def test_a_retraction_notice_is_never_synced_and_is_recorded_with_its_reason(tmp_path, evidence):
     from ingestion_workflow.pipeline.stages.sync import RETRACTION_NOTICE
 
-    cat, ref, ctx = _sync(tmp_path, _answered(notice=True))
+    cat, ref, ctx = _sync(tmp_path, _answered(notice=True), evidence=evidence)
     with cat:
         plan = _plan(cat, ref, ctx)
         (skipped,) = SyncStage(ctx.settings).execute(ctx, plan.pending)
@@ -414,18 +414,18 @@ def test_a_retraction_notice_is_never_synced_and_is_recorded_with_its_reason(tmp
         assert (plan.pending, plan.reasons) == ([], {RETRACTION_NOTICE: 1})
 
 
-def test_a_withdrawn_retraction_is_cleared(tmp_path):
+def test_a_withdrawn_retraction_is_cleared(tmp_path, evidence):
     """Notices that answered with no retraction send an empty list, which the ingester reads
     as "not retracted" and clears an earlier mark by."""
-    cat, ref, ctx = _sync(tmp_path, _answered())
+    cat, ref, ctx = _sync(tmp_path, _answered(), evidence=evidence)
     with cat:
         assert _corrections(cat, ref, ctx) == []
 
 
-def test_a_failed_refresh_keeps_the_last_ok_notices_and_sync_still_sees_it(tmp_path):
+def test_a_failed_refresh_keeps_the_last_ok_notices_and_sync_still_sees_it(tmp_path, evidence):
     from ingestion_workflow.catalog import Outcome
 
-    cat, ref, ctx = _sync(tmp_path, _answered(retracted=True))
+    cat, ref, ctx = _sync(tmp_path, _answered(retracted=True), evidence=evidence)
     with cat:
         before = _plan(cat, ref, ctx).pending[0].fingerprint
         cat.record([Outcome.failure(ref.id, "notices", "", "pubmed: down", fingerprint="f")])
@@ -437,9 +437,9 @@ def test_a_failed_refresh_keeps_the_last_ok_notices_and_sync_still_sees_it(tmp_p
         assert cat.attempt_counts([ref.id], "notices", "")[ref.id][0] == 1
 
 
-def test_never_answered_notices_send_no_corrections(tmp_path):
+def test_never_answered_notices_send_no_corrections(tmp_path, evidence):
     """Unknown, not "no notices": the ingester leaves the retraction mark as it is."""
-    cat, ref, ctx = _sync(tmp_path, _answered(status=Status.FAILED))
+    cat, ref, ctx = _sync(tmp_path, _answered(status=Status.FAILED), evidence=evidence)
     with cat:
         assert len(_plan(cat, ref, ctx).pending) == 1
         assert _corrections(cat, ref, ctx) is None

@@ -41,7 +41,7 @@ def test_an_unlisted_source_falls_back_rather_than_crashing(stage):
     assert stage.fingerprint_for("mystery", UPSTREAM) == expected
 
 
-def test_a_bump_only_requeues_that_source(tmp_path, monkeypatch):
+def test_a_bump_only_requeues_that_source(tmp_path, monkeypatch, evidence):
     """An article extracted by pdf stays fresh; one extracted only by ace
     comes back as work."""
     settings = Settings(
@@ -50,7 +50,7 @@ def test_a_bump_only_requeues_that_source(tmp_path, monkeypatch):
         catalog_root=tmp_path / "k",
         download_sources=["pubget", "elsevier", "ace", "pdf"],
     )
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         by_pdf = catalog.register(Identifier(doi="10.1/pdf"))
         by_ace = catalog.register(Identifier(pmid="2"))
         for ref, source in ((by_pdf, "pdf"), (by_ace, "ace")):
@@ -95,7 +95,7 @@ def test_a_bump_only_requeues_that_source(tmp_path, monkeypatch):
     assert [(w.ref.id, w.source) for w in plan.pending] == [(by_ace.id, "ace")]
 
 
-def test_an_ace_article_with_a_better_extraction_stays_fresh(tmp_path):
+def test_an_ace_article_with_a_better_extraction_stays_fresh(tmp_path, evidence):
     """The whole point: only ACE articles with nothing higher come back."""
     settings = Settings(
         data_root=tmp_path / "d",
@@ -103,7 +103,7 @@ def test_an_ace_article_with_a_better_extraction_stays_fresh(tmp_path):
         catalog_root=tmp_path / "k",
         download_sources=["pubget", "elsevier", "ace", "pdf"],
     )
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         ref = catalog.register(Identifier(pmcid="PMC3", pmid="3"))
         for source in ("pubget", "ace"):
             catalog.record(

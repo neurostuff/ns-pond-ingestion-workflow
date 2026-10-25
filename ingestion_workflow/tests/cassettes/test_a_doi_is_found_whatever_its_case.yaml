@@ -1,0 +1,131 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=1&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
+        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
+    headers:
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json
+      date:
+      - Sun, 25 Oct 2026 08:52:01 GMT
+      referrer-policy:
+      - origin-when-cross-origin
+      retry-after:
+      - '2'
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 429
+      message: Too Many Requests
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=1&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAJRUTW/bMAy971cIumwDktRO0wbNrcW6j24ZirY7FTvIMlNrlSVPH8GyIP99pOUk
+        bot168WWKJKPfHzSmlcgSnB8tuZh1QCfcfCxroVb8QFfgvPKGjRmo0O+GXCHhzqQc1Sl57NbnvPv
+        A/wkCzrmGNbEohSBcuUn0yN2EQ0aYW/FnbfRSVqfKSsrqNkcSjSLGCrrKPGaG1GTw1zcC8dOz7rT
+        rsjT1hFtUkcfwLXYWOE+TM6FC8qwz+cvjLwUGjyw+QvDbqCp9IrdXP1XHJKmhQ+p30fRQQVNoe+t
+        q5EwJrwXK4atFLZcsYUm6mdMNI1WUgScD53VECphrGaNVd4aZe5GLc0ubNMtnkn372ykBqtj22p+
+        iDvlfaTNmAYu7sDTQT4djo859YYRqA7AH7ZqdB2N+hmh7T7Lj/LJeJJytOLKsuPh+GRCJkimpKLE
+        4S2/QLUYodkpTlRiMwN+hSMSTlbsOjYNNjlg30bXI/bBLl/j+nL0EXeE7EBaVyLRIVKBl7FAobEh
+        9ljCL1whKWx+/u7Lp6/nCXLnSsWIhJekvuaq7IaKfnWr12TBgnOkR+iWkLxVxc63tKrveNhzzEZ5
+        lh8f7Np/Mz16e5Llk+lw2iqkUj5YvIiE3S9tB9+7ZQcZJspZls2yrC2gH4DeWhn4a0T+JAJMcPD7
+        OYiW3AU4MJJmf4t7EYJTRQzbfVNLdJE2mpBGuoha/0iz7G5Nd/1RehpFVyqZygRtkxjTdcEyrOz4
+        lCq0J6RuJ6U1hKmRqYRZWHu/VTy6UM5YpzUuQ3rN0qgxqAK3RXpk7upLKPt3ywGpzcS6oDeTLGIp
+        lBaFhoWzdXQ6WbdZ8QT0roUn1aJtn5tK38PKSjRhC0L3+OGr+mAYyWGhXO9F6b2bS2pHRk1y7pjZ
+        bDav/gAAAP//AwCpPUoz/AUAAA==
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Sun, 25 Oct 2026 08:52:02 GMT
+      ncbi-phid:
+      - 1D334F858372F89500002C6273FB2A04.1.1.m_1
+      ncbi-sid:
+      - 3E2987436D6939CE_8D86SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

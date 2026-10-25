@@ -55,7 +55,7 @@ class ModelStub:
 
 
 @pytest.fixture()
-def env(tmp_path):
+def env(tmp_path, evidence):
     gate = tmp_path / "gate.joblib"
     gate.write_bytes(b"a fitted gate")
     stub = ModelStub()
@@ -63,7 +63,7 @@ def env(tmp_path):
         data_root=tmp_path / "d", cache_root=tmp_path / "c", catalog_root=tmp_path / "k",
         coordinate_gate_path=gate, llm_api_key="k", llm_api_base=stub.url,
     )
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         yield settings, catalog, stub
     stub.server.shutdown()
 

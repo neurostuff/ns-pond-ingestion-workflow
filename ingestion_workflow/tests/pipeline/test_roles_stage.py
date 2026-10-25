@@ -282,10 +282,10 @@ def test_each_origin_s_model_is_checked_on_its_own(tmp_path, served, monkeypatch
 
 
 @pytest.fixture
-def env(tmp_path):
+def env(tmp_path, evidence):
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", ns_pond_root=tmp_path / "pond")
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         ref = catalog.register(Identifier(pmid="7"))
         catalog.record([Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-1",
                                 payload=_tables(), summary={"tables": 1})])

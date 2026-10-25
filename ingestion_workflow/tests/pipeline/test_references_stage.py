@@ -17,14 +17,14 @@ from ingestion_workflow.tests.services.test_reference_lists import MESSAGE, _Ope
 
 
 @pytest.fixture()
-def env(tmp_path):
+def env(tmp_path, evidence):
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c", catalog_root=tmp_path / "k")
     article = tmp_path / "pmcid_1" / "article.xml"
     article.parent.mkdir()
     article.write_text(JATS)
     text = tmp_path / "article.txt"
     text.write_text(article_text(etree.parse(str(article)), article.parent), encoding="utf-8")
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         yield settings, catalog, article, text
 
 

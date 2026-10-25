@@ -59,11 +59,11 @@ class CountingStage:
 
 
 @pytest.fixture()
-def env(tmp_path):
+def env(tmp_path, evidence):
     settings = Settings(
         data_root=tmp_path / "data", cache_root=tmp_path / "c", catalog_root=tmp_path / "cat"
     )
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         refs = catalog.register_many([Identifier(pmid=str(n)) for n in range(10)])
         yield settings, catalog, refs
 
@@ -189,7 +189,7 @@ def test_a_dry_run_shows_no_progress_bar(env, monkeypatch):
     assert made == []
 
 
-def test_a_dry_run_sums_each_stage_s_block_reasons_over_its_batches(tmp_path):
+def test_a_dry_run_sums_each_stage_s_block_reasons_over_its_batches(tmp_path, evidence):
     from ingestion_workflow.pipeline import BATCH_SIZE
 
     class Blocking(CountingStage):
@@ -201,7 +201,7 @@ def test_a_dry_run_sums_each_stage_s_block_reasons_over_its_batches(tmp_path):
 
     settings = Settings(data_root=tmp_path / "data", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "cat")
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         refs = catalog.register_many([Identifier(pmid=str(n)) for n in range(BATCH_SIZE + 2)])
         report = run_stages(Context(settings, catalog), [Blocking()], refs, dry_run=True)
 
@@ -209,7 +209,7 @@ def test_a_dry_run_sums_each_stage_s_block_reasons_over_its_batches(tmp_path):
     assert report.stages["download"].reasons == {"waits too": half, "waits": half}
 
 
-def test_an_analyses_skip_is_reported_as_skipped_not_failed(tmp_path):
+def test_an_analyses_skip_is_reported_as_skipped_not_failed(tmp_path, evidence):
     # Triage passed table t9, which the extraction no longer has: the real analyses
     # stage records SKIPPED "no coordinate tables" without calling the model.
     from ingestion_workflow.catalog import Status
@@ -222,7 +222,7 @@ def test_an_analyses_skip_is_reported_as_skipped_not_failed(tmp_path):
         data_root=tmp_path / "d", cache_root=tmp_path / "c", catalog_root=tmp_path / "k",
         coordinate_gate_path=gate, llm_api_key="k",
     )
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         ref = catalog.register(Identifier(pmid="123"))
         content = ExtractedContent(slug="a", source=DownloadSource.PUBGET, tables=[])
         catalog.record([

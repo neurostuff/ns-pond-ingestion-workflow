@@ -28,43 +28,44 @@ def settings(tmp_path):
     )
 
 
-def ctx(settings, refresh=()):
-    return Context(settings, Catalog.open(settings.catalog_root), refresh=refresh)
+def ctx(settings, refresh=(), *, evidence):
+    return Context(settings, Catalog.open(settings.catalog_root,
+            evidence=evidence), refresh=refresh)
 
 
-def test_naming_the_source_reaches_a_fresh_artifact(settings):
+def test_naming_the_source_reaches_a_fresh_artifact(settings, evidence):
     fresh = artifact(fingerprint="x")
-    assert ctx(settings).is_fresh(fresh, "x")
-    assert not ctx(settings, ["extract:ace"]).is_fresh(fresh, "x")
+    assert ctx(settings, evidence=evidence).is_fresh(fresh, "x")
+    assert not ctx(settings, ["extract:ace"], evidence=evidence).is_fresh(fresh, "x")
 
 
-def test_naming_one_source_leaves_the_others_alone(settings):
-    c = ctx(settings, ["extract:ace"])
+def test_naming_one_source_leaves_the_others_alone(settings, evidence):
+    c = ctx(settings, ["extract:ace"], evidence=evidence)
     assert not c.is_fresh(artifact(source="ace", fingerprint="x"), "x")
     assert c.is_fresh(artifact(source="pubget", fingerprint="x"), "x")
     assert c.is_fresh(artifact(source="elsevier", fingerprint="x"), "x")
 
 
-def test_the_whole_stage_still_works(settings):
-    c = ctx(settings, ["extract"])
+def test_the_whole_stage_still_works(settings, evidence):
+    c = ctx(settings, ["extract"], evidence=evidence)
     for source in ("ace", "pubget", "elsevier"):
         assert not c.is_fresh(artifact(source=source), "x")
 
 
-def test_all_still_works(settings):
-    c = ctx(settings, ["all"])
+def test_all_still_works(settings, evidence):
+    c = ctx(settings, ["all"], evidence=evidence)
     assert not c.is_fresh(artifact(stage="download", source="ace"), "x")
 
 
-def test_a_source_of_another_stage_is_untouched(settings):
-    c = ctx(settings, ["extract:ace"])
+def test_a_source_of_another_stage_is_untouched(settings, evidence):
+    c = ctx(settings, ["extract:ace"], evidence=evidence)
     assert c.is_fresh(artifact(stage="download", source="ace"), "fp")
 
 
-def test_it_requeues_only_articles_with_nothing_higher(settings):
+def test_it_requeues_only_articles_with_nothing_higher(settings, evidence):
     """The whole point: an ACE article that pubget already handled stays
     fresh, because a success from any source makes the article fresh."""
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         ace_only = catalog.register(Identifier(pmid="1"))
         also_pubget = catalog.register(Identifier(pmcid="PMC2", pmid="2"))
 
@@ -110,10 +111,10 @@ def _failed_ace(catalog, stage):
     return ref
 
 
-def test_naming_the_source_retries_a_failed_extraction(settings):
+def test_naming_the_source_retries_a_failed_extraction(settings, evidence):
     """It was ignored: the planner asked about the stage, not the source, so a
     failed ACE extraction inside its backoff stayed out of the plan."""
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         ref = _failed_ace(catalog, "extract")
         ids = [ref.id]
         args = ([ref], catalog.artifacts(ids, "extract"), catalog.artifacts(ids, "download"))
@@ -124,8 +125,8 @@ def test_naming_the_source_retries_a_failed_extraction(settings):
     assert [w.source for w in named.pending] == ["ace"]
 
 
-def test_naming_the_source_retries_a_failed_download(settings):
-    with Catalog.open(settings.catalog_root) as catalog:
+def test_naming_the_source_retries_a_failed_download(settings, evidence):
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         ref = _failed_ace(catalog, "download")
         settings.download_sources = ["ace"]
         args = ([ref], catalog.artifacts([ref.id], "download"), {})

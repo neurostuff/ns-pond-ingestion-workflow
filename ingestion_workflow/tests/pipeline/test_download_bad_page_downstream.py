@@ -48,7 +48,7 @@ def served(source, path):
 
 
 @pytest.fixture()
-def env(tmp_path, monkeypatch):
+def env(tmp_path, monkeypatch, evidence):
     hosts = OaHosts()
     monkeypatch.setattr(OpenAlexClient, "BASE_URL", hosts.url)
     hosts.work(None, location(hosts.serve("/repo/x.pdf", (200, PDF)), "repository"), pmid="123")
@@ -57,7 +57,7 @@ def env(tmp_path, monkeypatch):
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", download_sources=["ace", "pdf"],
                         coordinate_gate_path=gate)
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         ref = catalog.register(Identifier(pmid="123", doi="10.1/x"))
         stage = DownloadStage(settings)
         # the ACE download and extraction a run stored before the check existed

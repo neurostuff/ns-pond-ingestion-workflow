@@ -11,8 +11,8 @@ from ingestion_workflow.models.ids import Identifier
 
 
 @pytest.fixture()
-def catalog(tmp_path):
-    with Catalog.open(tmp_path / "cat") as cat:
+def catalog(tmp_path, evidence):
+    with Catalog.open(tmp_path / "cat", evidence=evidence) as cat:
         yield cat
 
 
@@ -55,8 +55,11 @@ def _snapshot(catalog):
 
 def test_a_swap_of_pmids_is_one_call(catalog):
     # 4kzbqyqzbwwh held 21529758, the PMID of ylnafcdw4v2r's DOI, and the other way round.
-    a = catalog.register(Identifier(doi="10.1016/j.ajog.2011.02.050", pmid="21529779")).id
-    b = catalog.register(Identifier(doi="10.1016/j.ajog.2011.02.051", pmid="21529758")).id
+    a = catalog.register(Identifier(doi="10.1016/j.ajog.2011.02.050")).id
+    b = catalog.register(Identifier(doi="10.1016/j.apmr.2010.12.021")).id
+    # written as the catalog took them before registration checked a PMID against PubMed
+    catalog._conn.executemany("INSERT INTO aliases VALUES ('pmid', ?, ?)",
+                              [("21529779", a), ("21529758", b)])
 
     catalog.reassign_aliases([("pmid", "21529779", a, b), ("pmid", "21529758", b, a)])
 
@@ -519,7 +522,9 @@ def test_a_merge_may_not_hide_the_journal_doi_behind_a_preprint_s(catalog):
 
 def test_a_merge_drops_only_a_record_s_pmid_or_pmcid(catalog):
     paper = catalog.register(Identifier(doi="10.1684/epd.2022.1433", pmid="35770780")).id
-    duplicate = catalog.register(Identifier(pmid="37401785", doi="10.1684/epd.2022.1434")).id
+    duplicate = catalog.register(Identifier(doi="10.1684/epd.2022.1434")).id
+    # written as the catalog took them before registration checked a PMID against PubMed
+    catalog._conn.execute("INSERT INTO aliases VALUES ('pmid', '37401785', ?)", (duplicate,))
     with pytest.raises(IdentityError, match="a doi is no duplicate record's"):
         catalog.merge([paper, duplicate],
                       drop=[("pmid", "37401785"), ("doi", "10.1684/epd.2022.1434")])

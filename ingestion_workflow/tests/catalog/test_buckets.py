@@ -11,8 +11,8 @@ from ingestion_workflow.models.ids import Identifier
 
 
 @pytest.fixture()
-def catalog(tmp_path):
-    with Catalog.open(tmp_path / "cat") as cat:
+def catalog(tmp_path, evidence):
+    with Catalog.open(tmp_path / "cat", evidence=evidence) as cat:
         yield cat
 
 
@@ -22,10 +22,10 @@ def _aliases(root):
             "SELECT article_id, kind, value FROM aliases")}
 
 
-def _as_version_three(root, *aliases):
+def _as_version_three(root, *aliases, evidence):
     """A catalog as schema 3 held it: a preprint's DOI beside the journal's as `doi`, the other
     DOI and the duplicate records as `alternate_doi`, `duplicate_pmid`, `duplicate_pmcid`."""
-    with Catalog.open(root) as cat:
+    with Catalog.open(root, evidence=evidence) as cat:
         for article, kind, value in aliases:
             cat._conn.execute(
                 "INSERT OR IGNORE INTO articles(id, created_at) VALUES(?, '2026-01-01')",
@@ -61,12 +61,12 @@ V3 = [
 ]
 
 
-def test_each_id_is_held_in_the_bucket_it_belongs_to(tmp_path, caplog):
+def test_each_id_is_held_in_the_bucket_it_belongs_to(tmp_path, caplog, evidence):
     root = tmp_path / "cat"
-    _as_version_three(root, *V3)
+    _as_version_three(root, *V3, evidence=evidence)
 
     with caplog.at_level(logging.WARNING, logger="ingestion_workflow.catalog.store"):
-        Catalog.open(root).close()
+        Catalog.open(root, evidence=evidence).close()
 
     assert _aliases(root) == {
         ("paper", "pmid", "38345852"), ("paper", "doi", "10.7554/elife.92563"),
@@ -89,14 +89,14 @@ def test_each_id_is_held_in_the_bucket_it_belongs_to(tmp_path, caplog):
     assert "biorxiv 2, ssrn" not in caplog.text and "researchsquare 2" in caplog.text
 
 
-def test_the_migration_backs_the_catalog_up_first_and_runs_once(tmp_path):
+def test_the_migration_backs_the_catalog_up_first_and_runs_once(tmp_path, evidence):
     root = tmp_path / "cat"
-    _as_version_three(root, *V3)
+    _as_version_three(root, *V3, evidence=evidence)
     before = _aliases(root)
 
-    Catalog.open(root).close()
+    Catalog.open(root, evidence=evidence).close()
     migrated = _aliases(root)
-    Catalog.open(root).close()
+    Catalog.open(root, evidence=evidence).close()
 
     assert _aliases(root) == migrated
     assert sorted(p.name for p in root.glob("catalog.pre-*")) == ["catalog.pre-v3.sqlite"]
@@ -104,15 +104,15 @@ def test_the_migration_backs_the_catalog_up_first_and_runs_once(tmp_path):
         assert {r for r in copy.execute("SELECT article_id, kind, value FROM aliases")} == before
 
 
-def test_no_article_gains_or_loses_an_id_and_none_is_merged(tmp_path):
+def test_no_article_gains_or_loses_an_id_and_none_is_merged(tmp_path, evidence):
     root = tmp_path / "cat"
-    _as_version_three(root, *V3)
+    _as_version_three(root, *V3, evidence=evidence)
     before = {(a, v) for a, _, v in _aliases(root)}
 
-    Catalog.open(root).close()
+    Catalog.open(root, evidence=evidence).close()
 
     assert {(a, v) for a, _, v in _aliases(root)} == before
-    with Catalog.open(root) as cat:
+    with Catalog.open(root, evidence=evidence) as cat:
         assert {a: cat.live(a) for a, _, _ in V3} == dict.fromkeys({a for a, _, _ in V3}, True)
         # every id still finds its article, as whichever kind it is looked up
         for article, _, value in V3:
@@ -120,10 +120,10 @@ def test_no_article_gains_or_loses_an_id_and_none_is_merged(tmp_path):
             assert cat.holder(kind, value) == article
 
 
-def test_what_each_article_presents_is_what_it_presented_before(tmp_path):
+def test_what_each_article_presents_is_what_it_presented_before(tmp_path, evidence):
     root = tmp_path / "cat"
-    _as_version_three(root, *V3)
-    with Catalog.open(root) as cat:
+    _as_version_three(root, *V3, evidence=evidence)
+    with Catalog.open(root, evidence=evidence) as cat:
         presented = {a: cat.identifier(a) for a in {a for a, _, _ in V3}}
 
     paper, only, elife, twice = (presented[a] for a in ("paper", "only", "elife", "twice"))
@@ -148,9 +148,9 @@ def test_what_each_article_presents_is_what_it_presented_before(tmp_path):
         "10.21203/rs.3.rs-2556690/v1", "10.21203/rs.3.rs-2556690/v2")
 
 
-def test_a_failed_migration_leaves_the_catalog_as_it_was(tmp_path, monkeypatch):
+def test_a_failed_migration_leaves_the_catalog_as_it_was(tmp_path, monkeypatch, evidence):
     root = tmp_path / "cat"
-    _as_version_three(root, *V3)
+    _as_version_three(root, *V3, evidence=evidence)
     before = _aliases(root)
 
     def broken(self, conn):
@@ -159,7 +159,7 @@ def test_a_failed_migration_leaves_the_catalog_as_it_was(tmp_path, monkeypatch):
 
     monkeypatch.setattr(Catalog, "_bucket_aliases", broken)
     with pytest.raises(RuntimeError, match="disk full"):
-        Catalog.open(root)
+        Catalog.open(root, evidence=evidence)
 
     assert _aliases(root) == before
     with sqlite3.connect(root / "catalog.sqlite") as conn:

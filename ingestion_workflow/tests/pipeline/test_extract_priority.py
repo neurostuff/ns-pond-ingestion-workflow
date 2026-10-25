@@ -13,14 +13,14 @@ from ingestion_workflow.pipeline.stages import ExtractStage
 
 
 @pytest.fixture()
-def env(tmp_path):
+def env(tmp_path, evidence):
     settings = Settings(
         data_root=tmp_path / "d",
         cache_root=tmp_path / "c",
         catalog_root=tmp_path / "k",
         download_sources=["pubget", "elsevier", "ace", "pdf"],
     )
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         yield settings, catalog
 
 

@@ -72,10 +72,10 @@ def test_an_article_that_never_says_stays_unknown():
 
 
 @pytest.fixture()
-def env(tmp_path):
+def env(tmp_path, evidence):
     settings = Settings(
         data_root=tmp_path / "d", cache_root=tmp_path / "c", catalog_root=tmp_path / "k")
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         yield settings, catalog, tmp_path
 
 

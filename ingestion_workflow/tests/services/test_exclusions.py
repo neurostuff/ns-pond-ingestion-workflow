@@ -18,8 +18,8 @@ from typer.testing import CliRunner
 # -- the catalog -------------------------------------------------------------
 
 
-def test_a_mark_is_recorded_replaced_and_withdrawn(tmp_path):
-    with Catalog.open(tmp_path / "cat") as catalog:
+def test_a_mark_is_recorded_replaced_and_withdrawn(tmp_path, evidence):
+    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
         ref = catalog.register(Identifier(pmid="1"))
         catalog.exclude([(ref.id, "t1", "not coordinates", "crystal structure")])
         catalog.exclude([(ref.id, "t1", "not coordinates", "atomic positions")])
@@ -33,10 +33,10 @@ def test_a_mark_is_recorded_replaced_and_withdrawn(tmp_path):
         assert catalog.exclusions([ref.id]) == {}
 
 
-def test_an_old_catalog_gains_the_table_when_opened(tmp_path):
+def test_an_old_catalog_gains_the_table_when_opened(tmp_path, evidence):
     """The table is created with IF NOT EXISTS, so no migration is needed."""
-    Catalog.open(tmp_path / "cat").close()
-    with Catalog.open(tmp_path / "cat") as catalog:
+    Catalog.open(tmp_path / "cat", evidence=evidence).close()
+    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
         assert catalog.exclusions() == {}
 
 
@@ -106,13 +106,13 @@ def config(tmp_path):
     path.write_text(json.dumps({
         "data_root": str(tmp_path / "data"), "cache_root": str(tmp_path / "cache"),
         "catalog_root": str(tmp_path / "catalog"), "ns_pond_root": str(tmp_path / "pond"),
-        "log_to_file": False, "show_progress": False,
+        "log_to_file": False, "show_progress": False, "pubmed_email": "replay@example.com",
     }), encoding="utf-8")
     return path
 
 
-def test_a_review_file_marks_only_its_non_coordinate_tables(config, tmp_path):
-    with Catalog.open(tmp_path / "catalog") as catalog:
+def test_a_review_file_marks_only_its_non_coordinate_tables(config, tmp_path, evidence):
+    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
         a = catalog.register(Identifier(pmid="1")).id
         b = catalog.register(Identifier(pmid="2")).id
     review = tmp_path / "review.json"
@@ -127,20 +127,20 @@ def test_a_review_file_marks_only_its_non_coordinate_tables(config, tmp_path):
     assert out.exit_code == 0, out.output
     assert "marked 2 tables on 2 articles" in out.output
     assert "skipped, not an article id" in out.output
-    with Catalog.open(tmp_path / "catalog") as catalog:
+    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
         marks = catalog.exclusions()
     assert set(marks) == {a, b}
     assert set(marks[a]) == {"t1"} and marks[a]["t1"]["reason"] == "crystal"
 
 
-def test_an_article_named_on_the_command_line_is_marked_whole(config, tmp_path):
-    with Catalog.open(tmp_path / "catalog") as catalog:
+def test_an_article_named_on_the_command_line_is_marked_whole(config, tmp_path, evidence):
+    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
         a = catalog.register(Identifier(pmid="1")).id
     runner = CliRunner()
     out = runner.invoke(app, ["exclude", "1", "--note", "lat/long", "--config", str(config)])
     assert out.exit_code == 0, out.output
     assert f"-> article {a}" in out.output
-    with Catalog.open(tmp_path / "catalog") as catalog:
+    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
         assert set(catalog.exclusions()[a]) == {WHOLE_ARTICLE}
     out = runner.invoke(app, ["exclude", "1", "--remove", "--config", str(config)])
     assert out.exit_code == 0 and "withdrew 1 marks" in out.output

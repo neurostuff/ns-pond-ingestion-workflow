@@ -83,12 +83,8 @@ def _configure_logging(settings: Settings) -> None:
 
 
 def _catalog(settings: Settings) -> Catalog:
-    return Catalog.open(settings.catalog_root)
-
-
-def _registering_catalog(settings: Settings) -> Catalog:
     """The catalog, opened to check the identifiers it registers or repairs against
-    PubMed and the DOI registries, for the commands that do."""
+    PubMed and the DOI registries."""
     if not settings.pubmed_email:
         raise typer.BadParameter("the catalog checks identifiers against PubMed: set pubmed_email",
                                  param_hint="--config")
@@ -265,7 +261,7 @@ def add(
             "give identifiers, --file, --manifest, --search, --pdfs or --neurostore"
         )
 
-    with _registering_catalog(settings) as catalog:
+    with _catalog(settings) as catalog:
         before = catalog.count_articles()
         held = set(catalog.all_article_ids()) if searched else set()
         refs = catalog.register_many(found)
@@ -551,7 +547,7 @@ def run(
     stages = build(stage, settings)
 
     # A manifest's identifiers are registered.
-    with (_registering_catalog if manifest else _catalog)(settings) as catalog:
+    with _catalog(settings) as catalog:
         selection = _select(catalog, manifest, select, stage, refresh or [], settings)
         if limit:
             selection = Selection(selection.refs[:limit], f"{limit:,} of {selection.description}")
@@ -920,7 +916,7 @@ def repair_identity(
         operations = identity_plan.load(plan)
     except ValueError as exc:
         raise typer.BadParameter(str(exc), param_hint="PLAN") from exc
-    with _registering_catalog(settings) as catalog:
+    with _catalog(settings) as catalog:
         outcome = identity_plan.apply(catalog, operations, backup=backup if apply else None)
     for op, n in sorted(outcome.applied.items()):
         typer.echo(f"  {n:6,}  {op}")
@@ -1151,7 +1147,7 @@ def migrate(
     from ingestion_workflow.migrate import migrate_caches
 
     settings = _settings(config)
-    with _registering_catalog(settings) as catalog:
+    with _catalog(settings) as catalog:
         report = migrate_caches(old_cache, catalog, stages=stage, dry_run=dry_run)
     typer.echo(report.render())
     if not dry_run:

@@ -12,8 +12,8 @@ from ingestion_workflow.models.ids import Identifier
 
 
 @pytest.fixture()
-def catalog(tmp_path):
-    with Catalog.open(tmp_path / "cat") as cat:
+def catalog(tmp_path, evidence):
+    with Catalog.open(tmp_path / "cat", evidence=evidence) as cat:
         yield cat
 
 
@@ -354,10 +354,10 @@ def _pmids(catalog, article_id):
         "SELECT kind, value FROM aliases WHERE article_id=?", (article_id,)) if k == "pmid"}
 
 
-def test_a_shared_pmcid_does_not_fuse_papers(tmp_path):
+def test_a_shared_pmcid_does_not_fuse_papers(tmp_path, evidence):
     """The pattern that built 244cm4x6up53: one cache stamped the same PMCID on
     hundreds of papers, each beside its own correct PMID and DOI."""
-    with Catalog.open(tmp_path / "cat") as catalog:
+    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
         refs = catalog.register_many(
             [Identifier(pmid=str(1000 + i), doi=f"10.1/p{i}", pmcid="PMC7976178") for i in range(50)]
         )
@@ -405,8 +405,8 @@ def test_a_pmcid_assigned_by_enrichment_finds_its_article(catalog):
     assert catalog.count_articles() == 1 and catalog.conflicts == 0
 
 
-def test_a_known_doi_does_not_claim_a_different_paper(tmp_path):
-    with Catalog.open(tmp_path / "cat") as catalog:
+def test_a_known_doi_does_not_claim_a_different_paper(tmp_path, evidence):
+    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
         a = catalog.register(Identifier(pmid="1", doi="10.1/a"))
         b = catalog.register(Identifier(pmid="2", doi="10.1/a"))   # wrong DOI on paper 2
         assert a.id != b.id
@@ -414,10 +414,10 @@ def test_a_known_doi_does_not_claim_a_different_paper(tmp_path):
         assert catalog.resolve(Identifier(doi="10.1/a")).id == a.id
 
 
-def test_two_halves_of_one_paper_still_merge(tmp_path):
+def test_two_halves_of_one_paper_still_merge(tmp_path, evidence):
     """The point of merging survives: a DOI-only and a PMID-only record of the same
     paper become one article once a record ties them together."""
-    with Catalog.open(tmp_path / "cat") as catalog:
+    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
         a = catalog.register(Identifier(doi="10.1/a"))
         b = catalog.register(Identifier(pmid="1"))
         merged = catalog.register(Identifier(pmid="1", doi="10.1/a"))
@@ -426,8 +426,8 @@ def test_two_halves_of_one_paper_still_merge(tmp_path):
         assert catalog.conflicts == 0
 
 
-def test_two_papers_are_not_merged_by_a_record_naming_both(tmp_path):
-    with Catalog.open(tmp_path / "cat") as catalog:
+def test_two_papers_are_not_merged_by_a_record_naming_both(tmp_path, evidence):
+    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
         a = catalog.register(Identifier(pmid="1", doi="10.1/a"))
         b = catalog.register(Identifier(pmid="2", doi="10.1/b"))
         got = catalog.register(Identifier(pmid="1", doi="10.1/b"))   # pairs 1 with 2's DOI
@@ -436,8 +436,8 @@ def test_two_papers_are_not_merged_by_a_record_naming_both(tmp_path):
         assert catalog.resolve(Identifier(doi="10.1/b")).id == b.id
 
 
-def test_a_learned_alias_does_not_move_from_its_article(tmp_path):
-    with Catalog.open(tmp_path / "cat") as catalog:
+def test_a_learned_alias_does_not_move_from_its_article(tmp_path, evidence):
+    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
         a = catalog.register(Identifier(pmid="1"))
         b = catalog.register(Identifier(pmid="2"))
         catalog.add_aliases([(a.id, "neurostore", "BASE1")])
@@ -446,10 +446,10 @@ def test_a_learned_alias_does_not_move_from_its_article(tmp_path):
         assert catalog.conflicts == 1
 
 
-def test_an_already_fused_article_still_resolves(tmp_path):
+def test_an_already_fused_article_still_resolves(tmp_path, evidence):
     """Looking up an article that holds two PMIDs from before the guard must
     find it, not make an empty new article for every lookup."""
-    with Catalog.open(tmp_path / "cat") as catalog:
+    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
         fused = catalog.register(Identifier(pmid="1", doi="10.1/a"))
         catalog._conn.execute("INSERT INTO aliases(kind, value, article_id) VALUES('pmid', '2', ?)", (fused.id,))
         catalog.add_aliases([(fused.id, "neurostore", "BASE1")])
@@ -464,9 +464,9 @@ def test_an_already_fused_article_still_resolves(tmp_path):
 SICI = "10.1002/(sici)1097-0193(1997)5:4<312::aid-hbm18>3.0.co;2-f"
 
 
-def _as_version_one(root, *aliases):
+def _as_version_one(root, *aliases, evidence):
     """A catalog written before doi aliases were bare: URL-form rows, schema version 1."""
-    with Catalog.open(root) as cat:
+    with Catalog.open(root, evidence=evidence) as cat:
         for article, kind, value in aliases:
             cat._conn.execute(
                 "INSERT OR IGNORE INTO articles(id, created_at) VALUES(?, '2026-01-01')", (article,)
@@ -477,44 +477,48 @@ def _as_version_one(root, *aliases):
         cat._conn.execute("UPDATE meta SET value='1' WHERE key='schema_version'")
 
 
-def _aliases(root, kind="doi"):
-    with Catalog.open(root) as cat:
+def _aliases(root, kind="doi", *, evidence):
+    with Catalog.open(root, evidence=evidence) as cat:
         return {
             (row["value"], row["article_id"])
             for row in cat._conn.execute("SELECT value, article_id FROM aliases WHERE kind=?", (kind,))
         }
 
 
-def test_a_url_form_doi_alias_is_found_again_as_the_bare_doi(tmp_path):
+def test_a_url_form_doi_alias_is_found_again_as_the_bare_doi(tmp_path, evidence):
     root = tmp_path / "cat"
-    _as_version_one(root, ("a1", "pmid", "9234"), ("a1", "doi", "https://doi.org/" + SICI))
+    _as_version_one(root, ("a1", "pmid", "9234"), ("a1", "doi", "https://doi.org/" + SICI),
+            evidence=evidence)
 
-    with Catalog.open(root) as cat:
+    with Catalog.open(root, evidence=evidence) as cat:
         ref = cat.register(Identifier(pmid="9234", doi="https://doi.org/" + SICI))
         assert ref.id == "a1"
         assert cat.count_articles() == 1
-    assert _aliases(root) == {(SICI, "a1")}
+    assert _aliases(root, evidence=evidence) == {(SICI, "a1")}
 
 
-def test_the_bare_doi_the_same_article_already_has_replaces_its_url_form(tmp_path):
+def test_the_bare_doi_the_same_article_already_has_replaces_its_url_form(tmp_path, evidence):
     root = tmp_path / "cat"
-    _as_version_one(root, ("a1", "doi", "https://doi.org/" + SICI), ("a1", "doi", SICI))
-    assert _aliases(root) == {(SICI, "a1")}
+    _as_version_one(root, ("a1", "doi", "https://doi.org/" + SICI), ("a1", "doi", SICI),
+            evidence=evidence)
+    assert _aliases(root, evidence=evidence) == {(SICI, "a1")}
 
 
-def test_a_bare_doi_another_article_has_is_merged_when_it_can_be_the_same_paper(tmp_path):
+def test_a_bare_doi_another_article_has_is_merged_when_it_can_be_the_same_paper(
+        tmp_path, evidence):
     root = tmp_path / "cat"
-    _as_version_one(root, ("a1", "doi", "https://doi.org/" + SICI), ("a2", "doi", SICI))
-    assert _aliases(root) == {(SICI, "a1")}
-    assert _articles(root) == {("a1", None), ("a2", "a1")}
+    _as_version_one(root, ("a1", "doi", "https://doi.org/" + SICI), ("a2", "doi", SICI),
+            evidence=evidence)
+    assert _aliases(root, evidence=evidence) == {(SICI, "a1")}
+    assert _articles(root, evidence=evidence) == {("a1", None), ("a2", "a1")}
 
 
-def test_a_current_catalog_is_not_rewritten(tmp_path):
+def test_a_current_catalog_is_not_rewritten(tmp_path, evidence):
     root = tmp_path / "cat"
-    with Catalog.open(root) as cat:
+    with Catalog.open(root, evidence=evidence) as cat:
         cat._conn.execute("INSERT INTO articles(id, created_at) VALUES('a1', '2026-01-01')")
         cat._conn.execute("INSERT INTO aliases(kind, value, article_id) VALUES('doi', 'https://x.org/10.1/a', 'a1')")
-    assert _aliases(root) == {("https://x.org/10.1/a", "a1")}
+    assert _aliases(root, evidence=evidence) == {("https://x.org/10.1/a", "a1")}
 
 
 # -- doi case --------------------------------------------------------------------
@@ -530,14 +534,15 @@ def test_a_doi_is_found_whatever_its_case(catalog):
     assert catalog.count_articles() == 1
 
 
-def test_a_doi_assigned_after_construction_is_stored_lower_case(catalog):
+def test_a_doi_assigned_after_construction_is_stored_lower_case(catalog, evidence):
     """Enrichment sets `identifier.doi` as the provider spelled it."""
     identifier = Identifier(pmid="1")
     identifier.doi = UPPER
     assert identifier.doi == UPPER.lower()
     ref = catalog.register(identifier)
     catalog.add_aliases([(ref.id, "doi", "10.1/LEARNED")])
-    assert _aliases(catalog.root) == {(UPPER.lower(), ref.id), ("10.1/learned", ref.id)}
+    assert _aliases(catalog.root,
+            evidence=evidence) == {(UPPER.lower(), ref.id), ("10.1/learned", ref.id)}
     assert catalog.resolve(Identifier(doi="10.1/Learned")).id == ref.id
 
 
@@ -549,9 +554,9 @@ def test_only_basic_latin_letters_ignore_case(catalog):
     assert upper.identifier.doi == "10.26321/Á.gutiÉrrez.zarza.02.2018.03"
 
 
-def _as_version_two(root, *aliases, outcomes=()):
+def _as_version_two(root, *aliases, outcomes=(), evidence):
     """A catalog written while doi aliases kept their case: schema version 2."""
-    with Catalog.open(root) as cat:
+    with Catalog.open(root, evidence=evidence) as cat:
         for article, created, kind, value in aliases:
             cat._conn.execute(
                 "INSERT OR IGNORE INTO articles(id, created_at) VALUES(?, ?)", (article, created)
@@ -562,29 +567,30 @@ def _as_version_two(root, *aliases, outcomes=()):
         cat._conn.execute("UPDATE meta SET value='2' WHERE key='schema_version'")
 
 
-def _articles(root):
-    with Catalog.open(root) as cat:
+def _articles(root, evidence):
+    with Catalog.open(root, evidence=evidence) as cat:
         rows = cat._conn.execute("SELECT id, merged_into FROM articles")
         return {(row["id"], row["merged_into"]) for row in rows}
 
 
-def test_an_upper_case_doi_alias_is_found_again_lower_case(tmp_path):
+def test_an_upper_case_doi_alias_is_found_again_lower_case(tmp_path, evidence):
     root = tmp_path / "cat"
-    _as_version_two(root, ("a1", "2026-01-01", "pmid", "1"), ("a1", "2026-01-01", "doi", UPPER))
-    with Catalog.open(root) as cat:
+    _as_version_two(root, ("a1", "2026-01-01", "pmid", "1"), ("a1", "2026-01-01", "doi", UPPER),
+            evidence=evidence)
+    with Catalog.open(root, evidence=evidence) as cat:
         assert cat.register(Identifier(doi=UPPER.lower())).id == "a1"
         assert cat.count_articles() == 1
-    assert _aliases(root) == {(UPPER.lower(), "a1")}
+    assert _aliases(root, evidence=evidence) == {(UPPER.lower(), "a1")}
 
 
-def test_the_other_spelling_of_an_articles_own_doi_is_dropped(tmp_path):
+def test_the_other_spelling_of_an_articles_own_doi_is_dropped(tmp_path, evidence):
     root = tmp_path / "cat"
     _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER),
-                    ("a1", "2026-01-01", "doi", UPPER.lower()))
-    assert _aliases(root) == {(UPPER.lower(), "a1")}
+                    ("a1", "2026-01-01", "doi", UPPER.lower()), evidence=evidence)
+    assert _aliases(root, evidence=evidence) == {(UPPER.lower(), "a1")}
 
 
-def test_two_articles_of_one_doi_are_merged_with_their_artifacts(tmp_path, caplog):
+def test_two_articles_of_one_doi_are_merged_with_their_artifacts(tmp_path, caplog, evidence):
     root = tmp_path / "cat"
     _as_version_two(
         root,
@@ -592,22 +598,23 @@ def test_two_articles_of_one_doi_are_merged_with_their_artifacts(tmp_path, caplo
         ("old", "2026-01-01", "doi", "10.1/ab"),
         outcomes=[Outcome(article_id="new", stage="download", source="ace", payload={"n": 1}),
                   Outcome(article_id="old", stage="extract", source="ace", payload={"n": 2})],
+                          evidence=evidence,
     )
 
     with caplog.at_level("INFO", logger="ingestion_workflow.catalog.store"):
-        with Catalog.open(root) as cat:
+        with Catalog.open(root, evidence=evidence) as cat:
             assert cat.resolve(Identifier(doi="10.1/AB")).id == "old"
             assert cat.resolve(Identifier(pmid="1")).id == "old"
             assert {a.stage for a in cat.artifacts_for_article("old")} == {"download", "extract"}
             assert cat.payload(cat.artifact("old", "download", "ace")) == {"n": 1}
             assert cat.blobs.exists(cat.artifact("old", "download", "ace").blob)
             assert cat.stranded_artifacts() == 0
-    assert _articles(root) == {("old", None), ("new", "old")}
-    assert _aliases(root) == {("10.1/ab", "old")}
+    assert _articles(root, evidence=evidence) == {("old", None), ("new", "old")}
+    assert _aliases(root, evidence=evidence) == {("10.1/ab", "old")}
     assert "1 articles merged" in caplog.text
 
 
-def test_two_papers_sharing_a_doi_are_left_and_logged(tmp_path, caplog):
+def test_two_papers_sharing_a_doi_are_left_and_logged(tmp_path, caplog, evidence):
     """The production case: 10.1093/CERCOR/11.9.888 on PMID 11552704 and
     10.1093/cercor/11.9.888 on PMID 11532893; one of them has the wrong DOI."""
     root = tmp_path / "cat"
@@ -617,14 +624,16 @@ def test_two_papers_sharing_a_doi_are_left_and_logged(tmp_path, caplog):
         ("a1", "2026-01-01", "doi", "10.1093/CERCOR/11.9.888"),
         ("a2", "2026-01-01", "pmid", "11532893"),
         ("a2", "2026-01-01", "doi", "10.1093/cercor/11.9.888"),
+        evidence=evidence,
     )
     with caplog.at_level("INFO", logger="ingestion_workflow.catalog.store"):
-        assert _articles(root) == {("a1", None), ("a2", None)}
-    assert _aliases(root) == {("10.1093/CERCOR/11.9.888", "a1"), ("10.1093/cercor/11.9.888", "a2")}
+        assert _articles(root, evidence=evidence) == {("a1", None), ("a2", None)}
+    assert _aliases(root, evidence=evidence) == {
+        ("10.1093/CERCOR/11.9.888", "a1"), ("10.1093/cercor/11.9.888", "a2")}
     assert "another paper" in caplog.text and "1 left" in caplog.text
 
 
-def test_canonicalising_doi_aliases_again_changes_nothing(tmp_path):
+def test_canonicalising_doi_aliases_again_changes_nothing(tmp_path, evidence):
     root = tmp_path / "cat"
     _as_version_two(
         root,
@@ -632,35 +641,37 @@ def test_canonicalising_doi_aliases_again_changes_nothing(tmp_path):
         ("a2", "2026-01-01", "pmid", "1"), ("a2", "2026-01-01", "doi", "10.1/X"),
         ("a3", "2026-01-01", "pmid", "2"), ("a3", "2026-01-01", "doi", "10.1/x"),
         ("a4", "2026-01-01", "doi", "10.1/Y"), ("a5", "2026-01-02", "doi", "10.1/y"),
+                evidence=evidence,
     )
-    first = (_articles(root), _aliases(root))
+    first = (_articles(root, evidence=evidence), _aliases(root, evidence=evidence))
     assert first[1] == {
         (UPPER.lower(), "a1"), ("10.1/X", "a2"), ("10.1/x", "a3"), ("10.1/y", "a4")}
-    with Catalog.open(root) as cat:
+    with Catalog.open(root, evidence=evidence) as cat:
         with cat._write() as conn:
             again = cat._canonical_doi_aliases(conn)
     assert again == {"rewritten": 0, "dropped": 0, "merged": 0, "left": 1}
-    assert (_articles(root), _aliases(root)) == first
+    assert (_articles(root, evidence=evidence), _aliases(root, evidence=evidence)) == first
 
 
-def test_an_article_merged_earlier_in_the_pass_is_followed(tmp_path, caplog):
+def test_an_article_merged_earlier_in_the_pass_is_followed(tmp_path, caplog, evidence):
     """The second spelling still names the article the first one merged away."""
     root = tmp_path / "cat"
     _as_version_two(
         root,
         ("old", "2026-01-01", "doi", "10.1/ab"),
         ("new", "2026-02-01", "doi", "10.1/AB"), ("new", "2026-02-01", "doi", "10.1/Ab"),
+                evidence=evidence,
     )
     with caplog.at_level("INFO", logger="ingestion_workflow.catalog.store"):
-        assert _aliases(root) == {("10.1/ab", "old")}
+        assert _aliases(root, evidence=evidence) == {("10.1/ab", "old")}
     assert "2 other spellings dropped, 1 articles merged" in caplog.text
 
 
-def test_a_migration_backs_the_catalog_up_first(tmp_path, caplog):
+def test_a_migration_backs_the_catalog_up_first(tmp_path, caplog, evidence):
     root = tmp_path / "cat"
-    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER))
+    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER), evidence=evidence)
     with caplog.at_level("INFO", logger="ingestion_workflow.catalog.store"):
-        assert _aliases(root) == {(UPPER.lower(), "a1")}
+        assert _aliases(root, evidence=evidence) == {(UPPER.lower(), "a1")}
     copy = root / "catalog.pre-v2.sqlite"
     assert str(copy) in caplog.text
     with sqlite3.connect(f"file:{copy}?mode=ro", uri=True) as conn:
@@ -675,21 +686,22 @@ def _version_and_dois(root):
         return version, {r for r in conn.execute("SELECT value, article_id FROM aliases")}
 
 
-def test_without_a_backup_nothing_is_migrated(tmp_path):
+def test_without_a_backup_nothing_is_migrated(tmp_path, evidence):
     root = tmp_path / "cat"
-    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER))
+    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER), evidence=evidence)
     (root / "catalog.pre-v2.sqlite").write_text("an earlier copy")
     with pytest.raises(FileExistsError, match="pre-v2"):
-        Catalog.open(root)
+        Catalog.open(root, evidence=evidence)
     assert _version_and_dois(root) == ("2", {(UPPER, "a1")})
 
 
-def test_a_failed_migration_leaves_the_catalog_as_it_was(tmp_path, monkeypatch):
+def test_a_failed_migration_leaves_the_catalog_as_it_was(tmp_path, monkeypatch, evidence):
     root = tmp_path / "cat"
     _as_version_two(
         root,
         ("a1", "2026-01-01", "doi", "10.1/AA"),          # rewritten before the failure
         ("a2", "2026-01-01", "doi", "10.1/BB"), ("a3", "2026-01-02", "doi", "10.1/bb"),
+                evidence=evidence,
     )
     before = _version_and_dois(root)
 
@@ -698,14 +710,15 @@ def test_a_failed_migration_leaves_the_catalog_as_it_was(tmp_path, monkeypatch):
 
     monkeypatch.setattr(Catalog, "_merge", crash)
     with pytest.raises(OSError, match="disk full"):
-        Catalog.open(root)
+        Catalog.open(root, evidence=evidence)
     assert _version_and_dois(root) == before
 
 
-def test_a_catalog_opened_during_its_migration_waits_and_finds_it_current(tmp_path, monkeypatch):
+def test_a_catalog_opened_during_its_migration_waits_and_finds_it_current(
+        tmp_path, monkeypatch, evidence):
     """A second process must not back up or migrate again, nor fail on the first's copy."""
     root = tmp_path / "cat"
-    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER))
+    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER), evidence=evidence)
     rewrite = Catalog._canonical_doi_aliases
     migrating = threading.Event()
 
@@ -719,7 +732,7 @@ def test_a_catalog_opened_during_its_migration_waits_and_finds_it_current(tmp_pa
 
     def open_it():
         try:
-            Catalog.open(root).close()
+            Catalog.open(root, evidence=evidence).close()
         except BaseException as exc:  # noqa: BLE001 - reported below
             errors.append(exc)
 
@@ -735,7 +748,7 @@ def test_a_catalog_opened_during_its_migration_waits_and_finds_it_current(tmp_pa
     assert sorted(p.name for p in root.glob("catalog.pre-*")) == ["catalog.pre-v2.sqlite"]
 
 
-def test_the_rewrite_and_the_new_version_commit_together(tmp_path, monkeypatch):
+def test_the_rewrite_and_the_new_version_commit_together(tmp_path, monkeypatch, evidence):
     """A failure writing the version undoes the rewrite too."""
     from ingestion_workflow.catalog import store
 
@@ -744,23 +757,23 @@ def test_the_rewrite_and_the_new_version_commit_together(tmp_path, monkeypatch):
             raise OSError("disk full")
 
     root = tmp_path / "cat"
-    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER))
+    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER), evidence=evidence)
     monkeypatch.setattr(store, "SCHEMA_VERSION", Unwritable(3))
     with pytest.raises(OSError, match="disk full"):
-        Catalog.open(root)
+        Catalog.open(root, evidence=evidence)
     assert _version_and_dois(root) == ("2", {(UPPER, "a1")})
 
 
-def test_code_older_than_the_catalog_refuses_to_open_it(tmp_path, monkeypatch):
+def test_code_older_than_the_catalog_refuses_to_open_it(tmp_path, monkeypatch, evidence):
     """Older code would write its own version back and register the upper-case
     spelling as a second article."""
     from ingestion_workflow.catalog import store
 
     root = tmp_path / "cat"
-    Catalog.open(root).close()
+    Catalog.open(root, evidence=evidence).close()
     monkeypatch.setattr(store, "SCHEMA_VERSION", 2)
     with pytest.raises(RuntimeError, match="schema version 4; this code reads version 2"):
-        Catalog.open(root)
+        Catalog.open(root, evidence=evidence)
     assert _version_and_dois(root)[0] == "4"
 
 
@@ -786,8 +799,8 @@ def test_an_article_holding_a_journal_and_a_preprint_doi_presents_the_journal_s(
 
 
 
-def test_a_search_follows_its_articles_through_a_merge(tmp_path):
-    with Catalog.open(tmp_path / "cat") as catalog:
+def test_a_search_follows_its_articles_through_a_merge(tmp_path, evidence):
+    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
         pmid_only = catalog.register(Identifier(pmid="1"))
         doi_only = catalog.register(Identifier(doi="10.1/m"))
         other = catalog.register(Identifier(doi="10.1/o"))
@@ -817,9 +830,9 @@ def test_a_search_follows_its_articles_through_a_merge(tmp_path):
         assert run["providers"]["pubmed"]["articles"] == 1
 
 
-def test_a_merge_that_leaves_the_hits_alone_strands_none(tmp_path):
+def test_a_merge_that_leaves_the_hits_alone_strands_none(tmp_path, evidence):
     """A process without the search tables merges articles and never touches their hits."""
-    with Catalog.open(tmp_path / "cat") as catalog:
+    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
         old = catalog.register(Identifier(pmid="1"))
         new = catalog.register(Identifier(doi="10.1/m"))
         search_id = catalog.record_search(
@@ -839,8 +852,8 @@ def test_a_merge_that_leaves_the_hits_alone_strands_none(tmp_path):
         assert providers["pubmed"]["articles"] == providers["sciencedirect"]["articles"] == 1
 
 
-def test_a_search_names_its_articles_oldest_first(tmp_path):
-    with Catalog.open(tmp_path / "cat") as catalog:
+def test_a_search_names_its_articles_oldest_first(tmp_path, evidence):
+    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
         refs = [catalog.register(Identifier(doi=f"10.1/{n}")) for n in "abc"]
         # ids sort differently from creation
         for ref, day in zip(refs, ("2026-01-03", "2026-01-01", "2026-01-02")):
@@ -855,10 +868,11 @@ def test_a_search_names_its_articles_oldest_first(tmp_path):
         assert catalog.search_articles(search_id, only="pubmed") == by_age
 
 
-def test_a_catalog_from_before_searches_gains_the_tables_and_stays_at_its_version(tmp_path):
+def test_a_catalog_from_before_searches_gains_the_tables_and_stays_at_its_version(
+        tmp_path, evidence):
     import sqlite3
 
-    with Catalog.open(tmp_path / "cat") as catalog:
+    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
         catalog.register(Identifier(doi="10.1/z"))
     conn = sqlite3.connect(tmp_path / "cat" / "catalog.sqlite")
     conn.execute("DROP TABLE searches")
@@ -866,14 +880,14 @@ def test_a_catalog_from_before_searches_gains_the_tables_and_stays_at_its_versio
     conn.commit()
     conn.close()
 
-    with Catalog.open(tmp_path / "cat") as catalog:
+    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
         assert catalog.searches() == []
         assert catalog.count_articles() == 1
     assert not list((tmp_path / "cat").glob("catalog.pre-*"))
 
 
-def test_an_unknown_search_or_provider_is_refused(tmp_path):
-    with Catalog.open(tmp_path / "cat") as catalog:
+def test_an_unknown_search_or_provider_is_refused(tmp_path, evidence):
+    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
         ref = catalog.register(Identifier(doi="10.1/k"))
         search_id = catalog.record_search("q", "2026", {"pubmed": "p"}, {"pubmed": [ref.id]})
         with pytest.raises(KeyError, match="no search 9"):

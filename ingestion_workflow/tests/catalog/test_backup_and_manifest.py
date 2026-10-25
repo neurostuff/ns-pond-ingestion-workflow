@@ -10,8 +10,8 @@ from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import resolve_manifest
 
 
-def test_backup_holds_what_the_catalog_held_and_never_overwrites(tmp_path):
-    with Catalog.open(tmp_path / "cat") as cat:
+def test_backup_holds_what_the_catalog_held_and_never_overwrites(tmp_path, evidence):
+    with Catalog.open(tmp_path / "cat", evidence=evidence) as cat:
         cat.register(Identifier(pmid="1001"))
         copy = cat.backup(tmp_path / "out" / "before.sqlite")
         cat.register(Identifier(pmid="1002"))
@@ -24,10 +24,10 @@ def test_backup_holds_what_the_catalog_held_and_never_overwrites(tmp_path):
         assert copy.read_bytes() == before
 
 
-def test_a_manifest_resolved_without_registering_writes_nothing(tmp_path):
+def test_a_manifest_resolved_without_registering_writes_nothing(tmp_path, evidence):
     path = tmp_path / "m.jsonl"
     path.write_text("\n".join(json.dumps({"pmid": p}) for p in ("1001", "1002", "1001")) + "\n")
-    with Catalog.open(tmp_path / "cat") as cat:
+    with Catalog.open(tmp_path / "cat", evidence=evidence) as cat:
         known = cat.register(Identifier(pmid="1001"))
 
         looked = resolve_manifest(cat, path, register=False)

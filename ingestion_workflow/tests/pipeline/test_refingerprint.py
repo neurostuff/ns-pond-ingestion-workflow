@@ -61,7 +61,7 @@ class _Results:
 
 
 @pytest.fixture()
-def env(tmp_path, monkeypatch):
+def env(tmp_path, monkeypatch, evidence):
     gate = tmp_path / "gate.joblib"
     gate.write_bytes(b"a fitted gate")
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
@@ -75,7 +75,7 @@ def env(tmp_path, monkeypatch):
     stages = [DownloadStage(settings), ExtractStage(settings), PassagesStage(settings),
               MetadataStage(settings), TriageStage(settings), AnalysesStage(settings), prose,
               ResolveStage(settings), roles, SpaceStage(settings)]
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         yield settings, catalog, stages, tmp_path
 
 

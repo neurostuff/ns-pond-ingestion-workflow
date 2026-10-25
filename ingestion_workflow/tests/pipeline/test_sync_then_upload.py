@@ -60,6 +60,7 @@ from ingestion_workflow.tests.services.test_neurostore_ingest import (
     REPLAY_TOKEN,
     _closed_port,
 )
+from ingestion_workflow.tests import cassette_secrets
 from ingestion_workflow.tests.upload_body import without_input_fingerprints
 from ingestion_workflow.pipeline.stage import metadata_digests
 from study_schema.models.paper_parse import CopyAccess, CopyRoute, CopyVersion
@@ -78,6 +79,7 @@ def vcr_cassette_dir():
 def vcr_config():
     return {
         "filter_headers": ["authorization", "cookie", "set-cookie"],
+        "before_record_response": cassette_secrets.scrub_response,
         "record_mode": "none",
         "match_on": ["method", "scheme", "host", "port", "path", "query", "upload_body"],
     }
@@ -101,6 +103,12 @@ class _ByName:
             role = "other" if any(f"[NAME] {o}" in text for o in self.others) else "result"
             out.append(Prediction(role, None, {r: float(r == role) for r in COORDINATE_ROLES}))
         return out
+
+
+def _neurostore_plays(vcr):
+    """Each recorded neurostore request's replay count; the catalog's checks of a PMID are
+    recorded in the same cassette."""
+    return [vcr.play_counts[i] for i, r in enumerate(vcr.requests) if r.host == "127.0.0.1"]
 
 
 def _sent(vcr):
@@ -130,7 +138,7 @@ def token(monkeypatch):
 
 
 @pytest.fixture()
-def env(tmp_path, served, token):  # noqa: F811 - the imported fixture
+def env(tmp_path, served, token, evidence):  # noqa: F811 - the imported fixture
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", ns_pond_root=tmp_path / "pond",
                         prose_model="nu-prose-v2", llm_api_key="x",
@@ -138,7 +146,7 @@ def env(tmp_path, served, token):  # noqa: F811 - the imported fixture
                         neurostore_api_url=LOCAL)
     path = tmp_path / "article.xml"
     path.write_text(ARTICLE)
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         yield settings, catalog, path
 
 
@@ -1002,8 +1010,9 @@ def icafz5_env(served, token):  # noqa: F811 - the imported fixture
 
 
 @pytest.mark.vcr
-def test_a_parse_made_from_stale_table_analyses_is_held_back(tmp_path, monkeypatch, icafz5_env):
-    with Catalog.open(tmp_path / "k") as catalog:
+def test_a_parse_made_from_stale_table_analyses_is_held_back(
+        tmp_path, monkeypatch, icafz5_env, evidence):
+    with Catalog.open(tmp_path / "k", evidence=evidence) as catalog:
         settings, ctx, ref = _icafz5(tmp_path, monkeypatch, catalog)
         upload = UploadStage(settings)
         _, (held,) = _run(upload, ctx, catalog, ref)
@@ -1031,8 +1040,9 @@ def test_a_parse_made_from_stale_table_analyses_is_held_back(tmp_path, monkeypat
 
 
 @pytest.mark.vcr
-def test_once_the_tables_are_read_again_the_parse_goes_up(tmp_path, monkeypatch, icafz5_env):
-    with Catalog.open(tmp_path / "k") as catalog:
+def test_once_the_tables_are_read_again_the_parse_goes_up(
+        tmp_path, monkeypatch, icafz5_env, evidence):
+    with Catalog.open(tmp_path / "k", evidence=evidence) as catalog:
         settings, ctx, ref = _icafz5(tmp_path, monkeypatch, catalog)
         upload = UploadStage(settings)
         _run(upload, ctx, catalog, ref)
@@ -1052,8 +1062,9 @@ def test_once_the_tables_are_read_again_the_parse_goes_up(tmp_path, monkeypatch,
 
 
 @pytest.mark.vcr
-def test_a_person_can_leave_the_tables_out_with_a_reason(tmp_path, monkeypatch, icafz5_env):
-    with Catalog.open(tmp_path / "k") as catalog:
+def test_a_person_can_leave_the_tables_out_with_a_reason(
+        tmp_path, monkeypatch, icafz5_env, evidence):
+    with Catalog.open(tmp_path / "k", evidence=evidence) as catalog:
         settings, ctx, ref = _icafz5(tmp_path, monkeypatch, catalog)
         upload = UploadStage(settings)
         _run(upload, ctx, catalog, ref)
@@ -1068,10 +1079,10 @@ def test_a_person_can_leave_the_tables_out_with_a_reason(tmp_path, monkeypatch, 
 @pytest.mark.parametrize("excuse", [None, "the third table is a figure, not coordinates"])
 @pytest.mark.vcr
 def test_a_table_left_unread_holds_back_unless_a_person_excuses_it(tmp_path, monkeypatch, excuse,
-                                                                   icafz5_env):
+                                                                   icafz5_env, evidence):
     """The analyses ran, fresh, but one table's raw content was missing: its analyses are
     not in the parse, so it is not sent unless a person leaves the tables out."""
-    with Catalog.open(tmp_path / "k") as catalog:
+    with Catalog.open(tmp_path / "k", evidence=evidence) as catalog:
         settings, ctx, ref = _icafz5(tmp_path, monkeypatch, catalog, analyses_fresh=True,
                                      unread={"t3": "raw content missing"})
         if excuse:
@@ -1161,8 +1172,8 @@ def test_one_rule_holds_back_or_takes_back(tables, prose, behind, expected):
     assert decide(tables, prose, behind) == expected
 
 
-def _tables_ctx(tmp_path, *records):
-    catalog = Catalog.open(tmp_path / "k")
+def _tables_ctx(tmp_path, *records, evidence):
+    catalog = Catalog.open(tmp_path / "k", evidence=evidence)
     ref = catalog.register(Identifier(pmid="40"))
     catalog.record([Outcome(article_id=ref.id, **r) for r in records])
     return Context(Settings(data_root=tmp_path / "d"), catalog), ref
@@ -1190,8 +1201,8 @@ def _tables_ctx(tmp_path, *records):
      Kind.UNKNOWN),
     (None, [], Kind.UNKNOWN),
 ])
-def test_tables_are_empty_only_when_read_whole(tmp_path, analyses, records, expected):
-    ctx, ref = _tables_ctx(tmp_path, *records)
+def test_tables_are_empty_only_when_read_whole(tmp_path, analyses, records, expected, evidence):
+    ctx, ref = _tables_ctx(tmp_path, *records, evidence=evidence)
     try:
         artifact = None if analyses is None else Artifact(ref.id, "analyses", **analyses)
         reading = tables_reading(ctx, ref.id, artifact)
@@ -1299,7 +1310,8 @@ def test_a_refused_or_blocked_paper_leaves_the_next_one_to_upload(env, monkeypat
     upload.finish()
     assert (done[failing.id].status, done[failing.id].error.split(":")[0]) == (status, first)
     assert done[sent.id].status is Status.OK, done[sent.id].error
-    assert (vcr.play_count, vcr.all_played) == (answers, True)
+    played = _neurostore_plays(vcr)
+    assert (sum(played), all(played)) == (answers, True)
     (answered,) = _recorded_body(
         "test_sync_writes_the_parse_with_no_upload_and_upload_sends_what_it_wrote.yaml")
     assert without_input_fingerprints(answered) == without_input_fingerprints(
@@ -1328,15 +1340,15 @@ def test_a_paper_the_client_cannot_read_fails_alone_and_the_next_is_sent(env, mo
     upload.finish()
     assert done[broken.id].status is Status.FAILED
     assert done[broken.id].error.startswith("IsADirectoryError: ")
-    assert done[sent.id].status is Status.OK and vcr.play_count == 1
+    assert done[sent.id].status is Status.OK and sum(_neurostore_plays(vcr)) == 1
 
 
 @pytest.mark.vcr
 def test_a_parse_with_no_analysis_never_uploaded_is_skipped_once(tmp_path, monkeypatch,
-                                                                 icafz5_env):
+                                                                 icafz5_env, evidence):
     """The stage did its job: a failure would be retried on every run and never succeed,
     and an upload would create a study claiming the paper reports no coordinates."""
-    with Catalog.open(tmp_path / "k") as catalog:
+    with Catalog.open(tmp_path / "k", evidence=evidence) as catalog:
         settings, ctx, ref = _icafz5(tmp_path, monkeypatch, catalog, analyses_fresh=True,
                                      uploaded=False)
         upload = UploadStage(settings)

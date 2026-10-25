@@ -95,7 +95,7 @@ class _Results:
 
 
 @pytest.fixture()
-def env(tmp_path, monkeypatch):
+def env(tmp_path, monkeypatch, evidence):
     from nspond_tables.classify.model import Gate, RoutedGate
 
     gate = tmp_path / "gate.json"
@@ -118,7 +118,7 @@ def env(tmp_path, monkeypatch):
     monkeypatch.setattr(roles, "model_state", lambda origin: (f"fake-{origin}@1", None))
     stages = [TriageStage(settings), AnalysesStage(settings), PassagesStage(settings), prose,
               ResolveStage(settings), roles, SpaceStage(settings)]
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         yield settings, catalog, stages, reader, config, tmp_path
 
 

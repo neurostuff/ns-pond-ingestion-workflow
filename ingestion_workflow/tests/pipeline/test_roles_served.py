@@ -433,11 +433,11 @@ def _free_port():
 
 
 @pytest.fixture
-def env(tmp_path, stub):
+def env(tmp_path, stub, evidence):
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", ns_pond_root=tmp_path / "pond")
     settings.role_model_table = RoleModel(endpoint=stub.url, model=MODEL)
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         ref = catalog.register(Identifier(pmid="7"))
         catalog.record([Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-1",
                                 payload=_tables("patients", "Lee"), summary={"tables": 1})])
@@ -811,7 +811,7 @@ def _prose_sets(*names):
 
 
 @pytest.fixture
-def both(tmp_path):
+def both(tmp_path, evidence):
     """A table server and a text server, and a run with prose on that uses them."""
     table, text = Stub(), Stub(models=(TEXT_MODEL,))
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
@@ -819,7 +819,7 @@ def both(tmp_path):
                         prose_model="nu-prose")
     settings.role_model_table = RoleModel(endpoint=table.url, model=MODEL)
     settings.role_model_prose = RoleModel(endpoint=text.url, model=TEXT_MODEL)
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         yield settings, catalog, table, text
     table.close()
     text.close()

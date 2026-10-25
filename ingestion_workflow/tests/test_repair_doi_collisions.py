@@ -35,10 +35,10 @@ ALIASES = [
 
 
 @pytest.fixture()
-def version_two(tmp_path):
+def version_two(tmp_path, evidence):
     """A catalog as production is before the lower-case migration."""
     root = tmp_path / "cat"
-    with Catalog.open(root) as cat:
+    with Catalog.open(root, evidence=evidence) as cat:
         for article, kind, value in ALIASES:
             cat._conn.execute("INSERT OR IGNORE INTO articles(id, created_at) VALUES(?, ?)",
                               (article, "2026-01-01"))
@@ -70,7 +70,8 @@ def test_a_dry_run_writes_nothing(version_two):
     assert not (root / "catalog.pre-doi-repair.sqlite").exists()
 
 
-def test_the_repair_settles_each_decision_and_the_migration_then_finds_the_owner(version_two):
+def test_the_repair_settles_each_decision_and_the_migration_then_finds_the_owner(
+        version_two, evidence):
     root, table = version_two
     counts = repair.run(root, apply=True, table=table, out=io.StringIO())
     assert counts == {"dropped": 1, "merged": 1, "kept": 1}
@@ -79,7 +80,7 @@ def test_the_repair_settles_each_decision_and_the_migration_then_finds_the_owner
     assert repair.run(root, apply=False, table=table, out=io.StringIO()) == {"done": 2, "kept": 1}
     assert _dump(root) == again
 
-    with Catalog.open(root) as cat:
+    with Catalog.open(root, evidence=evidence) as cat:
         assert cat.resolve(Identifier(doi="10.1093/cercor/bhi095")).id == "cercor"
         neuroimage = cat.resolve(Identifier(pmid="16406257")).identifier
         assert neuroimage.doi == "10.1016/j.neuroimage.2005.11.026"
@@ -112,9 +113,9 @@ def test_a_doi_the_named_owner_no_longer_holds_is_not_dropped(version_two, tmp_p
     assert _dump(root) == before
 
 
-def test_the_repair_runs_only_before_the_migration(version_two):
+def test_the_repair_runs_only_before_the_migration(version_two, evidence):
     root, table = version_two
-    Catalog.open(root).close()
+    Catalog.open(root, evidence=evidence).close()
     with pytest.raises(SystemExit, match="already at schema version 4"):
         repair.run(root, apply=True, table=table, out=io.StringIO())
 

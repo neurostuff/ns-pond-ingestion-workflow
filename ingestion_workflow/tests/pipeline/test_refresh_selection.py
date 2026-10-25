@@ -17,8 +17,8 @@ from ingestion_workflow.pipeline.stages.extract import extraction_fingerprint
 
 
 @pytest.fixture()
-def catalog(tmp_path):
-    with Catalog.open(tmp_path / "cat") as cat:
+def catalog(tmp_path, evidence):
+    with Catalog.open(tmp_path / "cat", evidence=evidence) as cat:
         done = cat.register(Identifier(pmid="1"))
         downloaded = DownloadStage(Settings()).fingerprint_for(DownloadSource.ACE)
         cat.record(

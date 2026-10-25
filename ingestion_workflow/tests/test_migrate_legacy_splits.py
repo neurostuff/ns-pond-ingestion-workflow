@@ -28,9 +28,9 @@ def _legacy(*analyses, slug="s::t1"):
 
 
 @pytest.fixture
-def catalog(tmp_path):
+def catalog(tmp_path, evidence):
     root = tmp_path / "catalog"
-    with Catalog.open(root) as cat:
+    with Catalog.open(root, evidence=evidence) as cat:
         yield cat
 
 
@@ -185,7 +185,8 @@ def test_the_dry_run_writes_nothing(catalog, tmp_path):
     assert not (tmp_path / "backup").exists()
 
 
-def test_apply_backs_up_first_repoints_and_leaves_old_blobs_and_fingerprints(catalog, tmp_path):
+def test_apply_backs_up_first_repoints_and_leaves_old_blobs_and_fingerprints(
+        catalog, tmp_path, evidence):
     payload = {"t1": _legacy(_a("Load"), _a("Load (negative)", value=-4.0))}
     ref = _store(catalog, payload)
     old = catalog.artifact(ref.id, "space", "")
@@ -197,7 +198,7 @@ def test_apply_backs_up_first_repoints_and_leaves_old_blobs_and_fingerprints(cat
     assert catalog.blobs.get(old.blob) == payload
     assert (new.status, new.fingerprint, new.summary, new.updated_at) == (
         old.status, old.fingerprint, old.summary, old.updated_at)
-    with Catalog.open(tmp_path / "backup") as backup:
+    with Catalog.open(tmp_path / "backup", evidence=evidence) as backup:
         assert backup.artifact(ref.id, "space", "").blob == old.blob
     collection = AnalysisCollection.from_dict(_payload(catalog, ref)["t1"])
     assert [a.metadata["split"]["half"] for a in collection.analyses] == ["original", "inverse"]

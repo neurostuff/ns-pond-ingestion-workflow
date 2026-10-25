@@ -237,7 +237,7 @@ def test_a_text_with_under_half_the_page_s_prose_is_rebuilt(
     assert out.text_source["prose_words"][out.text_source["method"]] > kept
 
 
-def test_refresh_text_records_how_the_rebuilt_text_was_made(tmp_path):
+def test_refresh_text_records_how_the_rebuilt_text_was_made(tmp_path, evidence):
     from ingestion_workflow.catalog import Catalog, Outcome
     from ingestion_workflow.models.ids import Identifier as Id
     from ingestion_workflow.services import text_refresh as R
@@ -248,7 +248,7 @@ def test_refresh_text_records_how_the_rebuilt_text_was_made(tmp_path):
     text.write_text("Download citation file:", encoding="utf-8")
     stale = {"method": "readability", "reason": "an older rebuild", "page_prose_words": 1,
              "prose_words": {}}
-    with Catalog.open(tmp_path / "k") as catalog:
+    with Catalog.open(tmp_path / "k", evidence=evidence) as catalog:
         ref_id = catalog.register(Id(pmid="30699438")).id
         catalog.record([Outcome(
             article_id=ref_id, stage="extract", source="ace", fingerprint="ex-1",
@@ -263,7 +263,7 @@ def test_refresh_text_records_how_the_rebuilt_text_was_made(tmp_path):
         assert extraction.summary["text_from"].startswith("without_readability (readability kept")
 
 
-def test_refresh_text_drops_a_text_source_that_no_longer_holds(tmp_path):
+def test_refresh_text_drops_a_text_source_that_no_longer_holds(tmp_path, evidence):
     from ingestion_workflow.catalog import Catalog, Outcome
     from ingestion_workflow.models.ids import Identifier as Id
     from ingestion_workflow.services import text_refresh as R
@@ -274,7 +274,7 @@ def test_refresh_text_drops_a_text_source_that_no_longer_holds(tmp_path):
     text.write_text("an older rendering", encoding="utf-8")
     stale = {"method": ace.WITHOUT_READABILITY, "reason": "an older rebuild",
              "page_prose_words": 1, "prose_words": {}}
-    with Catalog.open(tmp_path / "k") as catalog:
+    with Catalog.open(tmp_path / "k", evidence=evidence) as catalog:
         ref_id = catalog.register(Id(pmid="41196626")).id
         catalog.record([Outcome(
             article_id=ref_id, stage="extract", source="ace", fingerprint="ex-1",
@@ -301,7 +301,7 @@ OLD_TEXT = ("Activation peaked at (-38, 12, 4) in the left insula. The peak of "
     (OLD_TEXT + "\n\nDeactivation was found in the right angular gyrus as well.", False),
 ])
 def test_passages_of_a_text_that_gained_a_coordinate_are_read_again(
-        tmp_path, monkeypatch, new, stale):
+        tmp_path, monkeypatch, new, stale, evidence):
     """A remap carries the old passages, but only a read finds the coordinates of a body
     the rebuild recovered."""
     from ingestion_workflow.catalog import Catalog, Outcome
@@ -317,7 +317,7 @@ def test_passages_of_a_text_that_gained_a_coordinate_are_read_again(
               "prose_words": {}}
     monkeypatch.setattr(R, "build", lambda *a: (new, [], source))
     sha = R.sha256(old)
-    with Catalog.open(tmp_path / "k") as catalog:
+    with Catalog.open(tmp_path / "k", evidence=evidence) as catalog:
         ref_id = catalog.register(Id(pmid="1")).id
         catalog.record([
             Outcome(article_id=ref_id, stage="extract", source="ace", fingerprint="ex-1",

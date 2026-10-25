@@ -402,12 +402,12 @@ ARTICLE = """<article><front><article-meta><title-group><article-title>T</articl
 
 
 @pytest.fixture()
-def env(tmp_path):
+def env(tmp_path, evidence):
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", prose_model="nu-prose-v2", llm_api_key="x")
     path = tmp_path / "article.xml"
     path.write_text(ARTICLE)
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         yield settings, catalog, path
 
 

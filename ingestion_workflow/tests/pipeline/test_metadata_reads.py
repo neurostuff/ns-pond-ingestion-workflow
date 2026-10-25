@@ -66,7 +66,7 @@ class _Parser:
 
 
 @pytest.fixture()
-def env(tmp_path):
+def env(tmp_path, evidence):
     from nspond_tables.classify.model import Gate, RoutedGate
 
     gate = tmp_path / "gate.json"
@@ -75,7 +75,7 @@ def env(tmp_path):
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", prose_model="nu-prose-v2", llm_api_key="x",
                         coordinate_gate_path=gate, download_sources=["pubget"])
-    with Catalog.open(settings.catalog_root) as catalog:
+    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
         yield settings, catalog, tmp_path
 
 

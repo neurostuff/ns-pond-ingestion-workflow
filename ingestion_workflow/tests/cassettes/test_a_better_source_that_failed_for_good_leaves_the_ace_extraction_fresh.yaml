@@ -1,0 +1,137 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=22&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
+        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
+    headers:
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json
+      date:
+      - Sun, 25 Oct 2026 08:53:08 GMT
+      referrer-policy:
+      - origin-when-cross-origin
+      retry-after:
+      - '2'
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 429
+      message: Too Many Requests
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=22&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAKxV204bMRD9lZGfWikbNuGm5C0t9KaCUHlEPHi9k6xbr721x0BA/feO7QBpEW2R
+        +pLY47mcOfaZvRMdyha9mN8JWg8o5gJD7Hvp12IkrtAH7Swb6/Gu+DESng8NJeeo2yDmF2I6FZej
+        9Fts7MrrkRhi00pK6Sazw304x4GN+GjlXXDRq7Re+FuLutdEaJbOB9VFu2IHGanjLVe5E1b2xbVF
+        axFONscbyIvsyTZlYiD0GQfjfYj7gpqsjOjh7P0/hXJPRgYqEJ4mIE0mRV8cYe9sIC+JeQK3BIq9
+        86BtpxtN2q5g8G5ATxpDOpbAzs6uzBp030frAuk+GpldjbuuemdQscHDNepVRxBiwziswjG8df0g
+        U6kr5DSxTTmvNXWgly4sZa9bBEZBHW6SV0Y22iAcnYOSXmkux3+ul2M4v6+7gc0x3KzLcbxUXETT
+        Gvg+QA7cw80YpjW0ch2gWcObBUxG3Mxp9WpaqbW0DqlbG7T4uooeOf+pu0KTm2d7SqdgcCEwK0Yn
+        Mi7H+Ql4uqey/c9MwvNMgnopkbAhsg2/EQnhpTxu09hImHAjFqbwC4mQOAT7FwqTQJ2J+YFP93mn
+        Q4hpM0sClCv2YPntHsyqw2QxklXFil2x2vl5W8MI9feI+cXXu4fTg4O6JMmCr+u9am9ymMSMxVRk
+        XXRzIbYf4zlzmObFJ5a0lQYWfEuKb/UyTQzlfMu8U0xwzmJzgi1UfK8t3vAqEXNyfPT54+lxyf/g
+        upeEWhKVWXMndLtRLfv12Ca02cLoJkyGNLl9HkBJv50O5HiMpcDtvA+xWwNqp57t1BOo63ld57mx
+        HcDeRlt8NmLyJAItebz9U4nMzBI98nNMvfFeEnndRMp78UEGWDRJD4oSj0OvOEC5aKlcxTIa87Xw
+        /TAcH+do9W5rkKJxKr/QMtwYllMbIpWmfJLE6JVyNmEwzFzB1Dj37V6g7MJM6NiXNS+pfBvKvXFQ
+        hz5X+gkAAP//ZJU9bsMwDIX3nkLo1iG9Q1F0KIp0KrrLLmUZ+nFA2QlQwNfKlM0X62MZxQmyUgT5
+        aNLfuw+fFWqX1QKYdiBAnlIjDiQRu7c9/rVIjoc0cdRorYoXipcR7tQittYW6Wvb1tvdWJsIdm4N
+        6mY5muB6vuL/tfHsZZ5/stRP82lbD8gUE5gazJsS4bzZvPUdZazBupGyIRwRAxiWg2JF2dHLFaC6
+        +SZu8FtgZyZETd6CYWE5xWRLgQEgo0ytICZpBcVSBuA3H5Z/lUthkFdJ7lCm9QYnYd4r2Sr60VY6
+        icywHBlkJVGLYi/NgTyb5YStGBoPVpD1BZ6YHzi2P8NfBGY1gFewS8n1tPGWMdfgHCyAJrrgC2dU
+        RPl2OXYRogIMlfLz4zzPD38AAAD//wMAclBqioUIAAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Sun, 25 Oct 2026 08:53:10 GMT
+      ncbi-phid:
+      - 1D345BABAD18B8E500004261B63C0EAD.1.1.m_1
+      ncbi-sid:
+      - C709529E7E7C82CE_A5A4SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

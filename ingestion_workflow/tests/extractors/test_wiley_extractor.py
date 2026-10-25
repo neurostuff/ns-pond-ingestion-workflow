@@ -91,8 +91,8 @@ def _download(extractor, *dois):
     return extractor.download(Identifiers([Identifier(doi=doi) for doi in dois]))
 
 
-def _catalog(settings, *identifiers):
-    ctx = Context(settings, Catalog.open(settings.catalog_root))
+def _catalog(settings, *identifiers, evidence):
+    ctx = Context(settings, Catalog.open(settings.catalog_root, evidence=evidence))
     refs = ctx.catalog.register_many(
         [i if isinstance(i, Identifier) else Identifier(doi=i) for i in identifiers])
     return ctx, refs
@@ -197,9 +197,10 @@ def test_an_answer_that_is_not_a_pdf_fails_and_is_never_kept(wiley, tmp_path, vc
 
 
 @pytest.mark.vcr(record_mode="none")
-def test_without_a_token_the_stage_stops_before_asking_or_charging_anyone(tmp_path, caplog):
+def test_without_a_token_the_stage_stops_before_asking_or_charging_anyone(
+        tmp_path, caplog, evidence):
     settings = _settings(tmp_path, wiley_api_key=None)
-    ctx, refs = _catalog(settings, SERVED_DOI)
+    ctx, refs = _catalog(settings, SERVED_DOI, evidence=evidence)
 
     with pytest.raises(SourceMisconfigured, match="WILEY_API_KEY"):
         WileyExtractor(settings).download(Identifiers([refs[0].identifier]))
@@ -212,11 +213,11 @@ def test_without_a_token_the_stage_stops_before_asking_or_charging_anyone(tmp_pa
 
 # The cassette is composed (see its header).
 @pytest.mark.vcr(match_on=wiley_tdm.MATCH_ON)
-def test_a_refused_token_stops_the_download_stage(tmp_path, slept, vcr):
+def test_a_refused_token_stops_the_download_stage(tmp_path, slept, vcr, evidence):
     """Wiley refusing the token is not the articles' failure: none is charged a try,
     and the stage asks nothing more this run."""
     settings = _settings(tmp_path)
-    ctx, refs = _catalog(settings, SERVED_DOI, MISSING_DOI)
+    ctx, refs = _catalog(settings, SERVED_DOI, MISSING_DOI, evidence=evidence)
     stage = DownloadStage(settings)
 
     run_stages(ctx, [stage], refs)
@@ -230,10 +231,11 @@ def test_a_refused_token_stops_the_download_stage(tmp_path, slept, vcr):
 
 
 @pytest.mark.vcr(record_mode="none")
-def test_only_articles_with_a_wiley_doi_are_planned_for_wiley(tmp_path):
+def test_only_articles_with_a_wiley_doi_are_planned_for_wiley(tmp_path, evidence):
     settings = _settings(tmp_path)
     ctx, refs = _catalog(
-        settings, SERVED_DOI, OTHER_DOI, "10.1113/jphysiol.2006.1", Identifier(pmid="16504543"))
+        settings, SERVED_DOI, OTHER_DOI, "10.1113/jphysiol.2006.1", Identifier(pmid="16504543"),
+                evidence=evidence)
 
     plan = DownloadStage(settings).plan(ctx, refs, {}, {})
 
@@ -247,9 +249,9 @@ def test_only_articles_with_a_wiley_doi_are_planned_for_wiley(tmp_path):
 
 
 @pytest.mark.vcr(match_on=wiley_tdm.MATCH_ON)
-def test_an_article_wiley_does_not_have_is_not_asked_for_again(tmp_path, slept):
+def test_an_article_wiley_does_not_have_is_not_asked_for_again(tmp_path, slept, evidence):
     settings = _settings(tmp_path)
-    ctx, refs = _catalog(settings, MISSING_DOI)
+    ctx, refs = _catalog(settings, MISSING_DOI, evidence=evidence)
 
     run_stages(ctx, [DownloadStage(settings)], refs)
 
@@ -270,11 +272,11 @@ def _downloaded(ctx, ref, source: DownloadSource, payload: bytes, status=Status.
         fingerprint=DownloadStage(settings).fingerprint_for(source), payload=result.to_dict())])
 
 
-def test_a_wiley_pdf_is_read_into_the_articles_pdf_text(tmp_path, slept):
+def test_a_wiley_pdf_is_read_into_the_articles_pdf_text(tmp_path, slept, evidence):
     """Download through the stage from a recorded answer, extract through the stage: the
     text is the `pdf` one, which is all downstream (corpus, parse, triage) knows of."""
     settings = _settings(tmp_path, pdf_extract_workers=1)
-    ctx, refs = _catalog(settings, SERVED_DOI)
+    ctx, refs = _catalog(settings, SERVED_DOI, evidence=evidence)
     # Only the download is replayed: Docling's model files are not Wiley's to answer.
     with _replay(SERVED):
         run_stages(ctx, [DownloadStage(settings)], refs)
@@ -295,9 +297,10 @@ def test_a_wiley_pdf_is_read_into_the_articles_pdf_text(tmp_path, slept):
     _assert_token_kept_out(ctx, refs)
 
 
-def test_a_wiley_pdf_that_cannot_be_read_fails_as_the_pdf_text_and_names_its_download(tmp_path):
+def test_a_wiley_pdf_that_cannot_be_read_fails_as_the_pdf_text_and_names_its_download(
+        tmp_path, evidence):
     settings = _settings(tmp_path, pdf_extract_workers=1)
-    ctx, refs = _catalog(settings, SERVED_DOI)
+    ctx, refs = _catalog(settings, SERVED_DOI, evidence=evidence)
     _downloaded(ctx, refs[0], DownloadSource.WILEY, PDF_MAGIC + b"1.4 truncated")
 
     run_stages(ctx, [ExtractStage(settings)], refs)
@@ -308,9 +311,10 @@ def test_a_wiley_pdf_that_cannot_be_read_fails_as_the_pdf_text_and_names_its_dow
     assert artifact.error
 
 
-def test_an_article_with_a_wiley_and_an_open_access_pdf_gets_its_text_from_wileys(tmp_path):
+def test_an_article_with_a_wiley_and_an_open_access_pdf_gets_its_text_from_wileys(
+        tmp_path, evidence):
     settings = _settings(tmp_path, download_sources=["pdf", "wiley"])
-    ctx, refs = _catalog(settings, SERVED_DOI)
+    ctx, refs = _catalog(settings, SERVED_DOI, evidence=evidence)
     ref = refs[0]
     _downloaded(ctx, ref, DownloadSource.PDF, PDF_MAGIC + b" open-access copy")
     downloads = ctx.catalog.artifacts([ref.id], "download")
@@ -338,10 +342,10 @@ def test_an_article_with_a_wiley_and_an_open_access_pdf_gets_its_text_from_wiley
     assert list(current_extractions(ctx, extractions[ref.id], downloads[ref.id])) == ["pdf"]
 
 
-def test_a_wiley_pdfs_text_moves_with_the_pdf_extractor_version(tmp_path, monkeypatch):
+def test_a_wiley_pdfs_text_moves_with_the_pdf_extractor_version(tmp_path, monkeypatch, evidence):
     assert EXTRACTOR_VERSIONS["wiley"] == EXTRACTOR_VERSIONS["pdf"]
     settings = _settings(tmp_path)
-    ctx, refs = _catalog(settings, SERVED_DOI)
+    ctx, refs = _catalog(settings, SERVED_DOI, evidence=evidence)
     ref = refs[0]
     _downloaded(ctx, ref, DownloadSource.WILEY, PDF_MAGIC + b" version of record")
     downloads = ctx.catalog.artifacts([ref.id], "download")
@@ -358,11 +362,11 @@ def test_a_wiley_pdfs_text_moves_with_the_pdf_extractor_version(tmp_path, monkey
     assert [w.source for w in stage.plan(ctx, refs, extractions, downloads).pending] == ["pdf"]
 
 
-def test_a_pdf_text_read_from_wileys_download_goes_with_that_download(tmp_path):
+def test_a_pdf_text_read_from_wileys_download_goes_with_that_download(tmp_path, evidence):
     """Whose download a page that is not the article is decides whether the text
     read from it is still the article's."""
     settings = _settings(tmp_path, download_sources=["pdf", "wiley"])
-    ctx, refs = _catalog(settings, SERVED_DOI)
+    ctx, refs = _catalog(settings, SERVED_DOI, evidence=evidence)
     ref = refs[0]
     _downloaded(ctx, ref, DownloadSource.PDF, PDF_MAGIC + b" open-access copy",
                 status=Status.FAILED)
