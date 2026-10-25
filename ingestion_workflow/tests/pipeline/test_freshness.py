@@ -11,14 +11,14 @@ from ingestion_workflow.pipeline import Context
 
 
 @pytest.fixture()
-def ctx(tmp_path, evidence):
+def ctx(tmp_path):
     settings = Settings(
         data_root=tmp_path / "data",
         cache_root=tmp_path / "cache",
         catalog_root=tmp_path / "cat",
         ns_pond_root=tmp_path / "pond",
     )
-    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
+    with Catalog.open(settings.catalog_root) as catalog:
         yield Context(settings, catalog, max_attempts=3, retry_after=timedelta(hours=24))
 
 
@@ -49,9 +49,9 @@ def test_failed_artifact_is_never_fresh(ctx):
     assert not ctx.is_fresh(artifact(status=Status.FAILED), "fp1")
 
 
-def test_refresh_overrides_a_matching_fingerprint(tmp_path, evidence):
+def test_refresh_overrides_a_matching_fingerprint(tmp_path):
     settings = Settings(catalog_root=tmp_path / "c", data_root=tmp_path / "d")
-    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
+    with Catalog.open(settings.catalog_root) as catalog:
         ctx = Context(settings, catalog, refresh=["extract"])
         assert not ctx.is_fresh(artifact(), "fp1")
         assert ctx.is_fresh(artifact(stage="download"), "fp1")
@@ -78,8 +78,8 @@ def test_a_recent_failure_waits_for_the_backoff(ctx):
     assert not ctx.should_attempt(failed, 1, just_now, "extract")
 
 
-def test_refresh_reaches_even_permanent_failures(tmp_path, evidence):
+def test_refresh_reaches_even_permanent_failures(tmp_path):
     settings = Settings(catalog_root=tmp_path / "c", data_root=tmp_path / "d")
-    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
+    with Catalog.open(settings.catalog_root) as catalog:
         ctx = Context(settings, catalog, refresh=["extract"])
         assert ctx.should_attempt(artifact(status=Status.PERMANENT), 9, None, "extract")

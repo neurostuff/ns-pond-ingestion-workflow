@@ -2,7 +2,6 @@ import json
 import os
 import tempfile
 from pathlib import Path
-from urllib.parse import urlparse
 
 import pytest
 from dotenv import load_dotenv
@@ -57,20 +56,12 @@ def evidence(pubmed):
     registry.close()
 
 
-#: What `Evidence` asks: PubMed, the PMC id converter, and the DOI registries.
-EVIDENCE_HOSTS = {"eutils.ncbi.nlm.nih.gov", "www.ncbi.nlm.nih.gov", "api.crossref.org", "doi.org"}
-
-
-def _only_evidence(request):
-    """Leave any other host to the test: a server it starts is not something to record."""
-    return request if urlparse(request.uri).hostname in EVIDENCE_HOSTS else None
-
-
 def pytest_collection_modifyitems(items):
-    """A test that takes `evidence` asks NCBI and the registries, so it has a cassette."""
+    """A test that takes `evidence` asks NCBI and the registries, so it has a cassette; only
+    loopback, where a test starts its own server, is left out of it."""
     for item in items:
         if "evidence" in item.fixturenames and item.get_closest_marker("vcr") is None:
-            item.add_marker(pytest.mark.vcr(before_record_request=_only_evidence))
+            item.add_marker(pytest.mark.vcr(ignore_hosts=["localhost", "127.0.0.1"]))
 
 
 @pytest.fixture(scope="session", autouse=True)

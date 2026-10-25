@@ -50,11 +50,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Sun, 25 Oct 2026 08:51:45 GMT
+      - Sun, 25 Oct 2026 10:24:51 GMT
       ncbi-phid:
-      - 1D345BABAD18B8E50000416165C90A47.1.1.m_1
+      - 1D345BABAD18B8E500003882FE7E97CA.1.1.m_1
       ncbi-sid:
-      - 5CF3C8DC8115544D_348ESID
+      - 34F23BB65F56F58F_B639SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -68,7 +68,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '2'
+      - '1'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:

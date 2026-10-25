@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import List, Optional, Sequence
 
 from ingestion_workflow.catalog import ArticleRef, Catalog, Status
+from ingestion_workflow.catalog.evidence import Evidence
 from ingestion_workflow.models.ids import Identifier, Identifiers
 
 logger = logging.getLogger(__name__)
@@ -44,12 +45,15 @@ class ManifestArticles:
     unknown: List[Identifier]  # entries the catalog holds no article for
 
 
-def resolve_manifest(catalog: Catalog, path: Path, *, register: bool) -> ManifestArticles:
-    """The articles a manifest names; `register` adds the unknown ones to the catalog,
-    otherwise they are listed and nothing is written."""
+def register_manifest(catalog: Catalog, path: Path, evidence: Evidence) -> ManifestArticles:
+    """The articles a manifest names, the unknown ones registered in the catalog."""
     identifiers = list(Identifiers.load(path).identifiers)
-    if register:
-        return ManifestArticles(len(identifiers), catalog.register_many(identifiers), [])
+    return ManifestArticles(len(identifiers), catalog.register_many(identifiers, evidence), [])
+
+
+def resolve_manifest(catalog: Catalog, path: Path) -> ManifestArticles:
+    """The articles a manifest names; the unknown ones are listed and nothing is written."""
+    identifiers = list(Identifiers.load(path).identifiers)
     found = [(identifier, catalog.resolve(identifier)) for identifier in identifiers]
     return ManifestArticles(
         len(identifiers),
@@ -58,8 +62,10 @@ def resolve_manifest(catalog: Catalog, path: Path, *, register: bool) -> Manifes
     )
 
 
-def from_identifiers(catalog: Catalog, identifiers: Sequence[Identifier]) -> Selection:
-    refs = catalog.register_many(list(identifiers))
+def from_identifiers(
+    catalog: Catalog, identifiers: Sequence[Identifier], evidence: Evidence
+) -> Selection:
+    refs = catalog.register_many(list(identifiers), evidence)
     return Selection(refs, f"{len(refs):,} articles")
 
 

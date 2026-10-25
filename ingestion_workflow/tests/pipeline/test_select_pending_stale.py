@@ -26,9 +26,9 @@ def world(tmp_path, request, evidence):
     )
     stage = ExtractStage(settings)
     ids = {}
-    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
+    with Catalog.open(settings.catalog_root) as catalog:
         for name in ("fresh", "stale", "permanent", "transient", "undone", "never"):
-            ref = catalog.register(Identifier(pmid=f"9{len(ids)}"))
+            ref = catalog.register(Identifier(pmid=f"9{len(ids)}"), evidence)
             ids[name] = ref.id
             if name == "never":
                 continue

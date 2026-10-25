@@ -11,16 +11,11 @@ from ingestion_workflow.catalog import WHOLE_ARTICLE, Catalog, Outcome, Status
 from ingestion_workflow.models.ids import Identifier
 
 
-@pytest.fixture()
-def catalog(tmp_path, evidence):
-    with Catalog.open(tmp_path / "cat", evidence=evidence) as cat:
-        yield cat
-
-
-def test_identity_survives_enrichment(catalog):
-    first = catalog.register(Identifier(pmcid="PMC10634720"))
-    second = catalog.register(Identifier(pmcid="PMC10634720", pmid="37961286"))
-    third = catalog.register(Identifier(pmid="37961286", doi="10.1101/2023.10.21.563317"))
+def test_identity_survives_enrichment(catalog, evidence):
+    first = catalog.register(Identifier(pmcid="PMC10634720"), evidence)
+    second = catalog.register(Identifier(pmcid="PMC10634720", pmid="37961286"), evidence)
+    third = catalog.register(Identifier(pmid="37961286", doi="10.1101/2023.10.21.563317"),
+            evidence)
 
     assert first.id == second.id == third.id
     assert catalog.count_articles() == 1
@@ -29,34 +24,34 @@ def test_identity_survives_enrichment(catalog):
     assert held.asking_doi == "10.1101/2023.10.21.563317"
 
 
-def test_separate_articles_stay_separate(catalog):
-    a = catalog.register(Identifier(pmid="1"))
-    b = catalog.register(Identifier(pmid="2"))
+def test_separate_articles_stay_separate(catalog, evidence):
+    a = catalog.register(Identifier(pmid="1"), evidence)
+    b = catalog.register(Identifier(pmid="2"), evidence)
     assert a.id != b.id
     assert catalog.count_articles() == 2
 
 
-def test_ids_that_turn_out_to_be_one_article_merge(catalog):
-    a = catalog.register(Identifier(pmid="1"))
-    b = catalog.register(Identifier(doi="10.1/x"))
+def test_ids_that_turn_out_to_be_one_article_merge(catalog, evidence):
+    a = catalog.register(Identifier(pmid="1"), evidence)
+    b = catalog.register(Identifier(doi="10.1/x"), evidence)
     assert a.id != b.id
 
-    merged = catalog.register(Identifier(pmid="1", doi="10.1/x"))
+    merged = catalog.register(Identifier(pmid="1", doi="10.1/x"), evidence)
     assert merged.id in {a.id, b.id}
     assert catalog.count_articles() == 1
     assert catalog.resolve(Identifier(pmid="1")).id == merged.id
     assert catalog.resolve(Identifier(doi="10.1/x")).id == merged.id
 
 
-def test_registering_is_idempotent(catalog):
+def test_registering_is_idempotent(catalog, evidence):
     ids = [Identifier(pmid=str(n)) for n in range(50)]
-    catalog.register_many(ids)
-    catalog.register_many(ids)
+    catalog.register_many(ids, evidence)
+    catalog.register_many(ids, evidence)
     assert catalog.count_articles() == 50
 
 
-def test_payloads_round_trip_through_the_blob_store(catalog):
-    ref = catalog.register(Identifier(pmid="42"))
+def test_payloads_round_trip_through_the_blob_store(catalog, evidence):
+    ref = catalog.register(Identifier(pmid="42"), evidence)
     catalog.record(
         [
             Outcome(
@@ -75,8 +70,8 @@ def test_payloads_round_trip_through_the_blob_store(catalog):
     assert catalog.payload(artifact) == {"tables": [{"id": "t1"}]}
 
 
-def test_identical_payloads_share_one_blob(catalog):
-    refs = catalog.register_many([Identifier(pmid=str(n)) for n in (1, 2)])
+def test_identical_payloads_share_one_blob(catalog, evidence):
+    refs = catalog.register_many([Identifier(pmid=str(n)) for n in (1, 2)], evidence)
     catalog.record(
         [
             Outcome(article_id=ref.id, stage="extract", source="ace", payload={"same": True})
@@ -87,8 +82,8 @@ def test_identical_payloads_share_one_blob(catalog):
     assert len(blobs) == 1
 
 
-def test_failures_are_recorded_and_counted(catalog):
-    ref = catalog.register(Identifier(pmid="7"))
+def test_failures_are_recorded_and_counted(catalog, evidence):
+    ref = catalog.register(Identifier(pmid="7"), evidence)
     for _ in range(3):
         catalog.record([Outcome.failure(ref.id, "download", "pubget", "timeout")])
 
@@ -100,8 +95,8 @@ def test_failures_are_recorded_and_counted(catalog):
     assert counts[ref.id][0] == 3
 
 
-def test_status_counts_group_by_stage(catalog):
-    refs = catalog.register_many([Identifier(pmid=str(n)) for n in range(4)])
+def test_status_counts_group_by_stage(catalog, evidence):
+    refs = catalog.register_many([Identifier(pmid=str(n)) for n in range(4)], evidence)
     catalog.record([Outcome(article_id=refs[0].id, stage="download", source="ace")])
     catalog.record([Outcome.failure(refs[1].id, "download", "ace", "boom")])
     catalog.record([Outcome.failure(refs[2].id, "download", "ace", "gone", permanent=True)])
@@ -179,7 +174,7 @@ def test_article_ids_cannot_be_mistaken_for_neurostore_ids():
         assert set(article_id) <= set("abcdefghijklmnopqrstuvwxyz234567")
 
 
-def test_a_random_id_would_also_be_correct(catalog, monkeypatch):
+def test_a_random_id_would_also_be_correct(catalog, monkeypatch, evidence):
     """Determinism is for cross-catalog agreement, not for correctness.
 
     Idempotent registration and stability under enrichment come from the alias
@@ -191,18 +186,18 @@ def test_a_random_id_would_also_be_correct(catalog, monkeypatch):
 
     monkeypatch.setattr(store, "_article_id", lambda seed: uuid.uuid4().hex[:12])
 
-    first = catalog.register_many([Identifier(pmid="5", pmcid="PMC5")])
-    again = catalog.register_many([Identifier(pmid="5", pmcid="PMC5")])
-    enriched = catalog.register_many([Identifier(pmid="5", pmcid="PMC5", doi="10.1/e")])
+    first = catalog.register_many([Identifier(pmid="5", pmcid="PMC5")], evidence)
+    again = catalog.register_many([Identifier(pmid="5", pmcid="PMC5")], evidence)
+    enriched = catalog.register_many([Identifier(pmid="5", pmcid="PMC5", doi="10.1/e")], evidence)
 
     assert [r.id for r in first] == [r.id for r in again] == [r.id for r in enriched]
     assert catalog.count_articles() == 1
 
 
-def test_the_neurostore_id_becomes_an_alias(catalog):
+def test_the_neurostore_id_becomes_an_alias(catalog, evidence):
     """base_study_id is assigned by Neurostore during upload, so it is not
     knowable at registration. Once learned it must be resolvable."""
-    ref = catalog.register(Identifier(pmcid="PMC10634720"))
+    ref = catalog.register(Identifier(pmcid="PMC10634720"), evidence)
     assert ref.id != "5Qk2mNpXyJKH"
 
     catalog.add_aliases([(ref.id, "neurostore", "5Qk2mNpXyJKH")])
@@ -213,8 +208,8 @@ def test_the_neurostore_id_becomes_an_alias(catalog):
     assert catalog.count_articles() == 1
 
 
-def test_add_aliases_ignores_unknown_kinds_and_blanks(catalog):
-    ref = catalog.register(Identifier(pmid="9"))
+def test_add_aliases_ignores_unknown_kinds_and_blanks(catalog, evidence):
+    ref = catalog.register(Identifier(pmid="9"), evidence)
     catalog.add_aliases(
         [
             (ref.id, "not_a_kind", "x"),
@@ -225,16 +220,16 @@ def test_add_aliases_ignores_unknown_kinds_and_blanks(catalog):
     assert catalog.identifier(ref.id).neurostore is None
 
 
-def test_an_id_never_changes_once_assigned(catalog):
+def test_an_id_never_changes_once_assigned(catalog, evidence):
     """The invariant the whole catalog rests on: learning a stronger identifier
     attaches an alias, it does not re-key the article."""
-    first = catalog.register(Identifier(doi="10.1/x"))
+    first = catalog.register(Identifier(doi="10.1/x"), evidence)
     catalog.record(
         [Outcome(article_id=first.id, stage="download", source="elsevier", payload={"a": 1})]
     )
 
-    after_pmcid = catalog.register(Identifier(doi="10.1/x", pmcid="PMC1"))
-    after_pmid = catalog.register(Identifier(doi="10.1/x", pmcid="PMC1", pmid="111"))
+    after_pmcid = catalog.register(Identifier(doi="10.1/x", pmcid="PMC1"), evidence)
+    after_pmid = catalog.register(Identifier(doi="10.1/x", pmcid="PMC1", pmid="111"), evidence)
 
     assert first.id == after_pmcid.id == after_pmid.id
     assert catalog.count_articles() == 1
@@ -244,59 +239,59 @@ def test_an_id_never_changes_once_assigned(catalog):
     assert (known.doi, known.pmcid, known.pmid) == ("10.1/x", "PMC1", "111")
 
 
-def test_a_merge_keeps_the_older_article(catalog):
+def test_a_merge_keeps_the_older_article(catalog, evidence):
     """Merging picks the article that has had longer to accumulate artifacts,
     so the rewrite is the smaller one."""
     import time
 
-    old = catalog.register(Identifier(doi="10.1/y"))
+    old = catalog.register(Identifier(doi="10.1/y"), evidence)
     catalog.record([Outcome(article_id=old.id, stage="download", source="elsevier")])
     time.sleep(1.1)  # created_at has second resolution
-    new = catalog.register(Identifier(pmcid="PMC2"))
+    new = catalog.register(Identifier(pmcid="PMC2"), evidence)
     assert old.id != new.id
 
-    merged = catalog.register(Identifier(doi="10.1/y", pmcid="PMC2"))
+    merged = catalog.register(Identifier(doi="10.1/y", pmcid="PMC2"), evidence)
 
     assert merged.id == old.id
     assert catalog.count_articles() == 1
     assert catalog.artifact(old.id, "download", "elsevier") is not None
 
 
-def test_a_merge_carries_artifacts_over(catalog):
-    a = catalog.register(Identifier(doi="10.1/m"))
-    b = catalog.register(Identifier(pmcid="PMC7"))
+def test_a_merge_carries_artifacts_over(catalog, evidence):
+    a = catalog.register(Identifier(doi="10.1/m"), evidence)
+    b = catalog.register(Identifier(pmcid="PMC7"), evidence)
     catalog.record([Outcome(article_id=a.id, stage="download", source="ace", payload={"n": 1})])
     catalog.record([Outcome(article_id=b.id, stage="extract", source="ace", payload={"n": 2})])
 
-    merged = catalog.register(Identifier(doi="10.1/m", pmcid="PMC7"))
+    merged = catalog.register(Identifier(doi="10.1/m", pmcid="PMC7"), evidence)
 
     stages = {art.stage for art in catalog.artifacts_for_article(merged.id)}
     assert stages == {"download", "extract"}
     assert catalog.stranded_artifacts() == 0
 
 
-def test_a_clashing_artifact_is_not_stranded(catalog):
+def test_a_clashing_artifact_is_not_stranded(catalog, evidence):
     """Both sides holding the same (stage, source) is the case that used to
     leave one attached to an article nothing can reach."""
-    a = catalog.register(Identifier(doi="10.1/n"))
-    b = catalog.register(Identifier(pmcid="PMC8"))
+    a = catalog.register(Identifier(doi="10.1/n"), evidence)
+    b = catalog.register(Identifier(pmcid="PMC8"), evidence)
     catalog.record([Outcome(article_id=a.id, stage="download", source="ace", payload={"n": 1})])
     catalog.record([Outcome(article_id=b.id, stage="download", source="ace", payload={"n": 2})])
 
-    merged = catalog.register(Identifier(doi="10.1/n", pmcid="PMC8"))
+    merged = catalog.register(Identifier(doi="10.1/n", pmcid="PMC8"), evidence)
 
     assert catalog.stranded_artifacts() == 0
     kept = catalog.artifacts_for_article(merged.id)
     assert len(kept) == 1
 
 
-def test_a_merge_keeps_the_successful_side_of_a_clash(catalog):
-    a = catalog.register(Identifier(doi="10.1/o"))
-    b = catalog.register(Identifier(pmcid="PMC9"))
+def test_a_merge_keeps_the_successful_side_of_a_clash(catalog, evidence):
+    a = catalog.register(Identifier(doi="10.1/o"), evidence)
+    b = catalog.register(Identifier(pmcid="PMC9"), evidence)
     catalog.record([Outcome.failure(a.id, "download", "ace", "timeout")])
     catalog.record([Outcome(article_id=b.id, stage="download", source="ace", payload={"n": 2})])
 
-    merged = catalog.register(Identifier(doi="10.1/o", pmcid="PMC9"))
+    merged = catalog.register(Identifier(doi="10.1/o", pmcid="PMC9"), evidence)
 
     artifact = catalog.artifact(merged.id, "download", "ace")
     assert artifact.status is Status.OK
@@ -304,10 +299,10 @@ def test_a_merge_keeps_the_successful_side_of_a_clash(catalog):
     assert catalog.stranded_artifacts() == 0
 
 
-def test_status_counts_articles_not_artifacts(catalog):
+def test_status_counts_articles_not_artifacts(catalog, evidence):
     """A stage that runs per source holds several artifacts for one article;
     the table has to stay comparable with the catalog total."""
-    ref = catalog.register(Identifier(pmid="30"))
+    ref = catalog.register(Identifier(pmid="30"), evidence)
     catalog.record(
         [
             Outcome(article_id=ref.id, stage="download", source="ace"),
@@ -317,8 +312,8 @@ def test_status_counts_articles_not_artifacts(catalog):
     assert catalog.status_counts()["download"] == {"ok": 1}
 
 
-def test_an_articles_state_is_the_best_its_sources_reached(catalog):
-    ref = catalog.register(Identifier(pmid="31"))
+def test_an_articles_state_is_the_best_its_sources_reached(catalog, evidence):
+    ref = catalog.register(Identifier(pmid="31"), evidence)
     catalog.record(
         [
             Outcome.failure(ref.id, "download", "pubget", "no pmcid"),
@@ -328,9 +323,9 @@ def test_an_articles_state_is_the_best_its_sources_reached(catalog):
     assert catalog.status_counts()["download"] == {"ok": 1}
 
 
-def test_ready_counts_the_queue_at_each_stage(catalog):
+def test_ready_counts_the_queue_at_each_stage(catalog, evidence):
     requirements = {"download": None, "extract": "download", "metadata": "extract"}
-    refs = catalog.register_many([Identifier(pmid=str(n)) for n in range(40, 45)])
+    refs = catalog.register_many([Identifier(pmid=str(n)) for n in range(40, 45)], evidence)
     catalog.record([Outcome(article_id=r.id, stage="download", source="ace") for r in refs[:3]])
 
     ready = catalog.ready_counts(requirements)
@@ -339,9 +334,9 @@ def test_ready_counts_the_queue_at_each_stage(catalog):
     assert ready["metadata"] == 0      # nothing has been extracted
 
 
-def test_a_failed_upstream_is_not_ready(catalog):
+def test_a_failed_upstream_is_not_ready(catalog, evidence):
     requirements = {"extract": "download"}
-    ref = catalog.register(Identifier(pmid="50"))
+    ref = catalog.register(Identifier(pmid="50"), evidence)
     catalog.record([Outcome.failure(ref.id, "download", "ace", "boom")])
     assert catalog.ready_counts(requirements)["extract"] == 0
 
@@ -357,10 +352,11 @@ def _pmids(catalog, article_id):
 def test_a_shared_pmcid_does_not_fuse_papers(tmp_path, evidence):
     """The pattern that built 244cm4x6up53: one cache stamped the same PMCID on
     hundreds of papers, each beside its own correct PMID and DOI."""
-    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "cat") as catalog:
         refs = catalog.register_many(
-            [Identifier(pmid=str(1000 + i), doi=f"10.1/p{i}", pmcid="PMC7976178") for i in range(50)]
-        )
+            [Identifier(pmid=str(1000 + i), doi=f"10.1/p{i}", pmcid="PMC7976178")
+             for i in range(50)],
+            evidence)
         ids = {ref.id for ref in refs}
         assert len(ids) == 50
         assert all(len(_pmids(catalog, i)) == 1 for i in ids)
@@ -376,10 +372,10 @@ def _held(catalog, article_id, kind):
 
 
 @pytest.mark.parametrize("kind,other", [("pmcid", "PMC9406293"), ("pmid", "35990001")])
-def test_an_article_never_takes_a_second_pmid_or_pmcid(catalog, kind, other):
+def test_an_article_never_takes_a_second_pmid_or_pmcid(catalog, kind, other, evidence):
     first = {"pmid": "35990000", "pmcid": "PMC9406292"}
-    a = catalog.register(Identifier(**first))
-    b = catalog.register(Identifier(**{**first, kind: other}))
+    a = catalog.register(Identifier(**first), evidence)
+    b = catalog.register(Identifier(**{**first, kind: other}), evidence)
     assert _held(catalog, a.id, kind) == {first[kind]}
     assert b.id != a.id and _held(catalog, b.id, kind) == {other}
     # refused as the anchor, refused as a merge, and the shared id left with `a`
@@ -389,26 +385,26 @@ def test_an_article_never_takes_a_second_pmid_or_pmcid(catalog, kind, other):
 @pytest.mark.parametrize("spelling", [
     "pmc7212345", "7212345", " PMC7212345 ", "https://pmc.ncbi.nlm.nih.gov/articles/PMC7212345/",
 ])
-def test_every_spelling_of_a_pmcid_is_one_article(catalog, spelling):
-    first = catalog.register(Identifier(pmcid="PMC7212345"))
+def test_every_spelling_of_a_pmcid_is_one_article(catalog, spelling, evidence):
+    first = catalog.register(Identifier(pmcid="PMC7212345"), evidence)
     assert catalog.resolve(Identifier(pmcid=spelling)).id == first.id
-    assert catalog.register(Identifier(pmcid=spelling)).id == first.id
+    assert catalog.register(Identifier(pmcid=spelling), evidence).id == first.id
     assert catalog.count_articles() == 1 and catalog.conflicts == 0
     assert _held(catalog, first.id, "pmcid") == {"PMC7212345"}
 
 
-def test_a_pmcid_assigned_by_enrichment_finds_its_article(catalog):
-    first = catalog.register(Identifier(pmid="35990000", pmcid="PMC9406292"))
+def test_a_pmcid_assigned_by_enrichment_finds_its_article(catalog, evidence):
+    first = catalog.register(Identifier(pmid="35990000", pmcid="PMC9406292"), evidence)
     enriched = Identifier(pmid="35990000")
     enriched.pmcid = "9406292"   # Semantic Scholar's bare form, set after construction
-    assert catalog.register(enriched).id == first.id
+    assert catalog.register(enriched, evidence).id == first.id
     assert catalog.count_articles() == 1 and catalog.conflicts == 0
 
 
 def test_a_known_doi_does_not_claim_a_different_paper(tmp_path, evidence):
-    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
-        a = catalog.register(Identifier(pmid="1", doi="10.1/a"))
-        b = catalog.register(Identifier(pmid="2", doi="10.1/a"))   # wrong DOI on paper 2
+    with Catalog.open(tmp_path / "cat") as catalog:
+        a = catalog.register(Identifier(pmid="1", doi="10.1/a"), evidence)
+        b = catalog.register(Identifier(pmid="2", doi="10.1/a"), evidence)   # wrong DOI on paper 2
         assert a.id != b.id
         assert _pmids(catalog, a.id) == {"1"} and _pmids(catalog, b.id) == {"2"}
         assert catalog.resolve(Identifier(doi="10.1/a")).id == a.id
@@ -417,29 +413,30 @@ def test_a_known_doi_does_not_claim_a_different_paper(tmp_path, evidence):
 def test_two_halves_of_one_paper_still_merge(tmp_path, evidence):
     """The point of merging survives: a DOI-only and a PMID-only record of the same
     paper become one article once a record ties them together."""
-    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
-        a = catalog.register(Identifier(doi="10.1/a"))
-        b = catalog.register(Identifier(pmid="1"))
-        merged = catalog.register(Identifier(pmid="1", doi="10.1/a"))
+    with Catalog.open(tmp_path / "cat") as catalog:
+        a = catalog.register(Identifier(doi="10.1/a"), evidence)
+        b = catalog.register(Identifier(pmid="1"), evidence)
+        merged = catalog.register(Identifier(pmid="1", doi="10.1/a"), evidence)
         assert {a.id, b.id} >= {merged.id}
         assert catalog.resolve(Identifier(doi="10.1/a")).id == catalog.resolve(Identifier(pmid="1")).id
         assert catalog.conflicts == 0
 
 
 def test_two_papers_are_not_merged_by_a_record_naming_both(tmp_path, evidence):
-    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
-        a = catalog.register(Identifier(pmid="1", doi="10.1/a"))
-        b = catalog.register(Identifier(pmid="2", doi="10.1/b"))
-        got = catalog.register(Identifier(pmid="1", doi="10.1/b"))   # pairs 1 with 2's DOI
+    with Catalog.open(tmp_path / "cat") as catalog:
+        a = catalog.register(Identifier(pmid="1", doi="10.1/a"), evidence)
+        b = catalog.register(Identifier(pmid="2", doi="10.1/b"), evidence)
+        got = catalog.register(Identifier(pmid="1", doi="10.1/b"),
+                evidence)   # pairs 1 with 2's DOI
         assert got.id == a.id
         assert catalog.resolve(Identifier(pmid="2")).id == b.id
         assert catalog.resolve(Identifier(doi="10.1/b")).id == b.id
 
 
 def test_a_learned_alias_does_not_move_from_its_article(tmp_path, evidence):
-    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
-        a = catalog.register(Identifier(pmid="1"))
-        b = catalog.register(Identifier(pmid="2"))
+    with Catalog.open(tmp_path / "cat") as catalog:
+        a = catalog.register(Identifier(pmid="1"), evidence)
+        b = catalog.register(Identifier(pmid="2"), evidence)
         catalog.add_aliases([(a.id, "neurostore", "BASE1")])
         catalog.add_aliases([(b.id, "neurostore", "BASE1")])
         assert catalog.resolve(Identifier(neurostore="BASE1")).id == a.id
@@ -449,24 +446,24 @@ def test_a_learned_alias_does_not_move_from_its_article(tmp_path, evidence):
 def test_an_already_fused_article_still_resolves(tmp_path, evidence):
     """Looking up an article that holds two PMIDs from before the guard must
     find it, not make an empty new article for every lookup."""
-    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
-        fused = catalog.register(Identifier(pmid="1", doi="10.1/a"))
+    with Catalog.open(tmp_path / "cat") as catalog:
+        fused = catalog.register(Identifier(pmid="1", doi="10.1/a"), evidence)
         catalog._conn.execute("INSERT INTO aliases(kind, value, article_id) VALUES('pmid', '2', ?)", (fused.id,))
         catalog.add_aliases([(fused.id, "neurostore", "BASE1")])
         before = catalog._conn.execute("SELECT count(*) FROM articles").fetchone()[0]
-        assert catalog.register(Identifier(neurostore="BASE1")).id == fused.id
-        assert catalog.register(Identifier(pmid="2")).id == fused.id
+        assert catalog.register(Identifier(neurostore="BASE1"), evidence).id == fused.id
+        assert catalog.register(Identifier(pmid="2"), evidence).id == fused.id
         assert catalog._conn.execute("SELECT count(*) FROM articles").fetchone()[0] == before
         # a new paper's PMID beside the fused article's DOI is still refused
-        assert catalog.register(Identifier(pmid="3", doi="10.1/a")).id != fused.id
+        assert catalog.register(Identifier(pmid="3", doi="10.1/a"), evidence).id != fused.id
 
 
 SICI = "10.1002/(sici)1097-0193(1997)5:4<312::aid-hbm18>3.0.co;2-f"
 
 
-def _as_version_one(root, *aliases, evidence):
+def _as_version_one(root, *aliases, ):
     """A catalog written before doi aliases were bare: URL-form rows, schema version 1."""
-    with Catalog.open(root, evidence=evidence) as cat:
+    with Catalog.open(root) as cat:
         for article, kind, value in aliases:
             cat._conn.execute(
                 "INSERT OR IGNORE INTO articles(id, created_at) VALUES(?, '2026-01-01')", (article,)
@@ -477,8 +474,8 @@ def _as_version_one(root, *aliases, evidence):
         cat._conn.execute("UPDATE meta SET value='1' WHERE key='schema_version'")
 
 
-def _aliases(root, kind="doi", *, evidence):
-    with Catalog.open(root, evidence=evidence) as cat:
+def _aliases(root, kind="doi"):
+    with Catalog.open(root) as cat:
         return {
             (row["value"], row["article_id"])
             for row in cat._conn.execute("SELECT value, article_id FROM aliases WHERE kind=?", (kind,))
@@ -487,38 +484,35 @@ def _aliases(root, kind="doi", *, evidence):
 
 def test_a_url_form_doi_alias_is_found_again_as_the_bare_doi(tmp_path, evidence):
     root = tmp_path / "cat"
-    _as_version_one(root, ("a1", "pmid", "9234"), ("a1", "doi", "https://doi.org/" + SICI),
-            evidence=evidence)
+    _as_version_one(root, ("a1", "pmid", "9234"), ("a1", "doi", "https://doi.org/" + SICI))
 
-    with Catalog.open(root, evidence=evidence) as cat:
-        ref = cat.register(Identifier(pmid="9234", doi="https://doi.org/" + SICI))
+    with Catalog.open(root) as cat:
+        ref = cat.register(Identifier(pmid="9234", doi="https://doi.org/" + SICI), evidence)
         assert ref.id == "a1"
         assert cat.count_articles() == 1
-    assert _aliases(root, evidence=evidence) == {(SICI, "a1")}
+    assert _aliases(root) == {(SICI, "a1")}
 
 
-def test_the_bare_doi_the_same_article_already_has_replaces_its_url_form(tmp_path, evidence):
+def test_the_bare_doi_the_same_article_already_has_replaces_its_url_form(tmp_path):
     root = tmp_path / "cat"
-    _as_version_one(root, ("a1", "doi", "https://doi.org/" + SICI), ("a1", "doi", SICI),
-            evidence=evidence)
-    assert _aliases(root, evidence=evidence) == {(SICI, "a1")}
+    _as_version_one(root, ("a1", "doi", "https://doi.org/" + SICI), ("a1", "doi", SICI))
+    assert _aliases(root) == {(SICI, "a1")}
 
 
 def test_a_bare_doi_another_article_has_is_merged_when_it_can_be_the_same_paper(
-        tmp_path, evidence):
+        tmp_path):
     root = tmp_path / "cat"
-    _as_version_one(root, ("a1", "doi", "https://doi.org/" + SICI), ("a2", "doi", SICI),
-            evidence=evidence)
-    assert _aliases(root, evidence=evidence) == {(SICI, "a1")}
-    assert _articles(root, evidence=evidence) == {("a1", None), ("a2", "a1")}
+    _as_version_one(root, ("a1", "doi", "https://doi.org/" + SICI), ("a2", "doi", SICI))
+    assert _aliases(root) == {(SICI, "a1")}
+    assert _articles(root) == {("a1", None), ("a2", "a1")}
 
 
-def test_a_current_catalog_is_not_rewritten(tmp_path, evidence):
+def test_a_current_catalog_is_not_rewritten(tmp_path):
     root = tmp_path / "cat"
-    with Catalog.open(root, evidence=evidence) as cat:
+    with Catalog.open(root) as cat:
         cat._conn.execute("INSERT INTO articles(id, created_at) VALUES('a1', '2026-01-01')")
         cat._conn.execute("INSERT INTO aliases(kind, value, article_id) VALUES('doi', 'https://x.org/10.1/a', 'a1')")
-    assert _aliases(root, evidence=evidence) == {("https://x.org/10.1/a", "a1")}
+    assert _aliases(root) == {("https://x.org/10.1/a", "a1")}
 
 
 # -- doi case --------------------------------------------------------------------
@@ -526,11 +520,11 @@ def test_a_current_catalog_is_not_rewritten(tmp_path, evidence):
 UPPER = "10.1001/ARCHGENPSYCHIATRY.2012.135"
 
 
-def test_a_doi_is_found_whatever_its_case(catalog):
+def test_a_doi_is_found_whatever_its_case(catalog, evidence):
     """A search service that lower-cases DOIs used to make a second article."""
-    first = catalog.register(Identifier(pmid="1", doi=UPPER))
+    first = catalog.register(Identifier(pmid="1", doi=UPPER), evidence)
     assert catalog.resolve(Identifier(doi=UPPER.lower())).id == first.id
-    assert catalog.register(Identifier(doi=UPPER.lower())).id == first.id
+    assert catalog.register(Identifier(doi=UPPER.lower()), evidence).id == first.id
     assert catalog.count_articles() == 1
 
 
@@ -539,24 +533,23 @@ def test_a_doi_assigned_after_construction_is_stored_lower_case(catalog, evidenc
     identifier = Identifier(pmid="1")
     identifier.doi = UPPER
     assert identifier.doi == UPPER.lower()
-    ref = catalog.register(identifier)
+    ref = catalog.register(identifier, evidence)
     catalog.add_aliases([(ref.id, "doi", "10.1/LEARNED")])
-    assert _aliases(catalog.root,
-            evidence=evidence) == {(UPPER.lower(), ref.id), ("10.1/learned", ref.id)}
+    assert _aliases(catalog.root) == {(UPPER.lower(), ref.id), ("10.1/learned", ref.id)}
     assert catalog.resolve(Identifier(doi="10.1/Learned")).id == ref.id
 
 
-def test_only_basic_latin_letters_ignore_case(catalog):
+def test_only_basic_latin_letters_ignore_case(catalog, evidence):
     """DOI Handbook 4.3.4: A and a are one letter, Á and á are two."""
-    upper = catalog.register(Identifier(doi="10.26321/Á.GUTIÉRREZ.ZARZA.02.2018.03"))
-    lower = catalog.register(Identifier(doi="10.26321/á.gutiérrez.zarza.02.2018.03"))
+    upper = catalog.register(Identifier(doi="10.26321/Á.GUTIÉRREZ.ZARZA.02.2018.03"), evidence)
+    lower = catalog.register(Identifier(doi="10.26321/á.gutiérrez.zarza.02.2018.03"), evidence)
     assert upper.id != lower.id
     assert upper.identifier.doi == "10.26321/Á.gutiÉrrez.zarza.02.2018.03"
 
 
-def _as_version_two(root, *aliases, outcomes=(), evidence):
+def _as_version_two(root, *aliases, outcomes=(), ):
     """A catalog written while doi aliases kept their case: schema version 2."""
-    with Catalog.open(root, evidence=evidence) as cat:
+    with Catalog.open(root) as cat:
         for article, created, kind, value in aliases:
             cat._conn.execute(
                 "INSERT OR IGNORE INTO articles(id, created_at) VALUES(?, ?)", (article, created)
@@ -567,30 +560,29 @@ def _as_version_two(root, *aliases, outcomes=(), evidence):
         cat._conn.execute("UPDATE meta SET value='2' WHERE key='schema_version'")
 
 
-def _articles(root, evidence):
-    with Catalog.open(root, evidence=evidence) as cat:
+def _articles(root):
+    with Catalog.open(root) as cat:
         rows = cat._conn.execute("SELECT id, merged_into FROM articles")
         return {(row["id"], row["merged_into"]) for row in rows}
 
 
 def test_an_upper_case_doi_alias_is_found_again_lower_case(tmp_path, evidence):
     root = tmp_path / "cat"
-    _as_version_two(root, ("a1", "2026-01-01", "pmid", "1"), ("a1", "2026-01-01", "doi", UPPER),
-            evidence=evidence)
-    with Catalog.open(root, evidence=evidence) as cat:
-        assert cat.register(Identifier(doi=UPPER.lower())).id == "a1"
+    _as_version_two(root, ("a1", "2026-01-01", "pmid", "1"), ("a1", "2026-01-01", "doi", UPPER))
+    with Catalog.open(root) as cat:
+        assert cat.register(Identifier(doi=UPPER.lower()), evidence).id == "a1"
         assert cat.count_articles() == 1
-    assert _aliases(root, evidence=evidence) == {(UPPER.lower(), "a1")}
+    assert _aliases(root) == {(UPPER.lower(), "a1")}
 
 
-def test_the_other_spelling_of_an_articles_own_doi_is_dropped(tmp_path, evidence):
+def test_the_other_spelling_of_an_articles_own_doi_is_dropped(tmp_path):
     root = tmp_path / "cat"
     _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER),
-                    ("a1", "2026-01-01", "doi", UPPER.lower()), evidence=evidence)
-    assert _aliases(root, evidence=evidence) == {(UPPER.lower(), "a1")}
+                    ("a1", "2026-01-01", "doi", UPPER.lower()))
+    assert _aliases(root) == {(UPPER.lower(), "a1")}
 
 
-def test_two_articles_of_one_doi_are_merged_with_their_artifacts(tmp_path, caplog, evidence):
+def test_two_articles_of_one_doi_are_merged_with_their_artifacts(tmp_path, caplog):
     root = tmp_path / "cat"
     _as_version_two(
         root,
@@ -598,23 +590,22 @@ def test_two_articles_of_one_doi_are_merged_with_their_artifacts(tmp_path, caplo
         ("old", "2026-01-01", "doi", "10.1/ab"),
         outcomes=[Outcome(article_id="new", stage="download", source="ace", payload={"n": 1}),
                   Outcome(article_id="old", stage="extract", source="ace", payload={"n": 2})],
-                          evidence=evidence,
     )
 
     with caplog.at_level("INFO", logger="ingestion_workflow.catalog.store"):
-        with Catalog.open(root, evidence=evidence) as cat:
+        with Catalog.open(root) as cat:
             assert cat.resolve(Identifier(doi="10.1/AB")).id == "old"
             assert cat.resolve(Identifier(pmid="1")).id == "old"
             assert {a.stage for a in cat.artifacts_for_article("old")} == {"download", "extract"}
             assert cat.payload(cat.artifact("old", "download", "ace")) == {"n": 1}
             assert cat.blobs.exists(cat.artifact("old", "download", "ace").blob)
             assert cat.stranded_artifacts() == 0
-    assert _articles(root, evidence=evidence) == {("old", None), ("new", "old")}
-    assert _aliases(root, evidence=evidence) == {("10.1/ab", "old")}
+    assert _articles(root) == {("old", None), ("new", "old")}
+    assert _aliases(root) == {("10.1/ab", "old")}
     assert "1 articles merged" in caplog.text
 
 
-def test_two_papers_sharing_a_doi_are_left_and_logged(tmp_path, caplog, evidence):
+def test_two_papers_sharing_a_doi_are_left_and_logged(tmp_path, caplog):
     """The production case: 10.1093/CERCOR/11.9.888 on PMID 11552704 and
     10.1093/cercor/11.9.888 on PMID 11532893; one of them has the wrong DOI."""
     root = tmp_path / "cat"
@@ -624,16 +615,15 @@ def test_two_papers_sharing_a_doi_are_left_and_logged(tmp_path, caplog, evidence
         ("a1", "2026-01-01", "doi", "10.1093/CERCOR/11.9.888"),
         ("a2", "2026-01-01", "pmid", "11532893"),
         ("a2", "2026-01-01", "doi", "10.1093/cercor/11.9.888"),
-        evidence=evidence,
     )
     with caplog.at_level("INFO", logger="ingestion_workflow.catalog.store"):
-        assert _articles(root, evidence=evidence) == {("a1", None), ("a2", None)}
-    assert _aliases(root, evidence=evidence) == {
+        assert _articles(root) == {("a1", None), ("a2", None)}
+    assert _aliases(root) == {
         ("10.1093/CERCOR/11.9.888", "a1"), ("10.1093/cercor/11.9.888", "a2")}
     assert "another paper" in caplog.text and "1 left" in caplog.text
 
 
-def test_canonicalising_doi_aliases_again_changes_nothing(tmp_path, evidence):
+def test_canonicalising_doi_aliases_again_changes_nothing(tmp_path):
     root = tmp_path / "cat"
     _as_version_two(
         root,
@@ -641,37 +631,35 @@ def test_canonicalising_doi_aliases_again_changes_nothing(tmp_path, evidence):
         ("a2", "2026-01-01", "pmid", "1"), ("a2", "2026-01-01", "doi", "10.1/X"),
         ("a3", "2026-01-01", "pmid", "2"), ("a3", "2026-01-01", "doi", "10.1/x"),
         ("a4", "2026-01-01", "doi", "10.1/Y"), ("a5", "2026-01-02", "doi", "10.1/y"),
-                evidence=evidence,
     )
-    first = (_articles(root, evidence=evidence), _aliases(root, evidence=evidence))
+    first = (_articles(root), _aliases(root))
     assert first[1] == {
         (UPPER.lower(), "a1"), ("10.1/X", "a2"), ("10.1/x", "a3"), ("10.1/y", "a4")}
-    with Catalog.open(root, evidence=evidence) as cat:
+    with Catalog.open(root) as cat:
         with cat._write() as conn:
             again = cat._canonical_doi_aliases(conn)
     assert again == {"rewritten": 0, "dropped": 0, "merged": 0, "left": 1}
-    assert (_articles(root, evidence=evidence), _aliases(root, evidence=evidence)) == first
+    assert (_articles(root), _aliases(root)) == first
 
 
-def test_an_article_merged_earlier_in_the_pass_is_followed(tmp_path, caplog, evidence):
+def test_an_article_merged_earlier_in_the_pass_is_followed(tmp_path, caplog):
     """The second spelling still names the article the first one merged away."""
     root = tmp_path / "cat"
     _as_version_two(
         root,
         ("old", "2026-01-01", "doi", "10.1/ab"),
         ("new", "2026-02-01", "doi", "10.1/AB"), ("new", "2026-02-01", "doi", "10.1/Ab"),
-                evidence=evidence,
     )
     with caplog.at_level("INFO", logger="ingestion_workflow.catalog.store"):
-        assert _aliases(root, evidence=evidence) == {("10.1/ab", "old")}
+        assert _aliases(root) == {("10.1/ab", "old")}
     assert "2 other spellings dropped, 1 articles merged" in caplog.text
 
 
-def test_a_migration_backs_the_catalog_up_first(tmp_path, caplog, evidence):
+def test_a_migration_backs_the_catalog_up_first(tmp_path, caplog):
     root = tmp_path / "cat"
-    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER), evidence=evidence)
+    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER))
     with caplog.at_level("INFO", logger="ingestion_workflow.catalog.store"):
-        assert _aliases(root, evidence=evidence) == {(UPPER.lower(), "a1")}
+        assert _aliases(root) == {(UPPER.lower(), "a1")}
     copy = root / "catalog.pre-v2.sqlite"
     assert str(copy) in caplog.text
     with sqlite3.connect(f"file:{copy}?mode=ro", uri=True) as conn:
@@ -686,22 +674,21 @@ def _version_and_dois(root):
         return version, {r for r in conn.execute("SELECT value, article_id FROM aliases")}
 
 
-def test_without_a_backup_nothing_is_migrated(tmp_path, evidence):
+def test_without_a_backup_nothing_is_migrated(tmp_path):
     root = tmp_path / "cat"
-    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER), evidence=evidence)
+    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER))
     (root / "catalog.pre-v2.sqlite").write_text("an earlier copy")
     with pytest.raises(FileExistsError, match="pre-v2"):
-        Catalog.open(root, evidence=evidence)
+        Catalog.open(root)
     assert _version_and_dois(root) == ("2", {(UPPER, "a1")})
 
 
-def test_a_failed_migration_leaves_the_catalog_as_it_was(tmp_path, monkeypatch, evidence):
+def test_a_failed_migration_leaves_the_catalog_as_it_was(tmp_path, monkeypatch):
     root = tmp_path / "cat"
     _as_version_two(
         root,
         ("a1", "2026-01-01", "doi", "10.1/AA"),          # rewritten before the failure
         ("a2", "2026-01-01", "doi", "10.1/BB"), ("a3", "2026-01-02", "doi", "10.1/bb"),
-                evidence=evidence,
     )
     before = _version_and_dois(root)
 
@@ -710,15 +697,15 @@ def test_a_failed_migration_leaves_the_catalog_as_it_was(tmp_path, monkeypatch, 
 
     monkeypatch.setattr(Catalog, "_merge", crash)
     with pytest.raises(OSError, match="disk full"):
-        Catalog.open(root, evidence=evidence)
+        Catalog.open(root)
     assert _version_and_dois(root) == before
 
 
 def test_a_catalog_opened_during_its_migration_waits_and_finds_it_current(
-        tmp_path, monkeypatch, evidence):
+        tmp_path, monkeypatch):
     """A second process must not back up or migrate again, nor fail on the first's copy."""
     root = tmp_path / "cat"
-    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER), evidence=evidence)
+    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER))
     rewrite = Catalog._canonical_doi_aliases
     migrating = threading.Event()
 
@@ -732,7 +719,7 @@ def test_a_catalog_opened_during_its_migration_waits_and_finds_it_current(
 
     def open_it():
         try:
-            Catalog.open(root, evidence=evidence).close()
+            Catalog.open(root).close()
         except BaseException as exc:  # noqa: BLE001 - reported below
             errors.append(exc)
 
@@ -748,7 +735,7 @@ def test_a_catalog_opened_during_its_migration_waits_and_finds_it_current(
     assert sorted(p.name for p in root.glob("catalog.pre-*")) == ["catalog.pre-v2.sqlite"]
 
 
-def test_the_rewrite_and_the_new_version_commit_together(tmp_path, monkeypatch, evidence):
+def test_the_rewrite_and_the_new_version_commit_together(tmp_path, monkeypatch):
     """A failure writing the version undoes the rewrite too."""
     from ingestion_workflow.catalog import store
 
@@ -757,30 +744,30 @@ def test_the_rewrite_and_the_new_version_commit_together(tmp_path, monkeypatch, 
             raise OSError("disk full")
 
     root = tmp_path / "cat"
-    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER), evidence=evidence)
+    _as_version_two(root, ("a1", "2026-01-01", "doi", UPPER))
     monkeypatch.setattr(store, "SCHEMA_VERSION", Unwritable(3))
     with pytest.raises(OSError, match="disk full"):
-        Catalog.open(root, evidence=evidence)
+        Catalog.open(root)
     assert _version_and_dois(root) == ("2", {(UPPER, "a1")})
 
 
-def test_code_older_than_the_catalog_refuses_to_open_it(tmp_path, monkeypatch, evidence):
+def test_code_older_than_the_catalog_refuses_to_open_it(tmp_path, monkeypatch):
     """Older code would write its own version back and register the upper-case
     spelling as a second article."""
     from ingestion_workflow.catalog import store
 
     root = tmp_path / "cat"
-    Catalog.open(root, evidence=evidence).close()
+    Catalog.open(root).close()
     monkeypatch.setattr(store, "SCHEMA_VERSION", 2)
     with pytest.raises(RuntimeError, match="schema version 4; this code reads version 2"):
-        Catalog.open(root, evidence=evidence)
+        Catalog.open(root)
     assert _version_and_dois(root)[0] == "4"
 
 
-def test_a_paper_s_duplicate_pubmed_records_are_presented_beside_its_pmid(catalog):
+def test_a_paper_s_duplicate_pubmed_records_are_presented_beside_its_pmid(catalog, evidence):
     """Two PubMed records of one paper, merged on purpose: the second is held as a
     duplicate record's, and every stage that asks PubMed of the paper asks of both."""
-    ref = catalog.register(Identifier(pmid="12671262"))
+    ref = catalog.register(Identifier(pmid="12671262"), evidence)
     catalog._conn.executemany(
         "INSERT INTO aliases(kind, value, article_id) VALUES('alternative_pmid', ?, ?)",
         [("9999999999", ref.id), ("22387514", ref.id)])
@@ -788,11 +775,12 @@ def test_a_paper_s_duplicate_pubmed_records_are_presented_beside_its_pmid(catalo
         assert presented.pmid == "12671262"
         assert presented.alternative_pmids == ("22387514", "9999999999")
         assert presented.pmids == ["12671262", "22387514", "9999999999"]
-    assert catalog.identifier(catalog.register(Identifier(pmid="7")).id).alternative_pmids == ()
+    assert catalog.identifier(catalog.register(Identifier(pmid="7"),
+            evidence).id).alternative_pmids == ()
 
 
-def test_an_article_holding_a_journal_and_a_preprint_doi_presents_the_journal_s(catalog):
-    ref = catalog.register(Identifier(doi="10.1101/2023.10.26.564245"))
+def test_an_article_holding_a_journal_and_a_preprint_doi_presents_the_journal_s(catalog, evidence):
+    ref = catalog.register(Identifier(doi="10.1101/2023.10.26.564245"), evidence)
     catalog._conn.execute("INSERT INTO aliases(kind, value, article_id) VALUES('doi', ?, ?)",
                           ("10.1038/s41593-024-01787-0", ref.id))
     assert catalog.identifier(ref.id).doi == "10.1038/s41593-024-01787-0"
@@ -800,10 +788,10 @@ def test_an_article_holding_a_journal_and_a_preprint_doi_presents_the_journal_s(
 
 
 def test_a_search_follows_its_articles_through_a_merge(tmp_path, evidence):
-    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
-        pmid_only = catalog.register(Identifier(pmid="1"))
-        doi_only = catalog.register(Identifier(doi="10.1/m"))
-        other = catalog.register(Identifier(doi="10.1/o"))
+    with Catalog.open(tmp_path / "cat") as catalog:
+        pmid_only = catalog.register(Identifier(pmid="1"), evidence)
+        doi_only = catalog.register(Identifier(doi="10.1/m"), evidence)
+        other = catalog.register(Identifier(doi="10.1/o"), evidence)
         search_id = catalog.record_search(
             "q", "2026", {"pubmed": "p", "sciencedirect": "s", "openalex": "o"},
             {
@@ -817,7 +805,7 @@ def test_a_search_follows_its_articles_through_a_merge(tmp_path, evidence):
         assert catalog.search_articles(search_id, only="pubmed") == []
 
         # enrichment later learns the two records are one article
-        merged = catalog.register(Identifier(pmid="1", doi="10.1/m"))
+        merged = catalog.register(Identifier(pmid="1", doi="10.1/m"), evidence)
 
         assert catalog.search_articles(search_id, only="sciencedirect") == [other.id]
         both = catalog.search_articles(search_id, found_by=["pubmed"])
@@ -832,9 +820,9 @@ def test_a_search_follows_its_articles_through_a_merge(tmp_path, evidence):
 
 def test_a_merge_that_leaves_the_hits_alone_strands_none(tmp_path, evidence):
     """A process without the search tables merges articles and never touches their hits."""
-    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
-        old = catalog.register(Identifier(pmid="1"))
-        new = catalog.register(Identifier(doi="10.1/m"))
+    with Catalog.open(tmp_path / "cat") as catalog:
+        old = catalog.register(Identifier(pmid="1"), evidence)
+        new = catalog.register(Identifier(doi="10.1/m"), evidence)
         search_id = catalog.record_search(
             "q", "2026", {"pubmed": "p", "sciencedirect": "s"},
             {"pubmed": [old.id], "sciencedirect": [new.id]},
@@ -853,8 +841,8 @@ def test_a_merge_that_leaves_the_hits_alone_strands_none(tmp_path, evidence):
 
 
 def test_a_search_names_its_articles_oldest_first(tmp_path, evidence):
-    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
-        refs = [catalog.register(Identifier(doi=f"10.1/{n}")) for n in "abc"]
+    with Catalog.open(tmp_path / "cat") as catalog:
+        refs = [catalog.register(Identifier(doi=f"10.1/{n}"), evidence) for n in "abc"]
         # ids sort differently from creation
         for ref, day in zip(refs, ("2026-01-03", "2026-01-01", "2026-01-02")):
             catalog._conn.execute("UPDATE articles SET created_at=? WHERE id=?", (day, ref.id))
@@ -872,23 +860,23 @@ def test_a_catalog_from_before_searches_gains_the_tables_and_stays_at_its_versio
         tmp_path, evidence):
     import sqlite3
 
-    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
-        catalog.register(Identifier(doi="10.1/z"))
+    with Catalog.open(tmp_path / "cat") as catalog:
+        catalog.register(Identifier(doi="10.1/z"), evidence)
     conn = sqlite3.connect(tmp_path / "cat" / "catalog.sqlite")
     conn.execute("DROP TABLE searches")
     conn.execute("DROP TABLE search_hits")
     conn.commit()
     conn.close()
 
-    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "cat") as catalog:
         assert catalog.searches() == []
         assert catalog.count_articles() == 1
     assert not list((tmp_path / "cat").glob("catalog.pre-*"))
 
 
 def test_an_unknown_search_or_provider_is_refused(tmp_path, evidence):
-    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
-        ref = catalog.register(Identifier(doi="10.1/k"))
+    with Catalog.open(tmp_path / "cat") as catalog:
+        ref = catalog.register(Identifier(doi="10.1/k"), evidence)
         search_id = catalog.record_search("q", "2026", {"pubmed": "p"}, {"pubmed": [ref.id]})
         with pytest.raises(KeyError, match="no search 9"):
             catalog.search_articles(9)
@@ -896,13 +884,13 @@ def test_an_unknown_search_or_provider_is_refused(tmp_path, evidence):
             catalog.search_articles(search_id, only="openalex")
 
 
-def test_a_merge_carries_exclusions_over(catalog):
-    a = catalog.register(Identifier(doi="10.1/x1"))
-    b = catalog.register(Identifier(pmcid="PMC41"))
+def test_a_merge_carries_exclusions_over(catalog, evidence):
+    a = catalog.register(Identifier(doi="10.1/x1"), evidence)
+    b = catalog.register(Identifier(pmcid="PMC41"), evidence)
     catalog.exclude([(a.id, "t1", "no coordinates", ""), (b.id, "t2", "a figure", "see paper")])
     catalog.exclude([(b.id, WHOLE_ARTICLE, "review", "")])
 
-    merged = catalog.register(Identifier(doi="10.1/x1", pmcid="PMC41"))
+    merged = catalog.register(Identifier(doi="10.1/x1", pmcid="PMC41"), evidence)
 
     marks = catalog.exclusions([merged.id])
     assert set(marks[merged.id]) == {"t1", "t2", WHOLE_ARTICLE}
@@ -910,21 +898,21 @@ def test_a_merge_carries_exclusions_over(catalog):
     assert set(catalog.exclusions()) == {merged.id}
 
 
-def test_both_sides_excluding_one_table_leave_one_verdict(catalog):
-    a = catalog.register(Identifier(doi="10.1/x2"))
-    b = catalog.register(Identifier(pmcid="PMC42"))
+def test_both_sides_excluding_one_table_leave_one_verdict(catalog, evidence):
+    a = catalog.register(Identifier(doi="10.1/x2"), evidence)
+    b = catalog.register(Identifier(pmcid="PMC42"), evidence)
     catalog.exclude([(a.id, "t1", "no coordinates", ""), (b.id, "t1", "a figure", "")])
 
-    merged = catalog.register(Identifier(doi="10.1/x2", pmcid="PMC42"))
+    merged = catalog.register(Identifier(doi="10.1/x2", pmcid="PMC42"), evidence)
 
     assert list(catalog.exclusions()) == [merged.id]
     assert list(catalog.exclusions()[merged.id]) == ["t1"]
 
 
-def test_an_exclusion_on_a_retired_id_lands_on_the_survivor(catalog):
-    a = catalog.register(Identifier(doi="10.1/x3"))
-    b = catalog.register(Identifier(pmcid="PMC43"))
-    merged = catalog.register(Identifier(doi="10.1/x3", pmcid="PMC43"))
+def test_an_exclusion_on_a_retired_id_lands_on_the_survivor(catalog, evidence):
+    a = catalog.register(Identifier(doi="10.1/x3"), evidence)
+    b = catalog.register(Identifier(pmcid="PMC43"), evidence)
+    merged = catalog.register(Identifier(doi="10.1/x3", pmcid="PMC43"), evidence)
     retired = b.id if merged.id == a.id else a.id
 
     catalog.exclude([(retired, "t1", "a figure", "")])
@@ -940,15 +928,15 @@ def _strand(catalog, article_id, table_id, reason="older code", note=""):
     )
 
 
-def _merged_pair(catalog, tag):
-    a = catalog.register(Identifier(doi=f"10.1/{tag}"))
-    b = catalog.register(Identifier(pmcid=f"PMC{tag}"))
-    survivor = catalog.register(Identifier(doi=f"10.1/{tag}", pmcid=f"PMC{tag}")).id
+def _merged_pair(catalog, tag, evidence):
+    a = catalog.register(Identifier(doi=f"10.1/{tag}"), evidence)
+    b = catalog.register(Identifier(pmcid=f"PMC{tag}"), evidence)
+    survivor = catalog.register(Identifier(doi=f"10.1/{tag}", pmcid=f"PMC{tag}"), evidence).id
     return survivor, (b.id if survivor == a.id else a.id)
 
 
-def test_exclusions_read_a_row_an_older_merge_left_on_a_retired_id(catalog):
-    survivor, retired = _merged_pair(catalog, "61")
+def test_exclusions_read_a_row_an_older_merge_left_on_a_retired_id(catalog, evidence):
+    survivor, retired = _merged_pair(catalog, "61", evidence=evidence)
     _strand(catalog, retired, "t1")
     _strand(catalog, retired, WHOLE_ARTICLE)
 
@@ -959,16 +947,16 @@ def test_exclusions_read_a_row_an_older_merge_left_on_a_retired_id(catalog):
     assert catalog.stranded_exclusions() == 2
 
 
-def test_a_row_stranded_beside_the_survivors_own_shows_the_survivors(catalog):
-    survivor, retired = _merged_pair(catalog, "62")
+def test_a_row_stranded_beside_the_survivors_own_shows_the_survivors(catalog, evidence):
+    survivor, retired = _merged_pair(catalog, "62", evidence=evidence)
     catalog.exclude([(survivor, "t1", "mine", "")])
     _strand(catalog, retired, "t1", reason="older code")
 
     assert catalog.exclusions([survivor])[survivor]["t1"]["reason"] == "mine"
 
 
-def test_unexclude_by_a_retired_id_withdraws_the_survivors_verdicts(catalog):
-    survivor, retired = _merged_pair(catalog, "63")
+def test_unexclude_by_a_retired_id_withdraws_the_survivors_verdicts(catalog, evidence):
+    survivor, retired = _merged_pair(catalog, "63", evidence=evidence)
     catalog.exclude([(survivor, "t1", "r", ""), (survivor, "t2", "r", "")])
     _strand(catalog, retired, "t3")
 
@@ -978,8 +966,8 @@ def test_unexclude_by_a_retired_id_withdraws_the_survivors_verdicts(catalog):
     assert catalog.exclusions() == {}
 
 
-def test_exclusions_follow_a_chain_of_merges(catalog):
-    ids = [catalog.register(Identifier(pmid=str(n))).id for n in (71, 72, 73)]
+def test_exclusions_follow_a_chain_of_merges(catalog, evidence):
+    ids = [catalog.register(Identifier(pmid=str(n)), evidence).id for n in (71, 72, 73)]
     catalog._conn.execute("UPDATE articles SET merged_into=? WHERE id=?", (ids[1], ids[0]))
     catalog._conn.execute("UPDATE articles SET merged_into=? WHERE id=?", (ids[2], ids[1]))
     _strand(catalog, ids[0], "t1")
@@ -995,8 +983,9 @@ def test_exclusions_follow_a_chain_of_merges(catalog):
     assert {r["article_id"] for r in rows} == {ids[2]}
 
 
-def test_repair_hands_over_a_whole_article_row_beside_table_rows_and_reports_clashes(catalog):
-    survivor, retired = _merged_pair(catalog, "64")
+def test_repair_hands_over_a_whole_article_row_beside_table_rows_and_reports_clashes(
+        catalog, evidence):
+    survivor, retired = _merged_pair(catalog, "64", evidence=evidence)
     catalog.exclude([(survivor, "t1", "mine", ""), (survivor, "t2", "mine", "")])
     _strand(catalog, retired, WHOLE_ARTICLE)
     _strand(catalog, retired, "t1", reason="lost reason", note="n")
@@ -1012,9 +1001,9 @@ def test_repair_hands_over_a_whole_article_row_beside_table_rows_and_reports_cla
     assert catalog.repair_merges().exclusions_moved == 0
 
 
-def test_reads_resolve_a_chain_a_cycle_and_stranded_rows_to_the_live_article(catalog):
-    chain = [catalog.register(Identifier(pmid=str(n))).id for n in (81, 82, 83)]
-    loop = [catalog.register(Identifier(pmid=str(n))).id for n in (84, 85)]
+def test_reads_resolve_a_chain_a_cycle_and_stranded_rows_to_the_live_article(catalog, evidence):
+    chain = [catalog.register(Identifier(pmid=str(n)), evidence).id for n in (81, 82, 83)]
+    loop = [catalog.register(Identifier(pmid=str(n)), evidence).id for n in (84, 85)]
     for retired, into in [(chain[0], chain[1]), (chain[1], chain[2]), (loop[0], loop[1]), (loop[1], loop[0])]:
         catalog._conn.execute("UPDATE articles SET merged_into=? WHERE id=?", (into, retired))
     _strand(catalog, chain[0], WHOLE_ARTICLE)
@@ -1031,9 +1020,9 @@ def test_reads_resolve_a_chain_a_cycle_and_stranded_rows_to_the_live_article(cat
     assert set(catalog.exclusions()) == {loop[0]}
 
 
-def test_a_failed_repair_leaves_every_row_where_it_was(catalog):
-    first = _merged_pair(catalog, "65")
-    second = _merged_pair(catalog, "66")
+def test_a_failed_repair_leaves_every_row_where_it_was(catalog, evidence):
+    first = _merged_pair(catalog, "65", evidence=evidence)
+    second = _merged_pair(catalog, "66", evidence=evidence)
     _strand(catalog, first[1], "t1")
     _strand(catalog, second[1], "t1")
     # refuses whichever hand-over comes second, once a survivor holds a row

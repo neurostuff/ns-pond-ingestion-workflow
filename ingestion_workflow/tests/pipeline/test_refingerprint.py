@@ -61,7 +61,7 @@ class _Results:
 
 
 @pytest.fixture()
-def env(tmp_path, monkeypatch, evidence):
+def env(tmp_path, monkeypatch):
     gate = tmp_path / "gate.joblib"
     gate.write_bytes(b"a fitted gate")
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
@@ -75,7 +75,7 @@ def env(tmp_path, monkeypatch, evidence):
     stages = [DownloadStage(settings), ExtractStage(settings), PassagesStage(settings),
               MetadataStage(settings), TriageStage(settings), AnalysesStage(settings), prose,
               ResolveStage(settings), roles, SpaceStage(settings)]
-    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
+    with Catalog.open(settings.catalog_root) as catalog:
         yield settings, catalog, stages, tmp_path
 
 
@@ -126,12 +126,13 @@ def _table():
 
 
 @pytest.fixture()
-def migrated(env):
+def migrated(env, evidence):
     """`tables` and `prose_only` made all the way to space from a migrated download and
     metadata; `lost` whose download's blob is gone; `stale`, extracted by an older extractor."""
     settings, catalog, stages, tmp_path = env
     ctx = Context(settings, catalog)
-    tables, prose_only, lost, stale = (catalog.register(Identifier(pmid=str(n), pmcid=f"PMC{n}"))
+    tables, prose_only, lost, stale = (catalog.register(Identifier(pmid=str(n), pmcid=f"PMC{n}"),
+            evidence)
                                        for n in range(1, 5))
     for ref in (tables, prose_only):
         download = _download(catalog, ref, tmp_path)
@@ -249,11 +250,11 @@ def test_a_fingerprint_written_meanwhile_is_left_alone(migrated):
     assert old.fingerprint == ""
 
 
-def test_an_artifact_no_plan_asks_about_keeps_no_fingerprint(env):
+def test_an_artifact_no_plan_asks_about_keeps_no_fingerprint(env, evidence):
     """A second download is never read while the first source's is fresh."""
     settings, catalog, stages, tmp_path = env
     settings.download_sources = ["pubget", "ace"]
-    ref = catalog.register(Identifier(pmid="9", pmcid="PMC9"))
+    ref = catalog.register(Identifier(pmid="9", pmcid="PMC9"), evidence)
     fresh = DownloadStage(settings).fingerprint_for(DownloadSource.PUBGET)
     catalog.record([Outcome(article_id=ref.id, stage="download", source="pubget",
                             fingerprint=fresh, payload={"files": []}),
@@ -269,14 +270,14 @@ def test_an_artifact_no_plan_asks_about_keeps_no_fingerprint(env):
     assert catalog.artifact(ref.id, "download", "ace").fingerprint == ""
 
 
-def test_the_extraction_standing_in_for_one_set_aside_is_carried(env):
+def test_the_extraction_standing_in_for_one_set_aside_is_carried(env, evidence):
     """A set-aside extraction lets the next source's stand. With no fingerprint it was
     fresh, so the one standing in was read, and it is carried with its download.
 
     The pubget download is stale, so the plan goes on to the ACE one and fills it."""
     settings, catalog, stages, tmp_path = env
     settings.download_sources = ["pubget", "ace"]
-    ref = catalog.register(Identifier(pmid="7", pmcid="PMC7"))
+    ref = catalog.register(Identifier(pmid="7", pmcid="PMC7"), evidence)
     catalog.record([Outcome(article_id=ref.id, stage="download", source="pubget",
                             fingerprint="an older download's", payload={"files": ["pubget"]}),
                     Outcome(article_id=ref.id, stage="download", source="ace",
@@ -327,9 +328,9 @@ def test_prose_read_before_the_metadata_had_a_fingerprint_reuses_its_answers(mig
         assert catalog.artifact(ref.id, "prose").summary["read_again"] == {}
 
 
-def test_a_summary_written_meanwhile_under_the_same_fingerprint_is_left_alone(env):
+def test_a_summary_written_meanwhile_under_the_same_fingerprint_is_left_alone(env, evidence):
     settings, catalog, stages, tmp_path = env
-    ref = catalog.register(Identifier(pmid="8", pmcid="PMC8"))
+    ref = catalog.register(Identifier(pmid="8", pmcid="PMC8"), evidence)
     catalog.record([Outcome(article_id=ref.id, stage="download", source="pubget",
                             payload={"files": []})])
     catalog._conn.execute("UPDATE artifacts SET updated_at='2026-01-01T00:00:00+00:00'")
@@ -342,11 +343,11 @@ def test_a_summary_written_meanwhile_under_the_same_fingerprint_is_left_alone(en
     assert catalog.artifact(ref.id, "download", "pubget").summary == {"a run's": True}
 
 
-def test_only_ok_artifacts_on_current_articles_count_as_empty(env):
+def test_only_ok_artifacts_on_current_articles_count_as_empty(env, evidence):
     settings, catalog, stages, tmp_path = env
-    first = catalog.register(Identifier(doi="10.1/x"))
-    second = catalog.register(Identifier(pmcid="PMC5"))
-    survivor = catalog.register(Identifier(doi="10.1/x", pmcid="PMC5")).id
+    first = catalog.register(Identifier(doi="10.1/x"), evidence)
+    second = catalog.register(Identifier(pmcid="PMC5"), evidence)
+    survivor = catalog.register(Identifier(doi="10.1/x", pmcid="PMC5"), evidence).id
     retired = second.id if survivor == first.id else first.id
     catalog.record([Outcome(article_id=survivor, stage="download", source="pubget",
                             payload={"files": []}),
@@ -360,11 +361,11 @@ def test_only_ok_artifacts_on_current_articles_count_as_empty(env):
 
 @pytest.mark.parametrize("written", [{"fingerprint": "a run's", "payload": {"files": []}},
                                      {"fingerprint": "", "payload": {"files": ["a run's"]}}])
-def test_a_row_written_meanwhile_in_the_same_second_is_left_alone(env, written):
+def test_a_row_written_meanwhile_in_the_same_second_is_left_alone(env, written, evidence):
     """`updated_at` holds whole seconds, so a run writing the row in the second it was
     read is told apart by its fingerprint or its blob."""
     settings, catalog, stages, tmp_path = env
-    ref = catalog.register(Identifier(pmid="6", pmcid="PMC6"))
+    ref = catalog.register(Identifier(pmid="6", pmcid="PMC6"), evidence)
     catalog.record([Outcome(article_id=ref.id, stage="download", source="pubget",
                             payload={"files": []})])
     second = catalog.artifact(ref.id, "download", "pubget").updated_at
@@ -429,10 +430,10 @@ def elsevier(env):
     return settings, catalog, stages, tmp_path
 
 
-def _held(catalog, tmp_path, number):
+def _held(catalog, tmp_path, number, evidence):
     """An article read from elsevier, whose extraction is fresh once the download's
     fingerprint is stored."""
-    ref = catalog.register(Identifier(pmid=str(number), pmcid=f"PMC{number}"))
+    ref = catalog.register(Identifier(pmid=str(number), pmcid=f"PMC{number}"), evidence)
     download = _download_of(catalog, ref, tmp_path, "elsevier")
     catalog.record([Outcome(article_id=ref.id, stage="extract", source="elsevier",
                             fingerprint=extraction_fingerprint("elsevier", download),
@@ -451,11 +452,12 @@ def _refingerprint(elsevier, *refs):
                          catalog.empty_fingerprints())
 
 
-def test_an_extraction_with_no_download_of_its_source_is_reported_not_a_reason_to_stop(elsevier):
+def test_an_extraction_with_no_download_of_its_source_is_reported_not_a_reason_to_stop(
+        elsevier, evidence):
     """Production, 2026-10-20: an ace extraction on an article whose only download is
     elsevier's. No plan asks about it, and no run reads it."""
     _, catalog, _, tmp_path = elsevier
-    ref = _held(catalog, tmp_path, 7)
+    ref = _held(catalog, tmp_path, 7, evidence=evidence)
     _stale_extraction(catalog, ref, "ace", download_source="elsevier")
     found = _refingerprint(elsevier, ref)
 
@@ -466,12 +468,12 @@ def test_an_extraction_with_no_download_of_its_source_is_reported_not_a_reason_t
             if "unreachable" in line] == ["extract"]
 
 
-def test_a_pdf_extraction_read_from_a_wiley_download_is_not_unreachable(elsevier):
+def test_a_pdf_extraction_read_from_a_wiley_download_is_not_unreachable(elsevier, evidence):
     """11,444 production pdf extractions are read from a wiley download, which `pdf`
     stands for. Planned with extract alone, as a later stage asks about it otherwise, the
     stale pdf extraction is left unasked, and is still a reason to stop."""
     settings, catalog, stages, tmp_path = elsevier
-    ref = _held(catalog, tmp_path, 7)
+    ref = _held(catalog, tmp_path, 7, evidence=evidence)
     _download_of(catalog, ref, tmp_path, "wiley")
     _stale_extraction(catalog, ref, "pdf", download_source="wiley")
     found = refingerprint(Context(settings, catalog),
@@ -483,12 +485,12 @@ def test_a_pdf_extraction_read_from_a_wiley_download_is_not_unreachable(elsevier
     assert found.rerun() == {"extract": 1}
 
 
-def test_a_verdict_read_from_an_extraction_that_failed_is_left_as_it_is(elsevier):
+def test_a_verdict_read_from_an_extraction_that_failed_is_left_as_it_is(elsevier, evidence):
     """Production, 2026-10-05: triage verdicts read from an ace extraction that has since
     failed as a page that is not the article. The ace download is OK, metadata is filled
     in, and no plan asks about the verdict, but nothing it was made from is rewritten."""
     _, catalog, _, tmp_path = elsevier
-    ref = catalog.register(Identifier(pmid="8", pmcid="PMC8"))
+    ref = catalog.register(Identifier(pmid="8", pmcid="PMC8"), evidence)
     _download_of(catalog, ref, tmp_path, "ace")
     catalog.record([
         Outcome.failure(ref.id, "extract", "ace", "download failed validation: error_page",
@@ -511,11 +513,12 @@ def test_a_verdict_read_from_an_extraction_that_failed_is_left_as_it_is(elsevier
             if "failed" in line] == ["triage"]
 
 
-def test_passages_read_from_an_extraction_that_is_not_failed_still_stop_the_repair(elsevier):
+def test_passages_read_from_an_extraction_that_is_not_failed_still_stop_the_repair(
+        elsevier, evidence):
     """Left stale where the extraction they chain on changes: the passages are read from
     the elsevier extraction, which is OK and whose fingerprint is carried."""
     _, catalog, _, tmp_path = elsevier
-    ref = _held(catalog, tmp_path, 7)
+    ref = _held(catalog, tmp_path, 7, evidence=evidence)
     catalog.record([Outcome(article_id=ref.id, stage="passages", source="",
                             fingerprint="2ba7e68e00ce", payload={"source": "elsevier",
                                                                   "passages": []},
@@ -527,10 +530,10 @@ def test_passages_read_from_an_extraction_that_is_not_failed_still_stop_the_repa
     assert found.rerun() == {"passages": 1}
 
 
-def _imported_without_text(catalog, tmp_path, **summary):
+def _imported_without_text(catalog, tmp_path, evidence, **summary):
     """Production, 2026-10-23: an article whose pubget extraction was imported with no text
     file, beside an ace extraction that has it and the passages read from that."""
-    ref = catalog.register(Identifier(pmid="7", pmcid="PMC7"))
+    ref = catalog.register(Identifier(pmid="7", pmcid="PMC7"), evidence)
     _download(catalog, ref, tmp_path)
     text = tmp_path / f"{ref.id}.txt"
     text.write_text(TEXT, encoding="utf-8")
@@ -549,11 +552,11 @@ def _imported_without_text(catalog, tmp_path, **summary):
     return ref
 
 
-def test_an_extraction_imported_without_its_text_is_not_stored_as_current(env):
+def test_an_extraction_imported_without_its_text_is_not_stored_as_current(env, evidence):
     """Stored, it would be chosen over the ace extraction that has the text, and passages
     would wait on a text it cannot read. It is left to run again."""
     settings, catalog, stages, tmp_path = env
-    ref = _imported_without_text(catalog, tmp_path)
+    ref = _imported_without_text(catalog, tmp_path, evidence=evidence)
     found = refingerprint(Context(settings, catalog), stages, [ref], catalog.empty_fingerprints())
 
     assert found.stages["extract"].filled == 0
@@ -563,20 +566,20 @@ def test_an_extraction_imported_without_its_text_is_not_stored_as_current(env):
     assert ("extract", "pubget", ref.id) not in {(k[1], k[2], k[0]) for k in found.rewrites}
 
 
-def test_an_extraction_that_says_it_holds_no_text_is_stored(env):
+def test_an_extraction_that_says_it_holds_no_text_is_stored(env, evidence):
     settings, catalog, stages, tmp_path = env
-    ref = _imported_without_text(catalog, tmp_path, has_text=False)
+    ref = _imported_without_text(catalog, tmp_path, has_text=False, evidence=evidence)
     found = refingerprint(Context(settings, catalog), stages, [ref], catalog.empty_fingerprints())
 
     assert found.stages["extract"].filled == 1
     assert found.stages["extract"].empty_rerun == 0
 
 
-def test_an_extraction_imported_with_its_text_is_stored(env):
+def test_an_extraction_imported_with_its_text_is_stored(env, evidence):
     """Production, 2026-10-23: an import with no fingerprint whose text file is there is
     the one a run would have made, and is stored."""
     settings, catalog, stages, tmp_path = env
-    ref = catalog.register(Identifier(pmid="7", pmcid="PMC7"))
+    ref = catalog.register(Identifier(pmid="7", pmcid="PMC7"), evidence)
     _download(catalog, ref, tmp_path)
     text = tmp_path / f"{ref.id}.txt"
     text.write_text(TEXT, encoding="utf-8")
@@ -591,12 +594,12 @@ def test_an_extraction_imported_with_its_text_is_stored(env):
     assert found.stages["extract"].empty_rerun == 0
 
 
-def test_an_extraction_whose_download_failed_is_not_unreachable(elsevier):
+def test_an_extraction_whose_download_failed_is_not_unreachable(elsevier, evidence):
     """A failed download still names the source the extraction was read from, as the stages
     that choose among extractions count it. Planned with extract alone, as a later stage
     asks about it otherwise, the stale extraction still stops the repair."""
     settings, catalog, stages, tmp_path = elsevier
-    ref = _held(catalog, tmp_path, 7)
+    ref = _held(catalog, tmp_path, 7, evidence=evidence)
     catalog.record([Outcome.failure(ref.id, "download", "ace", "did not return a payload")])
     _stale_extraction(catalog, ref, "ace")
     found = refingerprint(Context(settings, catalog),

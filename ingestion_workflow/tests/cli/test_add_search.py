@@ -56,14 +56,14 @@ def _openalex(config):
 
 
 @pytest.mark.vcr()
-def test_hits_are_reported_registered_and_the_bare_work_is_counted(config, tmp_path, evidence):
+def test_hits_are_reported_registered_and_the_bare_work_is_counted(config, tmp_path):
     out = _openalex(config)
 
     assert "openalex: title_and_abstract.search:(fMRI AND synesthesia),type:article," in out
     assert "openalex: 2 articles" in out
     assert "2 distinct: 0 already in the catalog, 2 new" in out
     assert "1 openalex records have no DOI, PMID or PMCID and were not registered" in out
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "catalog") as catalog:
         assert catalog.count_articles() == 2
 
 
@@ -76,7 +76,7 @@ def test_a_second_run_finds_them_in_the_catalog(config, tmp_path):
 
 
 @pytest.mark.vcr()
-def test_every_provider_is_searched_and_counted_after_enrichment(config, tmp_path, evidence):
+def test_every_provider_is_searched_and_counted_after_enrichment(config, tmp_path):
     out = _add(config, "--search", "fMRI AND misophonia")
 
     assert "years: 1990 onward (the default; --year to change)" in out
@@ -103,7 +103,7 @@ def test_every_provider_is_searched_and_counted_after_enrichment(config, tmp_pat
         "2 semantic_scholar records have no DOI, PMID or PMCID and were not registered",
     ]:
         assert line in out
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "catalog") as catalog:
         assert catalog.count_articles() == 87
 
 
@@ -168,7 +168,7 @@ def test_a_query_one_provider_cannot_say_is_a_usage_error(config):
 
 @pytest.mark.vcr(match_on=["method", "scheme", "host", "port", "path", "query", "body"])
 def test_a_search_sciencedirect_cannot_split_stops_before_any_provider_searches(
-    config, tmp_path, monkeypatch, evidence):
+    config, tmp_path, monkeypatch):
     # the cassette holds ScienceDirect's one count and no OpenAlex request
     from ingestion_workflow.clients.sciencedirect import ScienceDirectClient
 
@@ -187,12 +187,12 @@ def test_a_search_sciencedirect_cannot_split_stops_before_any_provider_searches(
         "sciencedirect",
     )
     assert "none of its splits applies" in out
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "catalog") as catalog:
         assert catalog.count_articles() == 0
 
 
 @pytest.mark.vcr()
-def test_a_search_adds_to_the_ids_given(config, tmp_path, evidence):
+def test_a_search_adds_to_the_ids_given(config, tmp_path):
     out = _add(
         config,
         "10.1016/j.neuroimage.2023.120",
@@ -205,7 +205,7 @@ def test_a_search_adds_to_the_ids_given(config, tmp_path, evidence):
         "--no-enrich",
     )
     assert "openalex: 2 articles" in out
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "catalog") as catalog:
         assert catalog.count_articles() == 3
 
 
@@ -252,11 +252,11 @@ def _searches(config, *args):
 
 
 @pytest.mark.vcr(ALL_PROVIDERS)
-def test_a_search_is_kept_with_what_each_provider_found(config, tmp_path, evidence):
+def test_a_search_is_kept_with_what_each_provider_found(config, tmp_path):
     out = _add(config, "--search", "fMRI AND misophonia")
 
     assert "kept as search 1" in out
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "catalog") as catalog:
         (run,) = catalog.searches()
         assert run["query"] == "fMRI AND misophonia"
         assert run["years"] == "1990 onward"
@@ -279,7 +279,7 @@ def test_a_search_is_kept_with_what_each_provider_found(config, tmp_path, eviden
 
 
 @pytest.mark.vcr(ALL_PROVIDERS)
-def test_the_articles_only_one_provider_found_are_a_manifest(config, tmp_path, evidence):
+def test_the_articles_only_one_provider_found_are_a_manifest(config, tmp_path):
     _add(config, "--search", "fMRI AND misophonia")
     only = tmp_path / "only.jsonl"
     rest = tmp_path / "rest.jsonl"
@@ -295,7 +295,7 @@ def test_the_articles_only_one_provider_found_are_a_manifest(config, tmp_path, e
     assert f"70 articles -> {only}" in out
     only_ids, rest_ids = _manifest_lines(only), _manifest_lines(rest)
     assert len(only_ids) == 70 and len(rest_ids) == 17
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "catalog") as catalog:
         held_back = {catalog.resolve(Identifier(**row)).id for row in only_ids}
         kept = {catalog.resolve(Identifier(**row)).id for row in rest_ids}
         assert not held_back & kept
@@ -314,12 +314,12 @@ def test_searches_list_names_the_query_each_provider_was_sent(config):
 
 
 @pytest.mark.vcr("test_a_second_run_finds_them_in_the_catalog.yaml")
-def test_a_second_search_is_a_second_run(config, tmp_path, evidence):
+def test_a_second_search_is_a_second_run(config, tmp_path):
     _openalex(config)
     out = _openalex(config)
 
     assert "kept as search 2" in out
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "catalog") as catalog:
         assert [run["id"] for run in catalog.searches()] == [1, 2]
         assert catalog.search_articles(1) == catalog.search_articles(2)
 
@@ -340,14 +340,14 @@ def test_a_manifest_names_only_what_the_search_searched(config, tmp_path):
 
 @pytest.mark.vcr(ALL_PROVIDERS)
 def test_a_manifest_defaults_to_the_data_root_and_lists_articles_oldest_first(
-        config, tmp_path, evidence):
+        config, tmp_path):
     _add(config, "--search", "fMRI AND misophonia")
 
     out = _searches(config, "manifest", "1", "--only-found-by", "sciencedirect")
 
     path = tmp_path / "data" / "manifests" / "search-1.jsonl"
     assert f"70 articles -> {path}" in out
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "catalog") as catalog:
         written = [catalog.resolve(Identifier(**row)).id for row in _manifest_lines(path)]
         assert written == catalog.search_articles(1, only="sciencedirect")
         ages = [

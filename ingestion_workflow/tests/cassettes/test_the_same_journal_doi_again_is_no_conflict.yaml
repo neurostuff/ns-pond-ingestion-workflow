@@ -31,7 +31,7 @@ interactions:
       content-type:
       - application/json
       date:
-      - Sun, 25 Oct 2026 08:52:48 GMT
+      - Sun, 25 Oct 2026 10:25:53 GMT
       referrer-policy:
       - origin-when-cross-origin
       retry-after:
@@ -105,11 +105,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Sun, 25 Oct 2026 08:52:49 GMT
+      - Sun, 25 Oct 2026 10:25:54 GMT
       ncbi-phid:
-      - 1D334F858372F89500003862D50C4DCF.1.1.m_1
+      - 1D32BD61E5CE12B50000556D4CC6AB4A.1.1.m_1
       ncbi-sid:
-      - 14B36E32C54B4593_7A88SID
+      - EE37583CF41F4666_34E7SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -123,7 +123,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '1'
+      - '0'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -157,15 +157,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4fffcc6ce542d3b-DFW
+      - a5008522aaef72f7-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Sun, 25 Oct 2026 08:52:50 GMT
+      - Sun, 25 Oct 2026 10:25:55 GMT
       expires:
-      - Sun, 25 Oct 2026 09:05:22 GMT
+      - Sun, 25 Oct 2026 10:57:35 GMT
       link:
       - <https://dul.usage.elsevier.com/doi/>; rel=dul
       location:
@@ -175,7 +175,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=wO62k5lqwsHudDpmG8tfaG2nw8%2Fmxzs8xuffByW8j%2BzOFyHTIktWQgZRkU5qJJp6qxQwsXR0hDnFHHyk%2Bx5UdBRijLNNF%2BV5cn8wTLpdWZgXHBMvAYFH8Es%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=TywCb1ZcgT36l3%2BdlsT7pSXsKfUnKwXKKzaQ7sh%2FZMpGEsLr1uqMsHMpaKVQr9vQVQ5434yXaHPHL88PLX4gHh1nr9wNUVOzJm7pDfRY%2F5gkWPQnQoQs0UM%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -389,7 +389,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json
       date:
-      - Sun, 25 Oct 2026 08:52:50 GMT
+      - Sun, 25 Oct 2026 10:25:55 GMT
       permissions-policy:
       - interest-cohort=()
       server:

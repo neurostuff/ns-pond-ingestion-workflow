@@ -57,8 +57,8 @@ def env(tmp_path, monkeypatch, evidence):
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", download_sources=["ace", "pdf"],
                         coordinate_gate_path=gate)
-    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
-        ref = catalog.register(Identifier(pmid="123", doi="10.1/x"))
+    with Catalog.open(settings.catalog_root) as catalog:
+        ref = catalog.register(Identifier(pmid="123", doi="10.1/x"), evidence)
         stage = DownloadStage(settings)
         # the ACE download and extraction a run stored before the check existed
         ace = served(DownloadSource.ACE, page(tmp_path, "onv6piwppvwo"))(ref.identifier)

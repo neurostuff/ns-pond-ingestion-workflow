@@ -50,9 +50,9 @@ def test_a_bump_only_requeues_that_source(tmp_path, monkeypatch, evidence):
         catalog_root=tmp_path / "k",
         download_sources=["pubget", "elsevier", "ace", "pdf"],
     )
-    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
-        by_pdf = catalog.register(Identifier(doi="10.1/pdf"))
-        by_ace = catalog.register(Identifier(pmid="2"))
+    with Catalog.open(settings.catalog_root) as catalog:
+        by_pdf = catalog.register(Identifier(doi="10.1/pdf"), evidence)
+        by_ace = catalog.register(Identifier(pmid="2"), evidence)
         for ref, source in ((by_pdf, "pdf"), (by_ace, "ace")):
             catalog.record(
                 [
@@ -103,8 +103,8 @@ def test_an_ace_article_with_a_better_extraction_stays_fresh(tmp_path, evidence)
         catalog_root=tmp_path / "k",
         download_sources=["pubget", "elsevier", "ace", "pdf"],
     )
-    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
-        ref = catalog.register(Identifier(pmcid="PMC3", pmid="3"))
+    with Catalog.open(settings.catalog_root) as catalog:
+        ref = catalog.register(Identifier(pmcid="PMC3", pmid="3"), evidence)
         for source in ("pubget", "ace"):
             catalog.record(
                 [

@@ -17,6 +17,62 @@ interactions:
   response:
     body:
       string: !!binary |
+        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
+        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
+    headers:
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json
+      date:
+      - Sun, 25 Oct 2026 10:26:51 GMT
+      referrer-policy:
+      - origin-when-cross-origin
+      retry-after:
+      - '2'
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 429
+      message: Too Many Requests
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=19452633&retmode=json&email=replay%40example.com&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
         H4sIAAAAAAAAALxUS08bMRD+K5ZPrZQs613y2PQUFUpABSHopUI9OF4nMXjtrR8tIep/78w6hFQt
         Ern0tOvxfPP4/M1s6EryWjo62dCwbiWdUOlj03C3pj36QzqvrAFjnpX0V486uNQBnaOqPZ3cUVYd
         D4phWdJvvZf/dA+wnaVH2zivecAERZ5XZNo6UuZgly8XcPI2OoH/134tVooHtyY30sMNj2FlHebc
@@ -49,16 +105,15 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Sun, 25 Oct 2026 08:53:40 GMT
+      - Sun, 25 Oct 2026 10:26:53 GMT
       ncbi-phid:
-      - 1D32BD61E5CE12B50000314FAB001859.1.1.m_1
+      - 1D334F858372F89500003C8294EDA41E.1.1.m_1
       ncbi-sid:
-      - 46366F43EFF9C099_1CCBSID
+      - 87B4799DE0F74E54_6B32SID
       referrer-policy:
       - origin-when-cross-origin
       server:
       - Finatra
-        Oct 2027 08:53:40 GMT
       strict-transport-security:
       - max-age=31536000; includeSubDomains; preload
       transfer-encoding:
@@ -108,7 +163,7 @@ interactions:
       content-type:
       - application/json
       date:
-      - Sun, 25 Oct 2026 08:53:40 GMT
+      - Sun, 25 Oct 2026 10:26:53 GMT
       referrer-policy:
       - origin-when-cross-origin
       retry-after:
@@ -184,16 +239,15 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Sun, 25 Oct 2026 08:53:41 GMT
+      - Sun, 25 Oct 2026 10:26:54 GMT
       ncbi-phid:
-      - 1D334F858372F895000043630BD22332.1.1.m_1
+      - 1D334F858372F89500002C82983D0AF9.1.1.m_1
       ncbi-sid:
-      - 46366F43EFF9C099_1CCBSID
+      - 87B4799DE0F74E54_6B32SID
       referrer-policy:
       - origin-when-cross-origin
       server:
       - Finatra
-        Oct 2027 08:53:42 GMT
       strict-transport-security:
       - max-age=31536000; includeSubDomains; preload
       transfer-encoding:
@@ -203,7 +257,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '2'
+      - '0'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:

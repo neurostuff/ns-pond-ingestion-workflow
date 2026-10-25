@@ -75,14 +75,14 @@ def test_a_rekind_without_the_kind_it_is_held_as_is_refused(tmp_path):
     ({"doi": "10.7554/elife.92563", "pmid": "38345852"}, "pmid", "37808793", "preprint_pmid"),
 ], ids=["a-doi-as-a-preprints", "a-doi-as-an-alternative", "a-pmid-as-a-preprints"])
 def test_a_rekind_holds_the_alias_as_the_kind_the_plan_names(
-        tmp_path, checked, held, kind, value, as_kind):
-    article = checked.register(Identifier(**held)).id
-    if value not in checked.aliases(article, kind):
-        checked.add_aliases([(article, kind, value)])
+        tmp_path, catalog, held, kind, value, as_kind, evidence):
+    article = catalog.register(Identifier(**held), evidence).id
+    if value not in catalog.aliases(article, kind):
+        catalog.add_aliases([(article, kind, value)])
     plan = _plan(tmp_path, [{"op": "rekind", "article": article, "kind": kind,
                              "value": value, "as": as_kind}])
 
-    outcome = apply(checked, load(plan), backup=tmp_path / "backup.sqlite")
+    outcome = apply(catalog, load(plan), evidence, backup=tmp_path / "backup.sqlite")
 
     assert outcome.committed, (outcome.refused, outcome.violations)
-    assert checked.aliases(article, as_kind) == [value]
+    assert catalog.aliases(article, as_kind) == [value]

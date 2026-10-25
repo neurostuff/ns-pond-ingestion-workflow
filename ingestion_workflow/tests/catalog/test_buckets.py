@@ -10,22 +10,16 @@ from ingestion_workflow.catalog import Catalog, IdentityError
 from ingestion_workflow.models.ids import Identifier
 
 
-@pytest.fixture()
-def catalog(tmp_path, evidence):
-    with Catalog.open(tmp_path / "cat", evidence=evidence) as cat:
-        yield cat
-
-
 def _aliases(root):
     with sqlite3.connect(f"file:{root / 'catalog.sqlite'}?mode=ro", uri=True) as conn:
         return {(r[0], r[1], r[2]) for r in conn.execute(
             "SELECT article_id, kind, value FROM aliases")}
 
 
-def _as_version_three(root, *aliases, evidence):
+def _as_version_three(root, *aliases, ):
     """A catalog as schema 3 held it: a preprint's DOI beside the journal's as `doi`, the other
     DOI and the duplicate records as `alternate_doi`, `duplicate_pmid`, `duplicate_pmcid`."""
-    with Catalog.open(root, evidence=evidence) as cat:
+    with Catalog.open(root) as cat:
         for article, kind, value in aliases:
             cat._conn.execute(
                 "INSERT OR IGNORE INTO articles(id, created_at) VALUES(?, '2026-01-01')",
@@ -61,12 +55,12 @@ V3 = [
 ]
 
 
-def test_each_id_is_held_in_the_bucket_it_belongs_to(tmp_path, caplog, evidence):
+def test_each_id_is_held_in_the_bucket_it_belongs_to(tmp_path, caplog):
     root = tmp_path / "cat"
-    _as_version_three(root, *V3, evidence=evidence)
+    _as_version_three(root, *V3)
 
     with caplog.at_level(logging.WARNING, logger="ingestion_workflow.catalog.store"):
-        Catalog.open(root, evidence=evidence).close()
+        Catalog.open(root).close()
 
     assert _aliases(root) == {
         ("paper", "pmid", "38345852"), ("paper", "doi", "10.7554/elife.92563"),
@@ -89,14 +83,14 @@ def test_each_id_is_held_in_the_bucket_it_belongs_to(tmp_path, caplog, evidence)
     assert "biorxiv 2, ssrn" not in caplog.text and "researchsquare 2" in caplog.text
 
 
-def test_the_migration_backs_the_catalog_up_first_and_runs_once(tmp_path, evidence):
+def test_the_migration_backs_the_catalog_up_first_and_runs_once(tmp_path):
     root = tmp_path / "cat"
-    _as_version_three(root, *V3, evidence=evidence)
+    _as_version_three(root, *V3)
     before = _aliases(root)
 
-    Catalog.open(root, evidence=evidence).close()
+    Catalog.open(root).close()
     migrated = _aliases(root)
-    Catalog.open(root, evidence=evidence).close()
+    Catalog.open(root).close()
 
     assert _aliases(root) == migrated
     assert sorted(p.name for p in root.glob("catalog.pre-*")) == ["catalog.pre-v3.sqlite"]
@@ -104,15 +98,15 @@ def test_the_migration_backs_the_catalog_up_first_and_runs_once(tmp_path, eviden
         assert {r for r in copy.execute("SELECT article_id, kind, value FROM aliases")} == before
 
 
-def test_no_article_gains_or_loses_an_id_and_none_is_merged(tmp_path, evidence):
+def test_no_article_gains_or_loses_an_id_and_none_is_merged(tmp_path):
     root = tmp_path / "cat"
-    _as_version_three(root, *V3, evidence=evidence)
+    _as_version_three(root, *V3)
     before = {(a, v) for a, _, v in _aliases(root)}
 
-    Catalog.open(root, evidence=evidence).close()
+    Catalog.open(root).close()
 
     assert {(a, v) for a, _, v in _aliases(root)} == before
-    with Catalog.open(root, evidence=evidence) as cat:
+    with Catalog.open(root) as cat:
         assert {a: cat.live(a) for a, _, _ in V3} == dict.fromkeys({a for a, _, _ in V3}, True)
         # every id still finds its article, as whichever kind it is looked up
         for article, _, value in V3:
@@ -120,10 +114,10 @@ def test_no_article_gains_or_loses_an_id_and_none_is_merged(tmp_path, evidence):
             assert cat.holder(kind, value) == article
 
 
-def test_what_each_article_presents_is_what_it_presented_before(tmp_path, evidence):
+def test_what_each_article_presents_is_what_it_presented_before(tmp_path):
     root = tmp_path / "cat"
-    _as_version_three(root, *V3, evidence=evidence)
-    with Catalog.open(root, evidence=evidence) as cat:
+    _as_version_three(root, *V3)
+    with Catalog.open(root) as cat:
         presented = {a: cat.identifier(a) for a in {a for a, _, _ in V3}}
 
     paper, only, elife, twice = (presented[a] for a in ("paper", "only", "elife", "twice"))
@@ -148,9 +142,9 @@ def test_what_each_article_presents_is_what_it_presented_before(tmp_path, eviden
         "10.21203/rs.3.rs-2556690/v1", "10.21203/rs.3.rs-2556690/v2")
 
 
-def test_a_failed_migration_leaves_the_catalog_as_it_was(tmp_path, monkeypatch, evidence):
+def test_a_failed_migration_leaves_the_catalog_as_it_was(tmp_path, monkeypatch):
     root = tmp_path / "cat"
-    _as_version_three(root, *V3, evidence=evidence)
+    _as_version_three(root, *V3)
     before = _aliases(root)
 
     def broken(self, conn):
@@ -159,7 +153,7 @@ def test_a_failed_migration_leaves_the_catalog_as_it_was(tmp_path, monkeypatch, 
 
     monkeypatch.setattr(Catalog, "_bucket_aliases", broken)
     with pytest.raises(RuntimeError, match="disk full"):
-        Catalog.open(root, evidence=evidence)
+        Catalog.open(root)
 
     assert _aliases(root) == before
     with sqlite3.connect(root / "catalog.sqlite") as conn:
@@ -168,22 +162,23 @@ def test_a_failed_migration_leaves_the_catalog_as_it_was(tmp_path, monkeypatch, 
 
 # -- registering ------------------------------------------------------------------------
 
-def test_a_paper_known_only_by_its_preprint_is_one_article_found_by_that_doi(catalog):
-    ref = catalog.register(Identifier(doi="10.1101/2025.05.13.653896"))
+def test_a_paper_known_only_by_its_preprint_is_one_article_found_by_that_doi(catalog, evidence):
+    ref = catalog.register(Identifier(doi="10.1101/2025.05.13.653896"), evidence)
 
     assert catalog.aliases(ref.id, "preprint_doi") == ["10.1101/2025.05.13.653896"]
     assert catalog.aliases(ref.id, "doi") == []
-    again = catalog.register(Identifier(preprint_dois=["10.1101/2025.05.13.653896"]))
+    again = catalog.register(Identifier(preprint_dois=["10.1101/2025.05.13.653896"]), evidence)
     assert again.id == ref.id == catalog.resolve(Identifier(doi="10.1101/2025.05.13.653896")).id
     assert catalog.count_articles() == 1
 
 
-def test_a_preprint_later_found_to_have_a_journal_version_is_still_one_article(catalog):
+def test_a_preprint_later_found_to_have_a_journal_version_is_still_one_article(catalog, evidence):
     """dpl6phhniqbj: the bioRxiv preprint first, its journal DOI and PMID later."""
-    preprint = catalog.register(Identifier(doi="10.1101/2020.03.25.008318"))
+    preprint = catalog.register(Identifier(doi="10.1101/2020.03.25.008318"), evidence)
 
     ref = catalog.register(Identifier(
-        pmid="32410303", doi="10.1002/hbm.25137", preprint_dois=["10.1101/2020.03.25.008318"]))
+        pmid="32410303", doi="10.1002/hbm.25137", preprint_dois=["10.1101/2020.03.25.008318"]),
+                evidence)
 
     assert ref.id == preprint.id and catalog.count_articles() == 1
     held = catalog.identifier(ref.id)
@@ -192,12 +187,13 @@ def test_a_preprint_later_found_to_have_a_journal_version_is_still_one_article(c
     assert held.publication_status == "published"
 
 
-def test_the_version_of_record_s_id_anchors_before_the_preprint_s(catalog):
-    paper = catalog.register(Identifier(pmid="38345852"))
-    other = catalog.register(Identifier(pmid="38345853", preprint_dois=["10.1101/2023.09.27.559792"]))
+def test_the_version_of_record_s_id_anchors_before_the_preprint_s(catalog, evidence):
+    paper = catalog.register(Identifier(pmid="38345852"), evidence)
+    other = catalog.register(
+        Identifier(pmid="38345853", preprint_dois=["10.1101/2023.09.27.559792"]), evidence)
 
     ref = catalog.register(Identifier(
-        pmid="38345852", preprint_dois=["10.1101/2023.09.27.559792"]))
+        pmid="38345852", preprint_dois=["10.1101/2023.09.27.559792"]), evidence)
 
     # the PMID names the paper; the preprint's DOI is another article's and is left there,
     # since fusing them would give one article two PMIDs
@@ -207,29 +203,29 @@ def test_the_version_of_record_s_id_anchors_before_the_preprint_s(catalog):
     assert catalog.conflicts >= 1
 
 
-def test_the_preprint_s_id_anchors_before_the_base_study(catalog):
-    based = catalog.register(Identifier(pmid="38345852", neurostore="8YJSSriJx23a"))
+def test_the_preprint_s_id_anchors_before_the_base_study(catalog, evidence):
+    based = catalog.register(Identifier(pmid="38345852", neurostore="8YJSSriJx23a"), evidence)
     preprint = catalog.register(Identifier(pmid="38345853",
-                                           preprint_dois=["10.1101/2023.09.27.559792"]))
+                                           preprint_dois=["10.1101/2023.09.27.559792"]), evidence)
 
     ref = catalog.register(Identifier(neurostore="8YJSSriJx23a",
-                                      preprint_dois=["10.1101/2023.09.27.559792"]))
+                                      preprint_dois=["10.1101/2023.09.27.559792"]), evidence)
 
     # two PMIDs would be fused if both joined, so the record stays with the one it anchored on
     assert ref.id == preprint.id != based.id
     assert catalog.aliases(based.id, "neurostore") == ["8YJSSriJx23a"]
 
 
-def test_a_record_mixing_two_preprint_papers_ids_fuses_neither(catalog):
+def test_a_record_mixing_two_preprint_papers_ids_fuses_neither(catalog, evidence):
     """36993482 and 37292981 are PubMed's records of two bioRxiv preprints. A record giving
     the first's DOI with the second's PMID is a fault in the record, not one paper."""
     a = catalog.register(Identifier(preprint_pmids=["36993482"],
-                                    preprint_dois=["10.1101/2023.02.15.528738"]))
+                                    preprint_dois=["10.1101/2023.02.15.528738"]), evidence)
     b = catalog.register(Identifier(preprint_pmids=["37292981"],
-                                    preprint_dois=["10.1101/2023.05.01.538938"]))
+                                    preprint_dois=["10.1101/2023.05.01.538938"]), evidence)
 
     ref = catalog.register(Identifier(preprint_pmids=["37292981"],
-                                      preprint_dois=["10.1101/2023.02.15.528738"]))
+                                      preprint_dois=["10.1101/2023.02.15.528738"]), evidence)
 
     assert a.id != b.id and catalog.count_articles() == 2
     assert ref.id in (a.id, b.id)
@@ -238,15 +234,15 @@ def test_a_record_mixing_two_preprint_papers_ids_fuses_neither(catalog):
     assert catalog.conflicts >= 1
 
 
-def test_a_record_mixing_two_preprint_papers_pmcids_fuses_neither(catalog):
+def test_a_record_mixing_two_preprint_papers_pmcids_fuses_neither(catalog, evidence):
     """The same fault as above, in PMC: A's DOI with B's PMCID."""
     a = catalog.register(Identifier(preprint_pmcids=["PMC10054934"],
-                                    preprint_dois=["10.1101/2023.02.15.528738"]))
+                                    preprint_dois=["10.1101/2023.02.15.528738"]), evidence)
     b = catalog.register(Identifier(preprint_pmcids=["PMC10244497"],
-                                    preprint_dois=["10.1101/2023.05.01.538938"]))
+                                    preprint_dois=["10.1101/2023.05.01.538938"]), evidence)
 
     ref = catalog.register(Identifier(preprint_pmcids=["PMC10244497"],
-                                      preprint_dois=["10.1101/2023.02.15.528738"]))
+                                      preprint_dois=["10.1101/2023.02.15.528738"]), evidence)
 
     assert a.id != b.id and catalog.count_articles() == 2
     assert ref.id in (a.id, b.id)
@@ -255,11 +251,12 @@ def test_a_record_mixing_two_preprint_papers_pmcids_fuses_neither(catalog):
     assert catalog.conflicts >= 1
 
 
-def test_several_preprint_records_of_one_paper_are_held_together(catalog):
+def test_several_preprint_records_of_one_paper_are_held_together(catalog, evidence):
     """A paper on bioRxiv and Research Square has a PubMed record of each."""
     ref = catalog.register(Identifier(
         preprint_dois=["10.1101/2019.12.17.19014415", "10.21203/rs.3.rs-2556690/v2"],
-        preprint_pmids=["34845462", "36000001"], preprint_pmcids=["PMC8629206", "PMC9000001"]))
+        preprint_pmids=["34845462", "36000001"], preprint_pmcids=["PMC8629206", "PMC9000001"]),
+                evidence)
 
     held = catalog.identifier(ref.id)
     assert held.preprint_pmids == ("34845462", "36000001")
@@ -269,12 +266,14 @@ def test_several_preprint_records_of_one_paper_are_held_together(catalog):
     assert ref.id not in suspects(catalog)
 
 
-def test_two_articles_one_paper_s_preprint_and_journal_ids_join_when_compatible(catalog):
-    preprint = catalog.register(Identifier(preprint_dois=["10.1101/2023.10.21.563317"]))
-    paper = catalog.register(Identifier(pmid="37961286", doi="10.1016/j.neuroimage.2023.120450"))
+def test_two_articles_one_paper_s_preprint_and_journal_ids_join_when_compatible(catalog, evidence):
+    preprint = catalog.register(Identifier(preprint_dois=["10.1101/2023.10.21.563317"]), evidence)
+    paper = catalog.register(Identifier(pmid="37961286", doi="10.1016/j.neuroimage.2023.120450"),
+            evidence)
 
     ref = catalog.register(Identifier(
-        doi="10.1016/j.neuroimage.2023.120450", preprint_dois=["10.1101/2023.10.21.563317"]))
+        doi="10.1016/j.neuroimage.2023.120450", preprint_dois=["10.1101/2023.10.21.563317"]),
+                evidence)
 
     assert catalog.count_articles() == 1
     assert catalog.live(ref.id) and not (catalog.live(preprint.id) and catalog.live(paper.id))
@@ -283,9 +282,9 @@ def test_two_articles_one_paper_s_preprint_and_journal_ids_join_when_compatible(
         "37961286", "10.1016/j.neuroimage.2023.120450", ("10.1101/2023.10.21.563317",))
 
 
-def test_an_id_held_in_any_bucket_finds_its_article_under_any_kind_of_it(catalog):
+def test_an_id_held_in_any_bucket_finds_its_article_under_any_kind_of_it(catalog, evidence):
     twice = catalog.register(Identifier(pmid="32341955", alternative_pmids=["32341954"],
-                                        preprint_pmids=["34845462"]))
+                                        preprint_pmids=["34845462"]), evidence)
 
     for pmid in ("32341955", "32341954", "34845462"):
         assert catalog.resolve(Identifier(pmid=pmid)).id == twice.id
@@ -295,19 +294,22 @@ def test_an_id_held_in_any_bucket_finds_its_article_under_any_kind_of_it(catalog
     assert catalog.aliases(twice.id, "preprint_pmid") == ["34845462"]
 
 
-def test_an_id_held_as_the_version_of_record_s_is_found_when_given_as_a_preprint_s(catalog):
+def test_an_id_held_as_the_version_of_record_s_is_found_when_given_as_a_preprint_s(
+        catalog, evidence):
     """btk5tlwqap5k holds 37808793, PubMed's record of a preprint, as its `pmid` until
     something files it as the preprint's; the preprint's id must still find it."""
-    held = catalog.register(Identifier(pmid="37808793"))
+    held = catalog.register(Identifier(pmid="37808793"), evidence)
 
     assert catalog.resolve(Identifier(preprint_pmids=["37808793"])).id == held.id
-    ref = catalog.register(Identifier(doi="10.7554/elife.92563", preprint_pmids=["37808793"]))
+    ref = catalog.register(Identifier(doi="10.7554/elife.92563", preprint_pmids=["37808793"]),
+            evidence)
     assert ref.id == held.id and catalog.count_articles() == 1
     assert catalog.aliases(held.id, "doi") == ["10.7554/elife.92563"]
 
 
-def test_a_second_doi_row_is_held_but_is_no_alternative_until_a_repair_says_so(catalog):
-    ref = catalog.register(Identifier(pmid="22848644", doi="10.1371/journal.pone.0041873"))
+def test_a_second_doi_row_is_held_but_is_no_alternative_until_a_repair_says_so(catalog, evidence):
+    ref = catalog.register(Identifier(pmid="22848644", doi="10.1371/journal.pone.0041873"),
+            evidence)
     catalog._conn.execute("INSERT INTO aliases VALUES('doi', '10.1002/hbm.25137', ?)", (ref.id,))
 
     held = catalog.identifier(ref.id)
@@ -320,8 +322,8 @@ def test_a_second_doi_row_is_held_but_is_no_alternative_until_a_repair_says_so(c
         "10.1002/hbm.25137", "10.1371/journal.pone.0041873"]
 
 
-def test_an_article_known_only_by_a_preprint_is_named_by_it(catalog):
-    ref = catalog.register(Identifier(preprint_dois=["10.1101/2025.05.13.653896"]))
+def test_an_article_known_only_by_a_preprint_is_named_by_it(catalog, evidence):
+    ref = catalog.register(Identifier(preprint_dois=["10.1101/2025.05.13.653896"]), evidence)
 
     # the DOI is the article's only name, so a repair may not take it away
     with pytest.raises(IdentityError, match="no pmcid, pmid, doi, preprint_doi"):
@@ -338,10 +340,11 @@ def _header_identifiers(identifier):
     return article_identifiers(identifier, ArticleMetadata(title="T"))
 
 
-def test_an_elife_doi_the_catalog_holds_as_a_preprint_s_is_never_the_version_of_record_s(catalog):
+def test_an_elife_doi_the_catalog_holds_as_a_preprint_s_is_never_the_version_of_record_s(
+        catalog, evidence):
     """10.7554/eLife.112197 shares its prefix with eLife's journal, so no pattern files it;
     once a repair or the Crossref lookup files it, the header must not repeat it as `doi`."""
-    ref = catalog.register(Identifier(preprint_dois=["10.7554/elife.112197"]))
+    ref = catalog.register(Identifier(preprint_dois=["10.7554/elife.112197"]), evidence)
     held = catalog.identifier(ref.id)
     header = _header_identifiers(held)
 
@@ -352,8 +355,8 @@ def test_an_elife_doi_the_catalog_holds_as_a_preprint_s_is_never_the_version_of_
     assert header.publication_status == "preprint"
 
 
-def test_a_preprint_only_article_is_headed_as_a_preprint_with_no_doi(catalog):
-    ref = catalog.register(Identifier(doi="10.1101/2023.02.15.528738"))
+def test_a_preprint_only_article_is_headed_as_a_preprint_with_no_doi(catalog, evidence):
+    ref = catalog.register(Identifier(doi="10.1101/2023.02.15.528738"), evidence)
 
     header = _header_identifiers(catalog.identifier(ref.id))
 
@@ -362,13 +365,14 @@ def test_a_preprint_only_article_is_headed_as_a_preprint_with_no_doi(catalog):
     assert header.publication_status == "preprint"
 
 
-def test_crossref_and_openalex_are_asked_by_the_journal_s_doi_and_each_preprint_s(catalog):
+def test_crossref_and_openalex_are_asked_by_the_journal_s_doi_and_each_preprint_s(
+        catalog, evidence):
     """dpl6phhniqbj: 1,581 articles hold a journal DOI beside a preprint's; an alternative
     is not asked."""
     from ingestion_workflow.pipeline.stages.metadata import held_dois
 
     ref = catalog.register(Identifier(
         doi="10.7554/elife.106070", preprint_dois=["10.1101/2025.02.05.636581"],
-        alternative_dois=["10.7554/elife.106070.1"]))
+        alternative_dois=["10.7554/elife.106070.1"]), evidence)
 
     assert held_dois(catalog, ref.id) == ["10.7554/elife.106070", "10.1101/2025.02.05.636581"]

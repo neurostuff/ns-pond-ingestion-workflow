@@ -85,8 +85,8 @@ def analyses_payload(catalog, pmid):
 
 def test_every_table_survives(legacy, tmp_path, evidence):
     """Three legacy rows for one article must not overwrite each other."""
-    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
-        migrate_caches(legacy, catalog, stages=["analyses"])
+    with Catalog.open(tmp_path / "cat") as catalog:
+        migrate_caches(legacy, catalog, evidence, stages=["analyses"])
         payload = analyses_payload(catalog, "1")
 
     assert sorted(payload) == ["tbl1", "tbl2", "tbl3"]
@@ -95,8 +95,8 @@ def test_every_table_survives(legacy, tmp_path, evidence):
 def test_the_payload_is_the_shape_consumers_read(legacy, tmp_path, evidence):
     """upload and sync do `{t: AnalysisCollection.from_dict(b) for t, b in
     payload.items()}`. The legacy row shape makes that raise."""
-    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
-        migrate_caches(legacy, catalog, stages=["analyses"])
+    with Catalog.open(tmp_path / "cat") as catalog:
+        migrate_caches(legacy, catalog, evidence, stages=["analyses"])
         payload = analyses_payload(catalog, "1")
 
     collections = {t: AnalysisCollection.from_dict(b) for t, b in payload.items()}
@@ -105,8 +105,8 @@ def test_the_payload_is_the_shape_consumers_read(legacy, tmp_path, evidence):
 
 
 def test_articles_stay_separate(legacy, tmp_path, evidence):
-    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
-        migrate_caches(legacy, catalog, stages=["analyses"])
+    with Catalog.open(tmp_path / "cat") as catalog:
+        migrate_caches(legacy, catalog, evidence, stages=["analyses"])
         assert sorted(analyses_payload(catalog, "1")) == ["tbl1", "tbl2", "tbl3"]
         assert sorted(analyses_payload(catalog, "2")) == ["tbl1"]
 
@@ -117,14 +117,14 @@ def test_grouping_survives_a_batch_boundary(legacy, tmp_path, monkeypatch, evide
     import ingestion_workflow.migrate as mig
 
     monkeypatch.setattr(mig, "BATCH", 1)
-    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
-        migrate_caches(legacy, catalog, stages=["analyses"])
+    with Catalog.open(tmp_path / "cat") as catalog:
+        migrate_caches(legacy, catalog, evidence, stages=["analyses"])
         assert sorted(analyses_payload(catalog, "1")) == ["tbl1", "tbl2", "tbl3"]
 
 
 def test_it_is_idempotent(legacy, tmp_path, evidence):
-    with Catalog.open(tmp_path / "cat", evidence=evidence) as catalog:
-        migrate_caches(legacy, catalog, stages=["analyses"])
-        migrate_caches(legacy, catalog, stages=["analyses"])
+    with Catalog.open(tmp_path / "cat") as catalog:
+        migrate_caches(legacy, catalog, evidence, stages=["analyses"])
+        migrate_caches(legacy, catalog, evidence, stages=["analyses"])
         assert catalog.count_articles() == 2
         assert sorted(analyses_payload(catalog, "1")) == ["tbl1", "tbl2", "tbl3"]

@@ -31,10 +31,10 @@ def stranded(tmp_path, evidence):
         ),
         encoding="utf-8",
     )
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
-        a = cat.register(Identifier(doi="10.1/c1"))
-        b = cat.register(Identifier(pmcid="PMC81"))
-        survivor = cat.register(Identifier(doi="10.1/c1", pmcid="PMC81")).id
+    with Catalog.open(tmp_path / "catalog") as cat:
+        a = cat.register(Identifier(doi="10.1/c1"), evidence)
+        b = cat.register(Identifier(pmcid="PMC81"), evidence)
+        survivor = cat.register(Identifier(doi="10.1/c1", pmcid="PMC81"), evidence).id
         retired = b.id if survivor == a.id else a.id
         cat.exclude([(survivor, "t1", "kept", "")])
         for table in ("t1", "t2"):
@@ -103,8 +103,8 @@ def migrated(tmp_path, evidence):
         "ns_pond_root": str(tmp_path / "pond"),
         "download_sources": ["pubget"], "log_to_file": False, "show_progress": False,
     }), encoding="utf-8")
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
-        ref = cat.register(Identifier(pmid="1", pmcid="PMC1"))
+    with Catalog.open(tmp_path / "catalog") as cat:
+        ref = cat.register(Identifier(pmid="1", pmcid="PMC1"), evidence)
         cat.record([Outcome(article_id=ref.id, stage="download", source="pubget",
                             payload={"files": []})])
     return config, tmp_path, ref.id
@@ -144,8 +144,8 @@ def test_apply_copies_the_catalog_then_stores_the_fingerprints(migrated):
 def test_apply_refuses_while_anything_reused_now_would_run_again(migrated, evidence):
     """A download whose blob is gone cannot be given a fingerprint that makes it fresh."""
     config, tmp_path, article_id = migrated
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
-        ref = cat.register(Identifier(pmid="2", pmcid="PMC2"))
+    with Catalog.open(tmp_path / "catalog") as cat:
+        ref = cat.register(Identifier(pmid="2", pmcid="PMC2"), evidence)
         cat.record([Outcome(article_id=ref.id, stage="download", source="pubget",
                             payload={"files": ["gone"]})])
         cat.blobs._path(cat.artifact(ref.id, "download", "pubget").blob).unlink()
@@ -162,9 +162,9 @@ def test_apply_refuses_while_anything_reused_now_would_run_again(migrated, evide
     assert not backup.exists()
 
 
-def test_fingerprints_wait_for_the_hand_over(stranded, evidence):
+def test_fingerprints_wait_for_the_hand_over(stranded):
     config, tmp_path, survivor, retired = stranded
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
+    with Catalog.open(tmp_path / "catalog") as cat:
         cat.record([Outcome(article_id=survivor, stage="download", source="pubget",
                             payload={"files": []})])
 

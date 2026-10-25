@@ -72,19 +72,19 @@ def test_an_article_that_never_says_stays_unknown():
 
 
 @pytest.fixture()
-def env(tmp_path, evidence):
+def env(tmp_path):
     settings = Settings(
         data_root=tmp_path / "d", cache_root=tmp_path / "c", catalog_root=tmp_path / "k")
-    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
+    with Catalog.open(settings.catalog_root) as catalog:
         yield settings, catalog, tmp_path
 
 
-def test_the_stage_reads_the_text_of_the_extraction_triage_judged(env):
+def test_the_stage_reads_the_text_of_the_extraction_triage_judged(env, evidence):
     settings, catalog, tmp_path = env
     judged, other = tmp_path / "judged.txt", tmp_path / "other.txt"
     judged.write_text(TEXT)
     other.write_text("## Methods\nCoordinates are reported in MNI space.\n")
-    ref = catalog.register(Identifier(pmid="123"))
+    ref = catalog.register(Identifier(pmid="123"), evidence)
     catalog.record([
         Outcome(article_id=ref.id, stage="extract", source="pubget", fingerprint="ex-1",
                 payload={"full_text_path": str(judged)}, summary={}),
@@ -117,11 +117,11 @@ def test_the_stage_reads_the_text_of_the_extraction_triage_judged(env):
 
 
 
-def test_no_other_extraction_s_text_stands_in_for_the_judged_one(env):
+def test_no_other_extraction_s_text_stands_in_for_the_judged_one(env, evidence):
     settings, catalog, tmp_path = env
     other = tmp_path / "other.txt"
     other.write_text(TEXT)
-    ref = catalog.register(Identifier(pmid="124"))
+    ref = catalog.register(Identifier(pmid="124"), evidence)
     catalog.record([
         Outcome.failure(ref.id, "extract", "pubget", "unreadable", fingerprint="ex-1"),
         Outcome(article_id=ref.id, stage="extract", source="ace", fingerprint="ex-2",
@@ -137,10 +137,10 @@ def test_no_other_extraction_s_text_stands_in_for_the_judged_one(env):
     (outcome,) = list(stage.execute(ctx, plan.pending))
     assert outcome.payload["t1"]["coordinate_space"] == "OTHER"
 
-def test_an_article_with_nothing_to_fill_writes_the_analyses_blob_again(env):
+def test_an_article_with_nothing_to_fill_writes_the_analyses_blob_again(env, evidence):
     """Content-addressed: the same payload is the same blob, stored once."""
     settings, catalog, _ = env
-    ref = catalog.register(Identifier(pmid="456"))
+    ref = catalog.register(Identifier(pmid="456"), evidence)
     payload = {"t1": _collection("MNI")}
     catalog.record([Outcome(article_id=ref.id, stage="analyses", source="",
                             fingerprint="an-1", payload=payload, summary={"tables": 1})])
@@ -152,7 +152,7 @@ def test_an_article_with_nothing_to_fill_writes_the_analyses_blob_again(env):
     assert space.blob == analyses.blob
 
 
-def test_an_article_with_nothing_to_fill_never_reads_its_text(env, monkeypatch):
+def test_an_article_with_nothing_to_fill_never_reads_its_text(env, monkeypatch, evidence):
     from ingestion_workflow.pipeline.stages import space
 
     def unexpected(*args):
@@ -160,7 +160,7 @@ def test_an_article_with_nothing_to_fill_never_reads_its_text(env, monkeypatch):
 
     monkeypatch.setattr(space, "_article_text", unexpected)
     settings, catalog, _ = env
-    ref = catalog.register(Identifier(pmid="789"))
+    ref = catalog.register(Identifier(pmid="789"), evidence)
     catalog.record([Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-1",
                             payload={"t1": _collection("TAL")}, summary={"tables": 1})])
     ctx = Context(settings, catalog)

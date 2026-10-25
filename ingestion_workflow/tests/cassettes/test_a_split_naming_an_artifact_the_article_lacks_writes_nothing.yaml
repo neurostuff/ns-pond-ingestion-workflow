@@ -31,119 +31,7 @@ interactions:
       content-type:
       - application/json
       date:
-      - Sun, 25 Oct 2026 08:52:40 GMT
-      referrer-policy:
-      - origin-when-cross-origin
-      retry-after:
-      - '2'
-      server:
-      - Finatra
-      strict-transport-security:
-      - max-age=31536000; includeSubDomains; preload
-      transfer-encoding:
-      - chunked
-      via:
-      - 1.1 google
-      x-ratelimit-limit:
-      - '3'
-      x-ratelimit-remaining:
-      - '0'
-      x-ua-compatible:
-      - IE=Edge
-      x-xss-protection:
-      - 1; mode=block
-    status:
-      code: 429
-      message: Too Many Requests
-- request:
-    body: ''
-    headers:
-      accept:
-      - '*/*'
-      accept-encoding:
-      - gzip, deflate
-      connection:
-      - keep-alive
-      host:
-      - eutils.ncbi.nlm.nih.gov
-      user-agent:
-      - python-httpx/0.28.1
-    method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=23587493&retmode=json&tool=ingestion-workflow
-  response:
-    body:
-      string: !!binary |
-        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
-        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
-    headers:
-      access-control-expose-headers:
-      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
-      alt-svc:
-      - clear
-      content-encoding:
-      - gzip
-      content-security-policy:
-      - upgrade-insecure-requests
-      content-type:
-      - application/json
-      date:
-      - Sun, 25 Oct 2026 08:52:42 GMT
-      referrer-policy:
-      - origin-when-cross-origin
-      retry-after:
-      - '2'
-      server:
-      - Finatra
-      strict-transport-security:
-      - max-age=31536000; includeSubDomains; preload
-      transfer-encoding:
-      - chunked
-      via:
-      - 1.1 google
-      x-ratelimit-limit:
-      - '3'
-      x-ratelimit-remaining:
-      - '0'
-      x-ua-compatible:
-      - IE=Edge
-      x-xss-protection:
-      - 1; mode=block
-    status:
-      code: 429
-      message: Too Many Requests
-- request:
-    body: ''
-    headers:
-      accept:
-      - '*/*'
-      accept-encoding:
-      - gzip, deflate
-      connection:
-      - keep-alive
-      host:
-      - eutils.ncbi.nlm.nih.gov
-      user-agent:
-      - python-httpx/0.28.1
-    method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=23587493&retmode=json&tool=ingestion-workflow
-  response:
-    body:
-      string: !!binary |
-        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
-        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
-    headers:
-      access-control-expose-headers:
-      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
-      alt-svc:
-      - clear
-      content-encoding:
-      - gzip
-      content-security-policy:
-      - upgrade-insecure-requests
-      content-type:
-      - application/json
-      date:
-      - Sun, 25 Oct 2026 08:52:43 GMT
+      - Sun, 25 Oct 2026 10:25:50 GMT
       referrer-policy:
       - origin-when-cross-origin
       retry-after:
@@ -217,11 +105,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Sun, 25 Oct 2026 08:52:48 GMT
+      - Sun, 25 Oct 2026 10:25:52 GMT
       ncbi-phid:
-      - 1D32BD61E5CE12B500005C4F49A19ED6.1.1.m_1
+      - 1D32BD61E5CE12B50000576D44E70F98.1.1.m_1
       ncbi-sid:
-      - 687B86E6758036C5_5FA4SID
+      - 038191432A3BAAA5_C9EFSID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -235,7 +123,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '1'
+      - '2'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:

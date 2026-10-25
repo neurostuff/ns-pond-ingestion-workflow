@@ -17,14 +17,14 @@ from ingestion_workflow.tests.services.test_reference_lists import MESSAGE, _Ope
 
 
 @pytest.fixture()
-def env(tmp_path, evidence):
+def env(tmp_path):
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c", catalog_root=tmp_path / "k")
     article = tmp_path / "pmcid_1" / "article.xml"
     article.parent.mkdir()
     article.write_text(JATS)
     text = tmp_path / "article.txt"
     text.write_text(article_text(etree.parse(str(article)), article.parent), encoding="utf-8")
-    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
+    with Catalog.open(settings.catalog_root) as catalog:
         yield settings, catalog, article, text
 
 
@@ -63,10 +63,10 @@ def test_references_follow_extract_and_run_only_when_asked(tmp_path):
 
 
 @pytest.mark.parametrize("source", ["pubget", "pmc", "europepmc"])
-def test_an_extraction_gets_its_references_and_citations(env, source):
+def test_an_extraction_gets_its_references_and_citations(env, source, evidence):
     """pmc and europepmc are written in pubget's layout and read the same way."""
     settings, catalog, article, text = env
-    ref = catalog.register(Identifier(pmid="1"))
+    ref = catalog.register(Identifier(pmid="1"), evidence)
     _record(catalog, ref, article, text, source=source)
     ctx = Context(settings, catalog)
 
@@ -85,10 +85,10 @@ def test_an_extraction_gets_its_references_and_citations(env, source):
     assert again.fresh == 1 and not again.pending
 
 
-def test_only_the_article_s_text_gets_references(env, tmp_path):
+def test_only_the_article_s_text_gets_references(env, tmp_path, evidence):
     """Two extractions: the one triage judges is the article's text, and the only one read."""
     settings, catalog, article, text = env
-    ref = catalog.register(Identifier(pmid="3"))
+    ref = catalog.register(Identifier(pmid="3"), evidence)
     _record(catalog, ref, article, text, source="pubget")
     _record(catalog, ref, article, text, source="pmc", tables=2)
 
@@ -97,9 +97,9 @@ def test_only_the_article_s_text_gets_references(env, tmp_path):
     assert [o.source for o in outcomes] == ["pmc"]
 
 
-def test_a_pdf_marks_no_citations_and_is_not_read(env):
+def test_a_pdf_marks_no_citations_and_is_not_read(env, evidence):
     settings, catalog, article, text = env
-    ref = catalog.register(Identifier(pmid="2"))
+    ref = catalog.register(Identifier(pmid="2"), evidence)
     _record(catalog, ref, article, text, source="pdf")
 
     plan, outcomes = _run(ReferencesStage(settings), Context(settings, catalog), catalog, ref)
@@ -124,9 +124,9 @@ def _reflist(settings, message):
     return stage
 
 
-def test_reflist_keeps_crossref_s_list_named_by_openalex(env):
+def test_reflist_keeps_crossref_s_list_named_by_openalex(env, evidence):
     settings, catalog, article, text = env
-    ref = catalog.register(Identifier(pmid="3", doi="10.1016/j.test.2020.1"))
+    ref = catalog.register(Identifier(pmid="3", doi="10.1016/j.test.2020.1"), evidence)
     _record(catalog, ref, article, text)
 
     _, (outcome,) = _run(_reflist(settings, MESSAGE), Context(settings, catalog), catalog, ref)
@@ -135,9 +135,9 @@ def test_reflist_keeps_crossref_s_list_named_by_openalex(env):
     assert outcome.payload["references"][0]["authors"] == ["Smith", "Jones"]
 
 
-def test_a_paper_crossref_does_not_know_is_not_a_failure(env):
+def test_a_paper_crossref_does_not_know_is_not_a_failure(env, evidence):
     settings, catalog, article, text = env
-    ref = catalog.register(Identifier(pmid="4", doi="10.1/unknown"))
+    ref = catalog.register(Identifier(pmid="4", doi="10.1/unknown"), evidence)
     _record(catalog, ref, article, text)
 
     _, (outcome,) = _run(_reflist(settings, None), Context(settings, catalog), catalog, ref)
@@ -145,9 +145,9 @@ def test_a_paper_crossref_does_not_know_is_not_a_failure(env):
     assert outcome.status is Status.OK and outcome.payload["found"] is False
 
 
-def test_reflist_needs_a_doi(env):
+def test_reflist_needs_a_doi(env, evidence):
     settings, catalog, article, text = env
-    ref = catalog.register(Identifier(pmid="5"))
+    ref = catalog.register(Identifier(pmid="5"), evidence)
     _record(catalog, ref, article, text)
 
     plan, _ = _run(_reflist(settings, MESSAGE), Context(settings, catalog), catalog, ref)
@@ -155,9 +155,9 @@ def test_reflist_needs_a_doi(env):
     assert plan.blocked == 1
 
 
-def test_a_pdf_is_matched_against_crossref_s_list(env, tmp_path):
+def test_a_pdf_is_matched_against_crossref_s_list(env, tmp_path, evidence):
     settings, catalog, article, _ = env
-    ref = catalog.register(Identifier(pmid="6", doi="10.1016/j.test.2020.1"))
+    ref = catalog.register(Identifier(pmid="6", doi="10.1016/j.test.2020.1"), evidence)
     pdf_text = tmp_path / "pdf.txt"
     pdf_text.write_text("Attention shapes perception (Smith et al., 2001). Gusnard (2001) agreed.\n",
                         encoding="utf-8")
@@ -172,9 +172,9 @@ def test_a_pdf_is_matched_against_crossref_s_list(env, tmp_path):
         ("Smith et al., 2001", ["cr1"]), ("Gusnard (2001", ["cr2"])]
 
 
-def test_a_new_crossref_list_makes_the_references_stale_and_fills_their_dois(env):
+def test_a_new_crossref_list_makes_the_references_stale_and_fills_their_dois(env, evidence):
     settings, catalog, article, text = env
-    ref = catalog.register(Identifier(pmid="7", doi="10.1016/j.test.2020.1"))
+    ref = catalog.register(Identifier(pmid="7", doi="10.1016/j.test.2020.1"), evidence)
     _record(catalog, ref, article, text)
     ctx = Context(settings, catalog)
     _run(ReferencesStage(settings), ctx, catalog, ref)
@@ -201,13 +201,13 @@ def test_fingerprints_follow_the_canonical_doi_and_tell_apart_non_ascii_case(env
         assert fingerprint_for(stage, doi("10.26321/Á")) != fingerprint_for(stage, doi("10.26321/á"))
 
 
-def test_a_paper_known_only_by_its_preprint_is_still_planned_by_its_preprint_s_doi(env):
+def test_a_paper_known_only_by_its_preprint_is_still_planned_by_its_preprint_s_doi(env, evidence):
     """8,058 catalog articles have no version-of-record DOI; their reference lists and
     retraction notices are asked for by the preprint's."""
     from ingestion_workflow.pipeline.stages.notices import NoticesStage
 
     settings, catalog, article, text = env
-    ref = catalog.register(Identifier(doi="10.1101/2023.02.15.528738"))
+    ref = catalog.register(Identifier(doi="10.1101/2023.02.15.528738"), evidence)
     assert ref.identifier.doi is None
     catalog.record([Outcome(article_id=ref.id, stage="download", source="pdf", fingerprint="d",
                             payload={}, summary={}),

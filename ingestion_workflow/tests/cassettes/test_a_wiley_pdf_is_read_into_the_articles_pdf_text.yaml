@@ -1,0 +1,174 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - huggingface.co
+      user-agent:
+      - unknown/None; hf_hub/1.33.0; python/3.12.13; torch/2.14.1
+      x-amzn-trace-id:
+      - 2a7376af-3785-48d2-ac8f-665bba1e7ead
+      x-hf-download-counter:
+      - '1'
+    method: GET
+    uri: https://huggingface.co/api/models/docling-project/docling-layout-heron/revision/main
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAE/6pWis9MUbJSMjNPSzU1SjVIMk60NDE3NjY1TjI3MjIyV9JRAsun5CfnZOal6xYU
+        5WelJpfow/g5iZX5pSW6GalF+XlKOkoFRZlliSWpSlZpiTnFqTpKJYnpxUpW0UrFiWmpJal5xflF
+        xUo6SkUl8SmpJUXxZUZKOkqJRRWZZVZGpgaWeoaG5kYGCCETAws9A0sLM0slHaWczOTUvOJUq8SC
+        xOSMVF0jPZC6otT0zPw8q9JipVgdpZT88ryc/MSUYiUrQwtjMzNTU5Cu7NRiJSszSx2l3PyU1BxP
+        kFdhTifglcTSkoz8IiUrJTT1SjpKxRmJSlZKFmnGlokpxskGSSbJphaplslGKUbJFiaJxhYmZqaJ
+        SWnmpuZG5kYpFiDXJxaX+OanZKZlpoJcYGRgZKZrYKRrYBliaGJlbGZlbKJnYGAQpaSjlJ5YAlIC
+        Db6UzOLEpBwkAbAvdDPzUlIrlKzySnNydJSS8/PSMtOVrKqVEouSMzJLUpNLSotAvo5WCgpxSS0p
+        CjNyyy/yTwJFm0sqSDozPw8UYGCz4ksqC1KVrJCjpFZHKTmxKMUlsSQRZCo05JWslJDCvlZHqTgz
+        CZQiQNFbrVSUlpmTmpeYCzJKLz2zJLGkpCgzqbQktVipVgdVOsjV0cXXVS83BUMG4hO9rOL8PAw5
+        aCTEgxNavImBgV5BXjqGKrCX9JATG7rtBUWpBUX5yanFxflF8SgWxuooFRckJkNCriQjMy87oFLf
+        BZrsfSDJ3DEvMaeyOBOUhvPySzLL8MjnZqZklObpGpmaGOknJxalphbpppdmpiTmJafqFlcWl6Tm
+        grJLZmZ2oqWhpX5aflF6anFmekYJKHskZmTmGhmbJ+fqZ5UWZVboJhZkgiIsuSgVlDocS5SslIwM
+        jEx1DUx0DU1DDI1AScjEApaEkL1vVa1UkFiUmJtaklpUDIpNN2MjJSsTIwsLS0tzy1odpZL8ksQc
+        FJHS4tSU4JL8osT0VCUrMwsTAzMzAxPzWgAAAAD//wMA303qVCkEAAA=
+    headers:
+      access-control-allow-origin:
+      - https://huggingface.co
+      access-control-expose-headers:
+      - X-Repo-Commit,X-Request-Id,X-Error-Code,X-Error-Message,X-Total-Count,ETag,Link,Accept-Ranges,Content-Range,X-Linked-Size,X-Linked-ETag,X-Xet-Hash
+      access-control-max-age:
+      - '86400'
+      alt-svc:
+      - h3=":443"; ma=86400
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json; charset=utf-8
+      cross-origin-opener-policy:
+      - same-origin
+      date:
+      - Sun, 25 Oct 2026 10:25:36 GMT
+      etag:
+      - W/"429-RyV/+dalS7FuCpAbJ4hgr1+kZc4"
+      ratelimit:
+      - '"api";r=499;t=168'
+      ratelimit-policy:
+      - '"fixed window";"api";q=500;w=300'
+      referrer-policy:
+      - strict-origin-when-cross-origin
+      strict-transport-security:
+      - max-age=31536000
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept-Encoding
+      via:
+      - 1.1 7cbc0a3bbd6fdffd951aba2405878348.cloudfront.net (CloudFront)
+      x-amz-cf-id:
+      - oVwp0rTGJy5tQaPWy7CfCNrF71KHJhn2KwxRPmv-aqeAdJqqBFp9-Q==
+      x-amz-cf-pop:
+      - DFW59-P5
+      x-cache:
+      - Miss from cloudfront
+      x-powered-by:
+      - huggingface-moon
+      x-request-id:
+      - Root=1-6addd920-6679bad907d832ba3fd27c38;2a7376af-3785-48d2-ac8f-665bba1e7ead
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - huggingface.co
+      user-agent:
+      - unknown/None; hf_hub/1.33.0; python/3.12.13; torch/2.14.1
+      x-amzn-trace-id:
+      - 3f655d46-ca4c-4978-928c-bc9c6c798ce0
+      x-hf-download-counter:
+      - '1'
+    method: GET
+    uri: https://huggingface.co/api/models/docling-project/docling-models/revision/v2.3.0
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAE/6pWis9MUbJSMjOzME4zTDVOSjFLNTUxMkw2NzFPNDBNU9JRAsun5CfnZOal6xYU
+        5WelJpfow/i5+SmpOcVKOkoFRZlliSWpSlZpiTnFqTpKOZlJRYlFlfF5ibmpSlZKJUWJecVp+UW5
+        qUUg1SWJ6cVKVtHowolFFZllVkYmBhZ6BpYWZpZKOkpQISMDMz0DQwMzIyUdpZT8TCtDAz1Tc0sz
+        c/2MNH1jA2MzJZCNyal5xalWySk5iboFqUW5mcXFmWWpukZ6Bko6SqlliTm6RanFpTklIAek5qUU
+        5GfmlRTHJ+fnFiSWZCblpCrpKBWlpmfm51mVFivFguwpz8vJT0wpVrIyNDEzMzIzB1mSnVqsZGVk
+        bKijBPa7Jyj0YKGBM3QSS0sy8ouUrJTQVCrpKBVnJCpZKaUlG6QZpZiYphoZGVqkJhqZJCWnmhqY
+        mKaZWiQaW1gmpqYYmqUkGxmD/JlYXOKbn5KZlpkKstvIwMhU18Bc18g4xNDQysjYChRSBgZRSjpK
+        6YklICXQGEnJLE5MykESALtfNzMvJbVCySqvNCdHRyk5Py8tM13JqrpWRyk5sSjFJbEkUcmqWikn
+        Exy2SlZK2EK3VgclIj3z0vJBmhJLS/LjwZYoWSk5lpbk+4ISi1KtjlJxZhIoNYGSQLVSUVpmTio0
+        meilZ5YklpQUZSaVlqQWK9XqYEpnpuflF6ViSAW5Orr4uurlpmDIQPykl1Wcn4chB3ZdfGJRSWZa
+        YnJJsX4JKIQgyVQ/MTm5tCixJBVZMB4mqFecmJZakppXnF+E6UziTM2NJ9dlaYnFJSiuAgmQ7SKQ
+        Zv0SNNfE6igVFyQmg9J6tFJiUVZpXlJGYlF6YpmRoRE88xcU5SenFhfnF4HyaUFBYGCgfmKmbnJG
+        YklSfomSjlJWYqaRpaGhgTFIR2lual5JfGJ6ah5IKre0KDEnMyUjsSgxz8DAXD+3NKckU7e4JL8o
+        VbcoMV03KTE5OzUvRUlHKTczJaM0T9fI1MRIPzmxKDW1SDe9NDMlMS85Vbe4srgkNReUbxMzMnON
+        jM2Tc/WzSosyK3QTCzJBWTi5KBWUBxxLlKyUjAyMTEAZxcAoxNDIysjMytBQzwCSUUqLU1OCS/KL
+        EtNTQXnbzMTQwszAwqwWAAAA//8DALmDvV8eBQAA
+    headers:
+      access-control-allow-origin:
+      - https://huggingface.co
+      access-control-expose-headers:
+      - X-Repo-Commit,X-Request-Id,X-Error-Code,X-Error-Message,X-Total-Count,ETag,Link,Accept-Ranges,Content-Range,X-Linked-Size,X-Linked-ETag,X-Xet-Hash
+      access-control-max-age:
+      - '86400'
+      alt-svc:
+      - h3=":443"; ma=86400
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-type:
+      - application/json; charset=utf-8
+      cross-origin-opener-policy:
+      - same-origin
+      date:
+      - Sun, 25 Oct 2026 10:25:37 GMT
+      etag:
+      - W/"51e-5d4C8Jh18VQ9R7EzFbQ7NrEZ7ls"
+      ratelimit:
+      - '"api";r=498;t=167'
+      ratelimit-policy:
+      - '"fixed window";"api";q=500;w=300'
+      referrer-policy:
+      - strict-origin-when-cross-origin
+      strict-transport-security:
+      - max-age=31536000
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept-Encoding
+      via:
+      - 1.1 7cbc0a3bbd6fdffd951aba2405878348.cloudfront.net (CloudFront)
+      x-amz-cf-id:
+      - W3bjgL3kGmeRPvNOasZLLnFuxs801x-BSKq72REPDDp6IpJ_h6kQoQ==
+      x-amz-cf-pop:
+      - DFW59-P5
+      x-cache:
+      - Miss from cloudfront
+      x-powered-by:
+      - huggingface-moon
+      x-request-id:
+      - Root=1-6addd921-38ce2d815d197cba50d8d6e7;3f655d46-ca4c-4978-928c-bc9c6c798ce0
+    status:
+      code: 200
+      message: OK
+version: 1

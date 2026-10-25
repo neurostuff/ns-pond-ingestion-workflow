@@ -17,79 +17,6 @@ interactions:
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAAJRUTW/bMAy971cIumwDktRO0wbNrcW6j24ZirY7FTvIMlNrlSVPH8GyIP99pOUk
-        bot168WWKJKPfHzSmlcgSnB8tuZh1QCfcfCxroVb8QFfgvPKGjRmo0O+GXCHhzqQc1Sl57NbnvPv
-        A/wkCzrmGNbEohSBcuUn0yN2EQ0aYW/FnbfRSVqfKSsrqNkcSjSLGCrrKPGaG1GTw1zcC8dOz7rT
-        rsjT1hFtUkcfwLXYWOE+TM6FC8qwz+cvjLwUGjyw+QvDbqCp9IrdXP1XHJKmhQ+p30fRQQVNoe+t
-        q5EwJrwXK4atFLZcsYUm6mdMNI1WUgScD53VECphrGaNVd4aZe5GLc0ubNMtnkn372ykBqtj22p+
-        iDvlfaTNmAYu7sDTQT4djo859YYRqA7AH7ZqdB2N+hmh7T7Lj/LJeJJytOLKsuPh+GRCJkimpKLE
-        4S2/QLUYodkpTlRiMwN+hSMSTlbsOjYNNjlg30bXI/bBLl/j+nL0EXeE7EBaVyLRIVKBl7FAobEh
-        9ljCL1whKWx+/u7Lp6/nCXLnSsWIhJekvuaq7IaKfnWr12TBgnOkR+iWkLxVxc63tKrveNhzzEZ5
-        lh8f7Np/Mz16e5Llk+lw2iqkUj5YvIiE3S9tB9+7ZQcZJspZls2yrC2gH4DeWhn4a0T+JAJMcPD7
-        OYiW3AU4MJJmf4t7EYJTRQzbfVNLdJE2mpBGuoha/0iz7G5Nd/1RehpFVyqZygRtkxjTdcEyrOz4
-        lCq0J6RuJ6U1hKmRqYRZWHu/VTy6UM5YpzUuQ3rN0qgxqAK3RXpk7upLKPt3ywGpzcS6oDeTLGIp
-        lBaFhoWzdXQ6WbdZ8QT0roUn1aJtn5tK38PKSjRhC0L3+OGr+mAYyWGhXO9F6b2bS2pHRk1y7pjZ
-        bDav/gAAAP//AwCpPUoz/AUAAA==
-    headers:
-      access-control-allow-origin:
-      - '*'
-      access-control-expose-headers:
-      - X-RateLimit-Limit,X-RateLimit-Remaining
-      alt-svc:
-      - clear
-      cache-control:
-      - private
-      content-encoding:
-      - gzip
-      content-security-policy:
-      - upgrade-insecure-requests
-      content-type:
-      - application/json; charset=UTF-8
-      date:
-      - Sun, 25 Oct 2026 08:54:24 GMT
-      ncbi-phid:
-      - 1D32BD61E5CE12B50000544FFBBCCB58.1.1.m_1
-      ncbi-sid:
-      - E1093CFE3EBDEECE_59B8SID
-      referrer-policy:
-      - origin-when-cross-origin
-      server:
-      - Finatra
-      strict-transport-security:
-      - max-age=31536000; includeSubDomains; preload
-      transfer-encoding:
-      - chunked
-      via:
-      - 1.1 google
-      x-ratelimit-limit:
-      - '3'
-      x-ratelimit-remaining:
-      - '0'
-      x-ua-compatible:
-      - IE=Edge
-      x-xss-protection:
-      - 1; mode=block
-    status:
-      code: 200
-      message: OK
-- request:
-    body: ''
-    headers:
-      accept:
-      - '*/*'
-      accept-encoding:
-      - gzip, deflate
-      connection:
-      - keep-alive
-      host:
-      - eutils.ncbi.nlm.nih.gov
-      user-agent:
-      - python-httpx/0.28.1
-    method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=2&retmode=json&tool=ingestion-workflow
-  response:
-    body:
-      string: !!binary |
         H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
         stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
     headers:
@@ -104,7 +31,7 @@ interactions:
       content-type:
       - application/json
       date:
-      - Sun, 25 Oct 2026 08:54:25 GMT
+      - Sun, 25 Oct 2026 10:27:33 GMT
       referrer-policy:
       - origin-when-cross-origin
       retry-after:
@@ -142,26 +69,23 @@ interactions:
       user-agent:
       - python-httpx/0.28.1
     method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=2&retmode=json&tool=ingestion-workflow
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=1&retmode=json&tool=ingestion-workflow
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAAMRTyW7bMBD9lQEvbQFbleRFkW9pEzRdkgYxAhQIcqDFSUSUIlUuQVSj/96hFqc+
-        tbdeRHLmzfDN49Oe1cgFWrbZM9+1yDYMXWgabjs2Y09onTSagmmyYL9mzFJS+QgOUji2uWM5u5/R
-        Z4gQMKeyNuwE97FXVhYr+Fp5yAuK40uCTs4EW8X9O2mqGhugta07Bzfo4L1pmqAJxYOvjY1X7Znm
-        TY83DuHzdkyOrE97HMUqFZxH25MhyoeqLbcNh5uLfyqjmRR3frj8uNhLr2LlGSqpkXvSB8wD+BpB
-        ai8bmg8Eei6Vm+I7Xn3fGY1QGf1gqNNU1HZ0IXUBHSqFxksRMah/dg1pIDXwHwFNcOCMCrEo6XWz
-        fiIh/geJaAza9qqu13SSzoV4WMa354/o4stnxWJesqijfoxGQVpIVq3oXSV17JVOF0W+ysYevc/S
-        dD3Py+xbtMsQytIynedZuhycNTzcHftE9tFcwan1knhTknyD3FY1bEPbkkgzuE22CXwwT69of2X0
-        /Dq5oMhfoSPsPvq9MlaQEXyIQ12H3SUKmJMqAp9pR0LC5fnZl49X5wO7AzSy5QO14U/ZMylG0xGu
-        QRGH7iM0ZEaSctWLmPemPWCFkX8CFy/ALE2yNFu/nSR7fl2s3pTp8iQn3Y96tPKox3Lq8RsAAP//
-        fFXBUoQwDL37FT3qwd2WEVfx5MG7P+Ch1CJooU5o9+AM/27S0IVdRm80JM1L8vK6avdZLBbedmPw
-        qAGEe13WCfpqwfdK7ouDkLKSMiVeB6A3UfTPCLWJsEMA+/NfijSYxoIdjOXW4nEjJ68tLa3xbieS
-        DD3HD6HKp+LuWt3fVKpUB2TVTmCDK3HRy7Lgfsji8bYkvuD9cy9fABBnjwyggffE4gdktWdVI2g6
-        BOjqGBK0N3IyGG58HAILXxOd+2T2ZkVjyJ1BPuvhXdSshOkMmaomSSLaaAdH2g/n+cCihQ3zZkZp
-        uqDnVR3B4MYTJIczZUi1919ZQtAFZ9TFnr/xM7DkM6ExqLWQM12YZ/icZVF2sLRTQ+xreljIoo8o
-        Rbp2tgHfR3BszbfiH+tOJWzQom25m6AvaU2rv0NOQsJ4/vSc0YYdmg5Wur48JUeqxkRHOzs3Zpqm
-        q18AAAD//wMA1eT7fSAHAAA=
+        H4sIAAAAAAAAAJRUTW/bMAy971cIumwDktRO0wbNrcW6j24ZirY7FTvIMlNrlSVPH8GyIP99pOUk
+        bot168WWKJKPfHzSmlcgSnB8tuZh1QCfcfCxroVb8QFfgvPKGjRmo0O+GXCHhzqQc1Sl57NbnvPv
+        A/wkCzrmGNbEohSBcuUn0yN2EQ0aYW/FnbfRSVqfKSsrqNkcSjSLGCrrKPGaG1GTw1zcC8dOz7rT
+        rsjT1hFtUkcfwLXYWOE+TM6FC8qwz+cvjLwUGjyw+QvDbqCp9IrdXP1XHJKmhQ+p30fRQQVNoe+t
+        q5EwJrwXK4atFLZcsYUm6mdMNI1WUgScD53VECphrGaNVd4aZe5GLc0ubNMtnkn372ykBqtj22p+
+        iDvlfaTNmAYu7sDTQT4djo859YYRqA7AH7ZqdB2N+hmh7T7Lj/LJeJJytOLKsuPh+GRCJkimpKLE
+        4S2/QLUYodkpTlRiMwN+hSMSTlbsOjYNNjlg30bXI/bBLl/j+nL0EXeE7EBaVyLRIVKBl7FAobEh
+        9ljCL1whKWx+/u7Lp6/nCXLnSsWIhJekvuaq7IaKfnWr12TBgnOkR+iWkLxVxc63tKrveNhzzEZ5
+        lh8f7Np/Mz16e5Llk+lw2iqkUj5YvIiE3S9tB9+7ZQcZJspZls2yrC2gH4DeWhn4a0T+JAJMcPD7
+        OYiW3AU4MJJmf4t7EYJTRQzbfVNLdJE2mpBGuoha/0iz7G5Nd/1RehpFVyqZygRtkxjTdcEyrOz4
+        lCq0J6RuJ6U1hKmRqYRZWHu/VTy6UM5YpzUuQ3rN0qgxqAK3RXpk7upLKPt3ywGpzcS6oDeTLGIp
+        lBaFhoWzdXQ6WbdZ8QT0roUn1aJtn5tK38PKSjRhC0L3+OGr+mAYyWGhXO9F6b2bS2pHRk1y7pjZ
+        bDav/gAAAP//AwCpPUoz/AUAAA==
     headers:
       access-control-allow-origin:
       - '*'
@@ -178,11 +102,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Sun, 25 Oct 2026 08:54:26 GMT
+      - Sun, 25 Oct 2026 10:27:34 GMT
       ncbi-phid:
-      - 1D345BABAD18B8E5000030620DD99D82.1.1.m_1
+      - 1D32BD61E5CE12B50000346DCDD808E0.1.1.m_1
       ncbi-sid:
-      - E1093CFE3EBDEECE_59B8SID
+      - 36726F96DA76F112_F228SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -197,6 +121,82 @@ interactions:
       - '3'
       x-ratelimit-remaining:
       - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=2&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAMRU204bMRD9FcsvBSlZ7CUXkj7RgnqFIqJKlRAPjtdhXbx26gsiRP33ju3dXEC9
+        vPUlsWfPjI/PHM8a14JVwuLpGvvVUuApFi40DbMr3MMPwjppNARJcYx/9rCFj8pHcJCVw9MbXOLb
+        HvzkCABLSFuGecV8rEUn4yH6wj0qxxAX2w+wcyZYHtdvpOG1aBD8L+uVQ9fCobemaYIGFAu+NjYe
+        tcaaNQlvnECfZu3HlvVpwkGMq+C8sIkMUN5kzZhtGLp+/09pcCfFnM+H7yd76VXMPBNKasE86IPM
+        AvlaIKm9bOB+qBKeSeW6+Jzx+7nRAnGjFwYqdUnLFRwIVZAOXAnjZRUxQj+tGtBAasR+BGGCQ86o
+        EJOKpJv1HYnqf5CIxoBlUnU0gp10LsTNIPae3QkXO0/Hx/0Jjjrqu2gUAX8gq1bQVwkVk9LkeFwO
+        aVsj+YyQUb+c0G/RLjlEyYT0S0oG2Vm5cTf4I9hHM4VOrZfAGz6CbwSzvEazsFyCSD30tZgV6J15
+        eAXrS6P7V8V7iPwV2sJuo9+5sRUYwYd4qaswvxAV6oMqlXiEFQiJLs7PPn+4PM/sNtDIlmVq+aWs
+        saxa0wGuEVW8dIrAJSlIylQSsUym3WArI3eBx1sgJQUldHTUSfZ4MB4eTsjgpATd92os5V6NwbbG
+        Ru69XLh4LZ03MAMi791rbajvPPAjSo7KMSJkSkg6eDcB0NGiv82gLzKE9lY8/emI1JiFsEJzkaWF
+        7YtxclXHR8uNKlAaQ6fhDtHh63JwQEeHUzqkY3BVgUDgKXqm5bDMepBy0h9Gv0D9Vstza4FnAw6I
+        DW+ii0/A1SZPtUiNeW/lPPhE7TaCOKRzE7TPg28RlPqe3dtNtExZcvAz0xWa50mY9razKk8jEWLx
+        Dbr4PpTJmzy0QDDDW5ZcetY+VWc5vPhISUFPM6W5MffdCAEI9EiGJq9h6fPIz4aGpFrY7qRn4ZZ+
+        PmU72X8BAAD//ypKBeWpvNLcJFDFAhJJLAMWRYlJOalpRfm5pUU5EFGYqUCZ1By4FzBcCxRDmA1y
+        OsLa5IzEghKYJaCCEbXqQUk2EAVpmUVI5TqiKikD+Sa5NAeUZ6EBU1tbywUAAAD//wMA1eT7fSAH
+        AAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Sun, 25 Oct 2026 10:27:34 GMT
+      ncbi-phid:
+      - 1D345BABAD18B8E500003483D53D3ACA.1.1.m_1
+      ncbi-sid:
+      - 36726F96DA76F112_F228SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -251,11 +251,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Sun, 25 Oct 2026 08:54:27 GMT
+      - Sun, 25 Oct 2026 10:27:35 GMT
       ncbi-phid:
-      - 1D32BD61E5CE12B500004A4FFF71C116.1.1.m_1
+      - 1D345BABAD18B8E500004A83D5A3B330.1.1.m_1
       ncbi-sid:
-      - E1093CFE3EBDEECE_59B8SID
+      - 36726F96DA76F112_F228SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -269,7 +269,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '1'
+      - '0'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -325,11 +325,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Sun, 25 Oct 2026 08:54:27 GMT
+      - Sun, 25 Oct 2026 10:27:35 GMT
       ncbi-phid:
-      - 1D32BD61E5CE12B500006150001D3824.1.1.m_1
+      - 1D345BABAD18B8E500003A83D61AC719.1.1.m_1
       ncbi-sid:
-      - E1093CFE3EBDEECE_59B8SID
+      - 36726F96DA76F112_F228SID
       referrer-policy:
       - origin-when-cross-origin
       server:

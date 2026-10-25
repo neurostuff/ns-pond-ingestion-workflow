@@ -138,7 +138,7 @@ def token(monkeypatch):
 
 
 @pytest.fixture()
-def env(tmp_path, served, token, evidence):  # noqa: F811 - the imported fixture
+def env(tmp_path, served, token):  # noqa: F811 - the imported fixture
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", ns_pond_root=tmp_path / "pond",
                         prose_model="nu-prose-v2", llm_api_key="x",
@@ -146,14 +146,14 @@ def env(tmp_path, served, token, evidence):  # noqa: F811 - the imported fixture
                         neurostore_api_url=LOCAL)
     path = tmp_path / "article.xml"
     path.write_text(ARTICLE)
-    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
+    with Catalog.open(settings.catalog_root) as catalog:
         yield settings, catalog, path
 
 
-def _prose_article(env, monkeypatch, pmid, neurostore=None, doi=None):
+def _prose_article(env, monkeypatch, pmid, neurostore=None, doi=None, *, evidence):
     """An article read through prose, resolve, roles and space; triage passed no table."""
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid=pmid, neurostore=neurostore, doi=doi))
+    ref = catalog.register(Identifier(pmid=pmid, neurostore=neurostore, doi=doi), evidence)
     _record_upstream(catalog, ref, path)
     catalog.record([Outcome(article_id=ref.id, stage="triage", source="", fingerprint="tr-1",
                             summary={"source": "pubget", "tables": 0, "passed": 0,
@@ -181,9 +181,9 @@ def test_sync_runs_before_upload_and_upload_reads_what_sync_wrote():
 
 @RECORDS
 def test_sync_writes_the_parse_with_no_upload_and_upload_sends_what_it_wrote(env, monkeypatch,
-                                                                             vcr):
+                                                                             vcr, evidence):
     settings, catalog, _ = env
-    ctx, ref = _prose_article(env, monkeypatch, "21", "BS21")
+    ctx, ref = _prose_article(env, monkeypatch, "21", "BS21", evidence=evidence)
     sync, upload = build(["sync", "upload"], settings)
     assert catalog.artifacts([ref.id], "upload") == {}
     _, (synced,) = _run(sync, ctx, catalog, ref)
@@ -229,11 +229,12 @@ def test_sync_writes_the_parse_with_no_upload_and_upload_sends_what_it_wrote(env
 
 @RECORDS
 @pytest.mark.parametrize("fingerprint", ["", "up-legacy"], ids=["unfingerprinted", "legacy"])
-def test_an_upload_the_ingester_did_not_make_is_never_fresh(env, monkeypatch, fingerprint, vcr):
+def test_an_upload_the_ingester_did_not_make_is_never_fresh(
+        env, monkeypatch, fingerprint, vcr, evidence):
     """A direct-database upload, a migrated one with no fingerprint among them, did not send
     this parse; the parse goes up through the ingester once."""
     settings, catalog, _ = env
-    ctx, ref = _prose_article(env, monkeypatch, "42", "BS42")
+    ctx, ref = _prose_article(env, monkeypatch, "42", "BS42", evidence=evidence)
     _run(SyncStage(settings), ctx, catalog, ref)
     catalog.record([Outcome(article_id=ref.id, stage="upload", source="", fingerprint=fingerprint,
                             summary={"base_study_id": "BS42", "analyses": 1})])
@@ -244,10 +245,11 @@ def test_an_upload_the_ingester_did_not_make_is_never_fresh(env, monkeypatch, fi
     assert (plan.fresh, outcomes) == (1, [])
 
 
-def test_a_licence_change_makes_sync_and_upload_stale_and_nothing_before_them(env, monkeypatch):
+def test_a_licence_change_makes_sync_and_upload_stale_and_nothing_before_them(
+        env, monkeypatch, evidence):
     """The parse carries the metadata's licences, which the stages before sync do not read."""
     settings, catalog, _ = env
-    ctx, ref = _prose_article(env, monkeypatch, "21", "BS21")
+    ctx, ref = _prose_article(env, monkeypatch, "21", "BS21", evidence=evidence)
     sync, upload = build(["sync", "upload"], settings)
     _, (synced,) = _run(sync, ctx, catalog, ref)
     sync.finish()
@@ -279,11 +281,11 @@ def test_a_licence_change_makes_sync_and_upload_stale_and_nothing_before_them(en
     assert pending() == {"upload"}
 
 
-def test_the_same_metadata_written_again_leaves_sync_fresh(env, monkeypatch):
+def test_the_same_metadata_written_again_leaves_sync_fresh(env, monkeypatch, evidence):
     """Sync holds the metadata's content: a re-fetch that finds the same record is no
     change."""
     settings, catalog, _ = env
-    ctx, ref = _prose_article(env, monkeypatch, "21", "BS21")
+    ctx, ref = _prose_article(env, monkeypatch, "21", "BS21", evidence=evidence)
     catalog._conn.execute("UPDATE artifacts SET updated_at='2000-01-01T00:00:00+00:00' "
                           "WHERE article_id=? AND stage='metadata'", (ref.id,))
     (sync,) = build(["sync"], settings)
@@ -300,13 +302,14 @@ def test_the_same_metadata_written_again_leaves_sync_fresh(env, monkeypatch):
     assert (plan.fresh, plan.pending) == (1, [])
 
 
-def test_triage_judged_again_re_syncs_the_parse_that_holds_its_verdicts(env, monkeypatch):
+def test_triage_judged_again_re_syncs_the_parse_that_holds_its_verdicts(
+        env, monkeypatch, evidence):
     """The parse holds triage's meta-analysis mark, publication types and each table's
     score and route. A triage judged again (a refitted gate, a new meta-analysis rule)
     re-syncs, though analyses follows only the tables it passed and the metadata stands;
     the same triage recorded again does not."""
     settings, catalog, _ = env
-    ctx, ref = _prose_article(env, monkeypatch, "21", "BS21")
+    ctx, ref = _prose_article(env, monkeypatch, "21", "BS21", evidence=evidence)
     (sync,) = build(["sync"], settings)
     _, (synced,) = _run(sync, ctx, catalog, ref)
     sync.finish()
@@ -329,11 +332,11 @@ def test_triage_judged_again_re_syncs_the_parse_that_holds_its_verdicts(env, mon
 
 @RECORDS
 def test_an_article_neurostore_holds_no_base_study_for_is_uploaded_and_given_one(env, monkeypatch,
-                                                                                vcr):
+                                                                                vcr, evidence):
     """The ingester creates the base study from the parse's identifiers and the ParsedPaper's
     bibliography; until then the copy sits outside the tree pondie reads."""
     settings, catalog, _ = env
-    ctx, ref = _prose_article(env, monkeypatch, "23")
+    ctx, ref = _prose_article(env, monkeypatch, "23", evidence=evidence)
     sync, upload = build(["sync", "upload"], settings)
     _, (first,) = _run(sync, ctx, catalog, ref)
     sync.finish()
@@ -388,11 +391,11 @@ def _plan_sync(sync, ctx, catalog, refs):
 ], ids=["none", "doi-only", "pmcid-only", "preprint-doi-only", "preprint-pmid-only",
         "preprint-pmcid-only"])
 def test_an_article_with_nothing_to_create_a_base_study_by_is_recorded_with_why(
-        env, monkeypatch, identifier, waits):
+        env, monkeypatch, identifier, waits, evidence):
     """Any one of doi, pmid or pmcid is enough for the ingester to find or create the base
     study; with none, sync records the article skipped with the reason, once."""
     settings, catalog, _ = env
-    ctx, ref = _prose_article(env, monkeypatch, "28")
+    ctx, ref = _prose_article(env, monkeypatch, "28", evidence=evidence)
     only = dataclasses.replace(ref, identifier=identifier)
     sync = SyncStage(settings)
     (work,) = _plan_sync(sync, ctx, catalog, [only]).pending
@@ -409,14 +412,14 @@ def test_an_article_with_nothing_to_create_a_base_study_by_is_recorded_with_why(
     assert (plan.blocked, plan.reasons, plan.pending) == (1, {NO_IDENTIFIER: 1}, [])
 
 
-def _claimed_twice(env, monkeypatch, dois=(None, None)):
+def _claimed_twice(env, monkeypatch, dois=(None, None), *, evidence):
     """om54glpssubo and udjyuoxv2dbo's shape in the catalog of 2026-10-12: one holds
     neurostore's alias for base study 5dsFAUgmBz36, the other an upload record naming the
     same base study."""
     settings, catalog, _ = env
     ctx, held = _prose_article(env, monkeypatch, "19452633", "5dsFAUgmBz36",
-                               doi=dois[0])
-    _, named = _prose_article(env, monkeypatch, "19176279", doi=dois[1])
+                               doi=dois[0], evidence=evidence)
+    _, named = _prose_article(env, monkeypatch, "19176279", doi=dois[1], evidence=evidence)
     catalog.record([Outcome(article_id=named.id, stage="upload", source="",
                             fingerprint="up-legacy",
                             summary={"base_study_id": "5dsFAUgmBz36", "analyses": 1})])
@@ -435,11 +438,11 @@ def _read_from_a_preprint(catalog, ref):
 
 @pytest.mark.vcr
 def test_two_articles_naming_one_base_study_are_both_recorded_and_neither_is_sent(
-        env, monkeypatch):
+        env, monkeypatch, evidence):
     """Each upload would supersede the other's analyses in that base study, so neither is
     written or uploaded; each is recorded with why."""
     settings, catalog, _ = env
-    ctx, held, named = _claimed_twice(env, monkeypatch)
+    ctx, held, named = _claimed_twice(env, monkeypatch, evidence=evidence)
     sync = SyncStage(settings)
     # Planned alone, each still finds the other: the claims are the whole catalog's.
     for ref, other in ((held, named), (named, held)):
@@ -467,12 +470,12 @@ def test_two_articles_naming_one_base_study_are_both_recorded_and_neither_is_sen
 
 
 def test_of_a_preprint_and_its_published_paper_on_one_base_study_the_paper_is_written(
-        env, monkeypatch):
+        env, monkeypatch, evidence):
     """HXrFSBcmoxhc's case: neurostore's alias is the Research Square preprint's, and the
     published paper names the same base study. The paper is written under it and uploaded;
     the preprint is recorded with why."""
     settings, catalog, _ = env
-    ctx, preprint, paper = _claimed_twice(env, monkeypatch)
+    ctx, preprint, paper = _claimed_twice(env, monkeypatch, evidence=evidence)
     _read_from_a_preprint(catalog, preprint)
     sync = SyncStage(settings)
     plan = _plan_sync(sync, ctx, catalog, [preprint, paper])
@@ -496,11 +499,11 @@ def test_of_a_preprint_and_its_published_paper_on_one_base_study_the_paper_is_wr
 ], ids=["biorxiv and published", "research square and published", "both published",
         "both preprints"])
 def test_a_preprint_server_doi_makes_the_other_article_the_one_that_is_written(
-        env, monkeypatch, dois, written):
+        env, monkeypatch, dois, written, evidence):
     """Of a preprint and its published paper, by DOI prefix alone, the paper is written
     and the preprint recorded with why; two of a kind are all recorded, none written."""
     settings, catalog, _ = env
-    ctx, first, second = _claimed_twice(env, monkeypatch, dois)
+    ctx, first, second = _claimed_twice(env, monkeypatch, dois, evidence=evidence)
     sync = SyncStage(settings)
     plan = _plan_sync(sync, ctx, catalog, [first, second])
     outcomes = {o.article_id: o for o in sync.execute(ctx, plan.pending)}
@@ -545,20 +548,22 @@ def test_is_preprint_by_a_preprint_servers_doi_or_by_the_copy_of_the_download():
 
 
 def test_a_download_that_failed_since_the_extraction_leaves_the_doi_to_decide(
-        env, monkeypatch):
+        env, monkeypatch, evidence):
     """A refreshed download that failed keeps no copy: the bioRxiv DOI still says which is
     the preprint, and the other article's copy is read as before."""
     _, catalog, _ = env
     ctx, preprint, paper = _claimed_twice(
-        env, monkeypatch, ("10.1101/2020.01.01.123456", "10.1016/j.neuroimage.2020.1"))
+        env, monkeypatch, ("10.1101/2020.01.01.123456", "10.1016/j.neuroimage.2020.1"),
+                evidence=evidence)
     catalog.record([Outcome.failure(preprint.id, "download", "pubget", "no full text")])
 
     assert preprints_among(ctx, [preprint.id, paper.id]) == {preprint.id}
 
 
-def test_a_download_stored_before_copies_were_recorded_names_the_backfill(env, monkeypatch):
+def test_a_download_stored_before_copies_were_recorded_names_the_backfill(
+        env, monkeypatch, evidence):
     _, catalog, _ = env
-    ctx, held, named = _claimed_twice(env, monkeypatch)
+    ctx, held, named = _claimed_twice(env, monkeypatch, evidence=evidence)
     download = catalog.artifact(held.id, "download", "pubget")
     catalog.record([Outcome(article_id=held.id, stage="download", source="pubget",
                             fingerprint=download.fingerprint, payload=catalog.payload(download),
@@ -568,9 +573,10 @@ def test_a_download_stored_before_copies_were_recorded_names_the_backfill(env, m
         preprints_among(ctx, [held.id, named.id])
 
 
-def test_the_parsed_paper_s_text_copy_is_the_copy_its_text_was_downloaded_as(env, monkeypatch):
+def test_the_parsed_paper_s_text_copy_is_the_copy_its_text_was_downloaded_as(
+        env, monkeypatch, evidence):
     settings, catalog, _ = env
-    ctx, ref = _prose_article(env, monkeypatch, "41", "BS41")
+    ctx, ref = _prose_article(env, monkeypatch, "41", "BS41", evidence=evidence)
     _read_from_a_preprint(catalog, ref)
     _, (synced,) = _run(SyncStage(settings), ctx, catalog, ref)
     assert synced.status is Status.OK, synced.error
@@ -585,9 +591,10 @@ def test_the_parsed_paper_s_text_copy_is_the_copy_its_text_was_downloaded_as(env
 
 
 @pytest.mark.parametrize("status", [Status.FAILED, Status.PERMANENT])
-def test_a_text_whose_download_since_failed_is_not_synced_and_says_why(env, monkeypatch, status):
+def test_a_text_whose_download_since_failed_is_not_synced_and_says_why(
+        env, monkeypatch, status, evidence):
     settings, catalog, _ = env
-    ctx, ref = _prose_article(env, monkeypatch, "42", "BS42")
+    ctx, ref = _prose_article(env, monkeypatch, "42", "BS42", evidence=evidence)
     catalog.record([Outcome(article_id=ref.id, stage="download", source="pubget", status=status,
                             fingerprint="dl-2", error="no full text")])
     _, (synced,) = _run(SyncStage(settings), ctx, catalog, ref)
@@ -597,10 +604,11 @@ def test_a_text_whose_download_since_failed_is_not_synced_and_says_why(env, monk
     assert not (settings.ns_pond_root / "BS42").exists()
 
 
-def test_the_header_holds_every_doi_the_catalog_has_for_the_article(env, monkeypatch):
+def test_the_header_holds_every_doi_the_catalog_has_for_the_article(env, monkeypatch, evidence):
     """dpl6phhniqbj's two DOIs, its journal's and its bioRxiv preprint's."""
     settings, catalog, _ = env
-    ctx, ref = _prose_article(env, monkeypatch, "45", "BS45", doi="10.1101/2020.03.25.008318")
+    ctx, ref = _prose_article(env, monkeypatch, "45", "BS45", doi="10.1101/2020.03.25.008318",
+            evidence=evidence)
     catalog.add_aliases([(ref.id, "doi", "10.1002/hbm.25137")])
     _, (synced,) = _run(SyncStage(settings), ctx, catalog, catalog.ref(ref.id))
     assert synced.status is Status.OK, synced.error
@@ -611,11 +619,12 @@ def test_the_header_holds_every_doi_the_catalog_has_for_the_article(env, monkeyp
         "10.1002/hbm.25137", [{"doi": "10.1101/2020.03.25.008318", "server": "biorxiv"}])
 
 
-def test_an_article_holding_two_doi_rows_is_not_synced(env, monkeypatch):
+def test_an_article_holding_two_doi_rows_is_not_synced(env, monkeypatch, evidence):
     """298 catalog articles hold two version-of-record DOIs, most of them two works fused;
     sync must not write one and drop the other."""
     settings, catalog, _ = env
-    ctx, ref = _prose_article(env, monkeypatch, "46", "BS46", doi="10.1002/hbm.25137")
+    ctx, ref = _prose_article(env, monkeypatch, "46", "BS46", doi="10.1002/hbm.25137",
+            evidence=evidence)
     catalog.add_aliases([(ref.id, "doi", "10.1371/journal.pone.0041873")])
     _, (synced,) = _run(SyncStage(settings), ctx, catalog, catalog.ref(ref.id))
 
@@ -624,7 +633,7 @@ def test_an_article_holding_two_doi_rows_is_not_synced(env, monkeypatch):
     assert not (settings.ns_pond_root / "BS46" / "parse").exists()
 
 
-def _held_by_pubget_and_wiley(env, monkeypatch, pmid, base, read):
+def _held_by_pubget_and_wiley(env, monkeypatch, pmid, base, read, evidence):
     """An article pubget holds and whose Wiley PDF is read into its `pdf` text; triage
     judged the `read` extraction."""
     from ingestion_workflow.extractors.copies import copy_of
@@ -632,7 +641,7 @@ def _held_by_pubget_and_wiley(env, monkeypatch, pmid, base, read):
     from ingestion_workflow.models import DownloadedFile, DownloadResult, DownloadSource, FileType
 
     settings, catalog, path = env
-    ctx, ref = _prose_article(env, monkeypatch, pmid, base)
+    ctx, ref = _prose_article(env, monkeypatch, pmid, base, evidence=evidence)
     wiley = DownloadResult(
         identifier=ref.identifier, source=DownloadSource.WILEY, success=True,
         files=[DownloadedFile(file_path=path, file_type=FileType.PDF,
@@ -667,9 +676,9 @@ COPY_LICENSES = {
 
 @pytest.mark.parametrize("read, download", [("pdf", "wiley"), ("pubget", "pubget")])
 def test_the_text_copy_is_the_download_the_judged_text_was_read_from(
-        env, monkeypatch, read, download):
+        env, monkeypatch, read, download, evidence):
     settings, catalog, _ = env
-    ctx, ref = _held_by_pubget_and_wiley(env, monkeypatch, "44", "BS44", read)
+    ctx, ref = _held_by_pubget_and_wiley(env, monkeypatch, "44", "BS44", read, evidence=evidence)
     _, (synced,) = _run(SyncStage(settings), ctx, catalog, ref)
     assert synced.status is Status.OK, synced.error
 
@@ -682,9 +691,10 @@ def test_the_text_copy_is_the_download_the_judged_text_was_read_from(
     assert stated == COPY_LICENSES[download]
 
 
-def test_sync_stops_at_a_text_download_stored_before_copies_were_recorded(env, monkeypatch):
+def test_sync_stops_at_a_text_download_stored_before_copies_were_recorded(
+        env, monkeypatch, evidence):
     settings, catalog, _ = env
-    ctx, ref = _prose_article(env, monkeypatch, "43", "BS43")
+    ctx, ref = _prose_article(env, monkeypatch, "43", "BS43", evidence=evidence)
     download = catalog.artifact(ref.id, "download", "pubget")
     catalog.record([Outcome(article_id=ref.id, stage="download", source="pubget",
                             fingerprint=download.fingerprint, payload=catalog.payload(download),
@@ -694,24 +704,24 @@ def test_sync_stops_at_a_text_download_stored_before_copies_were_recorded(env, m
         _run(SyncStage(settings), ctx, catalog, ref)
 
 
-def _never_downloaded(env, monkeypatch, pmid, base):
-    return env[1].register(Identifier(pmid=pmid, neurostore=base))
+def _never_downloaded(env, monkeypatch, pmid, base, evidence):
+    return env[1].register(Identifier(pmid=pmid, neurostore=base), evidence)
 
 
-def _space_taken_back(env, monkeypatch, pmid, base):
-    _, ref = _prose_article(env, monkeypatch, pmid, base)
+def _space_taken_back(env, monkeypatch, pmid, base, evidence):
+    _, ref = _prose_article(env, monkeypatch, pmid, base, evidence=evidence)
     _take_back_space(env[1], ref)
     return ref
 
 
-def _roles_failed(env, monkeypatch, pmid, base):
-    _, ref = _prose_article(env, monkeypatch, pmid, base)
+def _roles_failed(env, monkeypatch, pmid, base, evidence):
+    _, ref = _prose_article(env, monkeypatch, pmid, base, evidence=evidence)
     env[1].record([Outcome.failure(ref.id, "roles", "", "TimeoutError: timed out")])
     return ref
 
 
-def _a_retraction_notice(env, monkeypatch, pmid, base):
-    _, ref = _prose_article(env, monkeypatch, pmid, base)
+def _a_retraction_notice(env, monkeypatch, pmid, base, evidence):
+    _, ref = _prose_article(env, monkeypatch, pmid, base, evidence=evidence)
     env[1].record([Outcome(article_id=ref.id, stage="notices", source="", fingerprint="no-1",
                            payload={"corrections": [], "retraction_notice": True},
                            summary={"retracted": False, "retraction_notice": True})])
@@ -722,17 +732,17 @@ def _a_retraction_notice(env, monkeypatch, pmid, base):
     _never_downloaded, _space_taken_back, _roles_failed, _a_retraction_notice,
 ], ids=["never downloaded", "space taken back", "roles failed", "retraction notice"])
 def test_an_article_that_never_reaches_sync_holds_no_claim_on_its_base_study(env, monkeypatch,
-                                                                             other):
+                                                                             other, evidence):
     """aTRpMgJ82Ysx's case in the catalog of 2026-10-12: qjgzxkryyvbg holds neurostore's
     alias for it and has no download, so it never reaches sync and sends nothing;
     vzlh56dlbzjy uploaded under it. vzlh56dlbzjy is written, planned alone or with the
     other, and what sync records of the other is no claim either."""
     settings, catalog, _ = env
-    ctx, uploaded = _prose_article(env, monkeypatch, "40402904")
+    ctx, uploaded = _prose_article(env, monkeypatch, "40402904", evidence=evidence)
     catalog.record([Outcome(article_id=uploaded.id, stage="upload", source="",
                             fingerprint="up-legacy",
                             summary={"base_study_id": "aTRpMgJ82Ysx", "analyses": 1})])
-    alias_only = other(env, monkeypatch, "40402903", "aTRpMgJ82Ysx")
+    alias_only = other(env, monkeypatch, "40402903", "aTRpMgJ82Ysx", evidence)
     sync = SyncStage(settings)
     plan = _plan_sync(sync, ctx, catalog, [uploaded])
     assert [(w.article_id, w.skip) for w in plan.pending] == [(uploaded.id, None)]
@@ -747,16 +757,17 @@ def test_an_article_that_never_reaches_sync_holds_no_claim_on_its_base_study(env
 
 
 def test_an_article_taken_back_from_the_corpus_holds_no_claim_on_its_base_study(env,
-                                                                                monkeypatch):
+                                                                                monkeypatch,
+                                                                                        evidence):
     """Its sync record is the take-back: nothing of it is in the tree for upload to send."""
     settings, catalog, _ = env
-    ctx, gone = _prose_article(env, monkeypatch, "40402910", "BS40402910")
+    ctx, gone = _prose_article(env, monkeypatch, "40402910", "BS40402910", evidence=evidence)
     sync = SyncStage(settings)
     _run(sync, ctx, catalog, gone)
     _take_back_space(catalog, gone)
     _, (back,) = _run(sync, ctx, catalog, gone)
     assert (back.error, back.summary["base_study_id"]) == (NO_TEXT, "BS40402910")
-    _, paper = _prose_article(env, monkeypatch, "40402911")
+    _, paper = _prose_article(env, monkeypatch, "40402911", evidence=evidence)
     catalog.record([Outcome(article_id=paper.id, stage="upload", source="",
                             fingerprint="up-legacy",
                             summary={"base_study_id": "BS40402910", "analyses": 1})])
@@ -765,7 +776,7 @@ def test_an_article_taken_back_from_the_corpus_holds_no_claim_on_its_base_study(
 
 
 def test_the_gate_reads_the_claims_on_base_studies_once_for_all_its_articles(env,
-                                                                            monkeypatch):
+                                                                            monkeypatch, evidence):
     """The claims are one query over every sync and upload record in the catalog, so the
     gate asks it once for a batch, not once per article."""
     from ingestion_workflow.pipeline.upstream import Assessor
@@ -773,7 +784,7 @@ def test_the_gate_reads_the_claims_on_base_studies_once_for_all_its_articles(env
     settings, catalog, _ = env
     refs = []
     for pmid in ("40402907", "40402908", "40402909"):
-        ctx, ref = _prose_article(env, monkeypatch, pmid, f"BS{pmid}")
+        ctx, ref = _prose_article(env, monkeypatch, pmid, f"BS{pmid}", evidence=evidence)
         _run(SyncStage(settings), ctx, catalog, ref)
         refs.append(ref)
     asked = []
@@ -794,11 +805,11 @@ def _take_back_space(catalog, ref, reason=NO_TEXT):
 @RECORDS
 @pytest.mark.parametrize("reason", [NO_TEXT, NO_ANALYSES], ids=["no-text", "no-analyses"])
 def test_a_taken_back_article_gets_no_parse_and_is_recorded_once_with_its_reason(
-        env, monkeypatch, reason, vcr):
+        env, monkeypatch, reason, vcr, evidence):
     """Nothing is deleted from neurostore: it keeps the last upload, and the upload stage
     records the take-back's reason and sends nothing again."""
     settings, catalog, _ = env
-    ctx, ref = _prose_article(env, monkeypatch, "29", "BS29")
+    ctx, ref = _prose_article(env, monkeypatch, "29", "BS29", evidence=evidence)
     sync, upload = build(["sync", "upload"], settings)
     _run(sync, ctx, catalog, ref)
     _, (done,) = _run(upload, ctx, catalog, ref)
@@ -824,9 +835,9 @@ def test_a_taken_back_article_gets_no_parse_and_is_recorded_once_with_its_reason
 
 
 @pytest.mark.vcr
-def test_a_taken_back_article_never_uploaded_has_nothing_to_retract(env, monkeypatch):
+def test_a_taken_back_article_never_uploaded_has_nothing_to_retract(env, monkeypatch, evidence):
     settings, catalog, _ = env
-    ctx, ref = _prose_article(env, monkeypatch, "30")
+    ctx, ref = _prose_article(env, monkeypatch, "30", evidence=evidence)
     sync, upload = build(["sync", "upload"], settings)
     _run(sync, ctx, catalog, ref)
     new = new_articles_root(settings) / ref.id
@@ -842,11 +853,11 @@ def test_a_taken_back_article_never_uploaded_has_nothing_to_retract(env, monkeyp
 
 
 def test_notices_are_the_parsed_paper_s_corrections_and_a_notice_is_not_synced(
-        env, monkeypatch):
+        env, monkeypatch, evidence):
     """Neurostore's ingester marks a paper retracted from its ParsedPaper's corrections;
     unanswered notices leave them out, which it reads as not looked up."""
     settings, catalog, _ = env
-    ctx, ref = _prose_article(env, monkeypatch, "41", "BS41")
+    ctx, ref = _prose_article(env, monkeypatch, "41", "BS41", evidence=evidence)
     sync = SyncStage(settings)
     _run(sync, ctx, catalog, ref)
     paper = settings.ns_pond_root / "BS41" / "parse" / "parsed_paper.json"
@@ -879,9 +890,9 @@ def _dry_lines(settings):
     return [json.loads(line) for line in log.read_text().splitlines()]
 
 
-def test_a_dry_run_writes_only_under_its_own_root_and_records_nothing(env, monkeypatch):
+def test_a_dry_run_writes_only_under_its_own_root_and_records_nothing(env, monkeypatch, evidence):
     settings, catalog, _ = env
-    ctx, ref = _prose_article(env, monkeypatch, "24", "BS24")
+    ctx, ref = _prose_article(env, monkeypatch, "24", "BS24", evidence=evidence)
     _run(SyncStage(settings), ctx, catalog, ref)
     dry = _dry(settings)
     upload = UploadStage(dry)
@@ -898,10 +909,10 @@ def test_a_dry_run_writes_only_under_its_own_root_and_records_nothing(env, monke
     assert line["ingester"]["checks"][:2] == ["model", "check_paper"]
 
 
-def test_a_dry_run_of_a_missing_parse_never_reaches_the_upload_history(env, monkeypatch):
+def test_a_dry_run_of_a_missing_parse_never_reaches_the_upload_history(env, monkeypatch, evidence):
     """A missing (or invalid) parse in a dry run is the dry run's record, not the article's."""
     settings, catalog, _ = env
-    ctx, ref = _prose_article(env, monkeypatch, "25", "BS25")
+    ctx, ref = _prose_article(env, monkeypatch, "25", "BS25", evidence=evidence)
     _run(SyncStage(settings), ctx, catalog, ref)
     for name in ("coordinate_parse.json", "parsed_paper.json"):
         (settings.ns_pond_root / "BS25" / "parse" / name).unlink()
@@ -947,12 +958,12 @@ def _analysed_from(settings, catalog, triage):
                                  metadata_fingerprint(metadata, ANALYSES_READ))
 
 
-def _icafz5(tmp_path, monkeypatch, catalog, *, analyses_fresh=False, unread=None,
+def _icafz5(tmp_path, monkeypatch, catalog, evidence, *, analyses_fresh=False, unread=None,
             uploaded=True):
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", ns_pond_root=tmp_path / "pond",
                         role_model_table=TABLE_MODEL, neurostore_api_url=LOCAL)
-    ref = catalog.register(Identifier(pmid="16139528", neurostore="NTKEuAF4Autf"))
+    ref = catalog.register(Identifier(pmid="16139528", neurostore="NTKEuAF4Autf"), evidence)
     catalog.record([Outcome(article_id=ref.id, stage="triage", source="", fingerprint="tr-1005",
                             summary={"source": "ace", "tables": 3, "passed": 2,
                                      "passed_tables": list(ICAFZ5_TABLES)})])
@@ -1012,8 +1023,8 @@ def icafz5_env(served, token):  # noqa: F811 - the imported fixture
 @pytest.mark.vcr
 def test_a_parse_made_from_stale_table_analyses_is_held_back(
         tmp_path, monkeypatch, icafz5_env, evidence):
-    with Catalog.open(tmp_path / "k", evidence=evidence) as catalog:
-        settings, ctx, ref = _icafz5(tmp_path, monkeypatch, catalog)
+    with Catalog.open(tmp_path / "k") as catalog:
+        settings, ctx, ref = _icafz5(tmp_path, monkeypatch, catalog, evidence=evidence)
         upload = UploadStage(settings)
         _, (held,) = _run(upload, ctx, catalog, ref)
         assert held.status is Status.FAILED
@@ -1042,8 +1053,8 @@ def test_a_parse_made_from_stale_table_analyses_is_held_back(
 @pytest.mark.vcr
 def test_once_the_tables_are_read_again_the_parse_goes_up(
         tmp_path, monkeypatch, icafz5_env, evidence):
-    with Catalog.open(tmp_path / "k", evidence=evidence) as catalog:
-        settings, ctx, ref = _icafz5(tmp_path, monkeypatch, catalog)
+    with Catalog.open(tmp_path / "k") as catalog:
+        settings, ctx, ref = _icafz5(tmp_path, monkeypatch, catalog, evidence=evidence)
         upload = UploadStage(settings)
         _run(upload, ctx, catalog, ref)
         # The analyses read again from today's triage; everything after them follows.
@@ -1064,8 +1075,8 @@ def test_once_the_tables_are_read_again_the_parse_goes_up(
 @pytest.mark.vcr
 def test_a_person_can_leave_the_tables_out_with_a_reason(
         tmp_path, monkeypatch, icafz5_env, evidence):
-    with Catalog.open(tmp_path / "k", evidence=evidence) as catalog:
-        settings, ctx, ref = _icafz5(tmp_path, monkeypatch, catalog)
+    with Catalog.open(tmp_path / "k") as catalog:
+        settings, ctx, ref = _icafz5(tmp_path, monkeypatch, catalog, evidence=evidence)
         upload = UploadStage(settings)
         _run(upload, ctx, catalog, ref)
         catalog.exclude([(ref.id, "source:tables", "MEG dipole fits, not results", "")])
@@ -1082,9 +1093,9 @@ def test_a_table_left_unread_holds_back_unless_a_person_excuses_it(tmp_path, mon
                                                                    icafz5_env, evidence):
     """The analyses ran, fresh, but one table's raw content was missing: its analyses are
     not in the parse, so it is not sent unless a person leaves the tables out."""
-    with Catalog.open(tmp_path / "k", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "k") as catalog:
         settings, ctx, ref = _icafz5(tmp_path, monkeypatch, catalog, analyses_fresh=True,
-                                     unread={"t3": "raw content missing"})
+                                     unread={"t3": "raw content missing"}, evidence=evidence)
         if excuse:
             catalog.exclude([(ref.id, "source:tables", excuse, "")])
             _sync_as_written(ctx, catalog, ref, analyses=0)
@@ -1102,10 +1113,10 @@ def test_a_table_left_unread_holds_back_unless_a_person_excuses_it(tmp_path, mon
 
 
 @pytest.mark.vcr
-def test_a_failed_table_reading_holds_back_a_parse_with_only_the_prose(env, monkeypatch):
+def test_a_failed_table_reading_holds_back_a_parse_with_only_the_prose(env, monkeypatch, evidence):
     """The tables failed in the model, so the parse holds the prose's analyses alone."""
     settings, catalog, _ = env
-    ctx, ref = _prose_article(env, monkeypatch, "26", "BS26")
+    ctx, ref = _prose_article(env, monkeypatch, "26", "BS26", evidence=evidence)
     _run(SyncStage(settings), ctx, catalog, ref)
     catalog.record([
         Outcome(article_id=ref.id, stage="triage", source="", fingerprint="tr-2",
@@ -1173,8 +1184,8 @@ def test_one_rule_holds_back_or_takes_back(tables, prose, behind, expected):
 
 
 def _tables_ctx(tmp_path, *records, evidence):
-    catalog = Catalog.open(tmp_path / "k", evidence=evidence)
-    ref = catalog.register(Identifier(pmid="40"))
+    catalog = Catalog.open(tmp_path / "k")
+    ref = catalog.register(Identifier(pmid="40"), evidence)
     catalog.record([Outcome(article_id=ref.id, **r) for r in records])
     return Context(Settings(data_root=tmp_path / "d"), catalog), ref
 
@@ -1223,11 +1234,11 @@ def test_prose_is_empty_only_when_read(prose, expected):
     assert prose_reading(prose).kind is expected
 
 
-def _two_synced(env, monkeypatch):
+def _two_synced(env, monkeypatch, evidence):
     settings, catalog, _ = env
     refs = []
     for pmid in ("27", "31"):
-        ctx, ref = _prose_article(env, monkeypatch, pmid, f"BS{pmid}")
+        ctx, ref = _prose_article(env, monkeypatch, pmid, f"BS{pmid}", evidence=evidence)
         _run(SyncStage(settings), ctx, catalog, ref)
         refs.append(ref)
     return ctx, refs
@@ -1255,12 +1266,12 @@ def _stops(upload, ctx, catalog, refs, caplog):
         / "test_a_key_the_ingester_refuses_is_the_paper_s_failure[KEY_MISMATCH].yaml"),
     match_on=["method", "scheme", "host", "port", "path", "query"])
 def test_a_key_the_ingester_refuses_is_recorded_as_the_article_s_failure_with_its_code(
-        env, monkeypatch):
+        env, monkeypatch, evidence):
     """neurostore's real KEY_MISMATCH refusal (its answer to another parse: this client's
     own key check would not send one it derives differently) is a permanent failure of
     that article whose reason names the code; nothing stops."""
     settings, catalog, _ = env
-    ctx, ref = _prose_article(env, monkeypatch, "62", "BS62")
+    ctx, ref = _prose_article(env, monkeypatch, "62", "BS62", evidence=evidence)
     sync, upload = build(["sync", "upload"], settings)
     _run(sync, ctx, catalog, ref)
     _, (done,) = _run(upload, ctx, catalog, ref)
@@ -1293,7 +1304,7 @@ def _recorded_body(name):
     ("blocked", Status.FAILED, neurostore_ingest.RETRIES + 3),
 ], ids=["refused", "blocked"])
 def test_a_refused_or_blocked_paper_leaves_the_next_one_to_upload(env, monkeypatch, vcr, first,
-                                                                  status, answers):
+                                                                  status, answers, evidence):
     """One paper's failure is that paper's: the stage goes on to the next. Blocked is
     retried later by backoff; refused is not. The cassettes replay real answers in the
     order sent, not matched on the body, so the second paper's parse is checked against
@@ -1301,8 +1312,9 @@ def test_a_refused_or_blocked_paper_leaves_the_next_one_to_upload(env, monkeypat
     settings, catalog, _ = env
     monkeypatch.setattr(neurostore_ingest.time, "sleep", lambda s: None)
     ctx, failing = _prose_article(env, monkeypatch, "60",
-                                  "doesnotexist1" if first == "refused" else "BS60")
-    _, sent = _prose_article(env, monkeypatch, "21", "BS21")
+                                  "doesnotexist1" if first == "refused" else "BS60",
+                                          evidence=evidence)
+    _, sent = _prose_article(env, monkeypatch, "21", "BS21", evidence=evidence)
     sync, upload = build(["sync", "upload"], settings)
     for ref in (failing, sent):
         _run(sync, ctx, catalog, ref)
@@ -1324,12 +1336,13 @@ def test_a_refused_or_blocked_paper_leaves_the_next_one_to_upload(env, monkeypat
 
 @pytest.mark.vcr(str(CASSETTES / "test_sync_writes_the_parse_with_no_upload_and_upload_sends_"
                      "what_it_wrote.yaml"))
-def test_a_paper_the_client_cannot_read_fails_alone_and_the_next_is_sent(env, monkeypatch, vcr):
+def test_a_paper_the_client_cannot_read_fails_alone_and_the_next_is_sent(
+        env, monkeypatch, vcr, evidence):
     """An error the client does not turn into an outcome is that paper's failure, retried
     by backoff, and the stage goes on."""
     settings, catalog, _ = env
-    ctx, broken = _prose_article(env, monkeypatch, "61", "BS61")
-    _, sent = _prose_article(env, monkeypatch, "21", "BS21")
+    ctx, broken = _prose_article(env, monkeypatch, "61", "BS61", evidence=evidence)
+    _, sent = _prose_article(env, monkeypatch, "21", "BS21", evidence=evidence)
     sync, upload = build(["sync", "upload"], settings)
     for ref in (broken, sent):
         _run(sync, ctx, catalog, ref)
@@ -1348,9 +1361,9 @@ def test_a_parse_with_no_analysis_never_uploaded_is_skipped_once(tmp_path, monke
                                                                  icafz5_env, evidence):
     """The stage did its job: a failure would be retried on every run and never succeed,
     and an upload would create a study claiming the paper reports no coordinates."""
-    with Catalog.open(tmp_path / "k", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "k") as catalog:
         settings, ctx, ref = _icafz5(tmp_path, monkeypatch, catalog, analyses_fresh=True,
-                                     uploaded=False)
+                                     uploaded=False, evidence=evidence)
         upload = UploadStage(settings)
         _, (done,) = _run(upload, ctx, catalog, ref)
         assert (done.status, done.summary["reason"]) == (Status.SKIPPED, "no analyses to upload")
@@ -1360,10 +1373,10 @@ def test_a_parse_with_no_analysis_never_uploaded_is_skipped_once(tmp_path, monke
 
 @RECORDS
 def test_a_token_neurostore_refuses_stops_the_upload_and_records_nothing(env, monkeypatch,
-                                                                         caplog, vcr):
+                                                                         caplog, vcr, evidence):
     """Recorded with NEUROSTORE_TOKEN set to a token the local neurostore does not know."""
     settings, catalog, _ = env
-    ctx, refs = _two_synced(env, monkeypatch)
+    ctx, refs = _two_synced(env, monkeypatch, evidence=evidence)
     upload = UploadStage(settings)
     _stops(upload, ctx, catalog, refs, caplog)
     assert "NeurostoreAuthError" in caplog.text and "with 401" in caplog.text
@@ -1371,9 +1384,10 @@ def test_a_token_neurostore_refuses_stops_the_upload_and_records_nothing(env, mo
     assert list(settings.ns_pond_root.rglob(neurostore_ingest.ARTIFACT_NAME)) == []
 
 
-def test_a_down_neurostore_stops_the_upload_and_records_nothing(env, monkeypatch, caplog):
+def test_a_down_neurostore_stops_the_upload_and_records_nothing(
+        env, monkeypatch, caplog, evidence):
     settings, catalog, _ = env
-    ctx, refs = _two_synced(env, monkeypatch)
+    ctx, refs = _two_synced(env, monkeypatch, evidence=evidence)
     down = settings.model_copy(update={"neurostore_api_url": f"http://127.0.0.1:{_closed_port()}"})
     upload = UploadStage(down)
     monkeypatch.setattr(neurostore_ingest.time, "sleep", lambda s: None)
@@ -1383,11 +1397,11 @@ def test_a_down_neurostore_stops_the_upload_and_records_nothing(env, monkeypatch
 
 
 def test_a_stop_leaves_pending_the_article_it_stopped_at_and_every_one_after(env, monkeypatch,
-                                                                            caplog):
+                                                                            caplog, evidence):
     """The first paper fails alone, before anything is sent; neurostore is down for the
     second, so the stage stops there with one article left."""
     settings, catalog, _ = env
-    ctx, (broken, stopped) = _two_synced(env, monkeypatch)
+    ctx, (broken, stopped) = _two_synced(env, monkeypatch, evidence=evidence)
     parse = settings.ns_pond_root / "BS27" / "parse" / "coordinate_parse.json"
     parse.unlink()
     parse.mkdir()
@@ -1401,18 +1415,18 @@ def test_a_stop_leaves_pending_the_article_it_stopped_at_and_every_one_after(env
 
 
 @pytest.mark.vcr
-def test_no_token_stops_the_upload_before_anything_is_sent(env, monkeypatch, caplog):
+def test_no_token_stops_the_upload_before_anything_is_sent(env, monkeypatch, caplog, evidence):
     settings, catalog, _ = env
-    ctx, refs = _two_synced(env, monkeypatch)
+    ctx, refs = _two_synced(env, monkeypatch, evidence=evidence)
     monkeypatch.delenv("NEUROSTORE_TOKEN")
     _stops(UploadStage(settings), ctx, catalog, refs, caplog)
     assert "no neurostore token" in caplog.text
 
 
 @pytest.mark.vcr
-def test_with_no_neurostore_named_every_article_waits(env, monkeypatch):
+def test_with_no_neurostore_named_every_article_waits(env, monkeypatch, evidence):
     settings, catalog, _ = env
-    ctx, ref = _prose_article(env, monkeypatch, "33", "BS33")
+    ctx, ref = _prose_article(env, monkeypatch, "33", "BS33", evidence=evidence)
     _run(SyncStage(settings), ctx, catalog, ref)
     unnamed = settings.model_copy(update={"neurostore_api_url": None})
     plan, outcomes = _run(UploadStage(unnamed), Context(unnamed, catalog), catalog, ref)

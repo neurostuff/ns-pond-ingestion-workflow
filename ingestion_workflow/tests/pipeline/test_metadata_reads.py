@@ -66,7 +66,7 @@ class _Parser:
 
 
 @pytest.fixture()
-def env(tmp_path, evidence):
+def env(tmp_path):
     from nspond_tables.classify.model import Gate, RoutedGate
 
     gate = tmp_path / "gate.json"
@@ -75,13 +75,13 @@ def env(tmp_path, evidence):
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", prose_model="nu-prose-v2", llm_api_key="x",
                         coordinate_gate_path=gate, download_sources=["pubget"])
-    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
+    with Catalog.open(settings.catalog_root) as catalog:
         yield settings, catalog, tmp_path
 
 
-def _article(catalog, tmp_path, pmid, record):
+def _article(catalog, tmp_path, pmid, record, evidence):
     """A downloaded and extracted article, with one coordinate table, and `record`."""
-    ref = catalog.register(Identifier(pmid=pmid))
+    ref = catalog.register(Identifier(pmid=pmid), evidence)
     xml, text, table = (tmp_path / f"{ref.id}{ext}" for ext in (".xml", ".txt", ".html"))
     xml.write_text("<article/>")
     text.write_text(TEXT, encoding="utf-8")
@@ -184,9 +184,9 @@ def _everything_else_changed(value, path=()):
     return f"{value} (changed)"
 
 
-def test_a_licence_change_leaves_triage_analyses_and_prose_fresh(env):
+def test_a_licence_change_leaves_triage_analyses_and_prose_fresh(env, evidence):
     settings, catalog, tmp_path = env
-    ref = _article(catalog, tmp_path, "1", RECORD)
+    ref = _article(catalog, tmp_path, "1", RECORD, evidence=evidence)
     _made(settings, catalog, ref)
     assert _stale(settings, catalog, ref) == set()
 
@@ -201,9 +201,9 @@ def test_a_licence_change_leaves_triage_analyses_and_prose_fresh(env):
     (("abstract",), "Coordinates are in Talairach space.", {"triage", "analyses", "prose"}),
     (TYPES, {"PublicationType": {"#text": "Meta-Analysis", "@UI": "D017418"}}, {"triage"}),
 ])
-def test_a_change_to_what_is_read_makes_its_readers_stale(env, path, value, stale):
+def test_a_change_to_what_is_read_makes_its_readers_stale(env, path, value, stale, evidence):
     settings, catalog, tmp_path = env
-    ref = _article(catalog, tmp_path, "1", RECORD)
+    ref = _article(catalog, tmp_path, "1", RECORD, evidence=evidence)
     _made(settings, catalog, ref)
 
     _metadata(catalog, ref, _at(RECORD, path, value), "me-3")
@@ -217,7 +217,7 @@ def test_a_change_to_what_is_read_makes_its_readers_stale(env, path, value, stal
     assert _stale(settings, catalog, ref) == stale - {"triage"}
 
 
-def test_analyses_reads_nothing_but_what_it_fingerprints(env, monkeypatch):
+def test_analyses_reads_nothing_but_what_it_fingerprints(env, monkeypatch, evidence):
     """Two articles alike but for every metadata field but the title and abstract, the
     publication types included, so triage marks one a meta-analysis and its payload
     differs: analyses makes the same of both, gives its model the same, and reads no
@@ -227,8 +227,8 @@ def test_analyses_reads_nothing_but_what_it_fingerprints(env, monkeypatch):
     settings, catalog, tmp_path = env
     changed = _everything_else_changed(_at(RECORD, TYPES, {
         "PublicationType": {"#text": "Meta-Analysis", "@UI": "D017418"}}))
-    one = _article(catalog, tmp_path, "1", RECORD)
-    other = _article(catalog, tmp_path, "2", changed)
+    one = _article(catalog, tmp_path, "1", RECORD, evidence=evidence)
+    other = _article(catalog, tmp_path, "2", changed, evidence=evidence)
     read, get = [], BlobStore.get
     monkeypatch.setattr(BlobStore, "get", lambda self, digest: read.append(digest)
                         or get(self, digest))
@@ -254,7 +254,8 @@ def test_analyses_reads_nothing_but_what_it_fingerprints(env, monkeypatch):
     assert read and not triaged & set(read)
 
 
-def test_the_stages_read_nothing_of_the_metadata_but_what_they_fingerprint(env, monkeypatch):
+def test_the_stages_read_nothing_of_the_metadata_but_what_they_fingerprint(
+        env, monkeypatch, evidence):
     """Two articles alike but for every metadata field triage and prose do not read: each
     stage makes the same of both, and gives each model, the table reader and the
     meta-analysis test the same."""
@@ -271,8 +272,8 @@ def test_the_stages_read_nothing_of_the_metadata_but_what_they_fingerprint(env, 
                         or marks(*a))
     changed = _everything_else_changed(RECORD)
     assert changed["raw_metadata"]["pubmed"] != RECORD["raw_metadata"]["pubmed"]
-    one = _article(catalog, tmp_path, "1", RECORD)
-    other = _article(catalog, tmp_path, "2", changed)
+    one = _article(catalog, tmp_path, "1", RECORD, evidence=evidence)
+    other = _article(catalog, tmp_path, "2", changed, evidence=evidence)
 
     (_, analysed, _, read), made = _made(settings, catalog, one)
     given_one = given[:]
@@ -293,23 +294,23 @@ def test_the_stages_read_nothing_of_the_metadata_but_what_they_fingerprint(env, 
         (RECORD["title"], RECORD["abstract"])]
 
 
-def test_the_plans_read_the_digests_not_the_payload(env, monkeypatch):
+def test_the_plans_read_the_digests_not_the_payload(env, monkeypatch, evidence):
     """What each reads is judged from the metadata's row, so planning reads no payload."""
     from ingestion_workflow.catalog.blobs import BlobStore
 
     settings, catalog, tmp_path = env
-    ref = _article(catalog, tmp_path, "1", RECORD)
+    ref = _article(catalog, tmp_path, "1", RECORD, evidence=evidence)
     _made(settings, catalog, ref)
     monkeypatch.setattr(BlobStore, "get", lambda self, digest: pytest.fail("a payload was read"))
 
     assert _stale(settings, catalog, ref) == set()
 
 
-def test_an_ok_metadata_that_records_no_digests_blocks_its_readers(env):
+def test_an_ok_metadata_that_records_no_digests_blocks_its_readers(env, evidence):
     from ingestion_workflow.pipeline.stage import NO_DIGESTS
 
     settings, catalog, tmp_path = env
-    ref = _article(catalog, tmp_path, "1", RECORD)
+    ref = _article(catalog, tmp_path, "1", RECORD, evidence=evidence)
     _made(settings, catalog, ref)
     catalog.record([Outcome(article_id=ref.id, stage="metadata", source="",
                             fingerprint="me-1", payload=RECORD)])
@@ -321,12 +322,12 @@ def test_an_ok_metadata_that_records_no_digests_blocks_its_readers(env):
         assert (plan.pending, plan.fresh, plan.reasons) == ([], 0, {NO_DIGESTS: 1}), stage.name
 
 
-def test_a_row_missing_the_digest_of_a_field_read_blocks_its_readers(env):
+def test_a_row_missing_the_digest_of_a_field_read_blocks_its_readers(env, evidence):
     """A field added to what stages read is not in the rows written before it."""
     from ingestion_workflow.pipeline.stage import NO_DIGESTS
 
     settings, catalog, tmp_path = env
-    ref = _article(catalog, tmp_path, "1", RECORD)
+    ref = _article(catalog, tmp_path, "1", RECORD, evidence=evidence)
     _made(settings, catalog, ref)
     digests = metadata_digests(RECORD)
     del digests["abstract"]

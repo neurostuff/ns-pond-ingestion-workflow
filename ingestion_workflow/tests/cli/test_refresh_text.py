@@ -30,7 +30,7 @@ def _config(tmp_path):
 
 def _extractions(tmp_path, n, evidence):
     """`n` pubget extractions whose text is older than what their download now builds."""
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "catalog") as catalog:
         for i in range(n):
             xml = tmp_path / "downloads" / f"pmcid_{i}" / "article.xml"
             xml.parent.mkdir(parents=True)
@@ -38,7 +38,7 @@ def _extractions(tmp_path, n, evidence):
             text = tmp_path / "texts" / f"{i}.txt"
             text.parent.mkdir(exist_ok=True)
             text.write_text(OLD, encoding="utf-8")
-            ref = catalog.register(Identifier(pmid=str(100 + i))).id
+            ref = catalog.register(Identifier(pmid=str(100 + i)), evidence).id
             catalog.record([
                 Outcome(article_id=ref, stage="download", source="pubget",
                         payload={"files": [{"file_path": str(xml), "file_type": "xml"}]}),
@@ -57,7 +57,7 @@ def test_each_batch_of_texts_is_recorded_as_the_run_goes(tmp_path, monkeypatch, 
     monkeypatch.setattr(text_refresh, "BATCH", 2)
 
     def recorded():
-        with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
+        with Catalog.open(tmp_path / "catalog") as catalog:
             ids = list(catalog.all_article_ids())
             return sum(a.summary.get("text_sha256") == new_sha
                        for by_source in catalog.artifacts(ids, "extract").values()
@@ -112,7 +112,7 @@ def _texts_with_passages(root, n, evidence):
     from ingestion_workflow.services.prose_passages import passages
     from ingestion_workflow.tests.services.test_text_refresh import CAPTIONED
 
-    with Catalog.open(root / "catalog", evidence=evidence) as catalog:
+    with Catalog.open(root / "catalog") as catalog:
         for i in range(n):
             xml = root / "downloads" / f"pmcid_{i}" / "article.xml"
             xml.parent.mkdir(parents=True)
@@ -125,7 +125,7 @@ def _texts_with_passages(root, n, evidence):
                       "hits": [{"x": h.x, "y": h.y, "z": h.z, "span": list(h.span)}
                                for h in p.hits]}
                      for p in passages(old)]
-            ref = catalog.register(Identifier(pmid=str(100 + i))).id
+            ref = catalog.register(Identifier(pmid=str(100 + i)), evidence).id
             catalog.record([
                 Outcome(article_id=ref, stage="download", source="pubget",
                         payload={"files": [{"file_path": str(xml), "file_type": "xml"}]}),
@@ -138,10 +138,10 @@ def _texts_with_passages(root, n, evidence):
             ])
 
 
-def _end_state(root, evidence):
+def _end_state(root):
     """{text file: (its bytes, the extraction's text_sha256, the passages payload)}, the
     payload's path by its file name."""
-    with Catalog.open(root / "catalog", evidence=evidence) as catalog:
+    with Catalog.open(root / "catalog") as catalog:
         ids = list(catalog.all_article_ids())
         extracts, passages = catalog.artifacts(ids, "extract"), catalog.artifacts(ids, "passages")
         out = {}
@@ -185,7 +185,7 @@ def test_a_run_stopped_partway_and_run_again_ends_where_one_run_would(
     result = CliRunner().invoke(app, [*args, str(config)])
     assert result.exit_code == 0, result.output
 
-    expected, got = _end_state(whole, evidence=evidence), _end_state(stopped, evidence=evidence)
+    expected, got = _end_state(whole), _end_state(stopped)
     assert {k: v[:2] for k, v in got.items()} == {k: v[:2] for k, v in expected.items()}
     caught = order[2:4]
     for name in expected:

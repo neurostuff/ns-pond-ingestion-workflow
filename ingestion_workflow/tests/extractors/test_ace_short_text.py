@@ -248,8 +248,8 @@ def test_refresh_text_records_how_the_rebuilt_text_was_made(tmp_path, evidence):
     text.write_text("Download citation file:", encoding="utf-8")
     stale = {"method": "readability", "reason": "an older rebuild", "page_prose_words": 1,
              "prose_words": {}}
-    with Catalog.open(tmp_path / "k", evidence=evidence) as catalog:
-        ref_id = catalog.register(Id(pmid="30699438")).id
+    with Catalog.open(tmp_path / "k") as catalog:
+        ref_id = catalog.register(Id(pmid="30699438"), evidence).id
         catalog.record([Outcome(
             article_id=ref_id, stage="extract", source="ace", fingerprint="ex-1",
             payload={"full_text_path": str(text), "text_source": stale},
@@ -274,8 +274,8 @@ def test_refresh_text_drops_a_text_source_that_no_longer_holds(tmp_path, evidenc
     text.write_text("an older rendering", encoding="utf-8")
     stale = {"method": ace.WITHOUT_READABILITY, "reason": "an older rebuild",
              "page_prose_words": 1, "prose_words": {}}
-    with Catalog.open(tmp_path / "k", evidence=evidence) as catalog:
-        ref_id = catalog.register(Id(pmid="41196626")).id
+    with Catalog.open(tmp_path / "k") as catalog:
+        ref_id = catalog.register(Id(pmid="41196626"), evidence).id
         catalog.record([Outcome(
             article_id=ref_id, stage="extract", source="ace", fingerprint="ex-1",
             payload={"full_text_path": str(text), "text_source": stale},
@@ -317,8 +317,8 @@ def test_passages_of_a_text_that_gained_a_coordinate_are_read_again(
               "prose_words": {}}
     monkeypatch.setattr(R, "build", lambda *a: (new, [], source))
     sha = R.sha256(old)
-    with Catalog.open(tmp_path / "k", evidence=evidence) as catalog:
-        ref_id = catalog.register(Id(pmid="1")).id
+    with Catalog.open(tmp_path / "k") as catalog:
+        ref_id = catalog.register(Id(pmid="1"), evidence).id
         catalog.record([
             Outcome(article_id=ref_id, stage="extract", source="ace", fingerprint="ex-1",
                     payload={"full_text_path": str(text)}, summary={"text_sha256": sha}),

@@ -339,8 +339,8 @@ def _sync(tmp_path, *notices, evidence):
     from ingestion_workflow.catalog import Catalog, Outcome
     from ingestion_workflow.pipeline.stage import Context
 
-    cat = Catalog.open(tmp_path / "cat", evidence=evidence)
-    ref = cat.register(Identifier(pmid="1", neurostore="BASE1"))
+    cat = Catalog.open(tmp_path / "cat")
+    ref = cat.register(Identifier(pmid="1", neurostore="BASE1"), evidence)
     cat.record([Outcome(article_id=ref.id, stage="space", source="", fingerprint="sp",
                         summary={"tables": 1}),
                 Outcome(article_id=ref.id, stage="roles", source="", fingerprint="ro")])

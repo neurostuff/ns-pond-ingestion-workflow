@@ -119,9 +119,9 @@ def slept(monkeypatch):
 
 
 def _catalog(settings, *identifiers, evidence):
-    ctx = Context(settings, Catalog.open(settings.catalog_root, evidence=evidence))
+    ctx = Context(settings, Catalog.open(settings.catalog_root))
     refs = ctx.catalog.register_many(
-        [i if isinstance(i, Identifier) else Identifier(doi=i) for i in identifiers])
+        [i if isinstance(i, Identifier) else Identifier(doi=i) for i in identifiers], evidence)
     return ctx, refs
 
 

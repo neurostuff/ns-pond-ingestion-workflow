@@ -31,14 +31,15 @@ TDM_MANUSCRIPT = Identifier(pmid="35820077", pmcid="PMC10518222", doi="10.1002/a
 
 
 @pytest.fixture()
-def env(tmp_path, evidence):
-    # The keys are dropped from the cassettes, so any value replays. No email is sent.
+def env(tmp_path):
+    # The keys are dropped from the cassettes, so any value replays. The stage sends no
+    # email; the evidence sends the placeholder.
     settings = Settings(
         data_root=tmp_path / "d", cache_root=tmp_path / "c", catalog_root=tmp_path / "k",
         pubmed_email=None,
         semantic_scholar_api_key=os.environ.get("SEMANTIC_SCHOLAR_API_KEY", "replay"),
         openalex_api_key=os.environ.get("OPENALEX_API_KEY", "replay"))
-    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
+    with Catalog.open(settings.catalog_root) as catalog:
         yield settings, catalog
 
 
@@ -48,9 +49,10 @@ EMBARGOED = Identifier(doi="10.1515/cogsem-2026-3005")
 EMBARGO_ENDS = datetime(2026, 10, 20, tzinfo=timezone.utc)
 
 
-def _held(catalog, identifier, source="pmc", fixture="pmc_tdm_manuscript", fingerprint="dl-1"):
+def _held(catalog, identifier, source="pmc", fixture="pmc_tdm_manuscript", fingerprint="dl-1",
+          *, evidence):
     """An article one download holds, extracted, as those stages record it."""
-    ref = catalog.register(identifier)
+    ref = catalog.register(identifier, evidence)
     files = sorted((COPIES / fixture).iterdir()) if fixture else []
     download = DownloadResult(
         identifier=ref.identifier, source=DownloadSource(source), success=True,
@@ -77,9 +79,9 @@ def _run(stage, ctx, catalog, ref):
 
 
 @pytest.mark.vcr()
-def test_each_held_copy_and_the_paper_get_a_licence(env):
+def test_each_held_copy_and_the_paper_get_a_licence(env, evidence):
     settings, catalog = env
-    ref = _held(catalog, TDM_MANUSCRIPT)
+    ref = _held(catalog, TDM_MANUSCRIPT, evidence=evidence)
     # a failed download holds no copy, and gets no licence
     catalog.record([Outcome.failure(ref.id, "download", "wiley", "HTTP 403")])
     _, (outcome,) = _run(MetadataStage(settings), Context(settings, catalog), catalog, ref)
@@ -95,10 +97,10 @@ def test_each_held_copy_and_the_paper_get_a_licence(env):
 
 
 @pytest.mark.vcr("test_each_held_copy_and_the_paper_get_a_licence.yaml")
-def test_the_digests_recorded_are_those_of_the_payload(env):
+def test_the_digests_recorded_are_those_of_the_payload(env, evidence):
     """Triage and prose judge what they read from these, so they must be the payload's."""
     settings, catalog = env
-    ref = _held(catalog, TDM_MANUSCRIPT)
+    ref = _held(catalog, TDM_MANUSCRIPT, evidence=evidence)
     catalog.record([Outcome.failure(ref.id, "download", "wiley", "HTTP 403")])
     _run(MetadataStage(settings), Context(settings, catalog), catalog, ref)
 
@@ -109,10 +111,10 @@ def test_the_digests_recorded_are_those_of_the_payload(env):
 
 
 @pytest.mark.vcr("test_each_held_copy_and_the_paper_get_a_licence.yaml")
-def test_the_corresponding_authors_are_decided_from_every_source(env):
+def test_the_corresponding_authors_are_decided_from_every_source(env, evidence):
     """The held manuscript's front matter marks no one, so OpenAlex's mark speaks."""
     settings, catalog = env
-    ref = _held(catalog, TDM_MANUSCRIPT)
+    ref = _held(catalog, TDM_MANUSCRIPT, evidence=evidence)
     catalog.record([Outcome.failure(ref.id, "download", "wiley", "HTTP 403")])
     _, (outcome,) = _run(MetadataStage(settings), Context(settings, catalog), catalog, ref)
 
@@ -146,9 +148,9 @@ def test_a_pdf_s_corresponding_authors_are_read_from_its_extracted_text(env, tmp
         ("Christine Lochner", "xq1002@sun.example", "pdf")]
 
 
-def test_a_re_extracted_pdf_makes_the_metadata_stale(env):
+def test_a_re_extracted_pdf_makes_the_metadata_stale(env, evidence):
     settings, catalog = env
-    ref = _held(catalog, TDM_MANUSCRIPT, source="pdf", fixture=None)
+    ref = _held(catalog, TDM_MANUSCRIPT, source="pdf", fixture=None, evidence=evidence)
     stage = MetadataStage(settings)
     downloads = catalog.artifacts([ref.id], "download")[ref.id]
     ids = (ref.identifier.pmid, held_dois(catalog, ref.id))
@@ -162,9 +164,9 @@ def test_a_re_extracted_pdf_makes_the_metadata_stale(env):
                                    catalog.artifacts([ref.id], "extract")[ref.id])
     assert second != first
 
-def test_a_new_or_changed_download_makes_the_licences_stale(env):
+def test_a_new_or_changed_download_makes_the_licences_stale(env, evidence):
     settings, catalog = env
-    ref = _held(catalog, TDM_MANUSCRIPT)
+    ref = _held(catalog, TDM_MANUSCRIPT, evidence=evidence)
     stage, ctx = MetadataStage(settings), Context(settings, catalog)
 
     def planned():
@@ -176,7 +178,7 @@ def test_a_new_or_changed_download_makes_the_licences_stale(env):
                             payload={"title": "T"}, summary={})])
     assert stage.plan(ctx, [ref], catalog.artifacts([ref.id], "metadata"),
                       catalog.artifacts([ref.id], "extract")).fresh == 1
-    _held(catalog, TDM_MANUSCRIPT, fingerprint="dl-2")
+    _held(catalog, TDM_MANUSCRIPT, fingerprint="dl-2", evidence=evidence)
     second = planned()
     assert second != first
     catalog.record([Outcome.failure(ref.id, "download", "wiley", "HTTP 403")])
@@ -184,19 +186,20 @@ def test_a_new_or_changed_download_makes_the_licences_stale(env):
     assert planned() == second
 
 
-def test_without_semantic_scholar_the_stage_stops_and_records_nothing(env):
+def test_without_semantic_scholar_the_stage_stops_and_records_nothing(env, evidence):
     settings, catalog = env
     settings = settings.model_copy(update={"semantic_scholar_api_key": None})
-    ref = _held(catalog, Identifier(doi="10.1037/npe0000112"), "ace", None)
+    ref = _held(catalog, Identifier(doi="10.1037/npe0000112"), "ace", None, evidence=evidence)
     with pytest.raises(RuntimeError, match="needs semantic_scholar configured"):
         _run(MetadataStage(settings), Context(settings, catalog), catalog, ref)
     assert catalog.artifacts([ref.id], "metadata") == {}
 
 
-def test_two_journal_dois_fail_as_a_catalog_conflict(env):
+def test_two_journal_dois_fail_as_a_catalog_conflict(env, evidence):
     """d62fs2rhxmro holds 10.1016/j.biopsych.2010.04.013 and 10.1038/mp.2009.121."""
     settings, catalog = env
-    ref = _held(catalog, Identifier(doi="10.1016/j.biopsych.2010.04.013"), "ace", None)
+    ref = _held(catalog, Identifier(doi="10.1016/j.biopsych.2010.04.013"), "ace", None,
+            evidence=evidence)
     catalog.add_aliases([(ref.id, "doi", "10.1038/mp.2009.121")])
     _, (outcome,) = _run(MetadataStage(settings), Context(settings, catalog), catalog, ref)
 
@@ -208,9 +211,9 @@ def test_two_journal_dois_fail_as_a_catalog_conflict(env):
 
 
 @pytest.mark.vcr()
-def test_a_licence_nobody_states_is_recorded_as_assumed(env):
+def test_a_licence_nobody_states_is_recorded_as_assumed(env, evidence):
     settings, catalog = env
-    ref = _held(catalog, Identifier(doi="10.1037/npe0000112"), "ace", None)
+    ref = _held(catalog, Identifier(doi="10.1037/npe0000112"), "ace", None, evidence=evidence)
     _, (outcome,) = _run(MetadataStage(settings), Context(settings, catalog), catalog, ref)
 
     assert outcome.status is Status.OK, outcome.error
@@ -225,9 +228,9 @@ def test_a_licence_nobody_states_is_recorded_as_assumed(env):
     # its own record could not be read on every try: it is given up on
     (None, False),
 ])
-def test_a_provider_s_outage_spends_none_of_the_article_s_tries(env, summary, retried):
+def test_a_provider_s_outage_spends_none_of_the_article_s_tries(env, summary, retried, evidence):
     settings, catalog = env
-    ref = _held(catalog, TDM_MANUSCRIPT)
+    ref = _held(catalog, TDM_MANUSCRIPT, evidence=evidence)
     for _ in range(3):
         catalog.record([Outcome.failure(ref.id, "metadata", "", "the licence ... is undecided",
                                         fingerprint="old", summary=summary)])
@@ -241,11 +244,12 @@ LICENSES = Path(__file__).parents[1] / "data" / "licenses"
 
 
 @pytest.mark.vcr("test_each_held_copy_and_the_paper_get_a_licence.yaml")
-def test_a_copy_with_no_record_takes_the_first_held_record_in_the_order_sources_are_tried(env):
+def test_a_copy_with_no_record_takes_the_first_held_record_in_the_order_sources_are_tried(
+        env, evidence):
     """pubget is tried before Elsevier, so ACE's page of the version of record takes the
     licence pubget's JATS states, not Elsevier's coredata."""
     settings, catalog = env
-    ref = _held(catalog, TDM_MANUSCRIPT, "pubget", "pubget_open_licence")
+    ref = _held(catalog, TDM_MANUSCRIPT, "pubget", "pubget_open_licence", evidence=evidence)
     elsevier = LICENSES / "elsevier_cortex_2017_05_018" / "content.xml"
     download = DownloadResult(identifier=ref.identifier, source=DownloadSource.ELSEVIER,
                               success=True, files=[DownloadedFile(
@@ -287,10 +291,11 @@ class _Failing(BaseHTTPRequestHandler):
     # refusing the request: a try spent
     (400, None),
 ])
-def test_crossref_s_failure_is_marked_an_outage_only_when_it_is_one(env, status, summary):
+def test_crossref_s_failure_is_marked_an_outage_only_when_it_is_one(
+        env, status, summary, evidence):
     """Semantic Scholar and OpenAlex answer as recorded for 10.1037/npe0000112."""
     settings, catalog = env
-    ref = _held(catalog, Identifier(doi="10.1037/npe0000112"), "ace", None)
+    ref = _held(catalog, Identifier(doi="10.1037/npe0000112"), "ace", None, evidence=evidence)
     _Failing.status = status
     server = HTTPServer(("127.0.0.1", 0), _Failing)
     threading.Thread(target=server.serve_forever, daemon=True).start()
@@ -307,9 +312,9 @@ def test_crossref_s_failure_is_marked_an_outage_only_when_it_is_one(env, status,
 
 
 @pytest.mark.vcr()
-def test_an_embargoed_licence_is_decided_again_when_its_embargo_ends(env):
+def test_an_embargoed_licence_is_decided_again_when_its_embargo_ends(env, evidence):
     settings, catalog = env
-    ref = _held(catalog, EMBARGOED, source="pdf", fixture=None)
+    ref = _held(catalog, EMBARGOED, source="pdf", fixture=None, evidence=evidence)
     stage = MetadataStage(settings)
 
     def at(when):

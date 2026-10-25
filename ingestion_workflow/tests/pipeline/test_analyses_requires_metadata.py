@@ -24,7 +24,7 @@ from ingestion_workflow.pipeline.stages.triage import TriageStage
 
 
 @pytest.fixture()
-def env(tmp_path, evidence):
+def env(tmp_path):
     # Triage digests the gate into its fingerprint, so a stage built without
     # one cannot plan. Raising then rather than mid-run is the point: a run
     # with no gate should stop before it does any work.
@@ -36,7 +36,7 @@ def env(tmp_path, evidence):
         catalog_root=tmp_path / "k",
         coordinate_gate_path=gate,
     )
-    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
+    with Catalog.open(settings.catalog_root) as catalog:
         yield settings, catalog
 
 
@@ -104,9 +104,9 @@ def _plan_analyses(settings, catalog, refs):
                       catalog.artifacts(ids, "triage"))
 
 
-def test_blocked_until_metadata_has_run(env):
+def test_blocked_until_metadata_has_run(env, evidence):
     settings, catalog = env
-    ref = catalog.register(Identifier(pmcid="PMC1"))
+    ref = catalog.register(Identifier(pmcid="PMC1"), evidence)
     _extracted(catalog, ref)
 
     plan = _plan_triage(settings, catalog, [ref])
@@ -115,9 +115,9 @@ def test_blocked_until_metadata_has_run(env):
     assert plan.blocked == 1
 
 
-def test_runs_once_metadata_has_run(env):
+def test_runs_once_metadata_has_run(env, evidence):
     settings, catalog = env
-    ref = catalog.register(Identifier(pmcid="PMC2"))
+    ref = catalog.register(Identifier(pmcid="PMC2"), evidence)
     _extracted(catalog, ref)
     _metadata(catalog, ref)
 
@@ -126,10 +126,10 @@ def test_runs_once_metadata_has_run(env):
     assert [w.ref.id for w in plan.pending] == [ref.id]
 
 
-def test_a_failed_metadata_attempt_still_lets_parsing_run(env):
+def test_a_failed_metadata_attempt_still_lets_parsing_run(env, evidence):
     """Many articles have no metadata to find; that must not block parsing."""
     settings, catalog = env
-    ref = catalog.register(Identifier(pmcid="PMC3"))
+    ref = catalog.register(Identifier(pmcid="PMC3"), evidence)
     _extracted(catalog, ref)
     _metadata(catalog, ref, status=Status.FAILED)
 
@@ -138,10 +138,10 @@ def test_a_failed_metadata_attempt_still_lets_parsing_run(env):
     assert [w.ref.id for w in plan.pending] == [ref.id]
 
 
-def test_metadata_alone_is_not_enough(env):
+def test_metadata_alone_is_not_enough(env, evidence):
     """The extraction is still what gets judged, and then parsed."""
     settings, catalog = env
-    ref = catalog.register(Identifier(pmcid="PMC4"))
+    ref = catalog.register(Identifier(pmcid="PMC4"), evidence)
     _metadata(catalog, ref)
 
     plan = _plan_triage(settings, catalog, [ref])
@@ -150,11 +150,11 @@ def test_metadata_alone_is_not_enough(env):
     assert plan.blocked == 1
 
 
-def test_analyses_waits_for_triage(env):
+def test_analyses_waits_for_triage(env, evidence):
     """Which tables are worth a call is triage's answer, so analyses cannot
     start guessing before it has one."""
     settings, catalog = env
-    ref = catalog.register(Identifier(pmcid="PMC5"))
+    ref = catalog.register(Identifier(pmcid="PMC5"), evidence)
     _extracted(catalog, ref)
     _metadata(catalog, ref)
 

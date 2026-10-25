@@ -42,7 +42,7 @@ class FakeLookup:
 
     KNOWN = {"111": "PMC111"}
 
-    def __init__(self, settings, catalog=None):
+    def __init__(self, settings, catalog, evidence):
         self.catalog = catalog
 
     def can_run(self):
@@ -73,29 +73,29 @@ def run(*args):
     return result.output
 
 
-def test_a_pmid_only_article_gains_its_pmcid(config, tmp_path, patched, evidence):
+def test_a_pmid_only_article_gains_its_pmcid(config, tmp_path, patched):
     run("add", "111", "--config", str(config))
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "catalog") as catalog:
         ref = catalog.resolve(Identifier(pmid="111"))
         assert catalog.identifier(ref.id).pmcid == "PMC111"
 
 
-def test_no_enrich_leaves_it_alone(config, tmp_path, patched, evidence):
+def test_no_enrich_leaves_it_alone(config, tmp_path, patched):
     run("add", "111", "--no-enrich", "--config", str(config))
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "catalog") as catalog:
         ref = catalog.resolve(Identifier(pmid="111"))
         assert catalog.identifier(ref.id).pmcid is None
 
 
-def test_enrichment_does_not_create_duplicate_articles(config, tmp_path, patched, evidence):
+def test_enrichment_does_not_create_duplicate_articles(config, tmp_path, patched):
     run("add", "111", "--config", str(config))
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "catalog") as catalog:
         assert catalog.count_articles() == 1
 
 
-def test_an_unknown_pmid_survives_enrichment(config, tmp_path, patched, evidence):
+def test_an_unknown_pmid_survives_enrichment(config, tmp_path, patched):
     run("add", "999", "--config", str(config))
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "catalog") as catalog:
         ref = catalog.resolve(Identifier(pmid="999"))
         assert ref is not None
         assert catalog.identifier(ref.id).pmcid is None

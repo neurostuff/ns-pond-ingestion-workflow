@@ -17,80 +17,24 @@ interactions:
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
-        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
-    headers:
-      access-control-expose-headers:
-      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
-      alt-svc:
-      - clear
-      content-encoding:
-      - gzip
-      content-security-policy:
-      - upgrade-insecure-requests
-      content-type:
-      - application/json
-      date:
-      - Sun, 25 Oct 2026 08:51:52 GMT
-      referrer-policy:
-      - origin-when-cross-origin
-      retry-after:
-      - '2'
-      server:
-      - Finatra
-      strict-transport-security:
-      - max-age=31536000; includeSubDomains; preload
-      transfer-encoding:
-      - chunked
-      via:
-      - 1.1 google
-      x-ratelimit-limit:
-      - '3'
-      x-ratelimit-remaining:
-      - '0'
-      x-ua-compatible:
-      - IE=Edge
-      x-xss-protection:
-      - 1; mode=block
-    status:
-      code: 429
-      message: Too Many Requests
-- request:
-    body: ''
-    headers:
-      accept:
-      - '*/*'
-      accept-encoding:
-      - gzip, deflate
-      connection:
-      - keep-alive
-      host:
-      - eutils.ncbi.nlm.nih.gov
-      user-agent:
-      - python-httpx/0.28.1
-    method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=37961286&retmode=json&tool=ingestion-workflow
-  response:
-    body:
-      string: !!binary |
-        H4sIAAAAAAAAAJRUUW+bMBD+K5afNikhBgKk9ClqKm3VMlXttpdqDw7ciicwmW2iptH++842hWRp
-        pe0Jc3ef7/s+n32gFfASFM0P1Oy3QHMKumsarvZ0QnegtGglBlkQ098TqjBZG1vciVLT/IHG2UUa
-        RouUfp+Ma59H2BCZ0G23KbmxDSIWJWTNFckwDG/EddupwkY3or17EjsM8c5UrbJdD1Tyxibv+XMl
-        JFn12V7B0hVirKg7bUA5Kkh/gK14UWmy/E/UfSNMRVbf/gmGdtRcG8/5FGyEqS1yDYZPl5LXey00
-        uYMd8FqTLxU35PppW7cKpu4rDFlBIexJaMIVkJXQui0E39RANnuyLIzYcYNpgl6YCgvQJl6TT+ir
-        wu+tgh+qlQaXV60y8DQhS2mptop8lHiifEK4LI+hQ/5KyEcsMNBDA3c2yryIaFAEgnsRqhdhrAjw
-        IvwXRZQnIspTEfxMROmZ1L2I7SiicEywa89ROA2DhB44pItBggfawW7rzp0prpFH1y+3/BG0X9Zc
-        Ptr5BvzgWcq66aT41YE73pCF6YKFi8zDpYeAX0XpRTRdRCzxQ+/H5IHe4EBL66wyokDrJhSPZauE
-        NHZ/BcitxHkxnSVw223WUPoNhmBsB8+j/eU7UFH2U4h1jQP4CPIIUSWvnbLhFtphHiFNcVy/GOtv
-        11chS+N5FrEziDhpkowgzE1FmZMj8OUpumzFMTYesSELQvR0hi9AHOBPFAZJGsdh9ld7cbLBfNzg
-        FSCaWgltWnzIrFPHRg5mjQ9PPAvDWTgnLM3nset6DMDqWkh4EzE/Q4A0Cp5fB8R5kpwBrH0KauD6
-        tE0yY/GMZYSxnDGnCu8BKJAF+BHA3+GtvO4UuSGfoVOtLkRAXl7UyzR8l77PIWNsEQZ4QUROnOfI
-        CH7KwMep27v3+uvWcsCrZYewsVM/Z2GUJBnOlWwdO8eGG6PEpjOODf3A8Vnd/AEAAP//bFVLEoIw
-        DN17io5rN6yc4TYQi1aLZULLjrv70gYBcRtKmpe+zxgZchZaAxVaUkhgeV1V18u5S94/ixTUVtXg
-        TZ3FO6gozGgZ8WM6CBgnfLhLIFkfKJtEliH4UJvD02/x/eUU1htIYZKLuZ+4GhPBX4DGgzdAg/nb
-        EF6L0+EIeOBSr2q/uViyscgUPz0sL/P9lBVquUUfN697gCO9U99KAkulmRrnxRPhdX1ir2akXfHF
-        agkQDtOitvaW0ddr6dEMcblE/HsfuzuSlQOd4218rUE7CRyCofJ3M/M8nz4AAAD//wMAgQsi9UoI
-        AAA=
+        H4sIAAAAAAAAAJRTwW7bMAz9FUFnp3AcNElzM+odNixA0Q67FDvQFhsLkGVPooJkwf59lOU5C4YB
+        60kEySe9Rz5dZIug0MndRdJ5QLmT6EPXgTvLTB7Red1bTuZ3K/kzk46LhmJz0MrL3atcbR7Wy2K7
+        lt+ya5zqDJszmRxCrYDiA0Ve3Is9OLHhNP4j7/vgmpitdf980kdOQaC2d/HVi7TQxeIL/Gi1FdVU
+        nRSUYyPnGhM8oRupMP0ZVkHTelG+E/XSaWpF9fW/YDwOA54S51swaTIRuUeCRWnBnL324hmPCMaL
+        Ly2Q+HAaTO9wMZ6aRIWNjpvwAhyKSnvfNxpqg6I+i7IhfQTisuBZUMsNPCYw4jPP1fH55PDN9ZY4
+        fOwd4SkTpY1Ueyc+Wt4oZAKs+hM61x+1PXAD4QS9G3fj6LeIjkUweBLhJhEURWASkU4WoW5EqFsR
+        8JcIlZiYScRwFdGMTPjViaMeNcwSJuBcbmYJCRiN3Zsw7pRj5hGmcIAD+hQasIfob+SDd2lNF6z+
+        HnBc7zJfrrf5crtJcJsgmKJi/VAstkV+n0yfbPIqP7GhbZysI93w6DLJaxmcthTvd8jcFPuFQiTw
+        FOo9qnTBnFxF4yV0+nwXqdXkQu7rRkDKMI8lqwQzKpt/YTTzFdL9AgAA//90VctOwzAQvPMVVk8g
+        QWLXeVTmiJAQEogLH5C6LjW4ceUmPSD13xk7bpM05ZjNzr68MyuH/ove/+PtidGCZ+WcTiB6lCTv
+        Qfj3oFeCDMCPY/TK6iGW91hGE4aZplAAnuBjzpK84JyVF+n1KEDWB7gCxFA3et9YCJmf1HCQ52H1
+        wsNTxlKWEVqIjIesQwC8ja7Vv4hsglB149TvdQAXeT4B+PE5ZVS1H6fJU8pTWhJKBaWhK/BAOVVL
+        1a0APs9a+dw68kreVevsXuqEnBT1sWC3xZ1QJaULloAgWpAwc1Skvuuks89C7Djrz52vAdTyS7j1
+        W59RNs/zEntV21BdqKZqGqeXbROqmb1UkFU05UBnv9boCiGlbbHlgrHyfrZujfnuqBBlNQo8EYG8
+        u0gKslcO54esQWB4GPvlD5IyVgaRCDTEPggyefphf1d3CuO1MrYpdRPieVVzUkJf0I3B3qAb1L+0
+        9uekdHDBHuh2G9m+0k13GzuaArRR7lTfhTm22mWJjxvGvYMi1e126S+wt1SHShuvidC6betMFKMY
+        FX9UNKGFSbWw9bF96X1aual2zSmJ1+/x2R0tWeew1m54vvpDe/DtSAiqO0/meDze/AEAAP//AwCB
+        CyL1SggAAA==
     headers:
       access-control-allow-origin:
       - '*'
@@ -107,11 +51,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Sun, 25 Oct 2026 08:51:53 GMT
+      - Sun, 25 Oct 2026 10:24:59 GMT
       ncbi-phid:
-      - 1D32BD61E5CE12B50000304EFA09A8E9.1.1.m_1
+      - 1D32BD61E5CE12B50000336CD55AA1FB.1.1.m_1
       ncbi-sid:
-      - BFF5403177BA0A37_2D23SID
+      - 8AFD93FC5348AB3F_A448SID
       referrer-policy:
       - origin-when-cross-origin
       server:

@@ -37,14 +37,14 @@ def page(tmp_path, name):
 
 
 @pytest.fixture()
-def env(tmp_path, evidence):
+def env(tmp_path):
     gate = tmp_path / "gate.joblib"
     gate.write_bytes(b"a fitted gate")
     settings = Settings(
         data_root=tmp_path / "d", cache_root=tmp_path / "c", catalog_root=tmp_path / "k",
         download_sources=["pubget", "ace", "pdf"], coordinate_gate_path=gate,
     )
-    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
+    with Catalog.open(settings.catalog_root) as catalog:
         yield settings, catalog
 
 
@@ -63,9 +63,9 @@ def extracted(catalog, ref, download, tables, has_text=True):
                             summary={"tables": tables, "has_text": has_text})])
 
 
-def article(catalog, settings, tmp_path, pmid, name, *, pubget=False, pubget_text=True):
+def article(catalog, settings, tmp_path, pmid, name, evidence, *, pubget=False, pubget_text=True):
     """An article whose ACE page is `name`, extracted, with a pubget XML download if asked."""
-    ref = catalog.register(Identifier(pmid=pmid))
+    ref = catalog.register(Identifier(pmid=pmid), evidence)
     ace = downloaded(catalog, settings, ref, "ace", page(tmp_path, name))
     extracted(catalog, ref, ace, tables=2)
     if pubget:
@@ -78,10 +78,10 @@ def article(catalog, settings, tmp_path, pmid, name, *, pubget=False, pubget_tex
     return ref
 
 
-def test_a_bad_stored_page_fails_and_its_extraction_with_it(env, tmp_path):
+def test_a_bad_stored_page_fails_and_its_extraction_with_it(env, tmp_path, evidence):
     settings, catalog = env
-    bad = article(catalog, settings, tmp_path, "1", PAYWALL, pubget=True)
-    good = article(catalog, settings, tmp_path, "2", ARTICLE)
+    bad = article(catalog, settings, tmp_path, "1", PAYWALL, pubget=True, evidence=evidence)
+    good = article(catalog, settings, tmp_path, "2", ARTICLE, evidence=evidence)
 
     found = revalidate.scan(catalog, [bad.id, good.id])
     assert found.checked == 2  # the pubget XML holds no page
@@ -100,9 +100,9 @@ def test_a_bad_stored_page_fails_and_its_extraction_with_it(env, tmp_path):
     assert catalog.artifact(good.id, "extract", "ace").status is Status.OK
 
 
-def test_triage_moves_to_the_other_source(env, tmp_path):
+def test_triage_moves_to_the_other_source(env, tmp_path, evidence):
     settings, catalog = env
-    ref = article(catalog, settings, tmp_path, "1", PAYWALL, pubget=True)
+    ref = article(catalog, settings, tmp_path, "1", PAYWALL, pubget=True, evidence=evidence)
 
     def judged():
         ctx = Context(settings, catalog)
@@ -115,9 +115,9 @@ def test_triage_moves_to_the_other_source(env, tmp_path):
     assert judged() == ["pubget"]
 
 
-def test_an_article_with_no_other_download_plans_its_next_source(env, tmp_path):
+def test_an_article_with_no_other_download_plans_its_next_source(env, tmp_path, evidence):
     settings, catalog = env
-    ref = article(catalog, settings, tmp_path, "1", PAYWALL)
+    ref = article(catalog, settings, tmp_path, "1", PAYWALL, evidence=evidence)
     stage = DownloadStage(settings)
     stage._extractors = {s: AnySource() for s in DownloadSource}
     ctx = Context(settings, catalog)
@@ -133,12 +133,13 @@ def test_an_article_with_no_other_download_plans_its_next_source(env, tmp_path):
     assert pending() == ["pubget"]
 
 
-def test_effects_sort_articles_by_what_happens_next(env, tmp_path):
+def test_effects_sort_articles_by_what_happens_next(env, tmp_path, evidence):
     settings, catalog = env
-    switch = article(catalog, settings, tmp_path, "1", PAYWALL, pubget=True)
-    replan = article(catalog, settings, tmp_path, "2", PAYWALL)
-    article(catalog, settings, tmp_path, "3", ARTICLE)
-    article(catalog, settings, tmp_path, "4", PAYWALL, pubget=True, pubget_text=False)
+    switch = article(catalog, settings, tmp_path, "1", PAYWALL, pubget=True, evidence=evidence)
+    replan = article(catalog, settings, tmp_path, "2", PAYWALL, evidence=evidence)
+    article(catalog, settings, tmp_path, "3", ARTICLE, evidence=evidence)
+    article(catalog, settings, tmp_path, "4", PAYWALL, pubget=True, pubget_text=False,
+            evidence=evidence)
     catalog.record([Outcome(switch.id, "triage", "", Status.OK, "tr-1", {"tables": []}),
                     Outcome(replan.id, "passages", "", Status.FAILED, "p-1")])
     stage = DownloadStage(settings)
@@ -155,16 +156,16 @@ def test_effects_sort_articles_by_what_happens_next(env, tmp_path):
     assert effects["stale"] == {"metadata": 3, "triage": 1}  # a failed passages made nothing
 
     # an article whose triage judges another source keeps it
-    kept = article(catalog, settings, tmp_path, "5", PAYWALL, pubget=True)
+    kept = article(catalog, settings, tmp_path, "5", PAYWALL, pubget=True, evidence=evidence)
     pubget = catalog.artifact(kept.id, "download", "pubget")
     extracted(catalog, kept, pubget, tables=3)
     effects = revalidate.effects(ctx, stage, revalidate.scan(catalog, [kept.id]))
     assert (effects["next"], effects["stale"]) == ({"kept": 1}, {})
 
 
-def test_running_again_finds_nothing_new(env, tmp_path):
+def test_running_again_finds_nothing_new(env, tmp_path, evidence):
     settings, catalog = env
-    ref = article(catalog, settings, tmp_path, "1", PAYWALL, pubget=True)
+    ref = article(catalog, settings, tmp_path, "1", PAYWALL, pubget=True, evidence=evidence)
     first = revalidate.scan(catalog, [ref.id])
     # a run stopped after the download was failed and before its extraction was
     revalidate.apply(catalog, revalidate.Revalidation(bad=first.bad))
@@ -194,8 +195,8 @@ def test_dry_run_writes_nothing_and_apply_backs_up_first(tmp_path, monkeypatch, 
     monkeypatch.setattr(DownloadStage, "extractor", lambda self, source: AnySource())
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", download_sources=["pubget", "ace", "pdf"])
-    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
-        article(catalog, settings, tmp_path, "1", PAYWALL, pubget=True)
+    with Catalog.open(settings.catalog_root) as catalog:
+        article(catalog, settings, tmp_path, "1", PAYWALL, pubget=True, evidence=evidence)
     config = tmp_path / "settings.yaml"
     config.write_text(json.dumps({
         "data_root": str(settings.data_root), "cache_root": str(settings.cache_root),
@@ -230,9 +231,9 @@ def test_dry_run_writes_nothing_and_apply_backs_up_first(tmp_path, monkeypatch, 
 
 
 def test_a_relative_page_path_is_read_beside_the_catalog_wherever_the_run_starts(
-        env, tmp_path, monkeypatch):
+        env, tmp_path, monkeypatch, evidence):
     settings, catalog = env
-    ref = catalog.register(Identifier(pmid="9"))
+    ref = catalog.register(Identifier(pmid="9"), evidence)
     relative = Path("pages") / f"{PAYWALL}.html"
     page(tmp_path, PAYWALL)  # tmp_path is where the catalog root sits
     fp = DownloadStage(settings).fingerprint_for(DownloadSource.ACE)
@@ -247,9 +248,9 @@ def test_a_relative_page_path_is_read_beside_the_catalog_wherever_the_run_starts
     assert found.bad[0].page == str(tmp_path / relative)
 
 
-def test_apply_leaves_a_row_another_run_rewrote_since_the_scan(env, tmp_path):
+def test_apply_leaves_a_row_another_run_rewrote_since_the_scan(env, tmp_path, evidence):
     settings, catalog = env
-    ref = article(catalog, settings, tmp_path, "1", PAYWALL)
+    ref = article(catalog, settings, tmp_path, "1", PAYWALL, evidence=evidence)
     found = revalidate.scan(catalog, [ref.id])
     # an `ingest run` extracts again meanwhile
     with sqlite3.connect(settings.catalog_root / "catalog.sqlite") as conn:
@@ -261,12 +262,12 @@ def test_apply_leaves_a_row_another_run_rewrote_since_the_scan(env, tmp_path):
 
 
 def test_apply_checks_the_backup_path_before_scanning_and_skips_an_empty_run(
-        tmp_path, monkeypatch, evidence):
+        tmp_path, monkeypatch):
     from ingestion_workflow.services import download_revalidate as module
 
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k")
-    Catalog.open(settings.catalog_root, evidence=evidence).close()
+    Catalog.open(settings.catalog_root).close()
     config = tmp_path / "settings.yaml"
     config.write_text(json.dumps({
         "data_root": str(settings.data_root), "cache_root": str(settings.cache_root),
@@ -299,9 +300,9 @@ def two_bad_articles(tmp_path, monkeypatch, evidence):
     monkeypatch.setattr(DownloadStage, "extractor", lambda self, source: AnySource())
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", download_sources=["pubget", "ace", "pdf"])
-    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
-        article(catalog, settings, tmp_path, "1", PAYWALL)
-        article(catalog, settings, tmp_path, "2", PAYWALL)
+    with Catalog.open(settings.catalog_root) as catalog:
+        article(catalog, settings, tmp_path, "1", PAYWALL, evidence=evidence)
+        article(catalog, settings, tmp_path, "2", PAYWALL, evidence=evidence)
     config = tmp_path / "settings.yaml"
     config.write_text(json.dumps({
         "data_root": str(settings.data_root), "cache_root": str(settings.cache_root),
@@ -327,7 +328,7 @@ def failed_downloads(settings):
         ).fetchone()[0]
 
 
-def test_a_manifest_limits_the_check_to_its_articles(tmp_path, two_bad_articles, evidence):
+def test_a_manifest_limits_the_check_to_its_articles(tmp_path, two_bad_articles):
     settings, config = two_bad_articles
     runner = CliRunner()
     backup = tmp_path / "backup" / "catalog.sqlite"
@@ -342,7 +343,7 @@ def test_a_manifest_limits_the_check_to_its_articles(tmp_path, two_bad_articles,
                                   "-m", str(manifest_of(tmp_path, "1")), "-c", str(config)])
     assert applied.exit_code == 0, applied.output
     assert failed_downloads(settings) == 1
-    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
+    with Catalog.open(settings.catalog_root) as catalog:
         failed = catalog.artifact(catalog.resolve(Identifier(pmid="1")).id, "download", "ace")
         left = catalog.artifact(catalog.resolve(Identifier(pmid="2")).id, "download", "ace")
     assert failed.status == Status.FAILED and left.status == Status.OK
@@ -357,12 +358,12 @@ def test_without_a_manifest_every_article_is_checked(tmp_path, two_bad_articles)
 
 
 def test_a_manifest_entry_the_catalog_does_not_know_is_reported_and_not_registered(
-    tmp_path, two_bad_articles, evidence):
+    tmp_path, two_bad_articles):
     settings, config = two_bad_articles
     out = CliRunner().invoke(app, ["revalidate-downloads", "-m",
                                    str(manifest_of(tmp_path, "1", "999")), "-c", str(config)])
     assert out.exit_code == 0, out.output
     assert "not in the catalog, not checked: 1" in out.output and "999" in out.output
     assert "checked 1 stored downloads" in out.output
-    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
+    with Catalog.open(settings.catalog_root) as catalog:
         assert catalog.count_articles() == 2

@@ -36,16 +36,15 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Sun, 25 Oct 2026 08:53:53 GMT
+      - Sun, 25 Oct 2026 10:26:35 GMT
       ncbi-phid:
-      - 1D32BD61E5CE12B500003E4FC0AEC857.1.1.m_1
+      - 1D32BD61E5CE12B50000446D8D20BB2A.1.1.m_1
       ncbi-sid:
-      - 3B563A455D575ACA_88D1SID
+      - 2E9CE6FA90E18B72_24A9SID
       referrer-policy:
       - origin-when-cross-origin
       server:
       - Finatra
-        Oct 2027 08:53:53 GMT
       strict-transport-security:
       - max-age=31536000; includeSubDomains; preload
       transfer-encoding:
@@ -55,7 +54,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '0'
+      - '2'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -63,62 +62,6 @@ interactions:
     status:
       code: 200
       message: OK
-- request:
-    body: ''
-    headers:
-      accept:
-      - '*/*'
-      accept-encoding:
-      - gzip, deflate
-      connection:
-      - keep-alive
-      host:
-      - eutils.ncbi.nlm.nih.gov
-      user-agent:
-      - python-httpx/0.28.1
-    method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=40402908&retmode=json&email=replay%40example.com&tool=ingestion-workflow
-  response:
-    body:
-      string: !!binary |
-        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
-        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
-    headers:
-      access-control-expose-headers:
-      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
-      alt-svc:
-      - clear
-      content-encoding:
-      - gzip
-      content-security-policy:
-      - upgrade-insecure-requests
-      content-type:
-      - application/json
-      date:
-      - Sun, 25 Oct 2026 08:53:53 GMT
-      referrer-policy:
-      - origin-when-cross-origin
-      retry-after:
-      - '2'
-      server:
-      - Finatra
-      strict-transport-security:
-      - max-age=31536000; includeSubDomains; preload
-      transfer-encoding:
-      - chunked
-      via:
-      - 1.1 google
-      x-ratelimit-limit:
-      - '3'
-      x-ratelimit-remaining:
-      - '0'
-      x-ua-compatible:
-      - IE=Edge
-      x-xss-protection:
-      - 1; mode=block
-    status:
-      code: 429
-      message: Too Many Requests
 - request:
     body: ''
     headers:
@@ -156,16 +99,15 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Sun, 25 Oct 2026 08:53:55 GMT
+      - Sun, 25 Oct 2026 10:26:36 GMT
       ncbi-phid:
-      - 1D32BD61E5CE12B500004A4FC23A78E2.1.1.m_1
+      - 1D345BABAD18B8E5000069836B684EC0.1.1.m_1
       ncbi-sid:
-      - 3B563A455D575ACA_88D1SID
+      - 2E9CE6FA90E18B72_24A9SID
       referrer-policy:
       - origin-when-cross-origin
       server:
       - Finatra
-        Oct 2027 08:53:55 GMT
       strict-transport-security:
       - max-age=31536000; includeSubDomains; preload
       transfer-encoding:
@@ -175,7 +117,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '2'
+      - '1'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -220,16 +162,15 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Sun, 25 Oct 2026 08:53:54 GMT
+      - Sun, 25 Oct 2026 10:26:35 GMT
       ncbi-phid:
-      - 1D345BABAD18B8E500003661E62A6808.1.1.m_1
+      - 1D32BD61E5CE12B500003B6D8E1C4762.1.1.m_1
       ncbi-sid:
-      - 3B563A455D575ACA_88D1SID
+      - 2E9CE6FA90E18B72_24A9SID
       referrer-policy:
       - origin-when-cross-origin
       server:
       - Finatra
-        Oct 2027 08:53:55 GMT
       strict-transport-security:
       - max-age=31536000; includeSubDomains; preload
       transfer-encoding:
@@ -239,7 +180,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '1'
+      - '0'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:

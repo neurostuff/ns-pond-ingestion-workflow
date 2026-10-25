@@ -17,62 +17,6 @@ interactions:
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
-        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
-    headers:
-      access-control-expose-headers:
-      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
-      alt-svc:
-      - clear
-      content-encoding:
-      - gzip
-      content-security-policy:
-      - upgrade-insecure-requests
-      content-type:
-      - application/json
-      date:
-      - Sun, 25 Oct 2026 08:51:53 GMT
-      referrer-policy:
-      - origin-when-cross-origin
-      retry-after:
-      - '2'
-      server:
-      - Finatra
-      strict-transport-security:
-      - max-age=31536000; includeSubDomains; preload
-      transfer-encoding:
-      - chunked
-      via:
-      - 1.1 google
-      x-ratelimit-limit:
-      - '3'
-      x-ratelimit-remaining:
-      - '0'
-      x-ua-compatible:
-      - IE=Edge
-      x-xss-protection:
-      - 1; mode=block
-    status:
-      code: 429
-      message: Too Many Requests
-- request:
-    body: ''
-    headers:
-      accept:
-      - '*/*'
-      accept-encoding:
-      - gzip, deflate
-      connection:
-      - keep-alive
-      host:
-      - eutils.ncbi.nlm.nih.gov
-      user-agent:
-      - python-httpx/0.28.1
-    method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=111&retmode=json&tool=ingestion-workflow
-  response:
-    body:
-      string: !!binary |
         H4sIAAAAAAAAAHxUS27bMBDd9xQEN0kAO5WQpIa9S9EUaNCkgVcFjCwoamSxpUiVIt24hu/TnMMX
         6wwpxXHTBjBgcjifN2/eaMNrECU4Pttwv26Bzzh0oWmEW/MRX4HrlDVozE7P+HbEHT5qT85BlR2f
         LXie5/x+FP+SFZ3pMuJtKErhKWM+nVywa2HGH6HAB9i/4K2zwUk6vw9as7t6jRVb4Wur2Ry6Vjl2
@@ -101,11 +45,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Sun, 25 Oct 2026 08:51:54 GMT
+      - Sun, 25 Oct 2026 10:25:00 GMT
       ncbi-phid:
-      - 1D32BD61E5CE12B50000604EFD256CCA.1.1.m_1
+      - 1D334F858372F89500004E81E64960F2.1.1.m_1
       ncbi-sid:
-      - 5FB1B1362527E868_B8EFSID
+      - 090A1E08B3E8FDF7_6489SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -119,7 +63,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '2'
+      - '0'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:

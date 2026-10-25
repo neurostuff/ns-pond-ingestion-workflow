@@ -48,16 +48,15 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Sun, 25 Oct 2026 08:53:34 GMT
+      - Sun, 25 Oct 2026 10:26:42 GMT
       ncbi-phid:
-      - 1D334F858372F89500004F6300BBAC4F.1.1.m_1
+      - 1D334F858372F895000032828A2F6F9B.1.1.m_1
       ncbi-sid:
-      - DE43A9D04EC69FED_D0B7SID
+      - 288F9EB987D98C94_EAE4SID
       referrer-policy:
       - origin-when-cross-origin
       server:
       - Finatra
-        Oct 2027 08:53:34 GMT
       strict-transport-security:
       - max-age=31536000; includeSubDomains; preload
       transfer-encoding:
@@ -67,7 +66,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '0'
+      - '1'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:

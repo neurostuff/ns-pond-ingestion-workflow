@@ -96,7 +96,7 @@ def served(monkeypatch):
 
 
 @pytest.fixture()
-def env(tmp_path, served, evidence):
+def env(tmp_path, served):
     from nspond_tables.classify.model import Gate, RoutedGate
 
     gate = tmp_path / "gate.json"
@@ -110,7 +110,7 @@ def env(tmp_path, served, evidence):
     prose.client = lambda: _Reader()
     stages = [TriageStage(settings), AnalysesStage(settings), PassagesStage(settings), prose,
               ResolveStage(settings), RolesStage(settings), SpaceStage(settings)]
-    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
+    with Catalog.open(settings.catalog_root) as catalog:
         yield settings, catalog, stages, tmp_path
 
 
@@ -132,9 +132,9 @@ def _metadata(catalog, ref, record, fingerprint):
                             summary={"digests": metadata_digests(record)})])
 
 
-def _article(catalog, tmp_path, pmid):
+def _article(catalog, tmp_path, pmid, evidence):
     """Downloaded and extracted, with one coordinate table, and its metadata."""
-    ref = catalog.register(Identifier(pmid=pmid))
+    ref = catalog.register(Identifier(pmid=pmid), evidence)
     text, table = (tmp_path / f"{pmid}{ext}" for ext in (".txt", ".html"))
     xml = tmp_path / pmid / "article.xml"
     xml.parent.mkdir()
@@ -208,11 +208,12 @@ CHANGES = ("untouched", "types", "abstract", "verdict", "extraction")
 
 
 @pytest.fixture()
-def made(env):
+def made(env, evidence):
     """One article for each of `CHANGES`, made as main made it and copied to the earlier
     catalog; then their metadata changes and triage runs again, as main runs it."""
     settings, catalog, stages, tmp_path = env
-    refs = {name: _article(catalog, tmp_path, str(n)) for n, name in enumerate(CHANGES, 1)}
+    refs = {name: _article(catalog, tmp_path, str(n),
+            evidence=evidence) for n, name in enumerate(CHANGES, 1)}
     for ref in refs.values():
         _as_main_made_it(settings, catalog, stages, ref)
     earlier = catalog.backup(tmp_path / "earlier.sqlite")
@@ -234,10 +235,10 @@ def made(env):
     return settings, catalog, stages, tmp_path, earlier, refs
 
 
-def _earlier(path, root, evidence):
+def _earlier(path, root):
     conn = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
     conn.row_factory = sqlite3.Row
-    return Catalog(conn, root, evidence)
+    return Catalog(conn, root)
 
 
 def test_the_former_formula_is_the_one_main_used(env):
@@ -255,7 +256,7 @@ def test_until_it_is_rekeyed_analyses_waits_for_triage_s_verdict(made):
 def test_a_change_to_the_types_alone_leaves_analyses_fresh_and_one_to_what_it_reads_does_not(
         made):
     settings, catalog, stages, tmp_path, earlier, refs = made
-    then = _earlier(earlier, settings.catalog_root, catalog.evidence)
+    then = _earlier(earlier, settings.catalog_root)
     found = rekey.rekey(Context(settings, catalog), then, stages, list(refs.values()))
 
     n = found.stages
@@ -293,7 +294,7 @@ def test_what_was_made_from_a_triage_stale_in_the_earlier_catalog_is_left(made):
                      "stage='metadata'", (json.dumps({"digests": metadata_digests(record)}),
                                           catalog.blobs.put(record), refs["types"].id))
         conn.commit()
-    then = _earlier(earlier, settings.catalog_root, catalog.evidence)
+    then = _earlier(earlier, settings.catalog_root)
     found = rekey.rekey(Context(settings, catalog), then, stages, list(refs.values()))
 
     assert found.stages["analyses"]["triage_stale_then"] == 1
@@ -306,7 +307,7 @@ def test_what_was_made_from_a_triage_stale_in_the_earlier_catalog_is_left(made):
 def test_an_empty_fingerprint_is_left_for_repair(made):
     settings, catalog, stages, tmp_path, earlier, refs = made
     catalog._conn.execute("UPDATE artifacts SET fingerprint='' WHERE stage='extract'")
-    then = _earlier(earlier, settings.catalog_root, catalog.evidence)
+    then = _earlier(earlier, settings.catalog_root)
     found = rekey.rekey(Context(settings, catalog), then, stages, list(refs.values()))
 
     assert not [key for key in found.rewrites if key[1] == "extract"]
@@ -319,7 +320,7 @@ def test_an_analyses_the_former_formula_does_not_match_is_left(made):
     settings, catalog, stages, tmp_path, earlier, refs = made
     catalog._conn.execute("UPDATE artifacts SET fingerprint='made-from-another' "
                           "WHERE article_id=? AND stage='analyses'", (refs["untouched"].id,))
-    then = _earlier(earlier, settings.catalog_root, catalog.evidence)
+    then = _earlier(earlier, settings.catalog_root)
     found = rekey.rekey(Context(settings, catalog), then, stages, list(refs.values()))
 
     assert found.stages["analyses"]["unmatched"] == 1

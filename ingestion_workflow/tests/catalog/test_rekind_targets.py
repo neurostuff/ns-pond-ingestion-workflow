@@ -3,20 +3,13 @@
 from __future__ import annotations
 
 import pytest
-from ingestion_workflow.catalog import Catalog
 from ingestion_workflow.catalog.store import IdentityError
 from ingestion_workflow.models.ids import Identifier
 
 
-@pytest.fixture()
-def catalog(tmp_path, evidence):
-    with Catalog.open(tmp_path / "cat", evidence=evidence) as cat:
-        yield cat
-
-
-def test_a_doi_is_held_as_a_preprint_s_when_asked(catalog):
-    a = catalog.register(Identifier(pmid="1", doi="10.1000/paper")).id
-    b = catalog.register(Identifier(doi="10.1000/preprint")).id
+def test_a_doi_is_held_as_a_preprint_s_when_asked(catalog, evidence):
+    a = catalog.register(Identifier(pmid="1", doi="10.1000/paper"), evidence).id
+    b = catalog.register(Identifier(doi="10.1000/preprint"), evidence).id
 
     catalog.rekind_aliases([("doi", "10.1000/preprint", b, "preprint_doi")])
 
@@ -25,8 +18,8 @@ def test_a_doi_is_held_as_a_preprint_s_when_asked(catalog):
     assert catalog.aliases(a, "doi") == ["10.1000/paper"]
 
 
-def test_a_kind_an_alias_is_not_held_as_is_refused(catalog):
-    a = catalog.register(Identifier(pmid="1", doi="10.1000/paper")).id
+def test_a_kind_an_alias_is_not_held_as_is_refused(catalog, evidence):
+    a = catalog.register(Identifier(pmid="1", doi="10.1000/paper"), evidence).id
 
     with pytest.raises(IdentityError, match="a doi is not held as a preprint_pmid"):
         catalog.rekind_aliases([("doi", "10.1000/paper", a, "preprint_pmid")])

@@ -17,62 +17,6 @@ interactions:
   response:
     body:
       string: !!binary |
-        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
-        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
-    headers:
-      access-control-expose-headers:
-      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
-      alt-svc:
-      - clear
-      content-encoding:
-      - gzip
-      content-security-policy:
-      - upgrade-insecure-requests
-      content-type:
-      - application/json
-      date:
-      - Sun, 25 Oct 2026 08:55:28 GMT
-      referrer-policy:
-      - origin-when-cross-origin
-      retry-after:
-      - '2'
-      server:
-      - Finatra
-      strict-transport-security:
-      - max-age=31536000; includeSubDomains; preload
-      transfer-encoding:
-      - chunked
-      via:
-      - 1.1 google
-      x-ratelimit-limit:
-      - '3'
-      x-ratelimit-remaining:
-      - '0'
-      x-ua-compatible:
-      - IE=Edge
-      x-xss-protection:
-      - 1; mode=block
-    status:
-      code: 429
-      message: Too Many Requests
-- request:
-    body: ''
-    headers:
-      accept:
-      - '*/*'
-      accept-encoding:
-      - gzip, deflate
-      connection:
-      - keep-alive
-      host:
-      - eutils.ncbi.nlm.nih.gov
-      user-agent:
-      - python-httpx/0.28.1
-    method: GET
-    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=16139528&retmode=json&email=replay%40example.com&tool=ingestion-workflow
-  response:
-    body:
-      string: !!binary |
         H4sIAAAAAAAAAJRV224aMRD9FcsvbSVYvAtLgTeaolzUpFFIH6qoD8ZrwKnXpr7QUtR/79gmG0hJ
         20iR4p2ZM5fj42GLl5xW3ODRFrvNiuMR5tbXNTUb3MJrbqzQCowk6+JfLWzAKV0I9qKyeHSH837e
         HZbFAH9pPZ6TH2CNpYVXflZRFwoUhJToSq9RDmb+xD72C9QNDqu9YcF8xb3RoqYLDlbq3VKbUHmL
@@ -104,16 +48,15 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Sun, 25 Oct 2026 08:55:30 GMT
+      - Sun, 25 Oct 2026 10:26:38 GMT
       ncbi-phid:
-      - 1D334F858372F89500002A638D26DB9F.1.1.m_1
+      - 1D345BABAD18B8E50000698373EACD9A.1.1.m_1
       ncbi-sid:
-      - E54E14F95000BD83_6768SID
+      - FD9490EF1DEBBEBF_8B05SID
       referrer-policy:
       - origin-when-cross-origin
       server:
       - Finatra
-        Oct 2027 08:55:30 GMT
       strict-transport-security:
       - max-age=31536000; includeSubDomains; preload
       transfer-encoding:
@@ -123,7 +66,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '2'
+      - '0'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:

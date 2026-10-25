@@ -39,6 +39,7 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline.stage import NO_TEXT
 
+from .evidence import Evidence
 from .invariants import Violation, index_downloads, neighbourhood, suspects, violations
 from .models import ALIAS_KINDS, SECOND_KINDS
 from .models import Outcome as StageOutcome
@@ -142,7 +143,11 @@ class _Discard(Exception):
 
 
 def apply(
-    catalog: Catalog, operations: List[Tuple[int, Operation]], *, backup: Optional[Path] = None
+    catalog: Catalog,
+    operations: List[Tuple[int, Operation]],
+    evidence: Evidence,
+    *,
+    backup: Optional[Path] = None,
 ) -> Outcome:
     """Run every operation inside one transaction; commit only with `backup`, no
     refusal, and no violation the plan makes.
@@ -162,27 +167,27 @@ def apply(
     worse.
     """
     index_downloads(catalog)
-    outcome = _attempt(catalog, operations, None)
+    outcome = _attempt(catalog, operations, evidence, None)
     if backup is None or outcome.refused or outcome.violations:
         return outcome
-    return _attempt(catalog, operations, backup)
+    return _attempt(catalog, operations, evidence, backup)
 
 
-def _attempt(catalog: Catalog, operations: List[Tuple[int, Operation]],
+def _attempt(catalog: Catalog, operations: List[Tuple[int, Operation]], evidence: Evidence,
              backup: Optional[Path]) -> Outcome:
     outcome = Outcome()
     try:
         with catalog.transaction():
             if backup is not None:
                 catalog.backup(backup)
-            scope = _scope(catalog, operations)
-            before = violations(catalog, scope)
+            scope = _scope(catalog, operations, evidence)
+            before = violations(catalog, scope, evidence)
             touched, lost_text = _run(catalog, operations, outcome)
             outcome.taken_back = _take_back(catalog, lost_text)
             live = sorted({catalog.current_id(article_id) for article_id in touched})
             outcome.touched = [catalog.identifier(article_id) for article_id in live]
-            after = violations(catalog, neighbourhood(catalog, live) | suspects(catalog)
-                               | {catalog.current_id(a) for a in scope})
+            after = violations(catalog, neighbourhood(catalog, live, evidence) | suspects(catalog)
+                               | {catalog.current_id(a) for a in scope}, evidence)
             # an accepted pair the plan breaks is a violation the plan makes
             was = {_key(catalog, v) for v in before if not v.accepted}
             outcome.accepted = [v for v in after if v.accepted]
@@ -214,7 +219,9 @@ def _run(catalog: Catalog, operations: List[Tuple[int, Operation]],
     return touched, lost_text
 
 
-def _scope(catalog: Catalog, operations: List[Tuple[int, Operation]]) -> Set[str]:
+def _scope(
+    catalog: Catalog, operations: List[Tuple[int, Operation]], evidence: Evidence
+) -> Set[str]:
     """The articles the plan's result is checked over, found by running it and rolling
     it back, with every article it names (each one merged away is live before it)."""
     found: Set[str] = set()
@@ -222,7 +229,7 @@ def _scope(catalog: Catalog, operations: List[Tuple[int, Operation]]) -> Set[str
         with catalog.transaction():
             touched, _ = _run(catalog, operations, Outcome())
             live = {catalog.current_id(article_id) for article_id in touched}
-            found = neighbourhood(catalog, live) | suspects(catalog)
+            found = neighbourhood(catalog, live, evidence) | suspects(catalog)
             raise _Discard
     except _Discard:
         pass

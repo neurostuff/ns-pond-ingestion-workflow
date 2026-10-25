@@ -35,10 +35,10 @@ ALIASES = [
 
 
 @pytest.fixture()
-def version_two(tmp_path, evidence):
+def version_two(tmp_path):
     """A catalog as production is before the lower-case migration."""
     root = tmp_path / "cat"
-    with Catalog.open(root, evidence=evidence) as cat:
+    with Catalog.open(root) as cat:
         for article, kind, value in ALIASES:
             cat._conn.execute("INSERT OR IGNORE INTO articles(id, created_at) VALUES(?, ?)",
                               (article, "2026-01-01"))
@@ -80,7 +80,7 @@ def test_the_repair_settles_each_decision_and_the_migration_then_finds_the_owner
     assert repair.run(root, apply=False, table=table, out=io.StringIO()) == {"done": 2, "kept": 1}
     assert _dump(root) == again
 
-    with Catalog.open(root, evidence=evidence) as cat:
+    with Catalog.open(root) as cat:
         assert cat.resolve(Identifier(doi="10.1093/cercor/bhi095")).id == "cercor"
         neuroimage = cat.resolve(Identifier(pmid="16406257")).identifier
         assert neuroimage.doi == "10.1016/j.neuroimage.2005.11.026"
@@ -93,11 +93,13 @@ def test_the_repair_settles_each_decision_and_the_migration_then_finds_the_owner
             "22387514", "12671262"}
         assert paper.identifier.pmid == "12671262"   # the earlier PubMed record
         assert cat.artifact("rnn1", "download", "ace") is not None
-        assert cat.register(Identifier(pmid="22387514", doi="10.3233/rnn-1999-00078")).id == "rnn1"
+        assert cat.register(Identifier(pmid="22387514", doi="10.3233/rnn-1999-00078"),
+                evidence).id == "rnn1"
         # two papers sharing a DOI stay two, and the guard still keeps them apart
         assert cat.resolve(Identifier(doi="10.1093/cercor/11.9.888")).id == "award2"
         assert cat.resolve(Identifier(pmid="11552704")).id == "award1"
-        named_both = cat.register(Identifier(pmid="11552704", doi="10.1093/cercor/11.9.888"))
+        named_both = cat.register(Identifier(pmid="11552704", doi="10.1093/cercor/11.9.888"),
+                evidence)
         assert named_both.id == "award1"
         assert cat.resolve(Identifier(pmid="11532893")).id == "award2"
 
@@ -113,9 +115,9 @@ def test_a_doi_the_named_owner_no_longer_holds_is_not_dropped(version_two, tmp_p
     assert _dump(root) == before
 
 
-def test_the_repair_runs_only_before_the_migration(version_two, evidence):
+def test_the_repair_runs_only_before_the_migration(version_two):
     root, table = version_two
-    Catalog.open(root, evidence=evidence).close()
+    Catalog.open(root).close()
     with pytest.raises(SystemExit, match="already at schema version 4"):
         repair.run(root, apply=True, table=table, out=io.StringIO())
 

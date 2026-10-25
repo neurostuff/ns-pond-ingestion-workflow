@@ -117,8 +117,8 @@ def test_a_discovered_article_is_actionable(session, tmp_path, evidence):
     settings = Settings(
         data_root=tmp_path / "d", cache_root=tmp_path / "c", catalog_root=tmp_path / "k"
     )
-    with Catalog.open(settings.catalog_root, evidence=evidence) as catalog:
-        refs = catalog.register_many(discovered)
+    with Catalog.open(settings.catalog_root) as catalog:
+        refs = catalog.register_many(discovered, evidence)
         stage = DownloadStage(settings)
         plan = stage.plan(Context(settings, catalog), refs, {}, {})
 

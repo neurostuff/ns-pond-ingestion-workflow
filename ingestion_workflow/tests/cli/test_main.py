@@ -72,18 +72,18 @@ def test_unrecognisable_identifiers_are_rejected():
         _parse_identifier("not-an-id")
 
 
-def test_add_registers_articles(config, tmp_path, evidence):
+def test_add_registers_articles(config, tmp_path):
     out = run("add", "37961286", "PMC10634720", "--no-enrich", "--config", str(config))
     assert "2 new articles" in out
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "catalog") as catalog:
         assert catalog.count_articles() == 2
 
 
-def test_add_is_idempotent(config, tmp_path, evidence):
+def test_add_is_idempotent(config, tmp_path):
     run("add", "37961286", "--no-enrich", "--config", str(config))
     out = run("add", "37961286", "--no-enrich", "--config", str(config))
     assert "0 new articles" in out
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "catalog") as catalog:
         assert catalog.count_articles() == 1
 
 
@@ -94,11 +94,20 @@ def test_add_from_a_file(config, tmp_path):
     assert "2 new articles" in out
 
 
-def test_a_command_that_only_reads_still_needs_the_email_the_catalog_checks_with(config):
+def _without_email(config):
     settings = json.loads(config.read_text())
     del settings["pubmed_email"]
     config.write_text(json.dumps(settings), encoding="utf-8")
-    result = runner.invoke(app, ["status", "--config", str(config)])
+
+
+def test_a_command_that_reads_needs_no_email(config):
+    _without_email(config)
+    assert "0 articles" in run("status", "--config", str(config))
+
+
+def test_a_command_that_registers_needs_the_email_registration_checks_with(config):
+    _without_email(config)
+    result = runner.invoke(app, ["add", "37961286", "--config", str(config)])
     assert result.exit_code == 2
     assert "pubmed_email" in result.output
 
@@ -109,11 +118,11 @@ def test_status_reports_an_empty_catalog(config):
     assert "no stage has run yet" in out
 
 
-def test_dry_run_changes_nothing(config, tmp_path, evidence):
+def test_dry_run_changes_nothing(config, tmp_path):
     run("add", "37961286", "--no-enrich", "--config", str(config))
     out = run("run", "--stage", "download", "--dry-run", "--config", str(config))
     assert "plan" in out
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "catalog") as catalog:
         assert catalog.status_counts() == {}
 
 
@@ -129,14 +138,14 @@ def test_show_lists_what_is_known(config, tmp_path):
     assert "pmid 37961286" in out
 
 
-def test_show_resolves_every_kind_of_id(config, tmp_path, evidence):
+def test_show_resolves_every_kind_of_id(config, tmp_path):
     """A user has four different strings that name the same article, and should
     not have to know which kind the CLI wants."""
     from ingestion_workflow.catalog import Catalog
     from ingestion_workflow.models.ids import Identifier
 
     run("add", "PMC10634720", "--no-enrich", "--config", str(config))
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "catalog") as catalog:
         ref = catalog.resolve(Identifier(pmcid="PMC10634720"))
         catalog.add_aliases([(ref.id, "neurostore", "5Qk2mNpXyJKH")])
         article_id = ref.id
@@ -153,14 +162,14 @@ def test_show_still_rejects_an_unknown_token(config):
     assert "not in the catalog" in result.output
 
 
-def test_add_accepts_a_neurostore_id(config, tmp_path, evidence):
+def test_add_accepts_a_neurostore_id(config, tmp_path):
     """base_study_ids are opaque, so they cannot be sniffed like a PMID or DOI
     and need their own flag."""
     from ingestion_workflow.catalog import Catalog
     from ingestion_workflow.models.ids import Identifier
 
     run("add", "--neurostore", "5Qk2mNpXyJKH", "--no-enrich", "--config", str(config))
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "catalog") as catalog:
         ref = catalog.resolve(Identifier(neurostore="5Qk2mNpXyJKH"))
         assert ref is not None
         assert catalog.identifier(ref.id).neurostore == "5Qk2mNpXyJKH"
@@ -191,7 +200,7 @@ def test_add_reports_an_identifier_it_refused(config, tmp_path):
 
 @pytest.mark.vcr()
 def test_add_from_neurostore_registers_what_discovery_returns(
-        config, tmp_path, monkeypatch, evidence):
+        config, tmp_path, monkeypatch):
     """The database is mocked; what is under test is that `add` registers the
     identifiers discovery hands back, aliases and all."""
     import ingestion_workflow.cli.main as cli
@@ -211,7 +220,7 @@ def test_add_from_neurostore_registers_what_discovery_returns(
 
     from ingestion_workflow.catalog import Catalog
 
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
+    with Catalog.open(tmp_path / "catalog") as catalog:
         first = catalog.resolve(Identifier(neurostore="bs-1"))
         assert first is not None
         known = catalog.identifier(first.id)
@@ -242,8 +251,9 @@ def _catalog_with_resolved_and_unresolved_articles(tmp_path, evidence):
     from ingestion_workflow.catalog import Outcome
     from ingestion_workflow.models.ids import Identifier
 
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as catalog:
-        resolved, analysed = catalog.register_many([Identifier(pmid="1"), Identifier(pmid="2")])
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        resolved, analysed = catalog.register_many([Identifier(pmid="1"), Identifier(pmid="2")],
+                evidence)
         catalog.record(
             [Outcome(article_id=r.id, stage="analyses", source="") for r in (resolved, analysed)]
             + [Outcome(article_id=resolved.id, stage="resolve", source="")]

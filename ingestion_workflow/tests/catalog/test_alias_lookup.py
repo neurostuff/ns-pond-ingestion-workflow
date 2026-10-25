@@ -7,10 +7,11 @@ from ingestion_workflow.models.ids import Identifier
 
 
 def test_an_article_s_aliases_are_read_through_the_article_index(tmp_path, evidence):
-    with Catalog.open(tmp_path / "k", evidence=evidence) as catalog:
-        ref = catalog.register(Identifier(pmid="28668221", doi="10.1016/j.cortex.2017.05.018"))
+    with Catalog.open(tmp_path / "k") as catalog:
+        ref = catalog.register(Identifier(pmid="28668221", doi="10.1016/j.cortex.2017.05.018"),
+                evidence)
         for n in range(200):
-            catalog.register(Identifier(doi=f"10.1016/j.neuroimage.2003.07.{n:03d}"))
+            catalog.register(Identifier(doi=f"10.1016/j.neuroimage.2003.07.{n:03d}"), evidence)
         asked = []
         catalog._conn.set_trace_callback(asked.append)
         assert catalog.aliases(ref.id, "doi") == ["10.1016/j.cortex.2017.05.018"]

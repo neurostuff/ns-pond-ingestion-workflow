@@ -350,8 +350,8 @@ def _catalog_with(tmp_path, extractions, evidence):
         data_root=tmp_path / "d", cache_root=tmp_path / "c",
         catalog_root=tmp_path / "k", coordinate_gate_path=str(gate),
     )
-    catalog = Catalog.open(settings.catalog_root, evidence=evidence)
-    ref = catalog.register(Identifier(pmid="1"))
+    catalog = Catalog.open(settings.catalog_root)
+    ref = catalog.register(Identifier(pmid="1"), evidence)
     for source in ("ace", "elsevier"):
         catalog.record([Outcome(article_id=ref.id, stage="download", source=source,
                                 fingerprint=f"dl-{source}", payload={"files": []})])

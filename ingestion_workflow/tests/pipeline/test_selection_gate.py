@@ -19,10 +19,10 @@ def settings(tmp_path):
 
 @pytest.fixture()
 def catalog(tmp_path, evidence):
-    cat = Catalog.open(tmp_path / "cat", evidence=evidence)
+    cat = Catalog.open(tmp_path / "cat")
     refs = {}
     for n, passed in (("a", 2), ("b", 0), ("c", 1), ("d", 0)):
-        ref = cat.register(Identifier(pmid=f"100{n}"))
+        ref = cat.register(Identifier(pmid=f"100{n}"), evidence)
         refs[n] = ref.id
         cat.record([Outcome(
             article_id=ref.id, stage="triage", source="", status=Status.OK,
@@ -70,16 +70,16 @@ def test_the_gate_is_not_a_freshness_filter(catalog):
     assert got == {refs["a"], refs["c"]}
 
 
-def test_the_gate_holds_for_a_manifest_too(catalog, settings, tmp_path):
+def test_the_gate_holds_for_a_manifest_too(catalog, settings, tmp_path, evidence):
     """It is applied in `narrow`, not in the stage's `plan`, so it does not
     matter how the selection was built."""
-    from ingestion_workflow.pipeline.selection import Selection, resolve_manifest
+    from ingestion_workflow.pipeline.selection import Selection, register_manifest
 
     path = tmp_path / "m.jsonl"
     path.write_text("\n".join(
         json.dumps({"pmid": f"100{n}"}) for n in ("a", "b", "c", "d")) + "\n")
     cat, refs = catalog
-    manifest = Selection(resolve_manifest(cat, path, register=True).refs, "manifest")
+    manifest = Selection(register_manifest(cat, path, evidence).refs, "manifest")
     sel = narrow(cat, manifest, Select.PENDING, "analyses", settings=settings)
     assert {r.id for r in sel.refs} == {refs["a"], refs["c"]}
 
@@ -106,10 +106,10 @@ def test_space_and_sync_are_gated_on_analyses_having_found_something(
     assert STAGE_TYPES[stage].requires == upstream
     assert STAGE_TYPES[stage].requires_flag == "tables"
 
-    cat = Catalog.open(tmp_path / "up", evidence=evidence)
+    cat = Catalog.open(tmp_path / "up")
     ids = {}
     for name, tables in (("has", 2), ("none", 0)):
-        ref = cat.register(Identifier(pmid=f"200{name}"))
+        ref = cat.register(Identifier(pmid=f"200{name}"), evidence)
         ids[name] = ref.id
         cat.record([Outcome(
             article_id=ref.id, stage=upstream, source="", status=Status.OK,

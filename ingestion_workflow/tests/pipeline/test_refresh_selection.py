@@ -18,8 +18,8 @@ from ingestion_workflow.pipeline.stages.extract import extraction_fingerprint
 
 @pytest.fixture()
 def catalog(tmp_path, evidence):
-    with Catalog.open(tmp_path / "cat", evidence=evidence) as cat:
-        done = cat.register(Identifier(pmid="1"))
+    with Catalog.open(tmp_path / "cat") as cat:
+        done = cat.register(Identifier(pmid="1"), evidence)
         downloaded = DownloadStage(Settings()).fingerprint_for(DownloadSource.ACE)
         cat.record(
             [
@@ -31,7 +31,7 @@ def catalog(tmp_path, evidence):
                             fingerprint=downloaded))),
             ]
         )
-        undone = cat.register(Identifier(pmid="2"))
+        undone = cat.register(Identifier(pmid="2"), evidence)
         cat.record([Outcome(article_id=undone.id, stage="download", source="ace",
                             fingerprint=downloaded)])
         yield cat, done, undone

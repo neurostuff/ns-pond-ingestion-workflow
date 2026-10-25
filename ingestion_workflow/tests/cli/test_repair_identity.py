@@ -10,7 +10,7 @@ import ingestion_workflow.cli.main as cli
 import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.models.ids import Identifier, Identifiers
-from ingestion_workflow.pipeline.selection import resolve_manifest
+from ingestion_workflow.pipeline.selection import register_manifest
 from ingestion_workflow.tests import cassette_secrets
 from typer.testing import CliRunner
 
@@ -34,14 +34,16 @@ def _config(root):
 @pytest.fixture()
 def setup(tmp_path, evidence):
     config = _config(tmp_path)
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
+    with Catalog.open(tmp_path / "catalog") as cat:
         # Two articles with each other's PMIDs; one holding a companion abstract's DOI and
         # its download; one holding a repository copy's DOI.
         ids = {
-            "a": cat.register(Identifier(doi="10.1016/j.ajog.2011.02.050")).id,
-            "b": cat.register(Identifier(doi="10.1016/j.apmr.2010.12.021")).id,
-            "c": cat.register(Identifier(doi="10.1016/j.bpsc.2021.12.008", pmid="34954395")).id,
-            "d": cat.register(Identifier(doi="10.1176/ajp.2006.163.4.735", pmid="16585452")).id,
+            "a": cat.register(Identifier(doi="10.1016/j.ajog.2011.02.050"), evidence).id,
+            "b": cat.register(Identifier(doi="10.1016/j.apmr.2010.12.021"), evidence).id,
+            "c": cat.register(Identifier(doi="10.1016/j.bpsc.2021.12.008", pmid="34954395"),
+                    evidence).id,
+            "d": cat.register(Identifier(doi="10.1176/ajp.2006.163.4.735", pmid="16585452"),
+                    evidence).id,
         }
         # Written as the catalog took them before registration checked a PMID against PubMed
         # and refused a second journal DOI.
@@ -124,7 +126,7 @@ def test_apply_writes_the_plan_backs_up_first_and_lists_the_touched_articles(set
     with closing(sqlite3.connect(backup)) as conn:
         assert [sorted(conn.execute(f"SELECT * FROM {t}"))
                 for t in ("articles", "aliases", "artifacts")] == before
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
+    with Catalog.open(tmp_path / "catalog") as cat:
         assert cat.identifier(ids["a"]).pmid == "21529758"
         assert cat.identifier(ids["b"]).pmid == "21529779"
         companion = cat.resolve(Identifier(doi="10.1016/j.biopsych.2021.02.423")).id
@@ -138,16 +140,16 @@ def test_apply_writes_the_plan_backs_up_first_and_lists_the_touched_articles(set
         assert len(listed) == 5
         articles = cat.count_articles()
         # Registered again by `ingest run --manifest`, each line is the article it came from.
-        refs = resolve_manifest(cat, manifest, register=True).refs
+        refs = register_manifest(cat, manifest, evidence).refs
         assert sorted(r.id for r in refs) == sorted([*ids.values(), companion])
         assert cat.count_articles() == articles and cat.conflicts == 0
 
 
 @pytest.mark.vcr()
-def test_a_plan_the_catalog_no_longer_matches_is_refused_whole(setup, evidence):
+def test_a_plan_the_catalog_no_longer_matches_is_refused_whole(setup):
     config, tmp_path, ids = setup
     plan = _plan(tmp_path, ids)
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
+    with Catalog.open(tmp_path / "catalog") as cat:
         # Since the plan was made, the repository DOI was settled by someone else.
         cat.remove_aliases([("doi", "10.1176/appi.ajp.163.4.735", ids["d"])])
     before = _db(tmp_path)
@@ -238,22 +240,26 @@ def cases(tmp_path, evidence):
     tmp_path = tmp_path / "cases"
     config = _config(tmp_path)
     files = tmp_path / "files"
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
+    with Catalog.open(tmp_path / "catalog") as cat:
         ids = {
             # w5rawsklx347, and 5qxpg3twr524 holding only PubMed's second record of its paper
-            "paper": cat.register(Identifier(doi="10.1684/epd.2022.1433", pmid="35770780")).id,
-            "duplicate": cat.register(Identifier(pmid="37401785")).id,
+            "paper": cat.register(Identifier(doi="10.1684/epd.2022.1433", pmid="35770780"),
+                    evidence).id,
+            "duplicate": cat.register(Identifier(pmid="37401785"), evidence).id,
             # vrr7x2ygtjdt, and btk5tlwqap5k holding only its preprint's PubMed record
-            "elife": cat.register(Identifier(doi="10.7554/elife.92563", pmid="38345852")).id,
-            "preprint": cat.register(Identifier(pmid="37808793")).id,
+            "elife": cat.register(Identifier(doi="10.7554/elife.92563", pmid="38345852"),
+                    evidence).id,
+            "preprint": cat.register(Identifier(pmid="37808793"), evidence).id,
             # mwni3etc4i7l holding an Elsevier copy of 54xpppoekzpj's paper
-            "holder": cat.register(Identifier(doi="10.1016/j.neuropsychologia.2011.03.007")).id,
-            "owner": cat.register(Identifier(doi="10.1016/j.neuroimage.2004.05.015")).id,
+            "holder": cat.register(Identifier(doi="10.1016/j.neuropsychologia.2011.03.007"),
+                    evidence).id,
+            "owner": cat.register(Identifier(doi="10.1016/j.neuroimage.2004.05.015"), evidence).id,
             # og3a4u5wsy26 holding a Neurobiol Learn Mem paper beside its own
             "fused": cat.register(
-                Identifier(doi="10.1016/j.biopsych.2011.09.005", pmid="22015111")).id,
+                Identifier(doi="10.1016/j.biopsych.2011.09.005", pmid="22015111"), evidence).id,
             # ki7akud6c347 holding PubMed's Springer DOI and the journal's earlier mEDRA DOI
-            "alias": cat.register(Identifier(doi="10.1007/bf03337758", pmid="20885123")).id,
+            "alias": cat.register(Identifier(doi="10.1007/bf03337758", pmid="20885123"),
+                    evidence).id,
         }
         conn = cat._conn
         conn.executemany("INSERT INTO aliases VALUES (?, ?, ?)", [
@@ -291,7 +297,7 @@ def cases(tmp_path, evidence):
 
 
 @pytest.mark.vcr()
-def test_every_operation_applies_and_its_articles_are_listed(cases, evidence):
+def test_every_operation_applies_and_its_articles_are_listed(cases):
     config, tmp_path, ids, plan = cases
     manifest = tmp_path / "touched.jsonl"
 
@@ -301,7 +307,7 @@ def test_every_operation_applies_and_its_articles_are_listed(cases, evidence):
     assert result.exit_code == 0, result.output
     assert "6 of 6 operations applied; 1 new articles" in result.output
     assert "1 articles were left with no extraction and their passages taken back" in result.output
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
+    with Catalog.open(tmp_path / "catalog") as cat:
         paper = cat.current_id(ids["paper"])
         assert cat.aliases(paper, "pmid") == ["35770780"]
         assert cat.holder("pmid", "37401785") == paper
@@ -324,9 +330,9 @@ def test_every_operation_applies_and_its_articles_are_listed(cases, evidence):
 def test_an_article_a_plan_does_not_touch_is_checked_when_the_plan_breaks_it(tmp_path, evidence):
     # B holds PMID 21704176 alone; the plan gives A that PMID's DOI.
     config = _config(tmp_path)
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
-        a = cat.register(Identifier(doi="10.1016/j.biopsych.2011.09.005")).id
-        b = cat.register(Identifier(pmid="21704176")).id
+    with Catalog.open(tmp_path / "catalog") as cat:
+        a = cat.register(Identifier(doi="10.1016/j.biopsych.2011.09.005"), evidence).id
+        b = cat.register(Identifier(pmid="21704176"), evidence).id
     plan = tmp_path / "plan.jsonl"
     plan.write_text(json.dumps({"op": "add", "article": a, "kind": "doi",
                                 "value": "10.1016/j.nlm.2011.06.006"}) + "\n", encoding="utf-8")
@@ -342,9 +348,9 @@ def test_an_article_whose_pmc_record_a_plan_gives_away_is_checked(tmp_path, evid
     # B holds PMC5582689 and its PubMed record 28290265 (Psychol Med, lg6selcsnr7f's paper);
     # the plan gives A that paper's DOI.
     config = _config(tmp_path)
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
-        a = cat.register(Identifier(neurostore="3Rob7cK8y6gY")).id
-        b = cat.register(Identifier(pmcid="PMC5582689", pmid="28290265")).id
+    with Catalog.open(tmp_path / "catalog") as cat:
+        a = cat.register(Identifier(neurostore="3Rob7cK8y6gY"), evidence).id
+        b = cat.register(Identifier(pmcid="PMC5582689", pmid="28290265"), evidence).id
     plan = tmp_path / "plan.jsonl"
     plan.write_text(json.dumps({"op": "add", "article": a, "kind": "doi",
                                 "value": "10.1017/s0033291717000265"}) + "\n", encoding="utf-8")
@@ -361,9 +367,9 @@ def test_an_article_holding_two_of_a_kind_before_the_plan_is_reported_and_does_n
     # B is linked to nothing the plan touches; it holds two PMCIDs, as the catalog took
     # them before registration refused a second paper's, and waits for a person.
     config = _config(tmp_path)
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
-        a = cat.register(Identifier(neurostore="3Rob7cK8y6gY")).id
-        b = cat.register(Identifier(pmcid="PMC3189437")).id
+    with Catalog.open(tmp_path / "catalog") as cat:
+        a = cat.register(Identifier(neurostore="3Rob7cK8y6gY"), evidence).id
+        b = cat.register(Identifier(pmcid="PMC3189437"), evidence).id
         cat._conn.execute("INSERT INTO aliases VALUES ('pmcid', 'PMC5382267', ?)", (b,))
     plan = tmp_path / "plan.jsonl"
     plan.write_text(json.dumps({"op": "add", "article": a, "kind": "doi",
@@ -372,20 +378,20 @@ def test_an_article_holding_two_of_a_kind_before_the_plan_is_reported_and_does_n
                      "--manifest", tmp_path / "m.jsonl")
     assert result.exit_code == 0, result.output
     assert f"pre-existing, not caused by this plan: {b} pmcids:" in result.output
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
+    with Catalog.open(tmp_path / "catalog") as cat:
         assert cat.holder("doi", "10.1017/s0033291717000265") == a
 
 
 @pytest.mark.vcr()
 def test_a_plan_giving_an_article_a_second_of_a_kind_is_not_committed(tmp_path, evidence):
     config = _config(tmp_path)
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
-        b = cat.register(Identifier(pmcid="PMC3189437")).id
+    with Catalog.open(tmp_path / "catalog") as cat:
+        b = cat.register(Identifier(pmcid="PMC3189437"), evidence).id
         cat._conn.execute("INSERT INTO aliases VALUES ('pmcid', 'PMC5382267', ?)", (b,))
     plan = tmp_path / "plan.jsonl"
     plan.write_text(json.dumps({"op": "add", "article": b, "kind": "neurostore",
                                 "value": "3Rob7cK8y6gY"}) + "\n", encoding="utf-8")
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
+    with Catalog.open(tmp_path / "catalog") as cat:
         cat._conn.execute("INSERT INTO aliases VALUES ('neurostore', 'AkYZauDLLAS5', ?)", (b,))
     before = _db(tmp_path)
     result = _invoke(config, plan, "--apply", "--backup", tmp_path / "b.sqlite",
@@ -401,8 +407,8 @@ def test_an_alternate_doi_the_registry_cannot_describe_is_not_committed(tmp_path
     # mxp7s3fbegzb: doi.org has the publisher's alias spelling of PubMed's DOI, and
     # sends it to Crossref, which has no record of it.
     config = _config(tmp_path)
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
-        a = cat.register(Identifier(doi="10.1176/jnp.2009.21.3.307")).id
+    with Catalog.open(tmp_path / "catalog") as cat:
+        a = cat.register(Identifier(doi="10.1176/jnp.2009.21.3.307"), evidence).id
         cat._conn.execute(
             "INSERT INTO aliases VALUES ('doi', '10.1176/appi.neuropsych.21.3.307', ?)", (a,))
     plan = tmp_path / "plan.jsonl"
@@ -419,9 +425,9 @@ def test_an_alternate_doi_the_registry_cannot_describe_is_not_committed(tmp_path
 @pytest.mark.vcr()
 def test_an_article_keeping_an_extraction_has_nothing_taken_back(tmp_path, evidence):
     config = _config(tmp_path)
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
-        a = cat.register(Identifier(doi="10.1016/j.neuropsychologia.2011.03.007")).id
-        b = cat.register(Identifier(doi="10.1016/j.neuroimage.2004.05.015")).id
+    with Catalog.open(tmp_path / "catalog") as cat:
+        a = cat.register(Identifier(doi="10.1016/j.neuropsychologia.2011.03.007"), evidence).id
+        b = cat.register(Identifier(doi="10.1016/j.neuroimage.2004.05.015"), evidence).id
         cat.record([Outcome(a, stage, source, Status.OK, payload={"files": []})
                     for stage in ("download", "extract") for source in ("elsevier", "pubget")]
                    + [Outcome(a, "passages", "", Status.OK, payload={"passages": []})])
@@ -432,7 +438,7 @@ def test_an_article_keeping_an_extraction_has_nothing_taken_back(tmp_path, evide
                      "--manifest", tmp_path / "m.jsonl")
     assert result.exit_code == 0, result.output
     assert "taken back" not in result.output
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
+    with Catalog.open(tmp_path / "catalog") as cat:
         assert cat.artifact(a, "passages", "").ok
 
 
@@ -455,9 +461,9 @@ def test_an_article_whose_download_names_an_id_the_plan_hands_out_is_checked(tmp
     # X's ACE copy is 22015111.html, the Biol Psychiatry paper's, though X holds the
     # Neurobiol Learn Mem PMID; the plan gives Y, which holds the Biol Psychiatry DOI, its PMID.
     config = _config(tmp_path)
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
-        x = cat.register(Identifier(pmid="21704176")).id
-        y = cat.register(Identifier(doi="10.1016/j.biopsych.2011.09.005")).id
+    with Catalog.open(tmp_path / "catalog") as cat:
+        x = cat.register(Identifier(pmid="21704176"), evidence).id
+        y = cat.register(Identifier(doi="10.1016/j.biopsych.2011.09.005"), evidence).id
         cat.record([Outcome(x, "download", "ace", Status.OK, payload={"files": [
             {"file_path": str(tmp_path / "ace" / "22015111.html")}]})])
     plan = tmp_path / "plan.jsonl"
@@ -473,9 +479,9 @@ def test_an_article_whose_download_names_an_id_the_plan_hands_out_is_checked(tmp
 @pytest.mark.vcr()
 def test_an_article_already_taken_back_is_not_taken_back_again(tmp_path, evidence):
     config = _config(tmp_path)
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
-        a = cat.register(Identifier(doi="10.1016/j.neuropsychologia.2011.03.007")).id
-        b = cat.register(Identifier(doi="10.1016/j.neuroimage.2004.05.015")).id
+    with Catalog.open(tmp_path / "catalog") as cat:
+        a = cat.register(Identifier(doi="10.1016/j.neuropsychologia.2011.03.007"), evidence).id
+        b = cat.register(Identifier(doi="10.1016/j.neuroimage.2004.05.015"), evidence).id
         cat.record([Outcome(a, stage, "elsevier", Status.OK, payload={"files": []})
                     for stage in ("download", "extract")]
                    + [Outcome.failure(a, "passages", "", "no extraction text",
@@ -493,9 +499,9 @@ def test_an_article_already_taken_back_is_not_taken_back_again(tmp_path, evidenc
 def test_a_plan_swaps_two_crossed_downloads(tmp_path, evidence):
     # ml7z5xc7cvgo and su74e7qsacoi: each article's ACE copy is the other's paper
     config = _config(tmp_path)
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
-        a = cat.register(Identifier(pmid="15658005")).id
-        b = cat.register(Identifier(pmid="15465288")).id
+    with Catalog.open(tmp_path / "catalog") as cat:
+        a = cat.register(Identifier(pmid="15658005"), evidence).id
+        b = cat.register(Identifier(pmid="15465288"), evidence).id
         cat.record([Outcome(x, "download", "ace", Status.OK,
                             payload={"files": [{"file_path": f"/ace/{p}.html"}]})
                     for x, p in ((a, "15465288"), (b, "15658005"))])
@@ -506,7 +512,7 @@ def test_a_plan_swaps_two_crossed_downloads(tmp_path, evidence):
                      "--manifest", tmp_path / "m.jsonl")
     assert result.exit_code == 0, result.output
     assert "1 of 1 operations applied" in result.output and "violation" not in result.output
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
+    with Catalog.open(tmp_path / "catalog") as cat:
         assert cat.payload(cat.artifact(a, "download", "ace"))["files"][0]["file_path"] == \
             "/ace/15658005.html"
 
@@ -517,10 +523,10 @@ def test_a_violation_naming_an_article_the_plan_merges_away_is_still_the_one_bef
     # X holds the Neurobiol Learn Mem PMID; its DOI is L's. The plan merges L into S, its other
     # record, so the violation then names S.
     config = _config(tmp_path)
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
-        s = cat.register(Identifier(neurostore="3Rob7cK8y6gY")).id
-        x = cat.register(Identifier(pmid="21704176")).id
-        lone = cat.register(Identifier(doi="10.1016/j.nlm.2011.06.006")).id
+    with Catalog.open(tmp_path / "catalog") as cat:
+        s = cat.register(Identifier(neurostore="3Rob7cK8y6gY"), evidence).id
+        x = cat.register(Identifier(pmid="21704176"), evidence).id
+        lone = cat.register(Identifier(doi="10.1016/j.nlm.2011.06.006"), evidence).id
     plan = tmp_path / "plan.jsonl"
     plan.write_text(json.dumps({"op": "merge", "articles": [s, lone]}) + "\n", encoding="utf-8")
     result = _invoke(config, plan, "--apply", "--backup", tmp_path / "b.sqlite",
@@ -535,12 +541,13 @@ def test_an_accepted_version_pair_is_listed_and_does_not_block(tmp_path, evidenc
     # bdarfou5chmg and nj52vmozfa3k, each with a base study; the plan forgets the paper's
     # unreadable ACE copy
     config = _config(tmp_path)
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
+    with Catalog.open(tmp_path / "catalog") as cat:
         paper = cat.register(Identifier(pmid="42230985", pmcid="PMC13387087",
                                         doi="10.1038/s41366-026-02114-2",
-                                        neurostore="vY5mktCMTn9P")).id
+                                        neurostore="vY5mktCMTn9P"), evidence).id
         cat.register(Identifier(pmid="41674811", pmcid="PMC12889832",
-                                doi="10.21203/rs.3.rs-8694593/v1", neurostore="JAJmM4dhUPuZ"))
+                                doi="10.21203/rs.3.rs-8694593/v1", neurostore="JAJmM4dhUPuZ"),
+                                        evidence)
         cat.record([Outcome(paper, "download", "ace", Status.OK, payload={"files": []})])
     plan = tmp_path / "plan.jsonl"
     plan.write_text(json.dumps({"op": "forget_artifacts", "article": paper,
@@ -559,12 +566,13 @@ def test_a_plan_breaking_an_accepted_pair_is_not_committed(tmp_path, evidence):
     # bdarfou5chmg and nj52vmozfa3k, accepted while each holds a base study; the plan takes
     # the paper's away
     config = _config(tmp_path)
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
+    with Catalog.open(tmp_path / "catalog") as cat:
         paper = cat.register(Identifier(pmid="42230985", pmcid="PMC13387087",
                                         doi="10.1038/s41366-026-02114-2",
-                                        neurostore="vY5mktCMTn9P")).id
+                                        neurostore="vY5mktCMTn9P"), evidence).id
         cat.register(Identifier(pmid="41674811", pmcid="PMC12889832",
-                                doi="10.21203/rs.3.rs-8694593/v1", neurostore="JAJmM4dhUPuZ"))
+                                doi="10.21203/rs.3.rs-8694593/v1", neurostore="JAJmM4dhUPuZ"),
+                                        evidence)
     plan = tmp_path / "plan.jsonl"
     plan.write_text(json.dumps({"op": "remove", "article": paper, "kind": "neurostore",
                                 "value": "vY5mktCMTn9P"}) + "\n", encoding="utf-8")
@@ -579,9 +587,9 @@ def test_a_plan_breaking_an_accepted_pair_is_not_committed(tmp_path, evidence):
 def test_a_download_moved_onto_an_article_with_an_unreadable_one_is_still_checked(
         tmp_path, evidence):
     config = _config(tmp_path)
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
-        a = cat.register(Identifier(neurostore="3Rob7cK8y6gY")).id
-        b = cat.register(Identifier(pmcid="PMC5582689", pmid="28290265")).id
+    with Catalog.open(tmp_path / "catalog") as cat:
+        a = cat.register(Identifier(neurostore="3Rob7cK8y6gY"), evidence).id
+        b = cat.register(Identifier(pmcid="PMC5582689", pmid="28290265"), evidence).id
         cat.record([Outcome(a, "download", "ace", Status.OK),
                     Outcome(b, "download", "pubget", Status.OK, payload={"files": [
                         {"file_path": "/pubget/articles/pmcid_5582689/tables.xml"}]})])
@@ -600,9 +608,9 @@ def test_a_violation_of_an_article_the_plan_merges_away_is_still_the_one_before(
         tmp_path, evidence):
     # B holds two PMCIDs and waits for a person; the plan merges it into O, its paper's other
     config = _config(tmp_path)
-    with Catalog.open(tmp_path / "catalog", evidence=evidence) as cat:
-        o = cat.register(Identifier(neurostore="3Rob7cK8y6gY")).id
-        b = cat.register(Identifier(pmcid="PMC3189437")).id
+    with Catalog.open(tmp_path / "catalog") as cat:
+        o = cat.register(Identifier(neurostore="3Rob7cK8y6gY"), evidence).id
+        b = cat.register(Identifier(pmcid="PMC3189437"), evidence).id
         cat._conn.execute("INSERT INTO aliases VALUES ('pmcid', 'PMC5382267', ?)", (b,))
         cat._conn.execute("UPDATE articles SET created_at='2000-01-01' WHERE id=?", (o,))
     plan = tmp_path / "plan.jsonl"

@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import Catalog, Outcome, Status
+from ingestion_workflow.catalog.evidence import Evidence
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.utils.pmcid import normalize_pmcid
 
@@ -61,6 +62,7 @@ class MigrationReport:
 def migrate_caches(
     old_root: Path,
     catalog: Catalog,
+    evidence: Evidence,
     *,
     stages: Optional[Sequence[str]] = None,
     dry_run: bool = False,
@@ -77,7 +79,7 @@ def migrate_caches(
                 continue
             logger.info("migrating %s (%s) from %s", stage, source or "-", db_path)
             count, skipped = _import_table(
-                catalog, db_path, table, stage, source, dry_run=dry_run
+                catalog, evidence, db_path, table, stage, source, dry_run=dry_run
             )
             report.imported[stage] = report.imported.get(stage, 0) + count
             report.skipped[stage] = report.skipped.get(stage, 0) + skipped
@@ -120,6 +122,7 @@ def _open_readonly(path: Path) -> sqlite3.Connection:
 
 def _import_table(
     catalog: Catalog,
+    evidence: Evidence,
     db_path: Path,
     table: str,
     stage: str,
@@ -133,7 +136,7 @@ def _import_table(
         if not columns:
             return 0, 0
         if stage == PER_TABLE_STAGE:
-            return _import_grouped(catalog, conn, table, columns, stage, source, dry_run)
+            return _import_grouped(catalog, evidence, conn, table, columns, stage, source, dry_run)
         imported = skipped = 0
         pending: List[Tuple[Identifier, dict]] = []
         for row in conn.execute(f"SELECT * FROM {table}"):
@@ -143,9 +146,9 @@ def _import_table(
                 continue
             pending.append((identifier, _payload(row)))
             if len(pending) >= BATCH:
-                imported += _flush(catalog, pending, stage, source, dry_run)
+                imported += _flush(catalog, evidence, pending, stage, source, dry_run)
                 pending.clear()
-        imported += _flush(catalog, pending, stage, source, dry_run)
+        imported += _flush(catalog, evidence, pending, stage, source, dry_run)
         return imported, skipped
     finally:
         conn.close()
@@ -247,6 +250,7 @@ def _analyses_payload(row_payload: Mapping[str, Any]) -> Dict[str, Any]:
 
 def _import_grouped(
     catalog: Catalog,
+    evidence: Evidence,
     conn: sqlite3.Connection,
     table: str,
     columns: set,
@@ -286,16 +290,17 @@ def _import_grouped(
         else:
             current[1].update(tables)
         if len(pending) >= BATCH:
-            imported += _flush(catalog, pending, stage, source, dry_run)
+            imported += _flush(catalog, evidence, pending, stage, source, dry_run)
             pending.clear()
 
     close_group()
-    imported += _flush(catalog, pending, stage, source, dry_run)
+    imported += _flush(catalog, evidence, pending, stage, source, dry_run)
     return imported, skipped
 
 
 def _flush(
     catalog: Catalog,
+    evidence: Evidence,
     pending: Sequence[Tuple[Identifier, dict]],
     stage: str,
     source: str,
@@ -305,7 +310,7 @@ def _flush(
         return 0
     if dry_run:
         return len(pending)
-    refs = catalog.register_many([identifier for identifier, _ in pending])
+    refs = catalog.register_many([identifier for identifier, _ in pending], evidence)
     # No fingerprint: the legacy cache recorded nothing about the prompt, model
     # or extractor version behind a row. An empty fingerprint is not fresh;
     # `ingest repair` stores the one each stage's plan expects.
