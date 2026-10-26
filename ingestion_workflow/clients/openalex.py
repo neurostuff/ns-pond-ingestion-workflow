@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 import re
-import time
 from dataclasses import dataclass
 from typing import Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 from urllib.parse import quote, urljoin
@@ -12,7 +11,6 @@ from urllib.parse import quote, urljoin
 import requests
 from study_schema.models import paper_parse as pp
 from study_schema.models.paper_parse import MetadataSource
-from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 from ingestion_workflow.models import Identifier, Identifiers
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
@@ -21,7 +19,7 @@ from ingestion_workflow.services import corresponding_authors
 from ingestion_workflow.services.corresponding_authors.common import words
 from ingestion_workflow.utils import authors as author_ids
 from ingestion_workflow.utils.doi import normalize_doi
-from ingestion_workflow.utils.http import transient
+from ingestion_workflow.utils.http import Pacer, retry_transient
 
 logger = logging.getLogger(__name__)
 
@@ -246,7 +244,7 @@ class OpenAlexClient:
         self.email = email
         self.api_key = api_key
         self._session = requests.Session()
-        self._last_request = 0.0
+        self._pace = Pacer()
 
     @classmethod
     def from_settings(cls, settings) -> Optional["OpenAlexClient"]:
@@ -541,22 +539,10 @@ class OpenAlexClient:
                     raise
         return works
 
-    def _rate_limit_sleep(self) -> None:
-        """Ensure we respect the 10 requests/sec polite pool limit."""
-        now = time.monotonic()
-        elapsed = now - self._last_request
-        if elapsed < _MIN_REQUEST_INTERVAL:
-            time.sleep(_MIN_REQUEST_INTERVAL - elapsed)
-        self._last_request = time.monotonic()
-
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, max=8),
-        retry=retry_if_exception(transient),
-    )
+    @retry_transient(3, 8)
     def _request_openalex(self, params: Dict[str, str], work: str = "") -> Dict:
         """Issue a GET request to the OpenAlex Works endpoint, or to one `work` of it."""
-        self._rate_limit_sleep()
+        self._pace.wait(_MIN_REQUEST_INTERVAL)
         url = urljoin(self.BASE_URL, f"{self.LOOKUP_ENDPOINT}/{work}" if work else self.LOOKUP_ENDPOINT)
         if self.api_key:
             params = {**params, "api_key": self.api_key}

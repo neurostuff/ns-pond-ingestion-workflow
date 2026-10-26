@@ -4,24 +4,22 @@ from __future__ import annotations
 
 import calendar
 import html
+import json
 import logging
-import threading
-import time
+import re
 from dataclasses import dataclass
 from datetime import datetime
-import json
-import re
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 import httpx
 import xmltodict
 from study_schema.models.paper_parse import Affiliation
-from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 from ingestion_workflow.models import Identifier, Identifiers
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
 from ingestion_workflow.models.notices import Correction, PartialAnswer, corrections_from_pubmed
 from ingestion_workflow.utils import authors as author_ids
+from ingestion_workflow.utils.http import Pacer, retry_transient
 from ingestion_workflow.utils.pmcid import normalize_pmcid
 
 logger = logging.getLogger(__name__)
@@ -36,19 +34,8 @@ ESEARCH_CHUNK_SIZE = 1_000
 DOI_SEARCH_BATCH_SIZE = 50
 
 
-class _Pace:
-    """One pace for every client in the process: NCBI counts a caller's requests, not a
-    client's."""
-
-    lock = threading.Lock()
-    last = 0.0
-
-
-def _retryable(exc: BaseException) -> bool:
-    """A refusal to come back later (429) or a server or connection failure."""
-    if isinstance(exc, httpx.HTTPStatusError):
-        return exc.response.status_code == 429 or exc.response.status_code >= 500
-    return isinstance(exc, httpx.TransportError)
+#: One pace for every client in the process: NCBI counts a caller's requests, not a client's.
+_PACE = Pacer()
 
 
 @dataclass(frozen=True)
@@ -376,11 +363,7 @@ class PubMedClient:
             identifier.other_ids.setdefault(field, str(value))
 
     def _rate_limit_sleep(self) -> None:
-        with _Pace.lock:
-            wait = _Pace.last + self._min_interval - time.monotonic()
-            if wait > 0:
-                time.sleep(wait)
-            _Pace.last = time.monotonic()
+        _PACE.wait(self._min_interval)
 
     def _collect_esearch_ids(
         self,
@@ -490,12 +473,7 @@ class PubMedClient:
         pairs = params.items() if isinstance(params, Mapping) else params
         return self._client.get(url, params=[(k, v) for k, v in pairs if v not in (None, "")])
 
-    @retry(
-        retry=retry_if_exception(_retryable),
-        stop=stop_after_attempt(6),
-        wait=wait_exponential(multiplier=1, max=30),
-        reraise=True,
-    )
+    @retry_transient(6, 30)
     def _request_json(
         self,
         url: str,
@@ -721,10 +699,7 @@ class PubMedClient:
                     found[pmid] = corrections_from_pubmed(article)
         return found
 
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, max=8),
-    )
+    @retry_transient(3, 8)
     def _request_efetch(self, pmids: List[str]) -> Dict[str, Any]:
         """Request article metadata from PubMed efetch endpoint."""
         params: List[Tuple[str, str]] = [

@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
-import time
 from typing import Dict, List, Tuple
 
 import requests
-from tenacity import retry, stop_after_attempt, wait_exponential
 
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.utils.doi import normalize_doi
+from ingestion_workflow.utils.http import Pacer, retry_transient
 
 _MIN_REQUEST_INTERVAL = 1.0  # bursts at 2 a second were refused with 429
 
@@ -47,7 +46,7 @@ class ScienceDirectClient:
                 "Content-Type": "application/json",
             }
         )
-        self._last_request = 0.0
+        self._pace = Pacer()
 
     def count(self, body: Dict[str, str]) -> int:
         """`resultsFound` for the search `body`, asking for the smallest page."""
@@ -59,12 +58,9 @@ class ScienceDirectClient:
         payload = self._request({**body, "display": {"offset": offset, "show": self.PAGE_SIZE}})
         return [(key_of(result), identifier_of(result)) for result in payload.get("results") or []]
 
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, max=8))
+    @retry_transient(3, 8)
     def _request(self, body: Dict) -> Dict:
-        elapsed = time.monotonic() - self._last_request
-        if elapsed < _MIN_REQUEST_INTERVAL:
-            time.sleep(_MIN_REQUEST_INTERVAL - elapsed)
-        self._last_request = time.monotonic()
+        self._pace.wait(_MIN_REQUEST_INTERVAL)
         response = self._session.put(self.URL, json=body, timeout=30)
         response.raise_for_status()
         return response.json()

@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-import time
 from typing import List
 
 import requests
-from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
-from ingestion_workflow.utils.http import transient
+from ingestion_workflow.utils.http import Pacer, retry_transient
 
 #: Below the public API's 24 requests a second (https://info.orcid.org/ufaqs/what-are-the-api-limits/).
 ORCID_REQUEST_LIMIT = 12
@@ -23,16 +21,12 @@ class OrcidClient:
             "Accept": "application/json",
             "User-Agent": "ns-pond-ingestion-workflow "
                           "(https://github.com/neurostuff/ns-pond-ingestion-workflow)"})
-        self._last_request = 0.0
+        self._pace = Pacer()
 
-    @retry(stop=stop_after_attempt(4), wait=wait_exponential(multiplier=1, max=16),
-           retry=retry_if_exception(transient), reraise=True)
+    @retry_transient(4, 16)
     def emails(self, orcid: str) -> List[str]:
         """The record's public, verified addresses, primary first; none for an unknown iD."""
-        elapsed = time.monotonic() - self._last_request
-        if elapsed < 1 / ORCID_REQUEST_LIMIT:
-            time.sleep(1 / ORCID_REQUEST_LIMIT - elapsed)
-        self._last_request = time.monotonic()
+        self._pace.wait(1 / ORCID_REQUEST_LIMIT)
         response = self._session.get(f"{self.BASE_URL}{orcid}/email", timeout=30)
         if response.status_code == 404:
             return []

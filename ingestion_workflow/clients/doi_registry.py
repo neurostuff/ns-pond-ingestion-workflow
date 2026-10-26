@@ -7,14 +7,13 @@ Crossref, DataCite or mEDRA.
 from __future__ import annotations
 
 import logging
-import threading
-import time
 from dataclasses import dataclass
 from typing import Dict, Optional, Tuple
 from urllib.parse import quote
 
 import httpx
-from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
+
+from ingestion_workflow.utils.http import Pacer, retry_transient, transient
 
 from .crossref import CROSSREF_REQUEST_LIMIT
 from .pubmed import in_supplement
@@ -31,9 +30,7 @@ def _bad_certificate(exc: BaseException) -> bool:
 
 
 def _retryable(exc: BaseException) -> bool:
-    if isinstance(exc, httpx.HTTPStatusError):
-        return exc.response.status_code == 429 or exc.response.status_code >= 500
-    return isinstance(exc, httpx.TransportError) and not _bad_certificate(exc)
+    return transient(exc) and not _bad_certificate(exc)
 
 
 class Unreadable(Exception):
@@ -96,16 +93,8 @@ class DoiRegistry:
         # DOI, some of them over plain HTTP.
         self._client = httpx.Client(timeout=30, follow_redirects=False,
                                     headers={"User-Agent": "ns-pond-ingestion-workflow"})
-        self._lock = threading.Lock()
-        self._last = 0.0
-
-    def _pace(self) -> None:
         # doi.org hands a Crossref DOI's record to Crossref, which limits a caller's rate.
-        with self._lock:
-            wait = self._last + 1 / CROSSREF_REQUEST_LIMIT - time.monotonic()
-            if wait > 0:
-                time.sleep(wait)
-            self._last = time.monotonic()
+        self._pace = Pacer()
 
     def close(self) -> None:
         self._client.close()
@@ -120,10 +109,9 @@ class DoiRegistry:
                 raise
             raise Unreadable(f"{doi}: the agency's site serves a bad certificate") from exc
 
-    @retry(retry=retry_if_exception(_retryable), stop=stop_after_attempt(6),
-           wait=wait_exponential(multiplier=1, max=30), reraise=True)
+    @retry_transient(6, 30, retry_on=_retryable)
     def _work(self, doi: str) -> Optional[RegisteredWork]:
-        self._pace()
+        self._pace.wait(1 / CROSSREF_REQUEST_LIMIT)
         url = httpx.URL("https://doi.org/" + quote(doi, safe="/"))
         for hop in range(MAX_REDIRECTS + 1):
             response = self._client.get(url, headers={"Accept": CSL})
