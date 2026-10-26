@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from urllib.parse import unquote
+from urllib.parse import quote, unquote
 
 import pytest
-from ingestion_workflow.clients.crossref import CrossrefClient
+from ingestion_workflow.clients.crossref import CROSSREF_FILTER_BYTES, CrossrefClient, packed
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.services.licenses import crossref_statements
 from study_schema.models.paper_parse import CopyVersion
@@ -58,23 +58,37 @@ def test_two_articles_sharing_a_doi_each_get_its_deposits(vcr):
     assert "mailto" not in asked.uri
 
 
-#: 51 NeuroImage DOIs from 2003 the catalog holds: one more than a filter query takes.
+#: 51 NeuroImage DOIs from 2003 the catalog holds.
 NEUROIMAGE_2003 = [f"10.1016/j.neuroimage.2003.{n}" for n in (
     "05.001", "06.001", "06.002", "06.003", *(f"07.{i:03d}" for i in range(1, 36) if i not in (8, 10)),
     *(f"08.{i:03d}" for i in range(1, 15)))]
 
 
 @pytest.mark.vcr()
-def test_fifty_dois_go_in_one_query_and_the_fifty_first_in_the_next(vcr):
-    assert len(NEUROIMAGE_2003) == 51
+def test_dois_that_fit_one_query_by_size_go_in_one(vcr):
     identifiers = [Identifier(doi=doi) for doi in NEUROIMAGE_2003]
     found = CrossrefClient().get_metadata(identifiers)
 
     assert set(found) == {i.slug for i in identifiers}
-    # Crossref answered the second query 429 once, and the retry is the same query
-    assert vcr.all_played
     queries = dict.fromkeys(r.uri for r in _played(vcr) if "filter=" in r.uri)
-    assert [uri.count("doi%3A") for uri in queries] == [50, 1]
+    assert [uri.count("doi%3A") for uri in queries] == [51]
+
+
+def test_a_query_s_filters_are_packed_to_a_size_not_a_count():
+    # 50 DOIs of 160 characters, as some publishers mint, would pass the ~8,000 bytes of
+    # request line Crossref takes; packed, each query stays under the budget
+    long = [f"10.1002/(sici)1097-{i:04d}" + "x" * 140 for i in range(50)]
+    runs = list(packed("doi", long))
+
+    assert [v for run in runs for v in run] == long
+    assert len(runs) > 1
+    assert all(len(quote(",".join(f"doi:{v}" for v in run), safe="")) <= CROSSREF_FILTER_BYTES
+               for run in runs)
+    # room left for the rest of a filter (relation.type values) comes off the budget
+    spared = list(packed("doi", long, spare=500))
+    assert all(len(quote(",".join(f"doi:{v}" for v in run), safe=""))
+               <= CROSSREF_FILTER_BYTES - 500
+               for run in spared)
 
 
 #: A DOI Crossref knows, with no licence deposit, which a filter query for it does not
@@ -95,3 +109,17 @@ def test_a_doi_a_filter_query_leaves_out_is_asked_for_singly(vcr):
         "https://api.crossref.org/works/" + SICI,
         "https://api.crossref.org/works/10.3109/10929080009148866"]
     assert found[identifiers[0].slug].raw_metadata == {"crossref": {"license": []}}
+
+
+@pytest.mark.vcr()
+def test_a_doi_crossref_would_refuse_the_query_for_is_asked_for_singly(vcr):
+    # a prefix of three digits: in a filter, Crossref refuses the whole query (400
+    # doi-not-valid), which would fail the batch's other DOIs with it
+    identifiers = [Identifier(doi="10.137/journal.pone.0066241"),
+                   Identifier(doi="10.1093/scan/nsw123")]
+    found = CrossrefClient().get_metadata(identifiers)
+
+    assert set(found) == {i.slug for i in identifiers}
+    assert found[identifiers[1].slug].raw_metadata["crossref"]["license"]
+    listed = [unquote(r.uri) for r in vcr.requests if "filter=" in r.uri]
+    assert len(listed) == 1 and "10.137/" not in listed[0]

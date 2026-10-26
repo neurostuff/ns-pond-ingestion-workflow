@@ -145,10 +145,15 @@ class DoiRegistry:
         response.raise_for_status()
         return _registered(response.json())
 
-    def relating(self, doi: str, kinds: Sequence[str]) -> Dict[str, List[str]]:
-        """The DOIs Crossref relates to this one by one of `kinds`, from their side."""
-        return self._crossref.relating(doi, kinds)
+    def relating(self, dois: Sequence[str],
+                 kinds: Sequence[str]) -> Dict[str, Dict[str, List[str]]]:
+        """For each DOI, the DOIs Crossref relates to it by one of `kinds`, from their side."""
+        return self._crossref.relating(dois, kinds)
 
     def record(self, doi: str) -> Optional[CrossrefWork]:
         """Crossref's own record of the DOI: its type, relations and updates."""
         return self._crossref.record(doi)
+
+    def records(self, dois: Sequence[str]) -> Dict[str, CrossrefWork]:
+        """Crossref's records of many DOIs, by lower-case DOI; see `CrossrefClient.records`."""
+        return self._crossref.records(dois)

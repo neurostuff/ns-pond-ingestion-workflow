@@ -383,24 +383,59 @@ class Evidence:
         asked by each spelling of the DOI, as in `versions`. Raises when Crossref cannot
         be read."""
         if doi not in self._related:
-            own = (self.record(doi) or CrossrefWork(doi, (), None, None, {}, ())).relations
-            named: Dict[str, List[str]] = {}
-            for spelling in self._spelled(doi):
-                for kind, found in self._registry.relating(
-                        spelling, _VERSION_OF + _SAME_WORK).items():
-                    named.setdefault(kind, []).extend(found)
-
-            def gather(*pairs) -> Tuple[str, ...]:
-                dois = (normalize_doi(d) for source, kind in pairs for d in source.get(kind, ()))
-                return tuple(d for d in dict.fromkeys(dois) if d and d != normalize_doi(doi))
-            self._related[doi] = Related(
-                preprints=gather((own, "has-preprint"), (named, "is-preprint-of")),
-                papers=gather((own, "is-preprint-of"), (named, "has-preprint")),
-                versions=gather(*[(source, kind) for kind in _VERSIONS
-                                  for source in (own, named)]),
-                aliases=gather(*[(source, kind) for kind in _ALIASES
-                                 for source in (own, named)]))
+            self._relate({doi: self._spelled(doi)})
         return self._related[doi]
+
+    def ask_crossref(self, dois: Iterable[str]) -> None:
+        """Ask Crossref of many DOIs at once, so `record` and `related` answer each from
+        what was asked: the records by list queries (one Crossref leaves out, or a
+        posted-content work's, whose subtype a list query cannot give, is then asked
+        singly), and the works naming any spelling of any of them in one query per batch.
+        A DOI whose own record cannot be read is left for `related` to ask alone, and raise
+        for; raises when a batch's query cannot be read."""
+        dois = [d for d in dict.fromkeys(dois) if d]
+        unasked = [d for d in dois if d not in self._records]
+        if unasked:
+            found = self._registry.records(unasked)
+            for doi in unasked:
+                if (record := found.get(doi.lower())) is not None:
+                    self._records[doi] = record
+        spelled: Dict[str, List[str]] = {}
+        for doi in dois:
+            if doi in self._related:
+                continue
+            try:
+                spelled[doi] = self._spelled(doi)
+            except Exception:  # noqa: BLE001 - `related` asks it alone, and raises there
+                continue
+        if spelled:
+            self._relate(spelled)
+
+    def _relate(self, spelled: Dict[str, List[str]]) -> None:
+        """Ask for the works naming each DOI by any of its spellings, in as few queries as
+        they fit, and hold what each DOI is related to."""
+        relating = self._registry.relating(
+            list(dict.fromkeys(s for spellings in spelled.values() for s in spellings)),
+            _VERSION_OF + _SAME_WORK)
+        for doi, spellings in spelled.items():
+            named: Dict[str, List[str]] = {}
+            for spelling in spellings:
+                for kind, found_dois in relating.get(spelling, {}).items():
+                    named.setdefault(kind, []).extend(found_dois)
+            self._related[doi] = self._related_of(doi, named)
+
+    def _related_of(self, doi: str, named: Dict[str, List[str]]) -> Related:
+        """What the DOI's own record relates it to, with what the records `named` it."""
+        own = (self.record(doi) or CrossrefWork(doi, (), None, None, {}, ())).relations
+
+        def gather(*pairs) -> Tuple[str, ...]:
+            dois = (normalize_doi(d) for source, kind in pairs for d in source.get(kind, ()))
+            return tuple(d for d in dict.fromkeys(dois) if d and d != normalize_doi(doi))
+        return Related(
+            preprints=gather((own, "has-preprint"), (named, "is-preprint-of")),
+            papers=gather((own, "is-preprint-of"), (named, "has-preprint")),
+            versions=gather(*[(source, kind) for kind in _VERSIONS for source in (own, named)]),
+            aliases=gather(*[(source, kind) for kind in _ALIASES for source in (own, named)]))
 
     def versions(self, doi: str) -> List[str]:
         """The DOIs Crossref records as this DOI's preprint or version of record, on either
@@ -413,8 +448,7 @@ class Evidence:
         cannot be read for one of them."""
         if doi not in self._versions:
             relations = (self.record(doi) or CrossrefWork(doi, (), None, None, {}, ())).relations
-            relating = [self._registry.relating(spelling, _VERSION_OF)
-                        for spelling in self._spelled(doi)]
+            relating = self._registry.relating(self._spelled(doi), _VERSION_OF).values()
             related = [r for kind in _VERSION_OF
                        for r in [*relations.get(kind, ()), *(r for found in relating
                                                              for r in found.get(kind, ()))]]

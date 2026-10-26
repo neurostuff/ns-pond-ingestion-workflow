@@ -222,7 +222,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Sat, 24 Oct 2026 00:42:46 GMT
+      - Mon, 26 Oct 2026 11:08:04 GMT
       access-control-allow-headers:
       - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
         Accept-Ranges, Cache-Control
@@ -264,7 +264,7 @@ interactions:
       - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
         mailto:replay@example.com)
     method: GET
-    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.7554%2FeLife.106070.3%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.7554%2FeLife.106070.3%2Crelation.object%3A10.7554%2Felife.106070.3%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
   response:
     body:
       string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"next-cursor":"MTc1MDY3ODI0MzAwMCwxMC43NTU0JTJGZWxpZmUuMTA2MDcw","total-results":1,"items":[{"DOI":"10.7554\/elife.106070","relation":{"has-preprint":[{"id-type":"doi","id":"10.1101\/2025.02.05.636581","asserted-by":"subject"}],"is-same-as":[{"id-type":"doi","id":"10.7554\/eLife.106070.3","asserted-by":"subject"}],"is-version-of":[{"id-type":"doi","id":"10.7554\/eLife.106070.1","asserted-by":"subject"},{"id-type":"doi","id":"10.7554\/eLife.106070.2","asserted-by":"subject"}],"is-supplemented-by":[{"id-type":"doi","id":"10.17605\/OSF.IO\/XY43A","asserted-by":"subject"}]}}],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
@@ -274,57 +274,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Sat, 24 Oct 2026 00:42:46 GMT
-      Transfer-Encoding:
-      - chunked
-      access-control-allow-headers:
-      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
-        Accept-Ranges, Cache-Control
-      access-control-allow-origin:
-      - '*'
-      access-control-expose-headers:
-      - Link
-      permissions-policy:
-      - interest-cohort=()
-      server:
-      - Jetty(9.4.40.v20210413)
-      strict-transport-security:
-      - max-age=31536000;
-      x-api-pool:
-      - polite-array
-      x-concurrency-limit:
-      - '3'
-      x-rate-limit-interval:
-      - 1s
-      x-rate-limit-limit:
-      - '3'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
-        mailto:replay@example.com)
-    method: GET
-    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.7554%2Felife.106070.3%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
-  response:
-    body:
-      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
-    headers:
-      Connection:
-      - keep-alive
-      Content-Type:
-      - application/json
-      Date:
-      - Sat, 24 Oct 2026 00:42:47 GMT
+      - Mon, 26 Oct 2026 11:08:05 GMT
       Transfer-Encoding:
       - chunked
       access-control-allow-headers:

@@ -52,3 +52,18 @@ def test_a_retraction_updates_the_work_it_retracts(crossref):
 @pytest.mark.vcr()
 def test_a_doi_crossref_does_not_have_has_no_record(crossref):
     assert crossref.record("10.137/journal.pone.0066241") is None
+
+
+@pytest.mark.vcr()
+def test_many_records_are_asked_in_one_query_and_read_as_one_record_is(crossref, vcr):
+    journal = ["10.7554/eLife.106070", "10.23638/dmtcs-22-1-20", "10.1016/j.nbd.2012.05.020"]
+    # a posted-content work, whose subtype a list query cannot give, and a DOI Crossref
+    # does not have: left for `record` to ask singly
+    others = ["10.7554/eLife.106070.1", "10.137/journal.pone.0066241"]
+
+    found = crossref.records(journal + others)
+    listed = [r.uri for r in vcr.requests if "filter=" in r.uri]
+
+    assert sorted(found) == sorted(d.lower() for d in journal)
+    assert all(found[d.lower()] == crossref.record(d) for d in journal)
+    assert len(listed) == 1
