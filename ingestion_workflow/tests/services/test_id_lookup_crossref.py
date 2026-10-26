@@ -418,6 +418,7 @@ def test_an_id_two_articles_of_one_batch_are_given_goes_to_neither(service, cata
 @pytest.fixture()
 def no_waiting(monkeypatch):
     monkeypatch.setattr(CrossrefClient.work.retry, "wait", tenacity.wait_none())
+    monkeypatch.setattr(CrossrefClient._page.retry, "wait", tenacity.wait_none())
 
 
 @pytest.mark.vcr()
@@ -480,3 +481,60 @@ def test_an_article_crossref_was_asked_of_is_not_asked_again(service, catalog, c
 
     assert [r.message for r in caplog.records if "lookup" in r.message] == []
     assert found.preprint_dois == ("10.1101/2025.02.05.636581",)
+
+
+# -- many articles at once ------------------------------------------------------------------
+
+def _played(vcr):
+    return [vcr.requests[i] for i in sorted(vcr.play_counts)]
+
+
+@pytest.mark.vcr()
+def test_a_chunk_s_articles_are_asked_together_and_filed_as_each_alone(service, vcr, caplog):
+    # the eLife paper, a bioRxiv preprint whose paper names it, and a J Neurosci paper known
+    # by its PMID whose preprint names it by PubMed's spelling: each as its own test files it
+    elife = Identifier(doi="10.7554/eLife.106070")
+    biorxiv = Identifier(doi="10.1101/2020.05.06.058792")
+    jneurosci = Identifier(pmid="41330636")
+
+    with caplog.at_level("INFO"):
+        service.find_identifiers(Identifiers([elife, biorxiv, jneurosci]))
+
+    assert elife.preprint_dois == ("10.1101/2025.02.05.636581",)
+    assert biorxiv.doi == "10.1093/schbul/sbaa075"
+    assert jneurosci.doi == "10.1523/jneurosci.0839-25.2025"
+    assert "10.1101/2025.04.29.651293" in jneurosci.preprint_dois
+    played = [r.uri for r in _played(vcr)]
+    # one esummary for the PMID, and the journal articles' records from a list query: none
+    # of them asked singly (the bioRxiv preprint is: its subtype is not in a list query)
+    assert sum("esummary" in uri for uri in played) == 1
+    singles = [uri.split("?")[0].removeprefix("https://api.crossref.org/works/")
+               for uri in played if uri.startswith("https://api.crossref.org/works/")]
+    assert "10.7554/elife.106070" not in singles
+    assert "10.1523/jneurosci.0839-25.2025" not in singles
+    assert "10.1101/2020.05.06.058792" in singles
+    assert "crossref: 3 of 3 articles asked and saved" in caplog.text
+
+
+@pytest.mark.vcr()
+def test_a_stopped_lookup_keeps_the_chunks_it_finished(service, catalog, monkeypatch, caplog):
+    first = catalog.register(Identifier(doi="10.7554/eLife.106070")).id
+    second = catalog.register(Identifier(doi="10.1162/imag.a.1156")).id
+    monkeypatch.setattr(service, "chunk_size", 1)
+    asking = catalog.evidence.ask_crossref
+
+    def stopped_at_the_second(dois):
+        dois = list(dois)
+        if "10.1162/imag.a.1156" in dois:
+            raise KeyboardInterrupt
+        return asking(dois)
+    monkeypatch.setattr(catalog.evidence, "ask_crossref", stopped_at_the_second)
+
+    with caplog.at_level("INFO"), pytest.raises(KeyboardInterrupt):
+        service.find_identifiers(Identifiers([catalog.ref(first).identifier,
+                                              catalog.ref(second).identifier]))
+
+    assert catalog.was_looked_up(first, "crossref")
+    assert catalog.aliases(first, "preprint_doi") == ["10.1101/2025.02.05.636581"]
+    assert not catalog.was_looked_up(second, "crossref")
+    assert "crossref: 1 of 2 articles asked and saved" in caplog.text

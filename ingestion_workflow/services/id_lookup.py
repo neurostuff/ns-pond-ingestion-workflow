@@ -9,6 +9,7 @@ article's preprint and other ids, remembers that it has been asked in the catalo
 from __future__ import annotations
 
 import json
+import time
 from typing import Dict, List, Optional, Sequence, Set, Tuple
 
 from ingestion_workflow.catalog.evidence import Unreadable, unversioned
@@ -40,6 +41,8 @@ class IDLookupService:
 
     extractor_name: str = "id_lookup"
     lookup_order: LookupOrder = ("pmid", "doi", "pmcid")
+    #: Articles looked up and saved together; None looks them all up before saving any.
+    chunk_size: Optional[int] = None
 
     def __init__(self, settings: Settings, catalog=None) -> None:
         self.settings = settings
@@ -61,26 +64,30 @@ class IDLookupService:
         if not pending:
             return identifiers
 
-        any_success = False
-        for id_type in self.lookup_order:
-            subset = [identifier for identifier in pending if identifier.asking(id_type)]
-            if not subset:
-                continue
+        # A chunk is saved before the next is asked, so a stopped run keeps what it found.
+        size = self.chunk_size or len(pending)
+        started = time.monotonic()
+        for start in range(0, len(pending), size):
+            chunk = pending[start : start + size]
+            for id_type in self.lookup_order:
+                subset = [identifier for identifier in chunk if identifier.asking(id_type)]
+                if not subset:
+                    continue
 
-            subset_identifiers = Identifiers(list(subset))
-            subset_identifiers.set_index(id_type)
+                subset_identifiers = Identifiers(list(subset))
+                subset_identifiers.set_index(id_type)
 
-            try:
-                self._lookup_by_type(id_type, subset_identifiers)
-                any_success = True
-            except Exception as exc:  # noqa: BLE001 - log and continue
-                self._log_lookup_failure(id_type, subset, exc)
+                try:
+                    self._lookup_by_type(id_type, subset_identifiers)
+                except Exception as exc:  # noqa: BLE001 - log and continue
+                    self._log_lookup_failure(id_type, subset, exc)
 
-        if any_success:
+            self._persist_cache_entries(chunk)
             identifiers.set_index("pmid", "doi", "pmcid")
-
-        self._persist_cache_entries(pending)
-        identifiers.set_index("pmid", "doi", "pmcid")
+            if self.chunk_size:
+                done, took = start + len(chunk), time.monotonic() - started
+                self.logger.info("%s: %d of %d articles asked and saved (%.1f a second)",
+                                 self.extractor_name, done, len(pending), done / max(took, 1e-9))
         return identifiers
 
     # -- Hooks for subclasses -------------------------------------------
@@ -294,6 +301,8 @@ class CrossrefIDLookupService(IDLookupService):
     extractor_name = "crossref"
     #: PubMed first: its spellings of a DOI are what Crossref's other side is asked by.
     lookup_order: LookupOrder = ("pmid", "doi")
+    #: Saved every 500 articles: a pass over a search's articles takes hours.
+    chunk_size = 500
 
     def __init__(self, settings: Settings, catalog=None) -> None:
         super().__init__(settings, catalog)
@@ -327,6 +336,15 @@ class CrossrefIDLookupService(IDLookupService):
         return owner is not None and self.catalog.was_looked_up(owner.id, self.extractor_name)
 
     def _lookup_by_type(self, id_type: str, identifiers: Identifiers) -> None:
+        # Asked of all at once; an article the batch could not answer is asked singly below.
+        try:
+            if id_type == "pmid":
+                self._ask_pubmed(identifiers.identifiers)
+            else:
+                self.catalog.evidence.ask_crossref(
+                    d for i in identifiers.identifiers for d in (i.doi, *i.preprint_dois))
+        except Exception as exc:  # noqa: BLE001 - each article is asked on its own instead
+            self._log_lookup_failure(id_type, identifiers.identifiers, exc)
         for identifier in identifiers.identifiers:
             owner = self.catalog.resolve(identifier)
             article = owner.id if owner is not None else None
@@ -526,12 +544,15 @@ class CrossrefIDLookupService(IDLookupService):
     def _omit(self, kind: str, value: str, article: Optional[str], why: str) -> None:
         self.catalog.refuse(kind, value, article, why)
 
-    def _summary(self, identifier: Identifier, pmid: str) -> Optional[PubMedSummary]:
-        """PubMed's summary of the PMID: the metadata stage's stored record of the article
-        when it holds one, else NCBI's."""
-        path = (self.settings.get_cache_dir("metadata") / PROVIDER_CACHE_DIRS["pubmed"]
-                / f"{identifier.slug}.json")
-        if path.exists():
+    def _ask_pubmed(self, identifiers: Sequence[Identifier]) -> None:
+        """PubMed's summary of each PMID, in as few requests as NCBI takes: the metadata
+        stage's stored record of an article when it holds one, else NCBI's."""
+        for identifier in identifiers:
+            pmid = identifier.pmid
+            path = (self.settings.get_cache_dir("metadata") / PROVIDER_CACHE_DIRS["pubmed"]
+                    / f"{identifier.slug}.json")
+            if not pmid or not path.exists():
+                continue
             try:
                 record = json.loads(path.read_text(encoding="utf-8"))["raw_metadata"]["pubmed"]
                 stored = summary_of_record(record)
@@ -540,6 +561,11 @@ class CrossrefIDLookupService(IDLookupService):
             else:
                 if stored is not None and PubMedClient._extract_pmid(record) == pmid:
                     self.catalog.evidence.hold({pmid: stored})
+        self.catalog.evidence.summaries(i.pmid for i in identifiers if i.pmid)
+
+    def _summary(self, identifier: Identifier, pmid: str) -> Optional[PubMedSummary]:
+        """PubMed's summary of the PMID, as `_ask_pubmed` found it (NCBI's, when the batch
+        could not be asked)."""
         return self.catalog.evidence.summaries([pmid]).get(pmid)
 
 

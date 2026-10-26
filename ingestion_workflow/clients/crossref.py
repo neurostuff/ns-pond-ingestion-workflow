@@ -1,11 +1,13 @@
 """Crossref's REST API: one work's record, which holds its deposited reference list,
-and the licences publishers deposit, for many works at once."""
+and, for many works at once, their records, the works relating to them, and the
+licences publishers deposit."""
 
 from __future__ import annotations
 
+import re
 import time
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 from urllib.parse import quote
 
 import requests
@@ -22,12 +24,42 @@ from ingestion_workflow.utils.http import transient
 CROSSREF_REQUEST_LIMIT = 10
 #: Its limit on list queries (`x-rate-limit-limit: 3` on /works?filter=, 2026-10-16).
 CROSSREF_LIST_REQUEST_LIMIT = 3
-#: DOIs per `filter=doi:...` list query: one page, and a URL well under any server's limit.
-CROSSREF_DOI_BATCH_SIZE = 50
+#: Bytes of `filter` values one list query carries. Crossref refuses a request line past
+#: about 8,000 bytes (414, or 431 with the headers; 183 `doi:` values of 40 characters
+#: passed and 184 did not, 2026-10-26), so values are packed by size, not counted.
+CROSSREF_FILTER_BYTES = 6000
 #: Records per page of a cursor-paged list query.
 CROSSREF_PAGE_ROWS = 1000
 #: The longest a Retry-After is waited out before the request counts as failed.
 _MAX_RETRY_AFTER = 120
+
+
+#: What a `doi:` filter takes: Crossref refuses the whole query (400 doi-not-valid) for one
+#: value whose prefix has fewer than 4 digits; a comma would end the filter.
+_FILTERABLE_DOI = re.compile(r"^10\.\d{4,}/[^,]+$")
+
+
+def filterable(doi: str) -> bool:
+    """Whether the DOI can go in a `doi:` filter; one that cannot is asked for singly."""
+    return bool(_FILTERABLE_DOI.match(doi))
+
+
+def packed(key: str, values: Sequence[str], spare: int = 0) -> Iterator[List[str]]:
+    """`values` in order, in runs whose `key:value` filters fill at most
+    `CROSSREF_FILTER_BYTES - spare` bytes of URL. A value cannot hold a comma, which
+    separates filters; the caller asks for such a value singly."""
+    budget = CROSSREF_FILTER_BYTES - spare
+    run: List[str] = []
+    size = 0
+    for value in values:
+        cost = len(quote(f"{key}:{value},", safe=""))
+        if run and size + cost > budget:
+            yield run
+            run, size = [], 0
+        run.append(value)
+        size += cost
+    if run:
+        yield run
 
 
 def _wait(retry_state) -> float:
@@ -89,29 +121,24 @@ class CrossrefClient:
     def record(self, doi: str) -> Optional[CrossrefWork]:
         """The work's type, relations and updates; None when Crossref does not know the DOI."""
         message = self.work(doi)
-        if message is None:
-            return None
-        return CrossrefWork(
-            doi=message["DOI"].lower(),
-            spellings=tuple(a for a in message.get("alternative-id") or ()
-                            if a.lower() == message["DOI"].lower()),
-            type=message.get("type"), subtype=message.get("subtype"),
-            relations={kind: tuple(r["id"].lower() for r in related
-                                   if r.get("id-type") == "doi" and r.get("id"))
-                       for kind, related in (message.get("relation") or {}).items()},
-            updates=tuple((u["DOI"].lower(), u.get("type") or "")
-                          for u in message.get("update-to") or () if u.get("DOI")))
+        return None if message is None else _work_of(message)
 
-    @retry(stop=stop_after_attempt(4), wait=_wait, retry=retry_if_exception(transient),
-           reraise=True)
-    def _licenses(self, dois: List[str]) -> List[Dict]:
-        """The `DOI` and `license` of each work Crossref knows among `dois`."""
-        self._rate_limit_sleep(CROSSREF_LIST_REQUEST_LIMIT)
-        params = {"filter": ",".join(f"doi:{doi}" for doi in dois), "select": "DOI,license",
-                  "rows": str(len(dois))}
-        response = self._session.get(self.BASE_URL.rstrip("/"), params=params, timeout=60)
-        response.raise_for_status()
-        return response.json()["message"]["items"]
+    def records(self, dois: Sequence[str]) -> Dict[str, CrossrefWork]:
+        """The records of many DOIs by list queries, keyed by the DOI in lower case.
+
+        A list query cannot return `subtype`, which tells a posted-content preprint from a
+        working paper, so a posted-content work is left out, as is a DOI a filter cannot
+        hold and one Crossref does not know: `record` asks for each of those singly.
+        """
+        found: Dict[str, CrossrefWork] = {}
+        for batch in packed("doi", [d for d in dict.fromkeys(dois) if filterable(d)]):
+            for message in self._list({"filter": ",".join(f"doi:{d}" for d in batch),
+                                       "select": "DOI,type,relation,update-to,alternative-id",
+                                       "rows": str(len(batch))}):
+                if message.get("type") != "posted-content":
+                    work = _work_of(message)
+                    found[work.doi] = work
+        return found
 
     @retry(stop=stop_after_attempt(4), wait=_wait, retry=retry_if_exception(transient),
            reraise=True)
@@ -121,35 +148,55 @@ class CrossrefClient:
         response.raise_for_status()
         return response.json()["message"]
 
-    def relating(self, doi: str, kinds: Sequence[str]) -> Dict[str, List[str]]:
-        """The DOIs whose records relate them to this one by one of `kinds`, by kind: the
-        other side of a relation the DOI's own record may not give back (a preprint's
-        is-preprint-of its paper without the paper's has-preprint)."""
-        params = {"filter": ",".join([f"relation.object:{doi}",
-                                      *(f"relation.type:{kind}" for kind in kinds)]),
-                  "select": "DOI,relation", "rows": str(CROSSREF_PAGE_ROWS), "cursor": "*"}
-        if self.email:
-            params["mailto"] = self.email
-        found: Dict[str, List[str]] = {}
-        while True:
-            message = self._page(params)
-            for item in message["items"]:
-                for kind, related in (item.get("relation") or {}).items():
-                    if kind in kinds and any((r.get("id") or "").lower() == doi.lower()
-                                             for r in related):
-                        found.setdefault(kind, []).append(item["DOI"].lower())
-            if len(message["items"]) < CROSSREF_PAGE_ROWS:
-                return found
-            params["cursor"] = message["next-cursor"]
+    def _list(self, params: Dict) -> List[Dict]:
+        """The items of a list query that fits one page."""
+        return self._page(params)["items"]
+
+    def relating(self, dois: Sequence[str],
+                 kinds: Sequence[str]) -> Dict[str, Dict[str, List[str]]]:
+        """For each of `dois`, the DOIs whose records relate them to it by one of `kinds`, by
+        kind: the other side of a relation a DOI's own record may not give back (a
+        preprint's is-preprint-of its paper without the paper's has-preprint).
+
+        Crossref matches a related DOI by case, so each spelling is asked as given and
+        answered under it. Many are asked in one query, the `relation.object` filters
+        being alternatives; a DOI with a comma cannot be put in a filter and has no answer.
+        """
+        found: Dict[str, Dict[str, List[str]]] = {d: {} for d in dois}
+        types = [f"relation.type:{kind}" for kind in kinds]
+        spare = len(quote(",".join(types), safe=""))
+        for batch in packed("relation.object", [d for d in found if "," not in d], spare):
+            asked: Dict[str, List[str]] = {}
+            for doi in batch:
+                asked.setdefault(doi.lower(), []).append(doi)
+            params = {"filter": ",".join([*(f"relation.object:{d}" for d in batch), *types]),
+                      "select": "DOI,relation", "rows": str(CROSSREF_PAGE_ROWS), "cursor": "*"}
+            if self.email:
+                params["mailto"] = self.email
+            while True:
+                message = self._page(params)
+                for item in message["items"]:
+                    for kind, related in (item.get("relation") or {}).items():
+                        if kind not in kinds:
+                            continue
+                        # a record may name one DOI twice under a kind; it is related once
+                        named = {doi for r in related
+                                 for doi in asked.get((r.get("id") or "").lower(), ())}
+                        for doi in sorted(named):
+                            found[doi].setdefault(kind, []).append(item["DOI"].lower())
+                if len(message["items"]) < CROSSREF_PAGE_ROWS:
+                    break
+                params["cursor"] = message["next-cursor"]
+        return found
 
     def get_metadata(self, identifiers: List[Identifier]) -> Dict[str, ArticleMetadata]:
         """Each asked work's licence deposits, verbatim in `raw_metadata["crossref"]`,
         keyed by identifier slug.
 
         Every DOI asked gets a record, so that the answer is cached: a work with no
-        licence deposit, or one Crossref does not know, has an empty list. A filter value
-        cannot hold a comma, so a DOI with one is asked for singly, as is a DOI a filter
-        query did not return. A failed request raises `PartialAnswer` with the records of
+        licence deposit, or one Crossref does not know, has an empty list. A DOI a filter
+        cannot hold (`filterable`) is asked for singly, as is a DOI a filter query did not
+        return. A failed request raises `PartialAnswer` with the records of
         the requests that did not fail.
         """
         wanted: Dict[str, List[Identifier]] = {}
@@ -160,11 +207,10 @@ class CrossrefClient:
         answered: Dict[str, List[Dict]] = {}
         failures: List[BaseException] = []
         failed: set = set()
-        batched = [doi for doi in wanted if "," not in doi]
-        for index in range(0, len(batched), CROSSREF_DOI_BATCH_SIZE):
-            batch = batched[index : index + CROSSREF_DOI_BATCH_SIZE]
+        for batch in packed("doi", [doi for doi in wanted if filterable(doi)]):
             try:
-                works = self._licenses(batch)
+                works = self._list({"filter": ",".join(f"doi:{doi}" for doi in batch),
+                                    "select": "DOI,license", "rows": str(len(batch))})
             except Exception as exc:  # noqa: BLE001 - the batch's articles are retried
                 failures.append(exc)
                 failed.update(batch)
@@ -193,3 +239,17 @@ class CrossrefClient:
             first = failures[0]
             raise PartialAnswer(f"Crossref: {type(first).__name__}: {first}", results, failures)
         return results
+
+
+def _work_of(message: Dict) -> CrossrefWork:
+    """A work's record, from its `message` (a list query's item has no `subtype`)."""
+    doi = message["DOI"].lower()
+    return CrossrefWork(
+        doi=doi,
+        spellings=tuple(a for a in message.get("alternative-id") or () if a.lower() == doi),
+        type=message.get("type"), subtype=message.get("subtype"),
+        relations={kind: tuple(r["id"].lower() for r in related
+                               if r.get("id-type") == "doi" and r.get("id"))
+                   for kind, related in (message.get("relation") or {}).items()},
+        updates=tuple((u["DOI"].lower(), u.get("type") or "")
+                      for u in message.get("update-to") or () if u.get("DOI")))
