@@ -433,12 +433,12 @@ def _free_port():
 
 
 @pytest.fixture
-def env(tmp_path, stub):
+def env(tmp_path, stub, evidence):
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", ns_pond_root=tmp_path / "pond")
     settings.role_model_table = RoleModel(endpoint=stub.url, model=MODEL)
     with Catalog.open(settings.catalog_root) as catalog:
-        ref = catalog.register(Identifier(pmid="7"))
+        ref = catalog.register(Identifier(pmid="7"), evidence)
         catalog.record([Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-1",
                                 payload=_tables("patients", "Lee"), summary={"tables": 1})])
         yield settings, catalog, ref
@@ -507,10 +507,10 @@ def test_an_anchor_without_its_kind_is_recorded_as_an_anchor_through_the_stage(e
     assert roles["Lee"]["held"] is False
 
 
-def test_an_over_long_context_stops_the_stage_and_spends_no_retry(env, stub):
+def test_an_over_long_context_stops_the_stage_and_spends_no_retry(env, stub, evidence):
     """A context the server cannot fit is how the model is served, not the article's failure."""
     settings, catalog, ref = env
-    other = catalog.register(Identifier(pmid="8"))
+    other = catalog.register(Identifier(pmid="8"), evidence)
     catalog.record([Outcome(article_id=other.id, stage="analyses", source="", fingerprint="an-2",
                             payload=_tables("patients"), summary={"tables": 1})])
     stub.reply = lambda body: (TOO_LONG if "[NAME] Lee" in str(body["messages"])
@@ -527,10 +527,10 @@ def test_an_over_long_context_stops_the_stage_and_spends_no_retry(env, stub):
 
 
 def test_a_server_down_mid_run_leaves_every_article_pending_and_spends_no_retry(
-    env, stub, monkeypatch
+    env, stub, monkeypatch, evidence
 ):
     settings, catalog, ref = env
-    other = catalog.register(Identifier(pmid="8"))
+    other = catalog.register(Identifier(pmid="8"), evidence)
     catalog.record([Outcome(article_id=other.id, stage="analyses", source="", fingerprint="an-2",
                             payload=_tables("patients"), summary={"tables": 1})])
     monkeypatch.setattr("ingestion_workflow.services.set_roles.served.time.sleep", lambda s: None)
@@ -746,9 +746,10 @@ def test_a_server_up_but_failing_on_one_input_fails_that_set_only(stub):
     assert isinstance(after, Prediction)
 
 
-def test_an_article_the_server_always_fails_on_does_not_starve_the_rest(env, stub, monkeypatch):
+def test_an_article_the_server_always_fails_on_does_not_starve_the_rest(
+        env, stub, monkeypatch, evidence):
     settings, catalog, ref = env
-    other = catalog.register(Identifier(pmid="8"))
+    other = catalog.register(Identifier(pmid="8"), evidence)
     catalog.record([Outcome(article_id=other.id, stage="analyses", source="", fingerprint="an-2",
                             payload=_tables("fine"), summary={"tables": 1})])
     monkeypatch.setattr("ingestion_workflow.services.set_roles.served.time.sleep", lambda s: None)
@@ -825,9 +826,9 @@ def both(tmp_path):
     text.close()
 
 
-def _resolved(catalog, n, payload, passages=None):
+def _resolved(catalog, n, payload, passages=None, *, evidence):
     """An article whose resolve holds `payload`, with the prose and passages it was read from."""
-    ref = catalog.register(Identifier(pmid=str(100 + n)))
+    ref = catalog.register(Identifier(pmid=str(100 + n)), evidence)
     prose = "p" in (payload or {})
     summary = ({"tables": 0, "prose_analyses": 1, "prose_read": f"pr-{n}"} if prose
                else {"tables": 1, "prose_analyses": 0, "basis": f"an-{n}"})
@@ -864,11 +865,11 @@ def _most_at_once(spans):
     return most
 
 
-def test_the_table_and_text_servers_are_asked_at_the_same_time(both):
+def test_the_table_and_text_servers_are_asked_at_the_same_time(both, evidence):
     """Articles are classified together, so neither server waits on the other's articles."""
     settings, catalog, table, text = both
     refs = [_resolved(catalog, n, _tables("patients", "controls") if n % 2 else
-                      _prose_sets("seed"))
+                      _prose_sets("seed"), evidence=evidence)
             for n in range(12)]
     text.reply = lambda body: (200, _choice('{"role": "anchor", "anchor_kind": "seed"}',
                                             {"anchor": math.log(0.9), "result": math.log(0.1)}))
@@ -902,10 +903,11 @@ def _planned(stage, settings, catalog, refs):
     return ctx, plan.pending
 
 
-def test_a_server_is_asked_32_sets_at_once_across_every_article(both):
+def test_a_server_is_asked_32_sets_at_once_across_every_article(both, evidence):
     """The cap is the server's, shared by the articles under way, not each article's."""
     settings, catalog, table, _ = both
-    refs = [_resolved(catalog, n, _tables(*[f"set {i}" for i in range(10)])) for n in range(8)]
+    refs = [_resolved(catalog, n, _tables(*[f"set {i}" for i in range(10)]),
+            evidence=evidence) for n in range(8)]
     spans = []
     _timed(table, spans, 0.3)
     stage = RolesStage(settings)
@@ -914,11 +916,11 @@ def test_a_server_is_asked_32_sets_at_once_across_every_article(both):
     assert _most_at_once([(a, b) for _, a, b in spans]) == 32
 
 
-def test_no_more_than_64_articles_are_under_way(both, monkeypatch):
+def test_no_more_than_64_articles_are_under_way(both, monkeypatch, evidence):
     # The server's cap above the window, so the sets in flight are the articles under way.
     monkeypatch.setattr(served_module, "WORKERS", 100)
     settings, catalog, table, _ = both
-    refs = [_resolved(catalog, n, _tables("patients")) for n in range(70)]
+    refs = [_resolved(catalog, n, _tables("patients"), evidence=evidence) for n in range(70)]
     spans = []
     _timed(table, spans, 1.0)
     stage = RolesStage(settings)
@@ -927,11 +929,12 @@ def test_no_more_than_64_articles_are_under_way(both, monkeypatch):
     assert _most_at_once([(a, b) for _, a, b in spans]) == 64
 
 
-def test_an_interrupt_stops_the_stage_at_once_and_sends_no_other_set(both):
+def test_an_interrupt_stops_the_stage_at_once_and_sends_no_other_set(both, evidence):
     """Ctrl-C leaves while sets are held at the server; the queued ones are never sent."""
     settings, catalog, table, _ = both
     previous = signal.signal(signal.SIGINT, signal.default_int_handler)
-    refs = [_resolved(catalog, n, _tables("patients", "controls")) for n in range(40)]
+    refs = [_resolved(catalog, n, _tables("patients", "controls"),
+            evidence=evidence) for n in range(40)]
     release, reply = threading.Event(), table.reply
 
     def held(body):
@@ -962,14 +965,14 @@ def test_an_interrupt_stops_the_stage_at_once_and_sends_no_other_set(both):
     assert sent == len(table.requests) == 32
 
 
-def test_an_outage_starts_no_article_and_keeps_those_ahead_of_it(both, monkeypatch):
+def test_an_outage_starts_no_article_and_keeps_those_ahead_of_it(both, monkeypatch, evidence):
     """Once a model stops the stage no article is begun; those ahead that finish are kept."""
     settings, catalog, table, text = both
     monkeypatch.setattr(roles_module, "ARTICLES", 3)
-    refs = [_resolved(catalog, 0, _prose_sets("first")),
-            _resolved(catalog, 1, _prose_sets("second")),
-            _resolved(catalog, 2, _tables("refused")),
-            _resolved(catalog, 3, _prose_sets("late"))]
+    refs = [_resolved(catalog, 0, _prose_sets("first"), evidence=evidence),
+            _resolved(catalog, 1, _prose_sets("second"), evidence=evidence),
+            _resolved(catalog, 2, _tables("refused"), evidence=evidence),
+            _resolved(catalog, 3, _prose_sets("late"), evidence=evidence)]
     table.reply = lambda body: TOO_LONG
     text.reply = lambda body: (200, _choice('{"role": "result"}', RESULT_LIKELY))
     spans = []
@@ -985,10 +988,12 @@ def test_an_outage_starts_no_article_and_keeps_those_ahead_of_it(both, monkeypat
     assert catalog.attempt_counts(ids, "roles", "") in ({}, {i: (0, None) for i in ids})
 
 
-def test_an_article_s_failure_among_many_at_once_fails_that_article_only(both, monkeypatch):
+def test_an_article_s_failure_among_many_at_once_fails_that_article_only(
+        both, monkeypatch, evidence):
     settings, catalog, table, text = both
     monkeypatch.setattr("ingestion_workflow.services.set_roles.served.time.sleep", lambda s: None)
-    refs = [_resolved(catalog, n, _tables("poison" if n == 3 else "patients")) for n in range(8)]
+    refs = [_resolved(catalog, n, _tables("poison" if n == 3 else "patients"),
+            evidence=evidence) for n in range(8)]
     table.reply = lambda body: ((500, "engine error") if "[NAME] poison" in str(body["messages"])
                                 else (200, _choice('{"role": "result"}', RESULT_LIKELY)))
     ids = [r.id for r in refs]
@@ -1000,7 +1005,7 @@ def test_an_article_s_failure_among_many_at_once_fails_that_article_only(both, m
                                                  for n in range(8)]
 
 
-def test_an_outage_deep_in_the_run_starts_no_later_article(both):
+def test_an_outage_deep_in_the_run_starts_no_later_article(both, evidence):
     """The outage is the 101st of 200 articles: no article is started once it is met.
 
     After it, every other article is prose: one started then would be sent to
@@ -1009,7 +1014,7 @@ def test_an_outage_deep_in_the_run_starts_no_later_article(both):
     settings, catalog, table, text = both
     refs = [_resolved(catalog, n, _tables("refused") if n == 100
                       else _prose_sets(f"late {n}") if n > 100 and n % 2
-                      else _tables(f"set {n}"))
+                      else _tables(f"set {n}"), evidence=evidence)
             for n in range(200)]
     answered, arrived, refused_at = table.reply, [], []
 
@@ -1039,11 +1044,11 @@ def test_an_outage_deep_in_the_run_starts_no_later_article(both):
     assert not [t for t, _ in arrived if t > stop + 0.2]
 
 
-def test_a_model_loaded_after_a_stop_sends_nothing(both):
+def test_a_model_loaded_after_a_stop_sends_nothing(both, evidence):
     """An article under way that first needs the other origin's model after a stop is not sent."""
     settings, catalog, table, text = both
-    refused = _resolved(catalog, 0, _tables("refused"))
-    prose = _resolved(catalog, 1, _prose_sets("seed"))
+    refused = _resolved(catalog, 0, _tables("refused"), evidence=evidence)
+    prose = _resolved(catalog, 1, _prose_sets("seed"), evidence=evidence)
     table.reply = lambda body: TOO_LONG
     stage = RolesStage(settings)
     with pytest.raises(ModelUnavailable, match="maximum context length"):
@@ -1055,11 +1060,12 @@ def test_a_model_loaded_after_a_stop_sends_nothing(both):
     assert (text.requests, text.listings) == ([], listed)
 
 
-def test_an_interrupt_while_a_model_is_loading_sends_it_nothing(both):
+def test_an_interrupt_while_a_model_is_loading_sends_it_nothing(both, evidence):
     """Ctrl-C while the text model's listing is awaited: once loaded, it is already stopped."""
     settings, catalog, _, text = both
     stage = RolesStage(settings)
-    ctx, works = _planned(stage, settings, catalog, [_resolved(catalog, 0, _prose_sets("seed"))])
+    ctx, works = _planned(stage, settings, catalog, [_resolved(catalog, 0, _prose_sets("seed"),
+            evidence=evidence)])
     listed, text.gate = text.listings, threading.Event()
     previous = signal.signal(signal.SIGINT, signal.default_int_handler)
 
@@ -1079,11 +1085,12 @@ def test_an_interrupt_while_a_model_is_loading_sends_it_nothing(both):
     assert text.requests == []
 
 
-def test_a_failed_article_does_not_stop_the_others_from_starting(both, monkeypatch):
+def test_a_failed_article_does_not_stop_the_others_from_starting(both, monkeypatch, evidence):
     settings, catalog, table, _ = both
     monkeypatch.setattr(roles_module, "ARTICLES", 2)
     monkeypatch.setattr("ingestion_workflow.services.set_roles.served.time.sleep", lambda s: None)
-    refs = [_resolved(catalog, n, _tables("poison" if n == 0 else f"set {n}")) for n in range(6)]
+    refs = [_resolved(catalog, n, _tables("poison" if n == 0 else f"set {n}"),
+            evidence=evidence) for n in range(6)]
     table.reply = lambda body: ((500, "engine error") if "[NAME] poison" in str(body["messages"])
                                 else (200, _choice('{"role": "result"}', RESULT_LIKELY)))
     stage = RolesStage(settings)
@@ -1092,15 +1099,16 @@ def test_a_failed_article_does_not_stop_the_others_from_starting(both, monkeypat
     assert outcomes == {r.id: Status.FAILED if n == 0 else Status.OK for n, r in enumerate(refs)}
 
 
-def test_each_way_an_article_fails_leaves_the_others_decided(both):
+def test_each_way_an_article_fails_leaves_the_others_decided(both, evidence):
     """An analysis that is not one, a passages text that changed, an upstream payload gone."""
     settings, catalog, _, _ = both
-    refs = [_resolved(catalog, n, _tables("patients")) for n in range(6)]
+    refs = [_resolved(catalog, n, _tables("patients"), evidence=evidence) for n in range(6)]
     broken = [
-        _resolved(catalog, 6, {"t2": {"analyses": ["not a set"]}}),
+        _resolved(catalog, 6, {"t2": {"analyses": ["not a set"]}}, evidence=evidence),
         _resolved(catalog, 7, _tables("patients"),
-                  passages={"passages": [{"span": [0, 4]}], "full_text_path": "/gone.txt"}),
-        _resolved(catalog, 8, None),
+                  passages={"passages": [{"span": [0, 4]}], "full_text_path": "/gone.txt"},
+                          evidence=evidence),
+        _resolved(catalog, 8, None, evidence=evidence),
     ]
     stage = RolesStage(settings)
     ctx, works = _planned(stage, settings, catalog, refs[:3] + broken + refs[3:])

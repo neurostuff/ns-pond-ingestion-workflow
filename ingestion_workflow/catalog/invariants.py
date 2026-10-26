@@ -41,8 +41,8 @@ from typing import Callable, Collection, Dict, Iterator, List, Set, Tuple, Union
 from ingestion_workflow.utils.doi import normalize_doi
 from ingestion_workflow.utils.preprints import is_preprint_doi
 
+from .evidence import Evidence, same_work
 from .evidence import Unreadable as RegistryUnreadable
-from .evidence import same_work
 from .models import SECOND_KINDS, Artifact
 from .store import Catalog, _artifact
 
@@ -88,7 +88,9 @@ def suspects(catalog: Catalog) -> Set[str]:
     return {row[0] for row in rows}
 
 
-def neighbourhood(catalog: Catalog, article_ids: Collection[str]) -> Set[str]:
+def neighbourhood(
+    catalog: Catalog, article_ids: Collection[str], evidence: Evidence
+) -> Set[str]:
     """The live articles among `article_ids` and every live article a rule links to one:
 
     * the holder of any id they hold, in any spelling or second kind;
@@ -103,7 +105,6 @@ def neighbourhood(catalog: Catalog, article_ids: Collection[str]) -> Set[str]:
     checked over the neighbourhood of what it touched; each article's violations are the
     same whatever else is checked with it.
     """
-    evidence = _evidence(catalog)
     live = {a for a in article_ids if catalog.live(a)}
     held = {a: _held(catalog, a) for a in live}
     dois = sorted({d for h in held.values() for d in h["doi"] + h["alternative_doi"]})
@@ -186,9 +187,10 @@ def _downloads_naming(catalog: Catalog, ids: Collection[Tuple[str, str]]) -> Set
         f"AND blob IN ({marks})", sorted(blobs))}
 
 
-def violations(catalog: Catalog, article_ids: Collection[str]) -> List[Violation]:
+def violations(
+    catalog: Catalog, article_ids: Collection[str], evidence: Evidence
+) -> List[Violation]:
     """Every way the live articles among `article_ids` break the rules above."""
-    evidence = _evidence(catalog)
     live = sorted({a for a in article_ids if catalog.live(a)})
     held = {a: _held(catalog, a) for a in live}
     summaries = evidence.summaries(sorted({p for h in held.values()
@@ -344,12 +346,6 @@ def _sharing(catalog: Catalog, kind: str, value: str) -> Set[str]:
         f"SELECT article_id FROM aliases WHERE kind IN ({','.join('?' * len(kinds))}) "
         f"AND value IN ({','.join('?' * len(values))})", (*kinds, *values))
     return {catalog.current_id(a) for (a,) in rows}
-
-
-def _evidence(catalog: Catalog):
-    if catalog.evidence is None:
-        raise ValueError("checking identity needs the catalog opened with evidence")
-    return catalog.evidence
 
 
 def _held(catalog: Catalog, article_id: str) -> Dict[str, List[str]]:

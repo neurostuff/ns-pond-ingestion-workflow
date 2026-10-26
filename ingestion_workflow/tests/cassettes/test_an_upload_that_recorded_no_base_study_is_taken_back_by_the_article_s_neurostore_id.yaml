@@ -1,0 +1,76 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=55&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAJRTy27bMBD8FYKXXiyZkmI59i2pjbZpHAQxegpyoMWtRZQiVT6CCkb/vUvKdXxo
+        keQikcvZ5exw9kBb4AIsXR6oH3qgSwoudB23A53QZ7BOGo1Bllf094RaPFQ+goMUji4f6WxGnybx
+        O8YQiusJ7cNOcB/LFYv5jKygIUWNcXg5wJ0zwTZxfS1N00InnU/38uBbY2P9A9W8i4iNaX5Yqcn2
+        4/H8yPYqQTHWqOA82EQBqZ4Srwdsgtyu3pn21bhWcS3Iak1u7JuSUQfFnR/J/6uEl17F/G3YBS09
+        kRqTeeNRYocbMgCmk70aGgwrAe0gIKuyvjWub1E0kkLW7EFzB3kS0Pq/Vd07qpKK/KdqfHWjQtKg
+        uMCddC7ETZmele/BxTe+KC+zak5jx3offQD4QwG06pDEzwBJE1bNWV1WY5VkI8bqrFzULFphDI1m
+        GZV9pDfoCM0VubJeNiqyeQAH3DYt2Ya+x3Yn5Fu+zckn8/wB13dGZ/f5Z4y8Cj3CnqKLG2MFvpQP
+        sZn7sNuAIBmKJeAXrr4bSzbr1e2Xu/XI7gSNgvCR2uj/A5Xi6ArEdSBirymCvRWoJVdJPRyKaK4T
+        WBh5jqxekAXLC1YW051ErRY1Z+wyWavF4TA4HfHOc0qna8/mbVqU06ImjC0ZS/eeJyBaSR2l/QMA
+        AP//fFQ7DsIwDN05BeICtLCwsnEHptRy1YCbIJMwIPXu2HVDKUhsiRP7+fP8Jo9dVdXbar/dHda1
+        eNQ/HhgS4/MfxNjUFhkDKD/OcncpsW9yGu+bk7uvjxJRiakjuPUgDhBzSMaBNhNdbPhlcZeagBTB
+        Kalt2ySZCFMzwafxRReCAWJQZBJHy6SJ8VqWRL5I/T73dpZjMoGzQYtTh1yQvsxTXoYyixijci3k
+        vlEZVYt7OE+uIWw59pnJrCWqvCC9S/jJVmxzbE19hoXO3VIB0dVfquxiJPah9fwhSAsNfWhBkEnp
+        PPVmGIbVCwAA//8DAPBVLn4RBgAA
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Sun, 25 Oct 2026 10:26:53 GMT
+      ncbi-phid:
+      - 1D345BABAD18B8E500003F83954B1EF5.1.1.m_1
+      ncbi-sid:
+      - F991562E2E71DDC4_EBA3SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

@@ -82,7 +82,7 @@ def test_a_carriage_return_the_builder_keeps_is_compared_and_copied_as_is(tmp_pa
     assert copy.read_bytes() == "Input:\r x\n".encode("utf-8")
 
 
-def test_a_rewrite_carries_the_passages_onto_the_new_text(tmp_path):
+def test_a_rewrite_carries_the_passages_onto_the_new_text(tmp_path, evidence):
     from ingestion_workflow.catalog import Catalog, Outcome
     from ingestion_workflow.models.ids import Identifier
     from ingestion_workflow.pipeline.stages.passages import PassagesStage
@@ -101,7 +101,7 @@ def test_a_rewrite_carries_the_passages_onto_the_new_text(tmp_path):
     citations = {"text_sha256": R.sha256(old),
                  "citations": [{"text_span": {"start_char": a + 4, "end_char": a + 8, "text": "peak"}}]}
     with Catalog.open(tmp_path / "k") as catalog:
-        ref_id = catalog.register(Identifier(pmid="1")).id
+        ref_id = catalog.register(Identifier(pmid="1"), evidence).id
         catalog.record([
             Outcome(article_id=ref_id, stage="extract", source="pubget", fingerprint="ex-1",
                     payload={"full_text_path": str(text)}, summary={"has_text": True, "text_sha256": R.sha256(old)}),
@@ -137,12 +137,12 @@ def test_a_rewrite_carries_the_passages_onto_the_new_text(tmp_path):
         assert R.carried(catalog, lost)[1] == "stale"
 
 
-def test_an_unchanged_text_has_its_hash_recorded_once(tmp_path):
+def test_an_unchanged_text_has_its_hash_recorded_once(tmp_path, evidence):
     from ingestion_workflow.catalog import Catalog, Outcome
     from ingestion_workflow.models.ids import Identifier
 
     with Catalog.open(tmp_path / "k") as catalog:
-        ref_id = catalog.register(Identifier(pmid="2")).id
+        ref_id = catalog.register(Identifier(pmid="2"), evidence).id
         catalog.record([Outcome(article_id=ref_id, stage="extract", source="pubget", fingerprint="ex-1",
                                 payload={"full_text_path": "t"}, summary={"has_text": True})])
         result = R.Result(ref_id, "pubget", "unchanged", "t", R.sha256("same"), R.sha256("same"))
@@ -154,7 +154,7 @@ def test_an_unchanged_text_has_its_hash_recorded_once(tmp_path):
         assert R.carried(catalog, result)[0] == []
 
 
-def _rewritten_with_passages(tmp_path, old, new, n=1):
+def _rewritten_with_passages(tmp_path, old, new, n=1, *, evidence):
     """A catalog holding `n` articles whose text went from `old` to `new`, with passages on `old`."""
     from ingestion_workflow.catalog import Catalog, Outcome
     from ingestion_workflow.models.ids import Identifier
@@ -169,7 +169,7 @@ def _rewritten_with_passages(tmp_path, old, new, n=1):
     results = []
     with Catalog.open(tmp_path / "k") as catalog:
         for i in range(n):
-            ref_id = catalog.register(Identifier(pmid=str(100 + i))).id
+            ref_id = catalog.register(Identifier(pmid=str(100 + i)), evidence).id
             path = str(tmp_path / f"{i}.txt")
             catalog.record([
                 Outcome(article_id=ref_id, stage="extract", source="pubget", fingerprint="ex-1",
@@ -182,24 +182,24 @@ def _rewritten_with_passages(tmp_path, old, new, n=1):
     return results
 
 
-def test_a_hit_whose_characters_an_edit_changed_is_read_again_not_moved(tmp_path):
+def test_a_hit_whose_characters_an_edit_changed_is_read_again_not_moved(tmp_path, evidence):
     from ingestion_workflow.catalog import Catalog
 
     old = "## Results\nThe peak (x = -22, y = -4, z = -18) was in the amygdala.\n"
     # a superscript kept inside the triplet: the old x, y, z are no longer what it prints
     new = old.replace("y = -4", "y = -4\u00b9")
-    (result,) = _rewritten_with_passages(tmp_path, old, new)
+    (result,) = _rewritten_with_passages(tmp_path, old, new, evidence=evidence)
     with Catalog.open(tmp_path / "k") as catalog:
         rows, what = R.carried(catalog, result)
     assert what == "stale" and {r.stage for r in rows} == {"extract"}
 
 
-def test_carry_all_reads_and_records_in_batches(tmp_path):
+def test_carry_all_reads_and_records_in_batches(tmp_path, evidence):
     from ingestion_workflow.catalog import Catalog
 
     old = "## Results\nThe peak (x = -22, y = -4, z = -18) was in the amygdala.\n"
     new = "## Results\nA note\u00b2 first.\n" + old[len("## Results\n"):]
-    results = _rewritten_with_passages(tmp_path, old, new, n=5)
+    results = _rewritten_with_passages(tmp_path, old, new, n=5, evidence=evidence)
     with Catalog.open(tmp_path / "k") as catalog:
         reads = []
         artifacts = catalog.artifacts
@@ -222,7 +222,8 @@ CAPTIONED = """<article><front><article-meta><title-group><article-title>T</arti
 (x = -34, y = 16, z = -6; p &lt; 0.05).</p></caption></fig></floats-group></article>"""
 
 
-def test_captions_added_to_a_text_carry_its_passages_and_citations_and_read_it_again(tmp_path):
+def test_captions_added_to_a_text_carry_its_passages_and_citations_and_read_it_again(
+        tmp_path, evidence):
     """The rebuilt text gains its figure legends: the passages and citations move onto it,
     the extraction records the captions' spans, and the passages are marked to be read again,
     since only a read finds the caption's coordinate."""
@@ -245,7 +246,7 @@ def test_captions_added_to_a_text_carry_its_passages_and_citations_and_read_it_a
     cite = old.index("Smith, 2001")
     sentence = (old.index("Patients"), old.index("2001).") + 6)
     with Catalog.open(tmp_path / "k") as catalog:
-        ref_id = catalog.register(Identifier(pmid="9")).id
+        ref_id = catalog.register(Identifier(pmid="9"), evidence).id
         catalog.record([
             Outcome(article_id=ref_id, stage="extract", source="pubget", fingerprint="ex-1",
                     payload={"full_text_path": str(text)}, summary={"text_sha256": R.sha256(old)}),
@@ -290,7 +291,8 @@ def test_captions_added_to_a_text_carry_its_passages_and_citations_and_read_it_a
         assert [(p.hits[0].x, p.from_legend) for p in again] == [(-22.0, False), (-34.0, True)]
 
 
-def test_a_run_stopped_after_writing_a_text_leaves_its_references_and_sync_to_be_read_again(tmp_path):
+def test_a_run_stopped_after_writing_a_text_leaves_its_references_and_sync_to_be_read_again(
+        tmp_path, evidence):
     """The texts are written before the catalog rows: a rerun finds them unchanged, and the
     references and sync it still holds were made from the text they replaced."""
     from ingestion_workflow.catalog import Catalog, Outcome
@@ -308,7 +310,7 @@ def test_a_run_stopped_after_writing_a_text_leaves_its_references_and_sync_to_be
     job = R.Job("", "pubget", str(text), str(xml))
 
     with Catalog.open(tmp_path / "k") as catalog:
-        ref_id = catalog.register(Identifier(pmid="9")).id
+        ref_id = catalog.register(Identifier(pmid="9"), evidence).id
         job.article_id = ref_id
         catalog.record([
             Outcome(article_id=ref_id, stage="extract", source="pubget", fingerprint="ex-1",
@@ -330,13 +332,14 @@ def test_a_run_stopped_after_writing_a_text_leaves_its_references_and_sync_to_be
         assert catalog.artifacts([ref_id], "sync")[ref_id][""].fingerprint == R.STALE
 
 
-def test_an_extraction_with_no_recorded_hash_has_it_recorded_and_its_references_and_sync_kept(tmp_path):
+def test_an_extraction_with_no_recorded_hash_has_it_recorded_and_its_references_and_sync_kept(
+        tmp_path, evidence):
     """No hash was ever recorded, so nothing says the text changed since they were made."""
     from ingestion_workflow.catalog import Catalog, Outcome
     from ingestion_workflow.models.ids import Identifier
 
     with Catalog.open(tmp_path / "k") as catalog:
-        ref_id = catalog.register(Identifier(pmid="2")).id
+        ref_id = catalog.register(Identifier(pmid="2"), evidence).id
         catalog.record([
             Outcome(article_id=ref_id, stage="extract", source="pubget", fingerprint="ex-1",
                     payload={"full_text_path": "t"}, summary={"has_text": True}),
@@ -352,7 +355,8 @@ def test_an_extraction_with_no_recorded_hash_has_it_recorded_and_its_references_
         assert catalog.artifacts([ref_id], "sync")[ref_id][""].fingerprint == "sy-1"
 
 
-def test_carried_passages_are_fresh_for_the_extraction_that_now_records_the_captions(tmp_path):
+def test_carried_passages_are_fresh_for_the_extraction_that_now_records_the_captions(
+        tmp_path, evidence):
     """Captions with no coordinate leave the passages carried, not read again; the fingerprint
     they are carried under is the one the plan computes from the extraction as rewritten."""
     from ingestion_workflow.catalog import Catalog, Outcome
@@ -371,7 +375,7 @@ def test_carried_passages_are_fresh_for_the_extraction_that_now_records_the_capt
     text.write_text(old, encoding="utf-8")
     found = passages(old)
     with Catalog.open(tmp_path / "k") as catalog:
-        ref_id = catalog.register(Identifier(pmid="9")).id
+        ref_id = catalog.register(Identifier(pmid="9"), evidence).id
         catalog.record([
             Outcome(article_id=ref_id, stage="extract", source="pubget", fingerprint="ex-1",
                     payload={"full_text_path": str(text)}, summary={"text_sha256": R.sha256(old)}),
@@ -405,7 +409,7 @@ INLINE_FIG = """<article><front><article-meta><title-group><article-title>T</art
 <p>Controls did not (Jones, 2003).</p><p>Done.</p></sec></body></article>"""
 
 
-def test_a_body_figure_taken_out_moves_the_citations_after_it(tmp_path):
+def test_a_body_figure_taken_out_moves_the_citations_after_it(tmp_path, evidence):
     """The old text printed the caption in the body; the new one prints it in the legends,
     so a citation after it moves back, and a sentence that held it is cleared."""
     from ingestion_workflow.catalog import Catalog, Outcome
@@ -428,7 +432,7 @@ def test_a_body_figure_taken_out_moves_the_citations_after_it(tmp_path):
                 "sentence": {"start_char": old.index(sentence_from), "end_char": start + len(marker) + 2}}
 
     with Catalog.open(tmp_path / "k") as catalog:
-        ref_id = catalog.register(Identifier(pmid="8")).id
+        ref_id = catalog.register(Identifier(pmid="8"), evidence).id
         catalog.record([
             Outcome(article_id=ref_id, stage="extract", source="pubget", fingerprint="ex-1",
                     payload={"full_text_path": str(text)}, summary={"text_sha256": R.sha256(old)}),

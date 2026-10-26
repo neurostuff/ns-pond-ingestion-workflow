@@ -8,10 +8,11 @@ from __future__ import annotations
 
 import json
 import logging
+from contextlib import contextmanager
 from datetime import timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence
+from typing import Dict, Iterator, List, Optional, Sequence
 
 import typer
 
@@ -39,6 +40,7 @@ from ingestion_workflow.pipeline import (
     build,
     everything,
     narrow,
+    register_manifest,
     resolve_manifest,
     run_stages,
 )
@@ -86,16 +88,20 @@ def _catalog(settings: Settings) -> Catalog:
     return Catalog.open(settings.catalog_root)
 
 
-def _registering_catalog(settings: Settings) -> Catalog:
-    """The catalog, opened to check the identifiers it registers or repairs against
-    PubMed and the DOI registries, for the commands that do."""
+@contextmanager
+def _evidence(settings: Settings) -> Iterator[Evidence]:
+    """PubMed and the DOI registries, for the commands that register or check identifiers."""
     if not settings.pubmed_email:
-        raise typer.BadParameter("the catalog checks identifiers against PubMed: set pubmed_email",
-                                 param_hint="--config")
-    pubmed = PubMedClient(settings.pubmed_email, settings.pubmed_api_key,
-                          tool=settings.pubmed_tool or "ingestion-workflow")
-    registry = DoiRegistry(CrossrefClient(settings.crossref_email))
-    return Catalog.open(settings.catalog_root, evidence=Evidence(pubmed, registry))
+        raise typer.BadParameter(
+            "registration checks identifiers against PubMed: set pubmed_email",
+            param_hint="--config")
+    with PubMedClient(settings.pubmed_email, settings.pubmed_api_key,
+                      tool=settings.pubmed_tool or "ingestion-workflow") as pubmed:
+        registry = DoiRegistry(CrossrefClient(settings.crossref_email))
+        try:
+            yield Evidence(pubmed, registry)
+        finally:
+            registry.close()
 
 
 def _report_refusals(catalog: Catalog) -> None:
@@ -265,12 +271,12 @@ def add(
             "give identifiers, --file, --manifest, --search, --pdfs or --neurostore"
         )
 
-    with _registering_catalog(settings) as catalog:
+    with _evidence(settings) as evidence, _catalog(settings) as catalog:
         before = catalog.count_articles()
         held = set(catalog.all_article_ids()) if searched else set()
-        refs = catalog.register_many(found)
+        refs = catalog.register_many(found, evidence)
         if enrich:
-            refs = _enrich(settings, catalog, refs)
+            refs = _enrich(settings, catalog, evidence, refs)
         # Several providers find one article, and enrichment joins records of one.
         refs = list({ref.id: ref for ref in refs}.values())
         _report_refusals(catalog)
@@ -433,7 +439,9 @@ def _attach_pdfs(
     )
 
 
-def _enrich(settings: Settings, catalog: Catalog, refs: Sequence[ArticleRef]) -> List[ArticleRef]:
+def _enrich(
+    settings: Settings, catalog: Catalog, evidence: Evidence, refs: Sequence[ArticleRef]
+) -> List[ArticleRef]:
     """Fill in the identifiers a source needs to address an article, and file its preprint
     and other ids.
 
@@ -460,7 +468,7 @@ def _enrich(settings: Settings, catalog: Catalog, refs: Sequence[ArticleRef]) ->
     identifiers.set_index("pmid", "doi", "pmcid")
 
     for name, factory in providers.items():
-        service = factory(settings, catalog)
+        service = factory(settings, catalog, evidence)
         if not service.can_run():
             typer.echo(f"  {name}: not configured, skipping")
             continue
@@ -468,7 +476,7 @@ def _enrich(settings: Settings, catalog: Catalog, refs: Sequence[ArticleRef]) ->
         service.find_identifiers(identifiers)
         typer.echo(f"  {name}: found {len(_held(identifiers) - before):,} more ids")
 
-    return catalog.register_many(list(identifiers.identifiers))
+    return catalog.register_many(list(identifiers.identifiers), evidence)
 
 
 def _held(identifiers: Identifiers) -> set:
@@ -551,7 +559,7 @@ def run(
     stages = build(stage, settings)
 
     # A manifest's identifiers are registered.
-    with (_registering_catalog if manifest else _catalog)(settings) as catalog:
+    with _catalog(settings) as catalog:
         selection = _select(catalog, manifest, select, stage, refresh or [], settings)
         if limit:
             selection = Selection(selection.refs[:limit], f"{limit:,} of {selection.description}")
@@ -572,11 +580,12 @@ def _select(
     manifest: Optional[Path],
     mode: Select,
     stage,
-    refresh: Sequence[str] = (),
-    settings=None,
+    refresh: Sequence[str],
+    settings: Settings,
 ) -> Selection:
     if manifest:
-        refs = resolve_manifest(catalog, manifest, register=True).refs
+        with _evidence(settings) as evidence:
+            refs = register_manifest(catalog, manifest, evidence).refs
         base = Selection(refs, f"{len(refs):,} articles from {manifest.name}")
     else:
         base = everything(catalog)
@@ -920,8 +929,9 @@ def repair_identity(
         operations = identity_plan.load(plan)
     except ValueError as exc:
         raise typer.BadParameter(str(exc), param_hint="PLAN") from exc
-    with _registering_catalog(settings) as catalog:
-        outcome = identity_plan.apply(catalog, operations, backup=backup if apply else None)
+    with _evidence(settings) as evidence, _catalog(settings) as catalog:
+        outcome = identity_plan.apply(catalog, operations, evidence,
+                                      backup=backup if apply else None)
     for op, n in sorted(outcome.applied.items()):
         typer.echo(f"  {n:6,}  {op}")
     typer.echo(f"{sum(outcome.applied.values()):,} of {len(operations):,} operations "
@@ -1099,7 +1109,7 @@ def revalidate_downloads(
         ctx = _context(settings, catalog, [])
         if manifest:
             # a dry run writes nothing, so unknown articles are not registered
-            named = resolve_manifest(catalog, manifest, register=False)
+            named = resolve_manifest(catalog, manifest)
             article_ids = list(dict.fromkeys(ref.id for ref in named.refs))
             typer.echo(f"manifest {manifest.name}: {named.entries:,} entries, "
                        f"{len(article_ids):,} articles in the catalog")
@@ -1151,8 +1161,8 @@ def migrate(
     from ingestion_workflow.migrate import migrate_caches
 
     settings = _settings(config)
-    with _registering_catalog(settings) as catalog:
-        report = migrate_caches(old_cache, catalog, stages=stage, dry_run=dry_run)
+    with _evidence(settings) as evidence, _catalog(settings) as catalog:
+        report = migrate_caches(old_cache, catalog, evidence, stages=stage, dry_run=dry_run)
     typer.echo(report.render())
     if not dry_run:
         typer.echo("migrated artifacts carry no fingerprint, so none is fresh: "

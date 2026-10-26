@@ -26,26 +26,30 @@ from ingestion_workflow.tests.pipeline.test_roles_served import env as roles_env
 from ingestion_workflow.tests.pipeline.test_roles_served import stub  # noqa: F401
 
 
+# The prose client under test is played by an in-process transport as prose.test.
+pytestmark = pytest.mark.vcr(ignore_hosts=["localhost", "127.0.0.1", "prose.test"])
+
+
 def _closed_port():
     with socket.socket() as s:
         s.bind(("127.0.0.1", 0))
         return s.getsockname()[1]
 
 
-def _prose_articles(settings, catalog, path, pmids):
+def _prose_articles(settings, catalog, path, pmids, evidence):
     ctx = Context(settings, catalog)
-    refs = [catalog.register(Identifier(pmid=p)) for p in pmids]
+    refs = [catalog.register(Identifier(pmid=p), evidence) for p in pmids]
     for ref in refs:
         prose._record_upstream(catalog, ref, path)
         prose._run(PassagesStage(settings), ctx, catalog, ref)
     return ctx, refs
 
 
-def _role_articles(catalog, ref, *names):
+def _role_articles(catalog, ref, *names, evidence):
     """`ref`, then one article per name, each with a table of that set."""
     others = []
     for n, name in enumerate(names):
-        other = catalog.register(Identifier(pmid=str(20 + n)))
+        other = catalog.register(Identifier(pmid=str(20 + n)), evidence)
         catalog.record([Outcome(article_id=other.id, stage="analyses", source="",
                                 fingerprint=f"an-{20 + n}", payload=roles._tables(name),
                                 summary={"tables": 1})])
@@ -56,11 +60,11 @@ def _role_articles(catalog, ref, *names):
 # --------------------------------------------------------------------------- prose
 
 
-def test_an_unreachable_prose_server_stops_the_stage_for_the_run(prose_env, monkeypatch):
+def test_an_unreachable_prose_server_stops_the_stage_for_the_run(prose_env, monkeypatch, evidence):
     settings, catalog, path = prose_env
     settings.prose_api_base = f"http://127.0.0.1:{_closed_port()}/v1"
     settings.llm_max_retries = 1
-    ctx, refs = _prose_articles(settings, catalog, path, ("1", "2", "3"))
+    ctx, refs = _prose_articles(settings, catalog, path, ("1", "2", "3"), evidence=evidence)
     _one_at_a_time(monkeypatch)
     report = run_stages(ctx, [ProseStage(settings)], refs)
     stage = report.stages["prose"]
@@ -74,10 +78,11 @@ def _one_at_a_time(monkeypatch):
     monkeypatch.setattr(scheduler, "batched", lambda refs: batched(refs, 1))
 
 
-def test_a_prose_stop_leaves_the_articles_pending_for_the_next_run(prose_env, monkeypatch):
+def test_a_prose_stop_leaves_the_articles_pending_for_the_next_run(
+        prose_env, monkeypatch, evidence):
     settings, catalog, path = prose_env
     settings.n_llm_workers = 1  # so the calls after the first failure are countable
-    ctx, refs = _prose_articles(settings, catalog, path, ("1", "2", "3"))
+    ctx, refs = _prose_articles(settings, catalog, path, ("1", "2", "3"), evidence=evidence)
     _one_at_a_time(monkeypatch)
     ids = [r.id for r in refs]
     down = _server(up=False)
@@ -95,9 +100,9 @@ def test_a_prose_stop_leaves_the_articles_pending_for_the_next_run(prose_env, mo
     assert (report.stages["prose"].ok, report.stages["prose"].stopped) == (3, None)
 
 
-def test_a_refused_key_stops_prose(prose_env):
+def test_a_refused_key_stops_prose(prose_env, evidence):
     settings, catalog, path = prose_env
-    ctx, refs = _prose_articles(settings, catalog, path, ("1", "2"))
+    ctx, refs = _prose_articles(settings, catalog, path, ("1", "2"), evidence=evidence)
     refused = _server(fails=lambda content: True, status=401)
     report = run_stages(ctx, [prose._prose(settings, _served(settings, refused))], refs)
     stage = report.stages["prose"]
@@ -106,9 +111,9 @@ def test_a_refused_key_stops_prose(prose_env):
     assert catalog.artifacts([r.id for r in refs], "prose") == {}
 
 
-def test_prose_reads_a_passage_when_the_server_answers(prose_env):
+def test_prose_reads_a_passage_when_the_server_answers(prose_env, evidence):
     settings, catalog, path = prose_env
-    ctx, refs = _prose_articles(settings, catalog, path, ("1",))
+    ctx, refs = _prose_articles(settings, catalog, path, ("1",), evidence=evidence)
     report = run_stages(
         ctx, [prose._prose(settings, _served(settings, _server()))], refs)
     stage = report.stages["prose"]
@@ -117,9 +122,9 @@ def test_prose_reads_a_passage_when_the_server_answers(prose_env):
     assert read.status is Status.OK
 
 
-def test_a_stopped_prose_stage_blocks_resolve_without_failing_it(prose_env):
+def test_a_stopped_prose_stage_blocks_resolve_without_failing_it(prose_env, evidence):
     settings, catalog, path = prose_env
-    ctx, refs = _prose_articles(settings, catalog, path, ("1", "2"))
+    ctx, refs = _prose_articles(settings, catalog, path, ("1", "2"), evidence=evidence)
     ids = [r.id for r in refs]
     down = _server(up=False)
     stages = [prose._prose(settings, _served(settings, down)), ResolveStage(settings)]
@@ -135,10 +140,11 @@ def test_a_stopped_prose_stage_blocks_resolve_without_failing_it(prose_env):
 
 
 def test_a_roles_server_that_stops_answering_stops_the_stage_and_keeps_what_it_answered(
-    roles_env, stub, monkeypatch  # noqa: F811
+    roles_env, stub, monkeypatch, evidence  # noqa: F811
 ):
     settings, catalog, ref = roles_env
-    refs = _role_articles(catalog, ref, "patients")  # [ref (has Lee), patients-only]
+    refs = _role_articles(catalog, ref, "patients",
+            evidence=evidence)  # [ref (has Lee), patients-only]
     monkeypatch.setattr("ingestion_workflow.services.set_roles.served.time.sleep", lambda s: None)
 
     def answers(body):
@@ -172,9 +178,9 @@ def test_roles_decides_every_set_when_the_server_answers(roles_env, stub):  # no
     assert (stage.ok, stage.failed, stage.stopped) == (1, 0, None)
 
 
-def test_a_roles_stop_leaves_the_later_batches_unasked(roles_env, stub, monkeypatch):  # noqa: F811
+def test_a_roles_stop_leaves_the_later_batches_unasked(roles_env, stub, monkeypatch, evidence):  # noqa: F811
     settings, catalog, ref = roles_env
-    refs = _role_articles(catalog, ref, "controls")
+    refs = _role_articles(catalog, ref, "controls", evidence=evidence)
     monkeypatch.setattr("ingestion_workflow.services.set_roles.served.time.sleep", lambda s: None)
 
     def crashed(body):  # down after the plan listed the model

@@ -1047,11 +1047,11 @@ def _run(tmp_path, catalog, ref, refresh=(), **settings):
     return outcomes
 
 
-def test_a_later_run_does_not_fetch_a_dead_url(stub, other_host, tmp_path, catalog):
+def test_a_later_run_does_not_fetch_a_dead_url(stub, other_host, tmp_path, catalog, evidence):
     dead = stub.serve("/repo/a.pdf", (403, b"no"))
     busy = other_host.serve("/journal/a.pdf", (429, b"", {"Retry-After": "3600"}))
     stub.work("10.1234/a", location(dead, "repository"), location(busy, "journal"))
-    ref = catalog.register(Identifier(doi="10.1234/a"))
+    ref = catalog.register(Identifier(doi="10.1234/a"), evidence)
     (first,) = _run(tmp_path, catalog, ref)
     assert first.status is Status.FAILED
 
@@ -1065,9 +1065,10 @@ def test_a_later_run_does_not_fetch_a_dead_url(stub, other_host, tmp_path, catal
     assert "403" in outcome.summary["url_attempts"][0]["reason"]
 
 
-def test_a_dead_url_is_fetched_once_and_a_new_copy_is_still_tried(stub, tmp_path, catalog):
+def test_a_dead_url_is_fetched_once_and_a_new_copy_is_still_tried(
+        stub, tmp_path, catalog, evidence):
     stub.work("10.1234/a", location(stub.serve("/repo/a.pdf", (403, b"no")), "repository"))
-    ref = catalog.register(Identifier(doi="10.1234/a"))
+    ref = catalog.register(Identifier(doi="10.1234/a"), evidence)
 
     runs = [_run(tmp_path, catalog, ref)[0] for _ in range(3)]
 
@@ -1085,9 +1086,9 @@ def test_a_dead_url_is_fetched_once_and_a_new_copy_is_still_tried(stub, tmp_path
     assert stub.fetched == ["/repo/a.pdf", "/repo/b.pdf"]
 
 
-def test_a_refresh_still_skips_a_dead_url(stub, tmp_path, catalog):
+def test_a_refresh_still_skips_a_dead_url(stub, tmp_path, catalog, evidence):
     stub.work("10.1234/a", location(stub.serve("/repo/a.pdf", (403, b"no")), "repository"))
-    ref = catalog.register(Identifier(doi="10.1234/a"))
+    ref = catalog.register(Identifier(doi="10.1234/a"), evidence)
     _run(tmp_path, catalog, ref)
     stub.works[0]["locations"] = [location(stub.serve("/repo/b.pdf", (200, PDF)), "journal")]
     (found,) = _run(tmp_path, catalog, ref)  # the dead copy is not listed this time
@@ -1105,11 +1106,11 @@ def test_a_refresh_still_skips_a_dead_url(stub, tmp_path, catalog):
     [("lookup", {"lookup_failed": 1, "known_dead": 1}), ("outage", {"known_dead": 1})],
 )
 def test_a_dead_url_is_remembered_through_a_run_that_did_not_list_it(
-    stub, tmp_path, catalog, monkeypatch, lost, middle_outcomes
+    stub, tmp_path, catalog, monkeypatch, lost, middle_outcomes, evidence
 ):
     monkeypatch.setattr(OpenAlexClient._request_openalex.retry, "wait", wait_none())
     stub.work("10.1234/a", location(stub.serve("/repo/a.pdf", (403, b"no")), "repository"))
-    ref = catalog.register(Identifier(doi="10.1234/a"))
+    ref = catalog.register(Identifier(doi="10.1234/a"), evidence)
     _run(tmp_path, catalog, ref)
 
     if lost == "lookup":
@@ -1129,11 +1130,11 @@ def test_a_dead_url_is_remembered_through_a_run_that_did_not_list_it(
 
 
 def test_a_dead_url_listed_later_as_a_closed_copy_is_recorded_once_as_dead(
-    stub, tmp_path, catalog
+    stub, tmp_path, catalog, evidence
 ):
     url = stub.serve("/repo/a.pdf", (403, b"no"))
     stub.work("10.1234/a", location(url, "repository"))
-    ref = catalog.register(Identifier(doi="10.1234/a"))
+    ref = catalog.register(Identifier(doi="10.1234/a"), evidence)
     _run(tmp_path, catalog, ref)
     stub.works[0]["locations"] = [{**location(url, "repository"), "is_oa": False}]
 
@@ -1142,9 +1143,10 @@ def test_a_dead_url_listed_later_as_a_closed_copy_is_recorded_once_as_dead(
     assert [a["outcome"] for a in outcome.summary["url_attempts"]] == ["known_dead"]
 
 
-def test_the_dead_urls_come_from_the_pdf_download_not_another_source(stub, tmp_path, catalog):
+def test_the_dead_urls_come_from_the_pdf_download_not_another_source(
+        stub, tmp_path, catalog, evidence):
     stub.work("10.1234/a", location(stub.serve("/repo/a.pdf", (403, b"no")), "repository"))
-    ref = catalog.register(Identifier(doi="10.1234/a"))
+    ref = catalog.register(Identifier(doi="10.1234/a"), evidence)
     catalog.record([Outcome.failure(ref.id, "download", "ace", "no page", summary={"files": 0})])
 
     _run(tmp_path, catalog, ref)

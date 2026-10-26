@@ -24,6 +24,10 @@ from ingestion_workflow.pipeline.stages.roles import RolesStage
 from ingestion_workflow.pipeline.stages.space import SpaceStage
 from ingestion_workflow.pipeline.stage import metadata_digests
 
+
+# The prose client under test is played by an in-process transport as prose.test.
+pytestmark = pytest.mark.vcr(ignore_hosts=["localhost", "127.0.0.1", "prose.test"])
+
 TEXT = (
     "## Methods\nCoordinates are reported in MNI space.\n\n"
     "## Results\nPatients showed greater activation than controls in the left amygdala "
@@ -495,10 +499,10 @@ class _Reader:
             for h in passage.hits]}]}
 
 
-def test_prose_reads_the_extraction_text_s_methods_and_results_only(env, monkeypatch):
+def test_prose_reads_the_extraction_text_s_methods_and_results_only(env, monkeypatch, evidence):
     """Not the tables, not the discussion's cited peak."""
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="1"))
+    ref = catalog.register(Identifier(pmid="1"), evidence)
     _record_upstream(catalog, ref, path)
     _, (read,) = _read_prose(Context(settings, catalog), catalog, ref, _Reader())
     assert read.status is Status.OK and read.summary["read"] == "methods+results"
@@ -508,9 +512,10 @@ def test_prose_reads_the_extraction_text_s_methods_and_results_only(env, monkeyp
     assert read.payload["space"] == "MNI"   # read from the Methods
 
 
-def test_a_text_with_no_coordinate_is_filtered_before_the_detector_reads_it(env, monkeypatch, tmp_path):
+def test_a_text_with_no_coordinate_is_filtered_before_the_detector_reads_it(
+        env, monkeypatch, tmp_path, evidence):
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="5"))
+    ref = catalog.register(Identifier(pmid="5"), evidence)
     _record_upstream(catalog, ref, path, text="## Results\n\nAccuracy was 85% (70, 85, 92).\n")
     from ingestion_workflow.services import prose_passages
 
@@ -527,9 +532,9 @@ def test_a_text_with_no_coordinate_is_filtered_before_the_detector_reads_it(env,
     assert read.status is Status.OK and read.summary["coordinates"] == 0
 
 
-def test_a_prose_only_article_reaches_space_with_its_space_read(env, monkeypatch):
+def test_a_prose_only_article_reaches_space_with_its_space_read(env, monkeypatch, evidence):
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="2"))
+    ref = catalog.register(Identifier(pmid="2"), evidence)
     _record_upstream(catalog, ref, path)
     ctx = Context(settings, catalog)
     _read_prose(ctx, catalog, ref, _Reader())
@@ -544,11 +549,11 @@ def test_a_prose_only_article_reaches_space_with_its_space_read(env, monkeypatch
     assert spaced.payload["prose"]["coordinate_space"] == "MNI"
 
 
-def test_switching_prose_on_leaves_a_tables_only_article_fresh(env, monkeypatch):
+def test_switching_prose_on_leaves_a_tables_only_article_fresh(env, monkeypatch, evidence):
     """Resolve names the analyses it passed through, so roles -- and space and
     upload after it -- keep the fingerprints they had before prose existed."""
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="3"))
+    ref = catalog.register(Identifier(pmid="3"), evidence)
     _record_upstream(catalog, ref, path, tables={"t1": _table([(-22, -4, -18)])})
     ctx = Context(settings, catalog)
     before = RolesStage(Settings(data_root=settings.data_root, cache_root=settings.cache_root))
@@ -561,9 +566,9 @@ def test_switching_prose_on_leaves_a_tables_only_article_fresh(env, monkeypatch)
     assert after.fingerprint_for(catalog.artifact(ref.id, "resolve", ""), after.models()) == expected
 
 
-def test_an_article_with_a_failed_passage_is_retried_whole(env, monkeypatch):
+def test_an_article_with_a_failed_passage_is_retried_whole(env, monkeypatch, evidence):
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="4"))
+    ref = catalog.register(Identifier(pmid="4"), evidence)
     _record_upstream(catalog, ref, path)
     _, (outcome,) = _read_prose(Context(settings, catalog), catalog, ref, _Reader(fail=True))
     assert outcome.status is Status.FAILED
@@ -571,9 +576,9 @@ def test_an_article_with_a_failed_passage_is_retried_whole(env, monkeypatch):
 
 
 
-def test_prose_reads_again_once_the_title_and_abstract_arrive(env):
+def test_prose_reads_again_once_the_title_and_abstract_arrive(env, evidence):
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="9"))
+    ref = catalog.register(Identifier(pmid="9"), evidence)
     catalog.record([Outcome(article_id=ref.id, stage="download", source="pubget", fingerprint="dl-1",
                             payload={"files": [{"file_path": str(path), "file_type": "xml"}]}, summary={})])
     text_file = path.parent / "nine.txt"
@@ -597,14 +602,15 @@ def test_prose_reads_again_once_the_title_and_abstract_arrive(env):
     assert plan.fresh == 1 and seen == ["", "T"]
 
 
-def test_an_article_whose_extraction_has_no_table_is_synced_from_its_prose(env, monkeypatch, tmp_path):
+def test_an_article_whose_extraction_has_no_table_is_synced_from_its_prose(
+        env, monkeypatch, tmp_path, evidence):
     """Sync writes the extraction's text, the one the passages index, and the prose's analyses."""
     from ingestion_workflow.pipeline.stages.sync import SyncStage
     from ingestion_workflow.services.nspond_schema import read_record
 
     settings, catalog, path = env
     settings = settings.model_copy(update={"ns_pond_root": tmp_path / "pond"})
-    ref = catalog.register(Identifier(pmid="11"))
+    ref = catalog.register(Identifier(pmid="11"), evidence)
     _record_upstream(catalog, ref, path)
     ctx = Context(settings, catalog)
     _read_prose(ctx, catalog, ref, _Reader())
@@ -636,7 +642,8 @@ def test_an_article_whose_extraction_has_no_table_is_synced_from_its_prose(env, 
     assert synced.summary["parse_id"] == parse.coordinate_parse.parse_id
 
 
-def test_a_prose_restatement_of_a_table_is_among_the_written_parse_s_omissions(env, monkeypatch, tmp_path):
+def test_a_prose_restatement_of_a_table_is_among_the_written_parse_s_omissions(
+        env, monkeypatch, tmp_path, evidence):
     """Its points are the table's, so it is not uploaded; the parse says which table analysis it restates."""
     from pyarty import read_bundle
     from study_schema.layouts import PaperParse
@@ -646,7 +653,7 @@ def test_a_prose_restatement_of_a_table_is_among_the_written_parse_s_omissions(e
 
     settings, catalog, path = env
     settings = settings.model_copy(update={"ns_pond_root": tmp_path / "pond"})
-    ref = catalog.register(Identifier(pmid="13"))
+    ref = catalog.register(Identifier(pmid="13"), evidence)
     _record_upstream(catalog, ref, path)
     tables = {"t1": {"slug": "s::t1", "analyses": [{"name": "Group effect", "table_id": "t1", "coordinates": [
         {"x": -22.0, "y": -4.0, "z": -18.0, "statistic_value": 4.1, "statistic_type": "T"}]}]}}
@@ -673,14 +680,14 @@ def test_a_prose_restatement_of_a_table_is_among_the_written_parse_s_omissions(e
     assert text[span.start_char:span.end_char] == "\u221222, y = \u22124, z = \u221218"
 
 
-def test_a_parse_that_fails_fails_the_sync(env, monkeypatch, tmp_path):
+def test_a_parse_that_fails_fails_the_sync(env, monkeypatch, tmp_path, evidence):
     """stage1 is written, but the article is not synced until its parse is."""
     from ingestion_workflow.pipeline.stages import sync as sync_stage
     from ingestion_workflow.services import paper_parse
 
     settings, catalog, path = env
     settings = settings.model_copy(update={"ns_pond_root": tmp_path / "pond"})
-    ref = catalog.register(Identifier(pmid="12"))
+    ref = catalog.register(Identifier(pmid="12"), evidence)
     _record_upstream(catalog, ref, path)
     ctx = Context(settings, catalog)
     _read_prose(ctx, catalog, ref, _Reader())
@@ -708,13 +715,14 @@ def test_a_parse_that_fails_fails_the_sync(env, monkeypatch, tmp_path):
     assert sync.fingerprint_for(upload) != before
 
 
-def test_an_article_whose_sets_have_no_role_is_neither_synced_nor_parsed(env, monkeypatch, tmp_path):
+def test_an_article_whose_sets_have_no_role_is_neither_synced_nor_parsed(
+        env, monkeypatch, tmp_path, evidence):
     """Without the roles stage's decision the article is blocked, and no parse is written."""
     from ingestion_workflow.pipeline.stages import sync as sync_stage
 
     settings, catalog, path = env
     settings = settings.model_copy(update={"ns_pond_root": tmp_path / "pond"})
-    ref = catalog.register(Identifier(pmid="13"))
+    ref = catalog.register(Identifier(pmid="13"), evidence)
     _record_upstream(catalog, ref, path)
     ctx = Context(settings, catalog)
     _read_prose(ctx, catalog, ref, _Reader())
@@ -742,9 +750,9 @@ def test_an_article_whose_sets_have_no_role_is_neither_synced_nor_parsed(env, mo
     assert not (settings.ns_pond_root / "BS13" / "parse").exists()
 
 
-def test_resolve_runs_again_when_the_tables_arrive(env, monkeypatch):
+def test_resolve_runs_again_when_the_tables_arrive(env, monkeypatch, evidence):
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="6"))
+    ref = catalog.register(Identifier(pmid="6"), evidence)
     _record_upstream(catalog, ref, path)
     ctx = Context(settings, catalog)
     _read_prose(ctx, catalog, ref, _Reader())
@@ -756,7 +764,7 @@ def test_resolve_runs_again_when_the_tables_arrive(env, monkeypatch):
 
 
 def _synced_names(env, tmp_path, monkeypatch, declared, rerun=None, tables=None,
-                  parse_write=None):
+                  parse_write=None, *, evidence):
     """Sync one article whose stored tables carry the split marker when `declared`.
 
     `rerun(ref)`, when given, is an analyses outcome recorded after space ran,
@@ -766,7 +774,7 @@ def _synced_names(env, tmp_path, monkeypatch, declared, rerun=None, tables=None,
 
     settings, catalog, path = env
     settings = settings.model_copy(update={"ns_pond_root": tmp_path / "pond"})
-    ref = catalog.register(Identifier(pmid="12"))
+    ref = catalog.register(Identifier(pmid="12"), evidence)
     pts = [{"x": 1.0, "y": 2.0, "z": 3.0, "statistic_value": v, "statistic_type": "T"}
            for v in (4.0,)]
     neg = [{**pts[0], "statistic_value": -4.0}]
@@ -805,7 +813,7 @@ def _synced_names(env, tmp_path, monkeypatch, declared, rerun=None, tables=None,
     return [(x.name, x.metadata.get("split")) for x in seen["t1"].analyses]
 
 
-def test_stage1_carries_the_split_as_the_parse_declares_it(env, tmp_path, monkeypatch):
+def test_stage1_carries_the_split_as_the_parse_declares_it(env, tmp_path, monkeypatch, evidence):
     """stage1 is written after the parse, so its inverse half names the original by key."""
     from ingestion_workflow.pipeline.stages import sync as sync_stage
 
@@ -829,7 +837,7 @@ def test_stage1_carries_the_split_as_the_parse_declares_it(env, tmp_path, monkey
         return write
 
     _synced_names(env, tmp_path, monkeypatch, declared=True, tables=tables,
-                  parse_write=parse_write)
+                  parse_write=parse_write, evidence=evidence)
     stage1 = json.loads((tmp_path / "pond" / "BS12" / "stage1" / "analyses.json").read_text())
     by_name = {a["name"]: a for a in stage1["analyses"]}
     assert by_name["Load > Rest"]["split"] == {
@@ -840,17 +848,20 @@ def test_stage1_carries_the_split_as_the_parse_declares_it(env, tmp_path, monkey
     assert by_name["Rest > Load"]["points"][0]["values"] == [{"value": 4.0, "kind": "T"}]
 
 
-def test_a_printed_negative_name_is_not_a_split_in_a_native_payload(env, tmp_path, monkeypatch):
-    names = _synced_names(env, tmp_path, monkeypatch, declared=True)
+def test_a_printed_negative_name_is_not_a_split_in_a_native_payload(
+        env, tmp_path, monkeypatch, evidence):
+    names = _synced_names(env, tmp_path, monkeypatch, declared=True, evidence=evidence)
     assert names == [("Load", None), ("Load (negative)", None)]
 
 
-def test_a_declared_payload_stays_declared_after_analyses_fails(env, tmp_path, monkeypatch):
+def test_a_declared_payload_stays_declared_after_analyses_fails(
+        env, tmp_path, monkeypatch, evidence):
     """A failed re-run replaces the analyses artifact; the payload sync writes is still declared."""
     def rerun(ref, tables):
         return Outcome.failure(ref.id, "analyses", "", "model unavailable", fingerprint="an-2")
 
-    names = _synced_names(env, tmp_path, monkeypatch, declared=True, rerun=rerun)
+    names = _synced_names(env, tmp_path, monkeypatch, declared=True, rerun=rerun,
+            evidence=evidence)
     assert names == [("Load", None), ("Load (negative)", None)]
 
 
@@ -868,11 +879,11 @@ def _record_extraction(catalog, ref, text_file, figure_captions=(), source="pubg
                             summary=summary)])
 
 
-def test_passages_index_the_extraction_s_text_and_store_none_of_it(env, tmp_path):
+def test_passages_index_the_extraction_s_text_and_store_none_of_it(env, tmp_path, evidence):
     from ingestion_workflow.pipeline.stages.passages import passage_from
 
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="20"))
+    ref = catalog.register(Identifier(pmid="20"), evidence)
     _record_upstream(catalog, ref, path)
     text_file = tmp_path / "article.txt"
     # A table inlined in the text, its rows tab-separated, is left to the table path.
@@ -902,9 +913,9 @@ def test_passages_index_the_extraction_s_text_and_store_none_of_it(env, tmp_path
     assert len(plan.pending) == 1
 
 
-def test_prose_reads_no_passage_of_a_text_that_changed_under_it(env, tmp_path):
+def test_prose_reads_no_passage_of_a_text_that_changed_under_it(env, tmp_path, evidence):
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="21"))
+    ref = catalog.register(Identifier(pmid="21"), evidence)
     _record_upstream(catalog, ref, path)
     text_file = tmp_path / "article.txt"
     text_file.write_text(TEXT, encoding="utf-8")
@@ -922,7 +933,7 @@ LEGEND = ("Figure 2. Greater insula activation in patients than controls "
           "(x = &#x02212;34, y = 16, z = &#x02212;6; p &lt; 0.05 corrected).")
 
 
-def test_a_legend_outside_the_results_is_read_and_marked(env, tmp_path):
+def test_a_legend_outside_the_results_is_read_and_marked(env, tmp_path, evidence):
     """A legend the download sets in the Discussion, which the extraction text sets after it."""
     from ingestion_workflow.pipeline.stages.passages import passage_from
 
@@ -936,7 +947,7 @@ def test_a_legend_outside_the_results_is_read_and_marked(env, tmp_path):
     from ingestion_workflow.extractors.figure_captions import append_legends
 
     caption = "Figure 2. Greater insula activation in patients than controls (x = -34, y = 16, z = -6; p < 0.05 corrected)."
-    ref = catalog.register(Identifier(pmid="31"))
+    ref = catalog.register(Identifier(pmid="31"), evidence)
     _record_upstream(catalog, ref, xml)
     text_file = tmp_path / "legend.txt"
     text, spans = append_legends(TEXT + "\n## Discussion\nPrior work found the amygdala at (x = 30, y = 2, z = -20).\n",
@@ -950,7 +961,8 @@ def test_a_legend_outside_the_results_is_read_and_marked(env, tmp_path):
     assert text[slice(*stored[1]["span"])].startswith("Figure 2.")
 
 
-def test_a_caption_is_read_where_the_extractor_wrote_it_not_where_the_text_first_quotes_it(env, tmp_path):
+def test_a_caption_is_read_where_the_extractor_wrote_it_not_where_the_text_first_quotes_it(
+        env, tmp_path, evidence):
     """A caption the Results also print, and a second figure captioned alike: the caption is
     read once, at its span under "Figure legends", never searched for."""
     from ingestion_workflow.extractors.figure_captions import append_legends, dedupe
@@ -960,7 +972,7 @@ def test_a_caption_is_read_where_the_extractor_wrote_it_not_where_the_text_first
     body = TEXT.replace("The reverse contrast", caption + " The reverse contrast")
     text, spans = append_legends(body, dedupe([("F2", caption), ("F3", caption)]))
     assert [c["ids"] for c in spans] == [["F2", "F3"]]
-    ref = catalog.register(Identifier(pmid="32"))
+    ref = catalog.register(Identifier(pmid="32"), evidence)
     _record_upstream(catalog, ref, path)
     text_file = tmp_path / "quoted.txt"
     text_file.write_text(text, encoding="utf-8")
@@ -973,13 +985,13 @@ def test_a_caption_is_read_where_the_extractor_wrote_it_not_where_the_text_first
     assert any(not p["from_legend"] and p["hits"][0]["x"] == -34.0 for p in found.payload["passages"])
 
 
-def test_an_article_without_an_extraction_text_has_no_passages(env):
+def test_an_article_without_an_extraction_text_has_no_passages(env, evidence):
     """The extraction's text is the only one read: a download with no extraction is not
     read some other way, and sync has no text of its own to fall back on."""
     from ingestion_workflow.pipeline.stages.sync import _synced_extraction
 
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="40"))
+    ref = catalog.register(Identifier(pmid="40"), evidence)
     catalog.record([Outcome(article_id=ref.id, stage="download", source="pubget", fingerprint="dl-1",
                             payload=_download(ref, path), summary={})])
     plan, outcomes = _run(PassagesStage(settings), Context(settings, catalog), catalog, ref)
@@ -988,9 +1000,9 @@ def test_an_article_without_an_extraction_text_has_no_passages(env):
     assert _synced_extraction(ctx, {}, catalog.artifacts([ref.id], "download")[ref.id], None) is None
 
 
-def test_passages_index_the_judged_extraction_not_the_first(env, tmp_path):
+def test_passages_index_the_judged_extraction_not_the_first(env, tmp_path, evidence):
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="41"))
+    ref = catalog.register(Identifier(pmid="41"), evidence)
     ace, pubget = tmp_path / "ace.txt", tmp_path / "pubget.txt"
     ace.write_text("## Results\n\nNothing at (x = 1, y = 2, z = 3).\n", encoding="utf-8")
     pubget.write_text(TEXT, encoding="utf-8")
@@ -1000,13 +1012,14 @@ def test_passages_index_the_judged_extraction_not_the_first(env, tmp_path):
     assert (found.payload["source"], found.payload["full_text_path"]) == ("pubget", str(pubget))
 
 
-def test_old_passages_of_an_article_with_no_extraction_text_are_taken_back(env, tmp_path):
+def test_old_passages_of_an_article_with_no_extraction_text_are_taken_back(
+        env, tmp_path, evidence):
     """Passages a download reader wrote, for an article whose extractor ran and found no
     text: the article shows as blocked, and prose takes back what it read from them."""
     from ingestion_workflow.pipeline.stages.passages import NO_TEXT
 
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="42"))
+    ref = catalog.register(Identifier(pmid="42"), evidence)
     old = tmp_path / "passages" / f"{ref.id}.txt"
     old.parent.mkdir()
     old.write_text(EXTRACTED, encoding="utf-8")
@@ -1030,13 +1043,13 @@ def test_old_passages_of_an_article_with_no_extraction_text_are_taken_back(env, 
 
 
 def test_an_uploaded_article_whose_passages_are_taken_back_leaves_the_corpus_not_neurostore(
-        env, monkeypatch, tmp_path):
+        env, monkeypatch, tmp_path, evidence):
     """Old prose with kept points, and the resolve, roles, space, upload and sync made from it:
     once passages are taken back, each stage takes back its own and sync moves the article out
     of the corpus. Nothing is deleted from neurostore: upload records the reason, with the base
     study and what it last sent, once, and sends nothing."""
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="44"))
+    ref = catalog.register(Identifier(pmid="44"), evidence)
     pond = tmp_path / "pond"
     (pond / "bs-1" / "parse").mkdir(parents=True)
     (pond / "bs-1" / "parse" / "coordinate_parse.json").write_text("{}")
@@ -1072,11 +1085,11 @@ def test_an_uploaded_article_whose_passages_are_taken_back_leaves_the_corpus_not
     assert (again.blocked, again.pending) == (1, [])
 
 
-def test_prose_taken_back_is_read_again_as_soon_as_its_passages_return(env):
+def test_prose_taken_back_is_read_again_as_soon_as_its_passages_return(env, evidence):
     from ingestion_workflow.pipeline.stage import NO_TEXT
 
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="45"))
+    ref = catalog.register(Identifier(pmid="45"), evidence)
     catalog.record([
         Outcome.failure(ref.id, "prose", "", NO_TEXT, fingerprint=NO_TEXT),
         Outcome(article_id=ref.id, stage="passages", source="", fingerprint="new-text",
@@ -1088,11 +1101,12 @@ def test_prose_taken_back_is_read_again_as_soon_as_its_passages_return(env):
     assert [w.fingerprint != NO_TEXT for w in plan.pending] == [True]
 
 
-def test_an_extraction_that_records_no_text_hash_waits_and_its_file_is_not_hashed(env, tmp_path, monkeypatch):
+def test_an_extraction_that_records_no_text_hash_waits_and_its_file_is_not_hashed(
+        env, tmp_path, monkeypatch, evidence):
     from ingestion_workflow.pipeline.stages import extract
 
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="43"))
+    ref = catalog.register(Identifier(pmid="43"), evidence)
     text_file = tmp_path / "t.txt"
     text_file.write_text(TEXT, encoding="utf-8")
     _record_extraction(catalog, ref, text_file, hashed=False)
@@ -1126,12 +1140,13 @@ def _uploaded_chain(catalog, ref, *, upload=None, without=()):
     "payload blob gone",
     "one source found no text, another failed",
 ])
-def test_a_transient_failure_upstream_only_blocks_and_takes_nothing_back(env, tmp_path, monkeypatch, extractions):
+def test_a_transient_failure_upstream_only_blocks_and_takes_nothing_back(
+        env, tmp_path, monkeypatch, extractions, evidence):
     """A failed re-run of an article's only source, or its text file or blob gone, says
     something about the machine, not the article: the passages and everything made from
     them stay, so nothing reaches neurostore."""
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="46"))
+    ref = catalog.register(Identifier(pmid="46"), evidence)
     gone = tmp_path / "gone" / "article.txt"
     found = {"tables": 0, "has_text": True, "text_sha256": "abc"}
     rows = {
@@ -1157,13 +1172,14 @@ def test_a_transient_failure_upstream_only_blocks_and_takes_nothing_back(env, tm
     assert catalog.artifacts([ref.id], "passages")[ref.id][""].status is Status.OK
 
 
-def test_a_relative_text_path_is_read_from_beside_the_catalog_whatever_the_cwd(env, tmp_path, monkeypatch):
+def test_a_relative_text_path_is_read_from_beside_the_catalog_whatever_the_cwd(
+        env, tmp_path, monkeypatch, evidence):
     """Extractions run with a relative cache_root recorded `.cache/extract/...`; from another
     cwd those texts must still be found, not taken back."""
     from ingestion_workflow.pipeline.stages.passages import read_text
 
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="47"))
+    ref = catalog.register(Identifier(pmid="47"), evidence)
     text_file = tmp_path / ".cache" / "extract" / "article.txt"  # tmp_path holds the catalog, k/
     text_file.parent.mkdir(parents=True)
     text_file.write_text(EXTRACTED, encoding="utf-8")
@@ -1183,13 +1199,14 @@ def test_a_relative_text_path_is_read_from_beside_the_catalog_whatever_the_cwd(e
                            "text_sha256": made.payload["text_sha256"]}) == EXTRACTED
 
 
-def test_the_take_back_runs_through_a_stage_that_last_failed_for_another_reason(env, monkeypatch):
+def test_the_take_back_runs_through_a_stage_that_last_failed_for_another_reason(
+        env, monkeypatch, evidence):
     """prose last failed on a timeout while resolve still holds what an older prose made:
     both are taken back, so nothing downstream counts the old text fresh."""
     from ingestion_workflow.pipeline.stage import NO_TEXT
 
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="48"))
+    ref = catalog.register(Identifier(pmid="48"), evidence)
     _uploaded_chain(catalog, ref)
     catalog.record([Outcome.failure(ref.id, "prose", "", "timeout", fingerprint="newer-prose")])
     ctx = Context(settings, catalog)
@@ -1217,13 +1234,14 @@ def _sync_then_upload(settings, ctx, catalog, ref, *, pond=None):
 
 
 @pytest.mark.parametrize("roles", ["taken back", "failed", "missing"])
-def test_roles_that_are_not_ok_beside_an_ok_space_only_block_the_sync(env, monkeypatch, roles):
+def test_roles_that_are_not_ok_beside_an_ok_space_only_block_the_sync(
+        env, monkeypatch, roles, evidence):
     """Roles taken back while space has not run since, or failed, or never run: sync waits
     for them, so no parse is written for upload to send, and nothing is taken back."""
     from ingestion_workflow.pipeline.stages.sync import SyncStage
 
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="51"))
+    ref = catalog.register(Identifier(pmid="51"), evidence)
     rows = [
         Outcome(article_id=ref.id, stage="space", source="", fingerprint="old-space", payload={}, summary={}),
         Outcome(article_id=ref.id, stage="upload", source="", fingerprint="old-upload",
@@ -1238,14 +1256,14 @@ def test_roles_that_are_not_ok_beside_an_ok_space_only_block_the_sync(env, monke
     assert (plan.blocked, plan.pending, outcomes) == (1, [], [])
 
 
-def test_roles_read_each_passage_from_the_text_its_spans_index(env, tmp_path):
+def test_roles_read_each_passage_from_the_text_its_spans_index(env, tmp_path, evidence):
     """The passages payload stores spans, not text: the roles classifier is given the
     passage, heading and neighbours as the text prints them, and a text that changed
     under the spans fails the article."""
     from ingestion_workflow.pipeline.stages.roles import _read_passages
 
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="52"))
+    ref = catalog.register(Identifier(pmid="52"), evidence)
     _record_upstream(catalog, ref, path)
     text_file = tmp_path / "article.txt"
     text_file.write_text(TEXT, encoding="utf-8")
@@ -1261,12 +1279,12 @@ def test_roles_read_each_passage_from_the_text_its_spans_index(env, tmp_path):
         _read_passages(ctx, found.payload)
 
 
-def test_the_take_back_runs_through_a_stage_that_never_made_anything(env, monkeypatch):
+def test_the_take_back_runs_through_a_stage_that_never_made_anything(env, monkeypatch, evidence):
     """Roles never ran (no model was configured), but the space and upload made before roles
     existed hold the old text's analyses: roles records the take-back, so space, sync and
     upload take back theirs, and upload records why, with the base study it leaves as it is."""
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="53"))
+    ref = catalog.register(Identifier(pmid="53"), evidence)
     _uploaded_chain(catalog, ref, without=("roles",))
     ctx = Context(settings, catalog)
     for stage in (ProseStage(settings), ResolveStage(settings), _roles(settings, monkeypatch), SpaceStage(settings)):
@@ -1279,11 +1297,12 @@ def test_the_take_back_runs_through_a_stage_that_never_made_anything(env, monkey
     assert (uploaded.error, uploaded.summary["base_study_id"]) == (NO_TEXT, "bs-1")
 
 
-def test_a_take_back_with_no_upload_of_its_own_asks_nothing_of_neurostore(env, monkeypatch):
+def test_a_take_back_with_no_upload_of_its_own_asks_nothing_of_neurostore(
+        env, monkeypatch, evidence):
     """The article was never uploaded by this pipeline, though neurostore knows it: the
     take-back is recorded and nothing is sent."""
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="54", neurostore="bs-9"))
+    ref = catalog.register(Identifier(pmid="54", neurostore="bs-9"), evidence)
     _uploaded_chain(catalog, ref, without=("upload",))
     ctx = Context(settings, catalog)
     for stage in (ProseStage(settings), ResolveStage(settings), _roles(settings, monkeypatch), SpaceStage(settings)):
@@ -1294,10 +1313,10 @@ def test_a_take_back_with_no_upload_of_its_own_asks_nothing_of_neurostore(env, m
 
 
 def test_an_upload_that_recorded_no_base_study_is_taken_back_by_the_article_s_neurostore_id(
-        env, monkeypatch, tmp_path):
+        env, monkeypatch, tmp_path, evidence):
     """Sync finds the corpus copy by the article's neurostore id and moves it aside."""
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="55", neurostore="bs-9"))
+    ref = catalog.register(Identifier(pmid="55", neurostore="bs-9"), evidence)
     _uploaded_chain(catalog, ref, upload=Outcome(article_id=ref.id, stage="upload", source="",
                                                  fingerprint="old-upload", summary={"analyses": 2}))
     pond = tmp_path / "pond"
@@ -1318,13 +1337,14 @@ def test_an_upload_that_recorded_no_base_study_is_taken_back_by_the_article_s_ne
     ("roles", "no role for its sets: the text role model is missing"),
     ("space", "ConnectionError: the tunnel dropped"),
 ])
-def test_a_stage_that_failed_for_another_reason_only_blocks_the_next(env, monkeypatch, failed, error):
+def test_a_stage_that_failed_for_another_reason_only_blocks_the_next(
+        env, monkeypatch, failed, error, evidence):
     """A timed-out or broken run in the middle of the chain says nothing about the article's
     text: the stage after it waits, and nothing made from the old text is taken back."""
     from ingestion_workflow.pipeline.stages.sync import SyncStage
 
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="56"))
+    ref = catalog.register(Identifier(pmid="56"), evidence)
     _uploaded_chain(catalog, ref)
     catalog.record([Outcome(article_id=ref.id, stage="passages", source="", fingerprint="old-passages",
                             payload={"passages": []}, summary={"passages": 1}),
@@ -1337,13 +1357,14 @@ def test_a_stage_that_failed_for_another_reason_only_blocks_the_next(env, monkey
 
 
 @pytest.mark.parametrize("space, synced", [("taken back", True), ("ok", False)])
-def test_only_a_study_retracted_for_its_text_leaves_the_corpus_without_roles(env, space, synced):
+def test_only_a_study_retracted_for_its_text_leaves_the_corpus_without_roles(
+        env, space, synced, evidence):
     """An article with no roles row waits for its roles like any other; one whose analyses
     were taken back with its text has none to wait for, and sync takes it out of the corpus."""
     from ingestion_workflow.pipeline.stages.sync import SyncStage
 
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="57", neurostore="bs-1"))
+    ref = catalog.register(Identifier(pmid="57", neurostore="bs-1"), evidence)
     catalog.record([Outcome.failure(ref.id, "space", "", NO_TEXT, fingerprint=NO_TEXT)
                     if space == "taken back" else
                     Outcome(article_id=ref.id, stage="space", source="", fingerprint="sp-1",
@@ -1354,13 +1375,13 @@ def test_only_a_study_retracted_for_its_text_leaves_the_corpus_without_roles(env
     assert (len(sync.pending), sync.blocked) == ((1, 0) if synced else (0, 1))
 
 
-def test_roles_waits_for_prose_to_read_the_passages_it_would_index(env, monkeypatch):
+def test_roles_waits_for_prose_to_read_the_passages_it_would_index(env, monkeypatch, evidence):
     """Passages ran again and prose has not: the prose sets' indices point into the old list,
     so roles waits, and plans again with the pair once prose reads the new one."""
     from ingestion_workflow.pipeline.stages.roles import PROSE_READ_OTHER_PASSAGES
 
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="58"))
+    ref = catalog.register(Identifier(pmid="58"), evidence)
     _record_upstream(catalog, ref, path)
     ctx = Context(settings, catalog)
     _read_prose(ctx, catalog, ref, _Reader())
@@ -1381,9 +1402,9 @@ def test_roles_waits_for_prose_to_read_the_passages_it_would_index(env, monkeypa
     assert again.status is Status.OK and again.fingerprint != first.fingerprint
 
 
-def _roles_after_a_chain(env, monkeypatch, pmid):
+def _roles_after_a_chain(env, monkeypatch, pmid, evidence):
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid=pmid))
+    ref = catalog.register(Identifier(pmid=pmid), evidence)
     _record_upstream(catalog, ref, path)
     ctx = Context(settings, catalog)
     _read_prose(ctx, catalog, ref, _Reader())
@@ -1394,13 +1415,14 @@ def _roles_after_a_chain(env, monkeypatch, pmid):
     return settings, catalog, ref, ctx, roles, first
 
 
-def test_roles_waits_for_resolve_to_read_the_prose_it_classifies(env, monkeypatch):
+def test_roles_waits_for_resolve_to_read_the_prose_it_classifies(env, monkeypatch, evidence):
     """Prose re-read new passages and now holds no point (w2ni664ashw2): resolve takes back the
     row made from the earlier reading, and roles takes back its own, never writing on indices
     into the old list."""
     from ingestion_workflow.pipeline.stage import NO_ANALYSES, NO_TEXT
 
-    settings, catalog, ref, ctx, roles, first = _roles_after_a_chain(env, monkeypatch, "61")
+    settings, catalog, ref, ctx, roles, first = _roles_after_a_chain(env, monkeypatch, "61",
+            evidence=evidence)
     found = catalog.artifacts([ref.id], "passages")[ref.id][""]
     # The passage now starts a character later: its text changed, so prose reads it again.
     moved = catalog.payload(found)
@@ -1422,16 +1444,19 @@ def test_roles_waits_for_resolve_to_read_the_prose_it_classifies(env, monkeypatc
     assert (roled.status, roled.error, roled.fingerprint) == (Status.FAILED, NO_ANALYSES, NO_TEXT)
 
 
-def test_resolve_records_the_prose_it_was_made_from(env, monkeypatch):
-    settings, catalog, ref, ctx, roles, first = _roles_after_a_chain(env, monkeypatch, "62")
+def test_resolve_records_the_prose_it_was_made_from(env, monkeypatch, evidence):
+    settings, catalog, ref, ctx, roles, first = _roles_after_a_chain(env, monkeypatch, "62",
+            evidence=evidence)
     resolved = catalog.artifacts([ref.id], "resolve")[ref.id][""]
     assert resolved.summary["prose_read"] == catalog.artifacts([ref.id], "prose")[ref.id][""].fingerprint
 
 
-def test_roles_plans_again_when_the_spans_change_under_the_same_passages(env, monkeypatch):
+def test_roles_plans_again_when_the_spans_change_under_the_same_passages(
+        env, monkeypatch, evidence):
     """A passages code change that kept its fingerprint moved the spans prose's indices point
     into; resolve and prose are as they were, and only roles' own fingerprint can notice."""
-    settings, catalog, ref, ctx, roles, first = _roles_after_a_chain(env, monkeypatch, "63")
+    settings, catalog, ref, ctx, roles, first = _roles_after_a_chain(env, monkeypatch, "63",
+            evidence=evidence)
     found = catalog.artifacts([ref.id], "passages")[ref.id][""]
     plan, _ = _run(roles, ctx, catalog, ref)
     assert plan.fresh == 1
@@ -1473,11 +1498,12 @@ def test_a_passage_with_a_hit_outside_the_legends_is_not_from_a_legend(env, tmp_
     assert found and not any(p.from_legend for p in found)
 
 
-def test_passages_over_the_cap_are_recorded_with_their_reason(env, tmp_path, monkeypatch):
+def test_passages_over_the_cap_are_recorded_with_their_reason(
+        env, tmp_path, monkeypatch, evidence):
     from ingestion_workflow.pipeline.stages import passages
 
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="59"))
+    ref = catalog.register(Identifier(pmid="59"), evidence)
     filler = " ".join(["The blocks of trials were presented in random order."] * 30)
     second = "The right insula responded more (x = 40, y = 12, z = 2; t = 3.9).\n"
     text_file = tmp_path / "article.txt"
@@ -1496,7 +1522,7 @@ def test_passages_over_the_cap_are_recorded_with_their_reason(env, tmp_path, mon
     assert left_out["reason"] == f"over the {kept - 1}-passage cap"
 
 
-def test_sync_hands_the_parse_the_passages_left_out_over_the_cap(env):
+def test_sync_hands_the_parse_the_passages_left_out_over_the_cap(env, evidence):
     from collections import defaultdict
 
     from ingestion_workflow.pipeline.plan import Work
@@ -1504,7 +1530,7 @@ def test_sync_hands_the_parse_the_passages_left_out_over_the_cap(env):
     from ingestion_workflow.tests.services.test_paper_parse import COPY
 
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="60"))
+    ref = catalog.register(Identifier(pmid="60"), evidence)
     catalog.record([Outcome(article_id=ref.id, stage="passages", source="", fingerprint="p-1", summary={},
                             payload={"passages": [{"span": [0, 1]}],
                                      "omitted": [{"span": [2, 3], "reason": "over the 40-passage cap"}]})])
@@ -1521,9 +1547,9 @@ class _NothingFound(_Reader):
         return {"space": "MNI", "analyses": [{"name": "controls > patients", "measure": None, "points": []}]}
 
 
-def test_a_prose_only_article_with_only_empty_contrasts_is_resolved(env, monkeypatch):
+def test_a_prose_only_article_with_only_empty_contrasts_is_resolved(env, monkeypatch, evidence):
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="71"))
+    ref = catalog.register(Identifier(pmid="71"), evidence)
     _record_upstream(catalog, ref, path)
     ctx = Context(settings, catalog)
     _, (read,) = _read_prose(ctx, catalog, ref, _NothingFound())
@@ -1534,11 +1560,11 @@ def test_a_prose_only_article_with_only_empty_contrasts_is_resolved(env, monkeyp
         ("controls > patients", [])]
 
 
-def test_a_new_clean_rereads_the_stored_answers_not_the_model(env, monkeypatch):
+def test_a_new_clean_rereads_the_stored_answers_not_the_model(env, monkeypatch, evidence):
     from ingestion_workflow.pipeline.stages import prose as prose_stage
 
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="72"))
+    ref = catalog.register(Identifier(pmid="72"), evidence)
     _record_upstream(catalog, ref, path)
     ctx = Context(settings, catalog)
     _, (first,) = _read_prose(ctx, catalog, ref, _Reader())
@@ -1551,11 +1577,11 @@ def test_a_new_clean_rereads_the_stored_answers_not_the_model(env, monkeypatch):
     assert again.payload["passages"] == first.payload["passages"]
 
 
-def test_a_new_prompt_reads_with_the_model_again(env, monkeypatch):
+def test_a_new_prompt_reads_with_the_model_again(env, monkeypatch, evidence):
     from ingestion_workflow.pipeline.stages import prose as prose_stage
 
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="73"))
+    ref = catalog.register(Identifier(pmid="73"), evidence)
     _record_upstream(catalog, ref, path)
     ctx = Context(settings, catalog)
     _read_prose(ctx, catalog, ref, _Reader())
@@ -1575,9 +1601,9 @@ class _V2Reader:
             {"name": "patients > controls, covarying for IQ", "measure": None, "points": points}]}
 
 
-def test_resolve_makes_a_repeat_within_a_set_one_point(env):
+def test_resolve_makes_a_repeat_within_a_set_one_point(env, evidence):
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="31"))
+    ref = catalog.register(Identifier(pmid="31"), evidence)
     _record_upstream(catalog, ref, path)
     ctx = Context(settings, catalog)
     _, (read,) = _read_prose(ctx, catalog, ref, _V2Reader())
@@ -1687,9 +1713,10 @@ def test_every_statistic_of_a_merged_place_reaches_its_parsed_point():
     assert coordinate.sign == stored["sign"] == "positive"
 
 
-def test_a_nu_prose_v2_reading_reaches_space_with_roles_from_the_roles_stage(env, monkeypatch):
+def test_a_nu_prose_v2_reading_reaches_space_with_roles_from_the_roles_stage(
+        env, monkeypatch, evidence):
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="32"))
+    ref = catalog.register(Identifier(pmid="32"), evidence)
     _record_upstream(catalog, ref, path)
     ctx = Context(settings, catalog)
     _read_prose(ctx, catalog, ref, _V2Reader())
@@ -1714,10 +1741,10 @@ TWO_PASSAGES = (
 )
 
 
-def _two_passages(env, pmid):
+def _two_passages(env, pmid, evidence):
     """An article whose passages were found, and the prose stage that reads them."""
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid=pmid))
+    ref = catalog.register(Identifier(pmid=pmid), evidence)
     _record_upstream(catalog, ref, path, text=TWO_PASSAGES)
     ctx = Context(settings, catalog)
     _run(PassagesStage(settings), ctx, catalog, ref)
@@ -1765,9 +1792,9 @@ class _Counting(_Reader):
         return super().read(passage, title=title, abstract=abstract)
 
 
-def test_an_earlier_reading_of_the_same_passage_text_is_reused_at_its_new_span(env):
+def test_an_earlier_reading_of_the_same_passage_text_is_reused_at_its_new_span(env, evidence):
     """The corpus's prose was read before passages were spans: the same text is not read again."""
-    settings, catalog, ref, ctx, found = _two_passages(env, "81")
+    settings, catalog, ref, ctx, found = _two_passages(env, "81", evidence=evidence)
     first, second = _texts(catalog, ref, found)
     _earlier_prose(catalog, ref, [(first, ("patients > controls", (-22, -4, -18, 4.1))),
                                  (second, ("controls > patients", (6, -60, 40, 3.9)))])
@@ -1787,8 +1814,8 @@ def test_an_earlier_reading_of_the_same_passage_text_is_reused_at_its_new_span(e
             for p in read.payload["passages"]} == {("nu-prose", "2026-10-06.n5")}
 
 
-def test_a_passage_whose_text_changed_is_read_again_and_counted(env):
-    settings, catalog, ref, ctx, found = _two_passages(env, "82")
+def test_a_passage_whose_text_changed_is_read_again_and_counted(env, evidence):
+    settings, catalog, ref, ctx, found = _two_passages(env, "82", evidence=evidence)
     first, second = _texts(catalog, ref, found)
     _earlier_prose(catalog, ref, [(first, ("patients > controls", (-22, -4, -18, 4.1))),
                                  (second.replace("3.9", "3.8"), ("controls > patients",
@@ -1804,8 +1831,8 @@ def test_a_passage_whose_text_changed_is_read_again_and_counted(env):
     assert values == [4.1]
 
 
-def test_each_passage_read_is_counted_with_its_reason(env):
-    settings, catalog, ref, ctx, found = _two_passages(env, "83")
+def test_each_passage_read_is_counted_with_its_reason(env, evidence):
+    settings, catalog, ref, ctx, found = _two_passages(env, "83", evidence=evidence)
     reader = _Counting()
     _, (read,) = _run(_prose(settings, reader), ctx, catalog, ref)
     assert reader.calls == 2 and read.summary["read_again"] == {"no earlier result": 2}
@@ -1843,8 +1870,8 @@ def test_each_passage_read_is_counted_with_its_reason(env):
     ("another-prose-model", "2026-10-11.nu-prose-v2", "earlier model not interchangeable"),
 ])
 def test_only_nu_prose_s_first_answers_and_the_reader_s_own_are_reused(
-        env, model, prompt_version, reason):
-    settings, catalog, ref, ctx, found = _two_passages(env, "84")
+        env, model, prompt_version, reason, evidence):
+    settings, catalog, ref, ctx, found = _two_passages(env, "84", evidence=evidence)
     _, (read,) = _run(_prose(settings, _Reader()), ctx, catalog, ref)
     blob = json.loads(json.dumps(read.payload))
     for p in blob["passages"]:
@@ -1860,10 +1887,10 @@ def test_only_nu_prose_s_first_answers_and_the_reader_s_own_are_reused(
         assert reader.calls == 2 and again.summary["read_again"] == {reason: 2}
 
 
-def test_nu_prose_s_first_answers_are_read_again_under_a_later_prompt(env, monkeypatch):
+def test_nu_prose_s_first_answers_are_read_again_under_a_later_prompt(env, monkeypatch, evidence):
     from ingestion_workflow.pipeline.stages import prose
 
-    settings, catalog, ref, ctx, found = _two_passages(env, "86")
+    settings, catalog, ref, ctx, found = _two_passages(env, "86", evidence=evidence)
     first, second = _texts(catalog, ref, found)
     _earlier_prose(catalog, ref, [(first, ("patients > controls", (-22, -4, -18, 4.1))),
                                  (second, ("controls > patients", (6, -60, 40, 3.9)))])
@@ -1874,13 +1901,13 @@ def test_nu_prose_s_first_answers_are_read_again_under_a_later_prompt(env, monke
     assert read.summary["read_again"] == {"earlier model not interchangeable": 2}
 
 
-def test_results_cleaned_and_resolved_before_nu_prose_v2_are_made_again(env):
+def test_results_cleaned_and_resolved_before_nu_prose_v2_are_made_again(env, evidence):
     """Stored answers are cleaned again without the model, and resolves made before
     statistics were merged are made again: both versions moved on from main's."""
     from ingestion_workflow.catalog import fingerprint
     from ingestion_workflow.pipeline.stages.resolve import SAME_PEAK_MM, SAME_VALUE
 
-    settings, catalog, ref, ctx, found = _two_passages(env, "99")
+    settings, catalog, ref, ctx, found = _two_passages(env, "99", evidence=evidence)
     passages = catalog.artifacts([ref.id], "passages")[ref.id][""]
     metadata = catalog.artifacts([ref.id], "metadata")[ref.id][""]
     stage = ProseStage(settings)
@@ -1903,9 +1930,9 @@ def test_the_normalized_text_is_what_a_re_extraction_changes_and_a_reader_does_n
     assert normalized("T = 5") != normalized("t = 5")
 
 
-def test_a_passage_equal_once_normalized_takes_the_earlier_answer(env):
+def test_a_passage_equal_once_normalized_takes_the_earlier_answer(env, evidence):
     """The old text has a unicode minus and a no-break space where the new one has neither."""
-    settings, catalog, ref, ctx, found = _two_passages(env, "86")
+    settings, catalog, ref, ctx, found = _two_passages(env, "86", evidence=evidence)
     first, second = _texts(catalog, ref, found)
     old = first.replace("-22", "\u221222").replace(" ", "\u00a0", 1)
     assert old != first
@@ -1921,8 +1948,8 @@ def test_a_passage_equal_once_normalized_takes_the_earlier_answer(env):
     pytest.param(lambda t: t.replace("(x", "( x"), id="parenthesis spacing"),
     pytest.param(lambda t: t[t.index(" ") + 1:], id="boundaries moved"),
 ])
-def test_a_passage_whose_text_differs_beyond_normalization_is_read_again(env, change):
-    settings, catalog, ref, ctx, found = _two_passages(env, "87")
+def test_a_passage_whose_text_differs_beyond_normalization_is_read_again(env, change, evidence):
+    settings, catalog, ref, ctx, found = _two_passages(env, "87", evidence=evidence)
     first, second = _texts(catalog, ref, found)
     assert change(first) != first
     _earlier_prose(catalog, ref, [(change(first), ("patients > controls", (-22, -4, -18, 4.1))),
@@ -1935,8 +1962,8 @@ def test_a_passage_whose_text_differs_beyond_normalization_is_read_again(env, ch
 
 
 @pytest.mark.parametrize("earlier", ["nu-prose's first answers", "nu-prose-v2"])
-def test_another_reader_reads_every_passage_again(env, earlier):
-    settings, catalog, ref, ctx, found = _two_passages(env, "88")
+def test_another_reader_reads_every_passage_again(env, earlier, evidence):
+    settings, catalog, ref, ctx, found = _two_passages(env, "88", evidence=evidence)
     if earlier == "nu-prose-v2":
         _run(_prose(settings, _Reader()), ctx, catalog, ref)
     else:
@@ -1951,8 +1978,8 @@ def test_another_reader_reads_every_passage_again(env, earlier):
     assert {p["producer"]["model"] for p in third.payload["passages"]} == {"another-prose-model"}
 
 
-def test_of_two_earlier_copies_of_a_text_the_first_is_taken(env):
-    settings, catalog, ref, ctx, found = _two_passages(env, "89")
+def test_of_two_earlier_copies_of_a_text_the_first_is_taken(env, evidence):
+    settings, catalog, ref, ctx, found = _two_passages(env, "89", evidence=evidence)
     first, second = _texts(catalog, ref, found)
     _earlier_prose(catalog, ref, [(first, ("first copy", (-22, -4, -18, 4.1))),
                                  (first, ("second copy", (-22, -4, -18, 4.1))),
@@ -1967,12 +1994,12 @@ def test_of_two_earlier_copies_of_a_text_the_first_is_taken(env):
     pytest.param('{"space": "MNI", "analyses": []}', "length", id="cut off at the token limit"),
 ])
 def test_an_answer_of_nothing_fails_the_article_rather_than_reading_as_no_coordinates(
-        env, content, finish_reason):
+        env, content, finish_reason, evidence):
     from types import SimpleNamespace
 
     from ingestion_workflow.clients.prose_coordinates import ProseCoordinateClient
 
-    settings, catalog, ref, ctx, found = _two_passages(env, "100")
+    settings, catalog, ref, ctx, found = _two_passages(env, "100", evidence=evidence)
     reader = ProseCoordinateClient(settings)
     choice = SimpleNamespace(message=SimpleNamespace(content=content), finish_reason=finish_reason)
     reader.client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(
@@ -1981,12 +2008,13 @@ def test_an_answer_of_nothing_fails_the_article_rather_than_reading_as_no_coordi
     assert (read.status, read.error) == (Status.FAILED, "2 of 2 passages failed")
 
 
-def _read_before(env):
+def _read_before(env, evidence):
     """Three articles: one read OK whose title has changed since, one never read, and one
     read OK whose passages were found again unchanged, which takes its stored answers."""
     settings, catalog, path = env
     ctx = Context(settings, catalog)
-    read, unread, same = (catalog.register(Identifier(pmid=p)) for p in ("110", "111", "114"))
+    read, unread, same = (catalog.register(Identifier(pmid=p),
+            evidence) for p in ("110", "111", "114"))
     for ref in (read, unread, same):
         _record_upstream(catalog, ref, path, text=TWO_PASSAGES)
         _run(PassagesStage(settings), ctx, catalog, ref)
@@ -2012,10 +2040,11 @@ def _execute(stage, ctx, catalog, refs):
     return outcomes
 
 
-def test_an_unreachable_server_stops_prose_and_leaves_every_article_as_it_was(env, caplog):
+def test_an_unreachable_server_stops_prose_and_leaves_every_article_as_it_was(
+        env, caplog, evidence):
     from ingestion_workflow.tests.clients.test_prose_client import _served, _server
 
-    settings, catalog, ctx, read, unread, same = _read_before(env)
+    settings, catalog, ctx, read, unread, same = _read_before(env, evidence=evidence)
     before = catalog.artifacts([read.id, same.id], "prose")
     stored = {i: catalog.payload(before[i][""]) for i in (read.id, same.id)}
     server = _server(up=False)
@@ -2033,12 +2062,13 @@ def test_an_unreachable_server_stops_prose_and_leaves_every_article_as_it_was(en
     assert stop.startswith("prose stopped: nu-prose-v2 at") and "did not answer" in stop
 
 
-def test_a_server_up_that_fails_on_one_article_s_input_fails_that_article_only(env):
+def test_a_server_up_that_fails_on_one_article_s_input_fails_that_article_only(env, evidence):
     from ingestion_workflow.tests.clients.test_prose_client import _served, _server
 
     settings, catalog, path = env
     ctx = Context(settings, catalog)
-    good, bad = catalog.register(Identifier(pmid="112")), catalog.register(Identifier(pmid="113"))
+    good = catalog.register(Identifier(pmid="112"), evidence)
+    bad = catalog.register(Identifier(pmid="113"), evidence)
     _record_upstream(catalog, good, path)
     _record_upstream(catalog, bad, path, text=TWO_PASSAGES)
     for ref in (good, bad):
@@ -2051,13 +2081,13 @@ def test_a_server_up_that_fails_on_one_article_s_input_fails_that_article_only(e
         Status.FAILED, "1 of 2 passages failed")
 
 
-def test_a_stopped_prose_stage_writes_no_take_back_either(env):
+def test_a_stopped_prose_stage_writes_no_take_back_either(env, evidence):
     from ingestion_workflow.pipeline.plan import Work
     from ingestion_workflow.pipeline.stage import NO_TEXT
     from ingestion_workflow.tests.clients.test_prose_client import _served, _server
 
-    settings, catalog, ctx, read, unread, same = _read_before(env)
-    taken = catalog.register(Identifier(pmid="115"))
+    settings, catalog, ctx, read, unread, same = _read_before(env, evidence=evidence)
+    taken = catalog.register(Identifier(pmid="115"), evidence)
     take_back = Work(ref=taken, source="", fingerprint=NO_TEXT, upstream=None)
     ids = [read.id, unread.id]
     plan = ProseStage(settings).plan(ctx, [read, unread], catalog.artifacts(ids, "prose"),
@@ -2089,13 +2119,14 @@ def _empty_re_read(catalog, ref, *, analyses="no coordinate tables", prose_analy
     catalog.record(rows)
 
 
-def test_an_empty_re_read_takes_back_everything_made_from_the_earlier_reading(env, monkeypatch):
+def test_an_empty_re_read_takes_back_everything_made_from_the_earlier_reading(
+        env, monkeypatch, evidence):
     """w2ni664ashw2: the role-free model read the passage again and found no coordinate, and
     the article has no table. The resolve, roles, space and upload made from the earlier
     reading's one analysis are taken back, upload records why, and roles is not left waiting
     on a resolve made from other prose."""
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="90"))
+    ref = catalog.register(Identifier(pmid="90"), evidence)
     _empty_re_read(catalog, ref)
     ctx = Context(settings, catalog)
     for stage in (ResolveStage(settings), _roles(settings, monkeypatch), SpaceStage(settings)):
@@ -2111,20 +2142,21 @@ def test_an_empty_re_read_takes_back_everything_made_from_the_earlier_reading(en
     assert (synced.error, uploaded.error) == (NO_ANALYSES, NO_ANALYSES)
 
 
-def test_an_article_never_resolved_with_nothing_to_resolve_is_skipped_not_taken_back(env):
+def test_an_article_never_resolved_with_nothing_to_resolve_is_skipped_not_taken_back(
+        env, evidence):
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="91"))
+    ref = catalog.register(Identifier(pmid="91"), evidence)
     catalog.record([Outcome(article_id=ref.id, stage="prose", source="", fingerprint="empty",
                             payload={"passages": []}, summary={"passages": 0, "coordinates": 0})])
     plan, outcomes = _run(ResolveStage(settings), Context(settings, catalog), catalog, ref)
     assert (plan.skipped, plan.pending, outcomes) == (1, [], [])
 
 
-def test_a_re_read_that_finds_points_again_rebuilds_a_taken_back_resolve(env):
+def test_a_re_read_that_finds_points_again_rebuilds_a_taken_back_resolve(env, evidence):
     from ingestion_workflow.pipeline.stage import NO_ANALYSES, NO_TEXT
 
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="92"))
+    ref = catalog.register(Identifier(pmid="92"), evidence)
     catalog.record([Outcome.failure(ref.id, "resolve", "", NO_ANALYSES, fingerprint=NO_TEXT),
                     Outcome(article_id=ref.id, stage="prose", source="", fingerprint="found",
                             payload={"space": "MNI",
@@ -2159,11 +2191,12 @@ def _analyses(ref, status=Status.OK, error=None, **summary):
     pytest.param(lambda ref: Outcome.failure(ref.id, "extract", "pubget", "TimeoutError",
                                              summary={"tables": 0}), id="failed extraction"),
 ])
-def test_tables_not_known_to_be_empty_only_block(env, monkeypatch, tables, prose_analyses):
+def test_tables_not_known_to_be_empty_only_block(
+        env, monkeypatch, tables, prose_analyses, evidence):
     """A failed, partial or missing tables run says nothing about the article: with empty
     prose, nothing is taken back and nothing is retracted; resolve blocks, with its reason."""
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="93"))
+    ref = catalog.register(Identifier(pmid="93"), evidence)
     _empty_re_read(catalog, ref, analyses=tables(ref), prose_analyses=prose_analyses)
     ctx = Context(settings, catalog)
     plan, outcomes = _run(ResolveStage(settings), ctx, catalog, ref)
@@ -2174,13 +2207,13 @@ def test_tables_not_known_to_be_empty_only_block(env, monkeypatch, tables, prose
     assert not any(o.error for o in outcomes)
 
 
-def test_a_failed_table_reading_holds_in_resolve_and_in_the_upload_gate_alike(env):
+def test_a_failed_table_reading_holds_in_resolve_and_in_the_upload_gate_alike(env, evidence):
     """Resolve's take-back and upload's gate ask one rule of the same readings: with the
     prose read again and empty, a table reading that failed takes nothing back in either."""
     from ingestion_workflow.pipeline.upstream import Assessor, Verdict
 
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="98"))
+    ref = catalog.register(Identifier(pmid="98"), evidence)
     _empty_re_read(catalog, ref, analyses=_analyses(
         ref, Status.FAILED, "APIConnectionError: Connection error."))
     ctx = Context(settings, catalog)
@@ -2191,9 +2224,9 @@ def test_a_failed_table_reading_holds_in_resolve_and_in_the_upload_gate_alike(en
     assert "APIConnectionError: Connection error." in assessed.reason
 
 
-def test_tables_read_whole_and_empty_are_known_to_hold_nothing(env, monkeypatch):
+def test_tables_read_whole_and_empty_are_known_to_hold_nothing(env, monkeypatch, evidence):
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="94"))
+    ref = catalog.register(Identifier(pmid="94"), evidence)
     _empty_re_read(catalog, ref, analyses=_analyses(
         ref, tables=0, unread={"T2": "repeats another table's numbers"}))
     _, (taken,) = _run(ResolveStage(settings), Context(settings, catalog), catalog, ref)
@@ -2205,12 +2238,12 @@ def test_tables_read_whole_and_empty_are_known_to_hold_nothing(env, monkeypatch)
     pytest.param(lambda ref: _analyses(ref, tables=0), id="tables read again, none"),
 ])
 def test_a_resolve_made_from_the_tables_alone_is_taken_back_once_they_hold_nothing(
-        env, monkeypatch, tables):
+        env, monkeypatch, tables, evidence):
     """The prose added nothing to it, and the tables it was made from were read again
     whole and hold nothing: it is no longer the article's, so it is taken back like one
     the prose made, down to the upload's record."""
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="95"))
+    ref = catalog.register(Identifier(pmid="95"), evidence)
     found = tables(ref)
     _empty_re_read(catalog, ref, prose_analyses=0,
                    **({"analyses": found} if found is not None else {}))
@@ -2223,9 +2256,10 @@ def test_a_resolve_made_from_the_tables_alone_is_taken_back_once_they_hold_nothi
     assert (synced.error, uploaded.error) == (NO_ANALYSES, NO_ANALYSES)
 
 
-def test_an_empty_re_read_never_uploaded_is_recorded_taken_back_with_its_reason(env, monkeypatch):
+def test_an_empty_re_read_never_uploaded_is_recorded_taken_back_with_its_reason(
+        env, monkeypatch, evidence):
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="97"))
+    ref = catalog.register(Identifier(pmid="97"), evidence)
     _empty_re_read(catalog, ref, without=("upload",))
     ctx = Context(settings, catalog)
     for stage in (ResolveStage(settings), _roles(settings, monkeypatch), SpaceStage(settings)):
@@ -2235,9 +2269,9 @@ def test_an_empty_re_read_never_uploaded_is_recorded_taken_back_with_its_reason(
     assert (done.status, done.error, done.fingerprint) == (Status.FAILED, NO_ANALYSES, NO_TEXT)
 
 
-def test_the_run_report_counts_an_empty_re_read_as_taken_back(env, monkeypatch):
+def test_the_run_report_counts_an_empty_re_read_as_taken_back(env, monkeypatch, evidence):
     settings, catalog, path = env
-    ref = catalog.register(Identifier(pmid="98"))
+    ref = catalog.register(Identifier(pmid="98"), evidence)
     _empty_re_read(catalog, ref)
     report = run_stages(Context(settings, catalog), [ResolveStage(settings)], [ref])
     assert (report.stages["resolve"].failed, report.stages["resolve"].taken_back) == (1, 1)

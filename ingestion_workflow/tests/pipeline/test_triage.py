@@ -333,7 +333,7 @@ def test_the_digest_is_read_once_not_per_article(tmp_path):
 
 # -- an old extraction must not outbid the current one -----------------------
 
-def _catalog_with(tmp_path, extractions):
+def _catalog_with(tmp_path, extractions, evidence):
     """An article downloaded from ace and elsevier, with the given extractions.
 
     `extractions` maps source -> (tables, current?). A current one carries the
@@ -351,7 +351,7 @@ def _catalog_with(tmp_path, extractions):
         catalog_root=tmp_path / "k", coordinate_gate_path=str(gate),
     )
     catalog = Catalog.open(settings.catalog_root)
-    ref = catalog.register(Identifier(pmid="1"))
+    ref = catalog.register(Identifier(pmid="1"), evidence)
     for source in ("ace", "elsevier"):
         catalog.record([Outcome(article_id=ref.id, stage="download", source=source,
                                 fingerprint=f"dl-{source}", payload={"files": []})])
@@ -377,23 +377,23 @@ def _triaged_source(settings, catalog, ref):
     return [work.upstream.source for work in plan.pending]
 
 
-def test_a_stale_extraction_with_more_tables_does_not_outbid_the_current_one(tmp_path):
+def test_a_stale_extraction_with_more_tables_does_not_outbid_the_current_one(tmp_path, evidence):
     """An old ACE extraction holding each table twice outnumbered the new
     elsevier one for 14,991 articles; triage judged the old one."""
     settings, catalog, ref = _catalog_with(
-        tmp_path, {"ace": (10, False), "elsevier": (3, True)})
+        tmp_path, {"ace": (10, False), "elsevier": (3, True)}, evidence=evidence)
     with catalog:
         assert _triaged_source(settings, catalog, ref) == ["elsevier"]
 
 
-def test_with_nothing_current_the_stale_extraction_is_still_triaged(tmp_path):
+def test_with_nothing_current_the_stale_extraction_is_still_triaged(tmp_path, evidence):
     settings, catalog, ref = _catalog_with(
-        tmp_path, {"ace": (3, False), "elsevier": (10, False)})
+        tmp_path, {"ace": (3, False), "elsevier": (10, False)}, evidence=evidence)
     with catalog:
         assert _triaged_source(settings, catalog, ref) == ["elsevier"]
 
 
-def test_sync_writes_the_extraction_triage_judged(tmp_path):
+def test_sync_writes_the_extraction_triage_judged(tmp_path, evidence):
     """Table ids are unique only within an extraction, so sync must write the
     one the analyses came from, not the one with the most coordinates."""
     from ingestion_workflow.catalog import Outcome
@@ -401,7 +401,7 @@ def test_sync_writes_the_extraction_triage_judged(tmp_path):
     from ingestion_workflow.pipeline.stages.sync import _synced_extraction
 
     settings, catalog, ref = _catalog_with(
-        tmp_path, {"ace": (10, False), "elsevier": (3, True)})
+        tmp_path, {"ace": (10, False), "elsevier": (3, True)}, evidence=evidence)
     with catalog:
         ctx = Context(settings, catalog)
         extractions = catalog.artifacts([ref.id], "extract")[ref.id]

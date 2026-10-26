@@ -122,10 +122,10 @@ def env(tmp_path, monkeypatch):
         yield settings, catalog, stages, reader, config, tmp_path
 
 
-def _article(catalog, tmp_path, pmid, metadata_fingerprint="me-1"):
+def _article(catalog, tmp_path, pmid, metadata_fingerprint="me-1", *, evidence):
     """Downloaded and extracted, with one coordinate table, and its metadata as main wrote
     it: with no digests."""
-    ref = catalog.register(Identifier(pmid=pmid))
+    ref = catalog.register(Identifier(pmid=pmid), evidence)
     text, table = (tmp_path / f"{pmid}{ext}" for ext in (".txt", ".html"))
     xml = tmp_path / pmid / "article.xml"
     xml.parent.mkdir()
@@ -191,10 +191,11 @@ def _later(catalog, ref, stage):
 
 
 @pytest.fixture()
-def made(env):
+def made(env, evidence):
     """`kept`, made as main made it; `stale`, whose metadata changed after it was."""
     settings, catalog, stages, reader, config, tmp_path = env
-    kept, stale = _article(catalog, tmp_path, "1"), _article(catalog, tmp_path, "2")
+    kept = _article(catalog, tmp_path, "1", evidence=evidence)
+    stale = _article(catalog, tmp_path, "2", evidence=evidence)
     for ref in (kept, stale):
         _as_main_made_it(settings, catalog, stages, ref)
     catalog.record([Outcome(article_id=stale.id, stage="metadata", source="",
@@ -305,10 +306,10 @@ def test_an_empty_fingerprint_made_from_is_left_for_repair(made):
 
 
 @pytest.fixture()
-def migrated(env):
+def migrated(env, evidence):
     """`kept` made as main made it from metadata imported with no fingerprint."""
     settings, catalog, stages, reader, config, tmp_path = env
-    kept = _article(catalog, tmp_path, "1", metadata_fingerprint="")
+    kept = _article(catalog, tmp_path, "1", metadata_fingerprint="", evidence=evidence)
     _as_main_made_it(settings, catalog, stages, kept)
     return env, kept
 

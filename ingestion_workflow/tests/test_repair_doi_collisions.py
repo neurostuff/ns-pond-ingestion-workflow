@@ -70,7 +70,8 @@ def test_a_dry_run_writes_nothing(version_two):
     assert not (root / "catalog.pre-doi-repair.sqlite").exists()
 
 
-def test_the_repair_settles_each_decision_and_the_migration_then_finds_the_owner(version_two):
+def test_the_repair_settles_each_decision_and_the_migration_then_finds_the_owner(
+        version_two, evidence):
     root, table = version_two
     counts = repair.run(root, apply=True, table=table, out=io.StringIO())
     assert counts == {"dropped": 1, "merged": 1, "kept": 1}
@@ -92,11 +93,13 @@ def test_the_repair_settles_each_decision_and_the_migration_then_finds_the_owner
             "22387514", "12671262"}
         assert paper.identifier.pmid == "12671262"   # the earlier PubMed record
         assert cat.artifact("rnn1", "download", "ace") is not None
-        assert cat.register(Identifier(pmid="22387514", doi="10.3233/rnn-1999-00078")).id == "rnn1"
+        assert cat.register(Identifier(pmid="22387514", doi="10.3233/rnn-1999-00078"),
+                evidence).id == "rnn1"
         # two papers sharing a DOI stay two, and the guard still keeps them apart
         assert cat.resolve(Identifier(doi="10.1093/cercor/11.9.888")).id == "award2"
         assert cat.resolve(Identifier(pmid="11552704")).id == "award1"
-        named_both = cat.register(Identifier(pmid="11552704", doi="10.1093/cercor/11.9.888"))
+        named_both = cat.register(Identifier(pmid="11552704", doi="10.1093/cercor/11.9.888"),
+                evidence)
         assert named_both.id == "award1"
         assert cat.resolve(Identifier(pmid="11532893")).id == "award2"
 

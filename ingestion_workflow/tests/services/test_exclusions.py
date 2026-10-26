@@ -18,9 +18,9 @@ from typer.testing import CliRunner
 # -- the catalog -------------------------------------------------------------
 
 
-def test_a_mark_is_recorded_replaced_and_withdrawn(tmp_path):
+def test_a_mark_is_recorded_replaced_and_withdrawn(tmp_path, evidence):
     with Catalog.open(tmp_path / "cat") as catalog:
-        ref = catalog.register(Identifier(pmid="1"))
+        ref = catalog.register(Identifier(pmid="1"), evidence)
         catalog.exclude([(ref.id, "t1", "not coordinates", "crystal structure")])
         catalog.exclude([(ref.id, "t1", "not coordinates", "atomic positions")])
         catalog.exclude([(ref.id, "t2", "not coordinates", "")])
@@ -106,15 +106,15 @@ def config(tmp_path):
     path.write_text(json.dumps({
         "data_root": str(tmp_path / "data"), "cache_root": str(tmp_path / "cache"),
         "catalog_root": str(tmp_path / "catalog"), "ns_pond_root": str(tmp_path / "pond"),
-        "log_to_file": False, "show_progress": False,
+        "log_to_file": False, "show_progress": False, "pubmed_email": "replay@example.com",
     }), encoding="utf-8")
     return path
 
 
-def test_a_review_file_marks_only_its_non_coordinate_tables(config, tmp_path):
+def test_a_review_file_marks_only_its_non_coordinate_tables(config, tmp_path, evidence):
     with Catalog.open(tmp_path / "catalog") as catalog:
-        a = catalog.register(Identifier(pmid="1")).id
-        b = catalog.register(Identifier(pmid="2")).id
+        a = catalog.register(Identifier(pmid="1"), evidence).id
+        b = catalog.register(Identifier(pmid="2"), evidence).id
     review = tmp_path / "review.json"
     review.write_text(json.dumps([
         {"article_id": a, "table_id": "t1", "verdict": "not coordinates", "kind": "crystal", "note": "atoms"},
@@ -133,9 +133,9 @@ def test_a_review_file_marks_only_its_non_coordinate_tables(config, tmp_path):
     assert set(marks[a]) == {"t1"} and marks[a]["t1"]["reason"] == "crystal"
 
 
-def test_an_article_named_on_the_command_line_is_marked_whole(config, tmp_path):
+def test_an_article_named_on_the_command_line_is_marked_whole(config, tmp_path, evidence):
     with Catalog.open(tmp_path / "catalog") as catalog:
-        a = catalog.register(Identifier(pmid="1")).id
+        a = catalog.register(Identifier(pmid="1"), evidence).id
     runner = CliRunner()
     out = runner.invoke(app, ["exclude", "1", "--note", "lat/long", "--config", str(config)])
     assert out.exit_code == 0, out.output

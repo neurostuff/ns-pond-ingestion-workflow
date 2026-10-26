@@ -132,9 +132,9 @@ def _metadata(catalog, ref, record, fingerprint):
                             summary={"digests": metadata_digests(record)})])
 
 
-def _article(catalog, tmp_path, pmid):
+def _article(catalog, tmp_path, pmid, evidence):
     """Downloaded and extracted, with one coordinate table, and its metadata."""
-    ref = catalog.register(Identifier(pmid=pmid))
+    ref = catalog.register(Identifier(pmid=pmid), evidence)
     text, table = (tmp_path / f"{pmid}{ext}" for ext in (".txt", ".html"))
     xml = tmp_path / pmid / "article.xml"
     xml.parent.mkdir()
@@ -208,11 +208,12 @@ CHANGES = ("untouched", "types", "abstract", "verdict", "extraction")
 
 
 @pytest.fixture()
-def made(env):
+def made(env, evidence):
     """One article for each of `CHANGES`, made as main made it and copied to the earlier
     catalog; then their metadata changes and triage runs again, as main runs it."""
     settings, catalog, stages, tmp_path = env
-    refs = {name: _article(catalog, tmp_path, str(n)) for n, name in enumerate(CHANGES, 1)}
+    refs = {name: _article(catalog, tmp_path, str(n),
+            evidence=evidence) for n, name in enumerate(CHANGES, 1)}
     for ref in refs.values():
         _as_main_made_it(settings, catalog, stages, ref)
     earlier = catalog.backup(tmp_path / "earlier.sqlite")

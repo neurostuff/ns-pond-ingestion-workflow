@@ -6,8 +6,8 @@ from .selection import (
     Select,
     Selection,
     everything,
-    from_identifiers,
     narrow,
+    register_manifest,
     resolve_manifest,
 )
 from .stage import Context, Stage
@@ -27,7 +27,7 @@ __all__ = [
     "Work",
     "build",
     "everything",
-    "from_identifiers",
+    "register_manifest",
     "narrow",
     "run_stages",
 ]

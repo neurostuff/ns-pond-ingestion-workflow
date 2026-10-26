@@ -11,8 +11,8 @@ from __future__ import annotations
 import json
 from typing import Dict, List, Optional, Sequence, Set, Tuple
 
-from ingestion_workflow.catalog.evidence import Unreadable, unversioned
-from ingestion_workflow.catalog.store import IdentityError
+from ingestion_workflow.catalog.evidence import Evidence, Unreadable, unversioned
+from ingestion_workflow.catalog.store import Catalog, IdentityError
 from ingestion_workflow.clients.openalex import OpenAlexClient
 from ingestion_workflow.clients.pubmed import PubMedClient, PubMedSummary, summary_of_record
 from ingestion_workflow.clients.semantic_scholar import SemanticScholarClient
@@ -41,9 +41,10 @@ class IDLookupService:
     extractor_name: str = "id_lookup"
     lookup_order: LookupOrder = ("pmid", "doi", "pmcid")
 
-    def __init__(self, settings: Settings, catalog=None) -> None:
+    def __init__(self, settings: Settings, catalog: Catalog, evidence: Evidence) -> None:
         self.settings = settings
         self.catalog = catalog
+        self.evidence = evidence
         self.logger = logging.get_logger(self.__class__.__name__)
 
     # -- Public API -----------------------------------------------------
@@ -101,7 +102,7 @@ class IDLookupService:
         for identifier in identifiers.identifiers:
             if self._is_complete(identifier):
                 continue
-            known = self.catalog.resolve(identifier) if self.catalog is not None else None
+            known = self.catalog.resolve(identifier)
             if known is not None:
                 self._merge_identifier(identifier, known.identifier)
                 if self._is_complete(identifier):
@@ -156,9 +157,9 @@ class IDLookupService:
 
     def _persist_cache_entries(self, identifiers: Sequence[Identifier]) -> None:
         """Newly discovered ids become aliases, so nobody looks them up twice."""
-        if not identifiers or self.catalog is None:
+        if not identifiers:
             return
-        self.catalog.register_many([_clone_identifier(i) for i in identifiers])
+        self.catalog.register_many([_clone_identifier(i) for i in identifiers], self.evidence)
 
     def _log_missing_credentials(self) -> None:
         self.logger.warning(
@@ -191,8 +192,8 @@ class SemanticScholarIDLookupService(IDLookupService):
     extractor_name = "semantic_scholar"
     lookup_order: LookupOrder = ("pmid", "doi")
 
-    def __init__(self, settings: Settings, catalog=None) -> None:
-        super().__init__(settings, catalog)
+    def __init__(self, settings: Settings, catalog: Catalog, evidence: Evidence) -> None:
+        super().__init__(settings, catalog, evidence)
         self._api_key = settings.semantic_scholar_api_key
         self._client: Optional[SemanticScholarClient]
         if self._api_key:
@@ -218,8 +219,8 @@ class OpenAlexIDLookupService(IDLookupService):
     extractor_name = "openalex"
     lookup_order: LookupOrder = ("pmid", "doi")
 
-    def __init__(self, settings: Settings, catalog=None) -> None:
-        super().__init__(settings, catalog)
+    def __init__(self, settings: Settings, catalog: Catalog, evidence: Evidence) -> None:
+        super().__init__(settings, catalog, evidence)
         self._client: Optional[OpenAlexClient] = OpenAlexClient.from_settings(settings)
 
     def can_run(self) -> bool:  # pragma: no cover - trivial
@@ -240,8 +241,8 @@ class PubMedIDLookupService(IDLookupService):
     extractor_name = "pubmed"
     lookup_order: LookupOrder = ("pmid", "doi", "pmcid")
 
-    def __init__(self, settings: Settings, catalog=None) -> None:
-        super().__init__(settings, catalog)
+    def __init__(self, settings: Settings, catalog: Catalog, evidence: Evidence) -> None:
+        super().__init__(settings, catalog, evidence)
         self._email = settings.pubmed_email
         self._api_key = settings.pubmed_api_key
         self._tool = settings.pubmed_tool or "ingestion-workflow"
@@ -295,8 +296,8 @@ class CrossrefIDLookupService(IDLookupService):
     #: PubMed first: its spellings of a DOI are what Crossref's other side is asked by.
     lookup_order: LookupOrder = ("pmid", "doi")
 
-    def __init__(self, settings: Settings, catalog=None) -> None:
-        super().__init__(settings, catalog)
+    def __init__(self, settings: Settings, catalog: Catalog, evidence: Evidence) -> None:
+        super().__init__(settings, catalog, evidence)
         #: (kind, value, why) of each id that would have collided where the record had it,
         #: and was filed where the evidence puts it.
         self.resolved: List[Tuple[str, str, str]] = []
@@ -304,12 +305,6 @@ class CrossrefIDLookupService(IDLookupService):
         #: The batch's identifiers holding each id, by (kind, value).
         self._claims: Dict[Tuple[str, str], List[Identifier]] = {}
         self._failed: Set[int] = set()
-
-    def can_run(self) -> bool:
-        return self.catalog is not None and self.catalog.evidence is not None
-
-    def _missing_credentials_reason(self) -> str:
-        return "the catalog was opened without PubMed and registry evidence"
 
     def find_identifiers(self, identifiers: Identifiers) -> Identifiers:
         self._batch = identifiers.identifiers
@@ -379,7 +374,7 @@ class CrossrefIDLookupService(IDLookupService):
         paper = False
         if doi is not None and doi not in held:
             try:
-                paper = self.catalog.evidence.same_paper(doi, summary)
+                paper = self.evidence.same_paper(doi, summary)
                 why = "which the registry does not give that paper"
             except Unreadable as exc:
                 why = f"and the registry cannot say whether that is its paper: {exc}"
@@ -423,7 +418,7 @@ class CrossrefIDLookupService(IDLookupService):
                 self._file_crossref(identifier, doi, article)
 
     def _file_crossref(self, identifier: Identifier, doi: str, article: Optional[str]) -> None:
-        evidence = self.catalog.evidence
+        evidence = self.evidence
         record = evidence.record(doi)
         if record is None:
             return
@@ -463,7 +458,7 @@ class CrossrefIDLookupService(IDLookupService):
                 and unversioned(doi) == unversioned(identifier.doi)):
             self._add(identifier, "alternative_dois", doi, article)
             return
-        record = None if is_preprint_doi(doi) else self.catalog.evidence.record(doi)
+        record = None if is_preprint_doi(doi) else self.evidence.record(doi)
         if is_preprint_doi(doi) or (record is not None and _is_preprint(record)):
             self._add(identifier, "preprint_dois", doi, article)
         else:
@@ -486,7 +481,7 @@ class CrossrefIDLookupService(IDLookupService):
             self._add(identifier, "alternative_dois", doi, article)
             return
         try:
-            same = self.catalog.evidence.same_dois(held, doi)
+            same = self.evidence.same_dois(held, doi)
             why = f"the registries do not give it and the article's {held} one work"
         except Unreadable as exc:
             same, why = False, f"the registry cannot say whether it is {held}'s work: {exc}"
@@ -539,8 +534,8 @@ class CrossrefIDLookupService(IDLookupService):
                 self.logger.warning("Unreadable stored PubMed record %s: %s", path, exc)
             else:
                 if stored is not None and PubMedClient._extract_pmid(record) == pmid:
-                    self.catalog.evidence.hold({pmid: stored})
-        return self.catalog.evidence.summaries([pmid]).get(pmid)
+                    self.evidence.hold({pmid: stored})
+        return self.evidence.summaries([pmid]).get(pmid)
 
 
 def _is_preprint(record) -> bool:

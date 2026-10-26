@@ -277,9 +277,9 @@ def _plan(stage, settings, catalog, ref, upstream_stage):
                       catalog.artifacts(ids, upstream_stage))
 
 
-def test_set_aside_content_is_recorded_as_holding_nothing_and_why(env):
+def test_set_aside_content_is_recorded_as_holding_nothing_and_why(env, evidence):
     settings, catalog, _ = env
-    ref = catalog.register(Identifier(pmid="27004598"))
+    ref = catalog.register(Identifier(pmid="27004598"), evidence)
     _downloaded(catalog, ref, "wiley")
 
     outcome = _set_aside(settings, catalog, ref)
@@ -293,9 +293,9 @@ def test_set_aside_content_is_recorded_as_holding_nothing_and_why(env):
     assert content.symbols_as_digits["tables_set_aside"] == 2
 
 
-def test_a_pdf_read_into_tables_and_no_text_is_recorded_as_before(env):
+def test_a_pdf_read_into_tables_and_no_text_is_recorded_as_before(env, evidence):
     settings, catalog, _ = env
-    ref = catalog.register(Identifier(pmid="3"))
+    ref = catalog.register(Identifier(pmid="3"), evidence)
     _downloaded(catalog, ref, "pdf")
     content = ExtractedContent(slug=ref.id, source=DownloadSource.PDF, tables=[_table()])
 
@@ -306,9 +306,10 @@ def test_a_pdf_read_into_tables_and_no_text_is_recorded_as_before(env):
     assert "symbols_as_digits" not in outcome.summary
 
 
-def test_the_source_below_a_set_aside_pdf_is_extracted_and_then_the_article_is_fresh(env):
+def test_the_source_below_a_set_aside_pdf_is_extracted_and_then_the_article_is_fresh(
+        env, evidence):
     settings, catalog, tmp_path = env
-    ref = catalog.register(Identifier(pmid="27004598"))
+    ref = catalog.register(Identifier(pmid="27004598"), evidence)
     _downloaded(catalog, ref, "wiley", "ace")
     _set_aside(settings, catalog, ref)
 
@@ -321,9 +322,9 @@ def test_the_source_below_a_set_aside_pdf_is_extracted_and_then_the_article_is_f
 
 
 @pytest.mark.parametrize("ace_failed", [False, True])
-def test_a_set_aside_pdf_with_nothing_else_due_is_fresh_not_retried(env, ace_failed):
+def test_a_set_aside_pdf_with_nothing_else_due_is_fresh_not_retried(env, ace_failed, evidence):
     settings, catalog, _ = env
-    ref = catalog.register(Identifier(pmid="27004598"))
+    ref = catalog.register(Identifier(pmid="27004598"), evidence)
     _downloaded(catalog, ref, *(["wiley", "ace"] if ace_failed else ["wiley"]))
     if ace_failed:
         catalog.record([Outcome.failure(ref.id, "extract", "ace", "nope", permanent=True)])
@@ -335,11 +336,11 @@ def test_a_set_aside_pdf_with_nothing_else_due_is_fresh_not_retried(env, ace_fai
 
 
 @pytest.mark.parametrize("ace_tables", [1, 0])
-def test_triage_and_passages_read_the_ace_text_beside_a_set_aside_pdf(env, ace_tables):
+def test_triage_and_passages_read_the_ace_text_beside_a_set_aside_pdf(env, ace_tables, evidence):
     """Also when ACE kept no table, as for a text-only ACE beside a PDF whose two tables
     were set aside."""
     settings, catalog, tmp_path = env
-    ref = catalog.register(Identifier(pmid="27004598"))
+    ref = catalog.register(Identifier(pmid="27004598"), evidence)
     _downloaded(catalog, ref, "wiley", "ace")
     _set_aside(settings, catalog, ref)
     _extracted(settings, catalog, ref, "ace", CLEAN_CD6FEP6C7MXV, tmp_path, tables=ace_tables)
@@ -359,11 +360,11 @@ def _made_from_the_misread_text(catalog, ref):
     ])
 
 
-def test_what_was_made_from_a_set_aside_pdf_alone_is_taken_back(env):
+def test_what_was_made_from_a_set_aside_pdf_alone_is_taken_back(env, evidence):
     """Passages read from the misread text before it was set aside are taken back, and
     triage judges the extraction again, which now holds no table."""
     settings, catalog, _ = env
-    ref = catalog.register(Identifier(pmid="27004598"))
+    ref = catalog.register(Identifier(pmid="27004598"), evidence)
     _downloaded(catalog, ref, "wiley")
     _made_from_the_misread_text(catalog, ref)
     _set_aside(settings, catalog, ref)
@@ -378,16 +379,16 @@ def test_what_was_made_from_a_set_aside_pdf_alone_is_taken_back(env):
     assert ExtractedContent.from_dict(catalog.payload(work.upstream)).tables == []
 
 
-def test_the_funnel_names_the_set_aside_text_as_why_an_article_has_none(env):
+def test_the_funnel_names_the_set_aside_text_as_why_an_article_has_none(env, evidence):
     settings, catalog, _ = env
-    ref = catalog.register(Identifier(pmid="27004598"))
+    ref = catalog.register(Identifier(pmid="27004598"), evidence)
     _downloaded(catalog, ref, "wiley")
     _made_from_the_misread_text(catalog, ref)
     _set_aside(settings, catalog, ref)
     passages = PassagesStage(settings)
     catalog.record(list(passages.execute(
         Context(settings, catalog), _plan(passages, settings, catalog, ref, "extract").pending)))
-    other = catalog.register(Identifier(pmid="4"))
+    other = catalog.register(Identifier(pmid="4"), evidence)
     _downloaded(catalog, other, "pdf")
     catalog.record([
         Outcome(article_id=other.id, stage="extract", source="pdf", fingerprint="x",
@@ -395,7 +396,7 @@ def test_the_funnel_names_the_set_aside_text_as_why_an_article_has_none(env):
         Outcome.failure(other.id, "passages", "", NO_TEXT, fingerprint=NO_TEXT),
     ])
     # an extraction that notes some other reason is not one set aside
-    noted = catalog.register(Identifier(pmid="8"))
+    noted = catalog.register(Identifier(pmid="8"), evidence)
     _downloaded(catalog, noted, "pdf")
     catalog.record([
         Outcome(article_id=noted.id, stage="extract", source="pdf", fingerprint="x",
@@ -424,14 +425,16 @@ def _script():
     return module
 
 
-def test_the_manifest_lists_the_articles_whose_stored_pdf_text_would_now_read_differently(env):
+def test_the_manifest_lists_the_articles_whose_stored_pdf_text_would_now_read_differently(
+        env, evidence):
     """Extractions stored before the extractor repaired a NUL minus or set a misread text
     aside: a misread text and one with a NUL minus are listed, the latter at a path
     recorded relative to the catalog's directory. A sound PDF, a misread ACE text, a
     failed pdf extraction and one already set aside are not."""
     settings, catalog, tmp_path = env
     names = ["misread", "nul minus", "sound", "ace", "failed", "set aside"]
-    refs = {name: catalog.register(Identifier(pmid=str(20 + i), doi=f"10.1002/hbm.{20 + i}"))
+    refs = {name: catalog.register(Identifier(pmid=str(20 + i), doi=f"10.1002/hbm.{20 + i}"),
+            evidence)
             for i, name in enumerate(names)}
     for name, ref in refs.items():
         _downloaded(catalog, ref, "ace" if name == "ace" else "wiley")

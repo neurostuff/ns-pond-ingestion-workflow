@@ -34,8 +34,8 @@ def catalog(tmp_path):
         yield cat
 
 
-def _store(catalog, payload, stages=("analyses", "roles", "space"), pmid="12"):
-    ref = catalog.register(Identifier(pmid=pmid))
+def _store(catalog, payload, stages=("analyses", "roles", "space"), pmid="12", *, evidence):
+    ref = catalog.register(Identifier(pmid=pmid), evidence)
     catalog.record([
         Outcome(article_id=ref.id, stage=stage, source="", fingerprint=f"{stage}-fp",
                 payload=payload, summary={"tables": len(payload)})
@@ -59,13 +59,13 @@ def _run(catalog, tmp_path, apply=True, backup="backup"):
     return counts, out.getvalue()
 
 
-def test_a_papers_own_negative_contrast_pairs_with_its_own_half(catalog, tmp_path):
+def test_a_papers_own_negative_contrast_pairs_with_its_own_half(catalog, tmp_path, evidence):
     """"Load (negative)" is the paper's name; split, it was stored with a second suffix."""
     ref = _store(catalog, {"t1": _legacy(
         _a("Load"),
         _a("Load (negative)", x=2),
         _a("Load (negative) (negative)", value=-4.0, x=3),
-    )})
+    )}, evidence=evidence)
     counts, _ = _run(catalog, tmp_path)
     for stage in ("analyses", "roles", "space"):
         payload = _payload(catalog, ref, stage)
@@ -79,12 +79,12 @@ def test_a_papers_own_negative_contrast_pairs_with_its_own_half(catalog, tmp_pat
             counts["leftovers declared"]) == (3, 3, 0)
 
 
-def test_pairs_are_found_from_the_end(catalog, tmp_path):
+def test_pairs_are_found_from_the_end(catalog, tmp_path, evidence):
     ref = _store(catalog, {"t1": _legacy(
         _a("A"),
         _a("A (negative)", value=-4.0, x=2),
         _a("A (negative) (negative)", value=-4.0, x=3),
-    )}, stages=("space",))
+    )}, stages=("space",), evidence=evidence)
     _run(catalog, tmp_path)
     assert _halves(_payload(catalog, ref)) == [
         ("A", None),
@@ -93,11 +93,11 @@ def test_pairs_are_found_from_the_end(catalog, tmp_path):
     ]
 
 
-def test_both_suffix_spellings_pair(catalog, tmp_path):
+def test_both_suffix_spellings_pair(catalog, tmp_path, evidence):
     ref = _store(catalog, {"t1": _legacy(
         _a("A > B"), _a("A > B (inverse)", value=-4.0, x=3),
         _a("C"), _a("C (negative)", value=-4.0, x=4),
-    )}, stages=("space",))
+    )}, stages=("space",), evidence=evidence)
     _run(catalog, tmp_path)
     assert [s["half"] if s else None for _, s in _halves(_payload(catalog, ref))] == [
         "original", "inverse", "original", "inverse"]
@@ -105,14 +105,15 @@ def test_both_suffix_spellings_pair(catalog, tmp_path):
         "A > B", "B > A", "C", "C (inverse)"]
 
 
-def test_unpaired_leftovers_are_declared_inverse_halves_with_no_original(catalog, tmp_path):
+def test_unpaired_leftovers_are_declared_inverse_halves_with_no_original(
+        catalog, tmp_path, evidence):
     ref = _store(catalog, {
         # rsk26miv2pjw: the suffixed half first in its collection.
         "t1": _legacy(_a("Encoding (negative)", value=-4.0), _a("Retrieval")),
         # Its look-alike original sits in another table.
         "t2": _legacy(_a("X", table_id="t1"), _a("X (negative)", table_id="t2", value=-4.0),
                       slug="s::t2"),
-    }, stages=("space",))
+    }, stages=("space",), evidence=evidence)
     counts, _ = _run(catalog, tmp_path)
     payload = _payload(catalog, ref)
     assert _halves(payload, "t1") == [
@@ -122,7 +123,7 @@ def test_unpaired_leftovers_are_declared_inverse_halves_with_no_original(catalog
     assert (counts["splits paired"], counts["leftovers declared"]) == (0, 2)
 
 
-def test_a_migrated_split_is_the_split_the_stage_writes(catalog, tmp_path):
+def test_a_migrated_split_is_the_split_the_stage_writes(catalog, tmp_path, evidence):
     """Name, values and declaration of each half match `split_by_sign` on the pooled analysis."""
     from ingestion_workflow.models import Coordinate
     from ingestion_workflow.services.create_analyses import split_by_sign
@@ -136,7 +137,7 @@ def test_a_migrated_split_is_the_split_the_stage_writes(catalog, tmp_path):
     ref = _store(catalog, {"t1": _legacy(
         {**_a("Faces vs. Houses"), "coordinates": original},
         {**_a("Faces vs. Houses (negative)"), "coordinates": inverse},
-    )}, stages=("space",))
+    )}, stages=("space",), evidence=evidence)
     _run(catalog, tmp_path)
     migrated = AnalysisCollection.from_dict(_payload(catalog, ref)["t1"]).analyses
 
@@ -148,13 +149,13 @@ def test_a_migrated_split_is_the_split_the_stage_writes(catalog, tmp_path):
     assert [c.statistic_value for c in migrated[1].coordinates] == [3.0, 2.5, 0.01, 1.5]
 
 
-def test_a_suffixed_name_with_a_point_not_negative_is_the_papers_own(catalog, tmp_path):
+def test_a_suffixed_name_with_a_point_not_negative_is_the_papers_own(catalog, tmp_path, evidence):
     """The stage put only negative points in an inverse half."""
     ref = _store(catalog, {"t1": _legacy(
         _a("Deactivation (negative)", value=3.0),
         _a("Load"), _a("Load (negative)", x=2),
         _a("Rest (inverse)", value=None),
-    )}, stages=("space",))
+    )}, stages=("space",), evidence=evidence)
     counts, _ = _run(catalog, tmp_path)
     assert _halves(_payload(catalog, ref)) == [
         ("Deactivation (negative)", None), ("Load", None), ("Load (negative)", None),
@@ -163,8 +164,9 @@ def test_a_suffixed_name_with_a_point_not_negative_is_the_papers_own(catalog, tm
     assert counts["splits paired"] == counts["leftovers declared"] == 0
 
 
-def test_a_second_run_changes_nothing(catalog, tmp_path):
-    ref = _store(catalog, {"t1": _legacy(_a("Load"), _a("Load (negative)", value=-4.0))})
+def test_a_second_run_changes_nothing(catalog, tmp_path, evidence):
+    ref = _store(catalog, {"t1": _legacy(_a("Load"), _a("Load (negative)", value=-4.0))},
+            evidence=evidence)
     _run(catalog, tmp_path)
     first = catalog.artifact(ref.id, "space", "")
     counts, _ = _run(catalog, tmp_path, backup="backup2")
@@ -173,9 +175,9 @@ def test_a_second_run_changes_nothing(catalog, tmp_path):
     assert counts["payloads unchanged (declared or empty)"] == 3
 
 
-def test_the_dry_run_writes_nothing(catalog, tmp_path):
+def test_the_dry_run_writes_nothing(catalog, tmp_path, evidence):
     payload = {"t1": _legacy(_a("Load"), _a("Load (negative)", value=-4.0))}
-    ref = _store(catalog, payload)
+    ref = _store(catalog, payload, evidence=evidence)
     before = {s: catalog.artifact(ref.id, s, "") for s in ("analyses", "roles", "space")}
     blobs = sorted(p.name for p in (catalog.root / "blobs").rglob("*"))
     counts, out = _run(catalog, tmp_path, apply=False)
@@ -185,9 +187,10 @@ def test_the_dry_run_writes_nothing(catalog, tmp_path):
     assert not (tmp_path / "backup").exists()
 
 
-def test_apply_backs_up_first_repoints_and_leaves_old_blobs_and_fingerprints(catalog, tmp_path):
+def test_apply_backs_up_first_repoints_and_leaves_old_blobs_and_fingerprints(
+        catalog, tmp_path, evidence):
     payload = {"t1": _legacy(_a("Load"), _a("Load (negative)", value=-4.0))}
-    ref = _store(catalog, payload)
+    ref = _store(catalog, payload, evidence=evidence)
     old = catalog.artifact(ref.id, "space", "")
     with pytest.raises(SystemExit, match="--backup"):
         migrate.run(catalog.root, apply=True, backup=None, out=io.StringIO())
@@ -203,7 +206,7 @@ def test_apply_backs_up_first_repoints_and_leaves_old_blobs_and_fingerprints(cat
     assert [a.metadata["split"]["half"] for a in collection.analyses] == ["original", "inverse"]
 
 
-def test_declared_halves_and_prose_sets_are_not_read_by_name(catalog, tmp_path):
+def test_declared_halves_and_prose_sets_are_not_read_by_name(catalog, tmp_path, evidence):
     declared = _legacy(
         _a("Load"),
         _a("Load (negative)", value=-4.0, split={"half": "inverse", "original_index": 0}),
@@ -212,7 +215,7 @@ def test_declared_halves_and_prose_sets_are_not_read_by_name(catalog, tmp_path):
         "t1": declared,
         "prose": _legacy(_a("Faces"), _a("Faces (negative)", table_id="prose", value=-4.0),
                          slug="s::prose"),
-    }, stages=("resolve",))
+    }, stages=("resolve",), evidence=evidence)
     counts, out = _run(catalog, tmp_path)
     payload = _payload(catalog, ref, "resolve")
     assert [n for n, _ in _halves(payload)] == ["Load", "Load (negative)"]
@@ -221,8 +224,10 @@ def test_declared_halves_and_prose_sets_are_not_read_by_name(catalog, tmp_path):
     assert "0 legacy halves left" in out
 
 
-def test_apply_reports_zero_left_and_a_dry_run_says_how_many_would_remain(catalog, tmp_path):
-    _store(catalog, {"t1": _legacy(_a("Load"), _a("Load (negative)", value=-4.0))})
+def test_apply_reports_zero_left_and_a_dry_run_says_how_many_would_remain(
+        catalog, tmp_path, evidence):
+    _store(catalog, {"t1": _legacy(_a("Load"), _a("Load (negative)", value=-4.0))},
+            evidence=evidence)
     counts, out = _run(catalog, tmp_path, apply=False)
     assert "0 legacy halves would remain" in out
     counts, out = _run(catalog, tmp_path)
@@ -230,12 +235,12 @@ def test_apply_reports_zero_left_and_a_dry_run_says_how_many_would_remain(catalo
     assert migrate.main([str(catalog.root), "--apply", "--backup", str(tmp_path / "b2")]) == 0
 
 
-def test_apply_fails_and_lists_a_legacy_half_the_rewrite_left_behind(catalog, tmp_path):
+def test_apply_fails_and_lists_a_legacy_half_the_rewrite_left_behind(catalog, tmp_path, evidence):
     """One malformed table refuses its payload whole, so the other table's half stays."""
     ref = _store(catalog, {
         "t1": _legacy(_a("Load"), _a("Load (negative)", value=-4.0)),
         "t2": {"slug": "s::t2"},
-    }, stages=("space",))
+    }, stages=("space",), evidence=evidence)
     counts, out = _run(catalog, tmp_path)
     assert counts["legacy halves left"] == 1
     assert f"space {ref.id} t1: Load (negative)" in out
@@ -244,8 +249,8 @@ def test_apply_fails_and_lists_a_legacy_half_the_rewrite_left_behind(catalog, tm
     assert code == 1
 
 
-def test_an_unreadable_payload_is_refused_with_its_reason(catalog, tmp_path):
-    ref = _store(catalog, {"t1": {"slug": "s::t1"}}, stages=("space",))
+def test_an_unreadable_payload_is_refused_with_its_reason(catalog, tmp_path, evidence):
+    ref = _store(catalog, {"t1": {"slug": "s::t1"}}, stages=("space",), evidence=evidence)
     old = catalog.artifact(ref.id, "space", "").blob
     counts, out = _run(catalog, tmp_path)
     assert counts["payloads refused"] == 1
@@ -253,22 +258,22 @@ def test_an_unreadable_payload_is_refused_with_its_reason(catalog, tmp_path):
     assert catalog.artifact(ref.id, "space", "").blob == old
 
 
-def test_a_migrated_reverse_the_table_already_prints_falls_back(catalog, tmp_path):
+def test_a_migrated_reverse_the_table_already_prints_falls_back(catalog, tmp_path, evidence):
     """mc6iwfhcggyo reports "Females > Males" and "Males > Females", and both were split."""
     ref = _store(catalog, {"t1": _legacy(
         _a("Females > Males"), _a("Females > Males (negative)", value=-4.0),
         _a("Males > Females"), _a("Males > Females (negative)", value=-3.0),
-    )})
+    )}, evidence=evidence)
     _run(catalog, tmp_path)
     names = [name for name, _ in _halves(_payload(catalog, ref))]
     assert names == ["Females > Males", "Females > Males (inverse)",
                      "Males > Females", "Males > Females (inverse)"]
 
 
-def test_a_migrated_negative_p_is_negated(catalog, tmp_path):
+def test_a_migrated_negative_p_is_negated(catalog, tmp_path, evidence):
     point = {"x": 1.0, "y": 2.0, "z": 3.0, "statistic_value": -0.0099, "statistic_type": "P"}
     inverse = {**_a("A > B (negative)"), "coordinates": [point]}
-    ref = _store(catalog, {"t1": _legacy(_a("A > B"), inverse)})
+    ref = _store(catalog, {"t1": _legacy(_a("A > B"), inverse)}, evidence=evidence)
     _run(catalog, tmp_path)
     half = _payload(catalog, ref)["t1"]["analyses"][1]
     assert (half["name"], half["coordinates"][0]["statistic_value"]) == ("B > A", 0.0099)

@@ -174,8 +174,9 @@ be moved back from `-retracted/`.
 ## When an article holds another paper's identifiers
 
 An article is one paper. Registration (`ingest add`, `ingest run --manifest`,
-`ingest migrate`) checks what it adds against PubMed and the DOI registries, so
-these commands need `pubmed_email`. Two records are one work when their titles are
+`ingest migrate`) and `ingest repair-identity` check what they add against PubMed
+and the DOI registries, so these commands need `pubmed_email`; the others do not.
+Two records are one work when their titles are
 alike and their first authors, years and journals agree; an erratum, a reply or a
 retraction is never the work it is about, a meeting abstract in a supplement issue
 is never its paper, and a book chapter or a conference paper is never an article

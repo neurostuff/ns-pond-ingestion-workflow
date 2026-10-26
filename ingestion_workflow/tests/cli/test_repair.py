@@ -15,7 +15,7 @@ from typer.testing import CliRunner
 
 
 @pytest.fixture()
-def stranded(tmp_path):
+def stranded(tmp_path, evidence):
     config = tmp_path / "settings.yaml"
     config.write_text(
         json.dumps(
@@ -23,6 +23,7 @@ def stranded(tmp_path):
                 "data_root": str(tmp_path / "data"),
                 "cache_root": str(tmp_path / "cache"),
                 "catalog_root": str(tmp_path / "catalog"),
+                "pubmed_email": "replay@example.com",
                 "ns_pond_root": str(tmp_path / "pond"),
                 "log_to_file": False,
                 "show_progress": False,
@@ -31,9 +32,9 @@ def stranded(tmp_path):
         encoding="utf-8",
     )
     with Catalog.open(tmp_path / "catalog") as cat:
-        a = cat.register(Identifier(doi="10.1/c1"))
-        b = cat.register(Identifier(pmcid="PMC81"))
-        survivor = cat.register(Identifier(doi="10.1/c1", pmcid="PMC81")).id
+        a = cat.register(Identifier(doi="10.1/c1"), evidence)
+        b = cat.register(Identifier(pmcid="PMC81"), evidence)
+        survivor = cat.register(Identifier(doi="10.1/c1", pmcid="PMC81"), evidence).id
         retired = b.id if survivor == a.id else a.id
         cat.exclude([(survivor, "t1", "kept", "")])
         for table in ("t1", "t2"):
@@ -93,16 +94,17 @@ def test_apply_needs_a_new_backup_path(stranded):
 
 
 @pytest.fixture()
-def migrated(tmp_path):
+def migrated(tmp_path, evidence):
     """One downloaded article as the migration imported it: no fingerprint."""
     config = tmp_path / "settings.yaml"
     config.write_text(json.dumps({
         "data_root": str(tmp_path / "data"), "cache_root": str(tmp_path / "cache"),
-        "catalog_root": str(tmp_path / "catalog"), "ns_pond_root": str(tmp_path / "pond"),
+        "catalog_root": str(tmp_path / "catalog"), "pubmed_email": "replay@example.com",
+        "ns_pond_root": str(tmp_path / "pond"),
         "download_sources": ["pubget"], "log_to_file": False, "show_progress": False,
     }), encoding="utf-8")
     with Catalog.open(tmp_path / "catalog") as cat:
-        ref = cat.register(Identifier(pmid="1", pmcid="PMC1"))
+        ref = cat.register(Identifier(pmid="1", pmcid="PMC1"), evidence)
         cat.record([Outcome(article_id=ref.id, stage="download", source="pubget",
                             payload={"files": []})])
     return config, tmp_path, ref.id
@@ -139,11 +141,11 @@ def test_apply_copies_the_catalog_then_stores_the_fingerprints(migrated):
     assert "nothing to repair" in _repair(config)
 
 
-def test_apply_refuses_while_anything_reused_now_would_run_again(migrated):
+def test_apply_refuses_while_anything_reused_now_would_run_again(migrated, evidence):
     """A download whose blob is gone cannot be given a fingerprint that makes it fresh."""
     config, tmp_path, article_id = migrated
     with Catalog.open(tmp_path / "catalog") as cat:
-        ref = cat.register(Identifier(pmid="2", pmcid="PMC2"))
+        ref = cat.register(Identifier(pmid="2", pmcid="PMC2"), evidence)
         cat.record([Outcome(article_id=ref.id, stage="download", source="pubget",
                             payload={"files": ["gone"]})])
         cat.blobs._path(cat.artifact(ref.id, "download", "pubget").blob).unlink()

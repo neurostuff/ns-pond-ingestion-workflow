@@ -155,7 +155,8 @@ def test_a_bad_year_is_a_usage_error(config):
 def test_a_provider_without_its_key_is_a_usage_error(tmp_path, monkeypatch):
     monkeypatch.delenv("SEMANTIC_SCHOLAR_API_KEY", raising=False)
     path = tmp_path / "keyless.yaml"
-    path.write_text(json.dumps({"catalog_root": str(tmp_path / "catalog"), "log_to_file": False}))
+    path.write_text(json.dumps({"catalog_root": str(tmp_path / "catalog"), "log_to_file": False,
+                            "pubmed_email": "replay@example.com"}))
     out = _fails(path, "--search", "fMRI", "--provider", "semantic_scholar")
     assert "semantic_scholar_api_key must be configured" in out
 
@@ -167,8 +168,7 @@ def test_a_query_one_provider_cannot_say_is_a_usage_error(config):
 
 @pytest.mark.vcr(match_on=["method", "scheme", "host", "port", "path", "query", "body"])
 def test_a_search_sciencedirect_cannot_split_stops_before_any_provider_searches(
-    config, tmp_path, monkeypatch
-):
+    config, tmp_path, monkeypatch):
     # the cassette holds ScienceDirect's one count and no OpenAlex request
     from ingestion_workflow.clients.sciencedirect import ScienceDirectClient
 
@@ -339,7 +339,8 @@ def test_a_manifest_names_only_what_the_search_searched(config, tmp_path):
 
 
 @pytest.mark.vcr(ALL_PROVIDERS)
-def test_a_manifest_defaults_to_the_data_root_and_lists_articles_oldest_first(config, tmp_path):
+def test_a_manifest_defaults_to_the_data_root_and_lists_articles_oldest_first(
+        config, tmp_path):
     _add(config, "--search", "fMRI AND misophonia")
 
     out = _searches(config, "manifest", "1", "--only-found-by", "sciencedirect")

@@ -104,57 +104,57 @@ def legacy(tmp_path):
     return root
 
 
-def test_migration_imports_every_stage(legacy, tmp_path):
+def test_migration_imports_every_stage(legacy, tmp_path, evidence):
     with Catalog.open(tmp_path / "cat") as catalog:
-        report = migrate_caches(legacy, catalog)
+        report = migrate_caches(legacy, catalog, evidence)
         assert report.imported["download"] == 2
         assert report.imported["upload"] == 2
         assert catalog.count_articles() == 2
 
 
-def test_upload_rows_are_recovered_from_their_slug(legacy, tmp_path):
+def test_upload_rows_are_recovered_from_their_slug(legacy, tmp_path, evidence):
     """Upload rows have no identifier columns; the slug is all there is."""
     with Catalog.open(tmp_path / "cat") as catalog:
-        migrate_caches(legacy, catalog)
+        migrate_caches(legacy, catalog, evidence)
         ref = catalog.resolve(Identifier(pmcid="PMC10634720"))
         upload = catalog.artifact(ref.id, "upload", "")
         assert upload is not None and upload.status is Status.OK
 
 
-def test_download_and_upload_land_on_the_same_article(legacy, tmp_path):
+def test_download_and_upload_land_on_the_same_article(legacy, tmp_path, evidence):
     with Catalog.open(tmp_path / "cat") as catalog:
-        migrate_caches(legacy, catalog)
+        migrate_caches(legacy, catalog, evidence)
         ref = catalog.resolve(Identifier(pmid="37961286"))
         stages = {a.stage for a in catalog.artifacts_for_article(ref.id)}
         assert stages == {"download", "upload"}
 
 
-def test_migration_is_idempotent(legacy, tmp_path):
+def test_migration_is_idempotent(legacy, tmp_path, evidence):
     with Catalog.open(tmp_path / "cat") as catalog:
-        migrate_caches(legacy, catalog)
-        migrate_caches(legacy, catalog)
+        migrate_caches(legacy, catalog, evidence)
+        migrate_caches(legacy, catalog, evidence)
         assert catalog.count_articles() == 2
 
 
-def test_migration_never_writes_to_the_source(legacy, tmp_path):
+def test_migration_never_writes_to_the_source(legacy, tmp_path, evidence):
     db = legacy / "download" / "pubget" / "index.sqlite"
     before = hashlib.sha256(db.read_bytes()).hexdigest()
     with Catalog.open(tmp_path / "cat") as catalog:
-        migrate_caches(legacy, catalog)
+        migrate_caches(legacy, catalog, evidence)
     assert hashlib.sha256(db.read_bytes()).hexdigest() == before
     assert not (legacy / "download" / "pubget" / "index.sqlite-wal").exists()
 
 
-def test_dry_run_imports_nothing(legacy, tmp_path):
+def test_dry_run_imports_nothing(legacy, tmp_path, evidence):
     with Catalog.open(tmp_path / "cat") as catalog:
-        report = migrate_caches(legacy, catalog, dry_run=True)
+        report = migrate_caches(legacy, catalog, evidence, dry_run=True)
         assert report.imported["download"] == 2
         assert catalog.count_articles() == 0
 
 
-def test_stage_filter_is_honoured(legacy, tmp_path):
+def test_stage_filter_is_honoured(legacy, tmp_path, evidence):
     with Catalog.open(tmp_path / "cat") as catalog:
-        report = migrate_caches(legacy, catalog, stages=["download"])
+        report = migrate_caches(legacy, catalog, evidence, stages=["download"])
         assert "upload" not in report.imported
 
 
@@ -183,7 +183,8 @@ def test_slug_parsing_recovers_what_it_can(slug, expected):
     assert _identifier_from_slug(slug) == expected
 
 
-def test_migrated_artifacts_are_fresh_once_repair_stores_their_fingerprints(legacy, tmp_path):
+def test_migrated_artifacts_are_fresh_once_repair_stores_their_fingerprints(
+        legacy, tmp_path, evidence):
     """The legacy cache recorded nothing about the versions behind its work, so a
     migrated row carries no fingerprint and is not fresh. `ingest repair` stores the
     one the plan expects, and then the pipeline considers the work done: migrating
@@ -199,7 +200,7 @@ def test_migrated_artifacts_are_fresh_once_repair_stores_their_fingerprints(lega
         catalog_root=tmp_path / "cat",
     )
     with Catalog.open(settings.catalog_root) as catalog:
-        migrate_caches(legacy, catalog, stages=["download"])
+        migrate_caches(legacy, catalog, evidence, stages=["download"])
         stage = DownloadStage(settings)
         ctx = Context(settings, catalog)
         refs = [catalog.ref(article_id) for article_id in catalog.all_article_ids()]
@@ -215,7 +216,7 @@ def test_migrated_artifacts_are_fresh_once_repair_stores_their_fingerprints(lega
         assert plan().fresh == len(refs)
 
 
-def test_refresh_still_reaches_migrated_artifacts(legacy, tmp_path):
+def test_refresh_still_reaches_migrated_artifacts(legacy, tmp_path, evidence):
     from ingestion_workflow.config import Settings
     from ingestion_workflow.pipeline import Context
     from ingestion_workflow.pipeline.stages import DownloadStage
@@ -226,7 +227,7 @@ def test_refresh_still_reaches_migrated_artifacts(legacy, tmp_path):
         catalog_root=tmp_path / "cat",
     )
     with Catalog.open(settings.catalog_root) as catalog:
-        migrate_caches(legacy, catalog, stages=["download"])
+        migrate_caches(legacy, catalog, evidence, stages=["download"])
         stage = DownloadStage(settings)
         ctx = Context(settings, catalog, refresh=["download"])
         refs = [catalog.ref(article_id) for article_id in catalog.all_article_ids()]

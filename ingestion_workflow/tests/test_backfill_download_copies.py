@@ -92,7 +92,7 @@ def s2_cache(tmp_path):
 
 
 @pytest.fixture()
-def catalog_root(tmp_path):
+def catalog_root(tmp_path, evidence):
     """Downloads stored as production holds them: migrated ones with no fingerprint, a PDF
     labelled by the old version field, two untyped PDFs, one already recorded, one failed,
     one whose payload is gone, one whose file is gone."""
@@ -101,7 +101,7 @@ def catalog_root(tmp_path):
     lost.parent.mkdir()
     lost.write_bytes((COPIES / "pubget_manuscript" / "article.xml").read_bytes())
     with Catalog.open(root) as catalog:
-        ids = {name: catalog.register(Identifier(doi=DOIS.get(name, f"10.1/{name}"))).id
+        ids = {name: catalog.register(Identifier(doi=DOIS.get(name, f"10.1/{name}")), evidence).id
                for name in ("pmc", "elsevier", "pdf", "ucl", "koelsch", "alz", "s2only",
                             "recorded", "failed", "gone", "lost")}
         catalog.record([

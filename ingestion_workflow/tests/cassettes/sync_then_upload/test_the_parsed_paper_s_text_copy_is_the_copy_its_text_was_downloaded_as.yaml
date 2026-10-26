@@ -1,0 +1,131 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=41&retmode=json&email=replay%40example.com&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
+        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
+    headers:
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json
+      date:
+      - Sun, 25 Oct 2026 10:26:59 GMT
+      referrer-policy:
+      - origin-when-cross-origin
+      retry-after:
+      - '2'
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 429
+      message: Too Many Requests
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=41&retmode=json&email=replay%40example.com&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAALRUyW4bMQy99ysEXXpxHE3sbL45aNA0aIKgQU9BDxoN7VGrkVwtbh3D/x5S8pqg
+        RS+9zEgUqUc+PnHJW5ANeD5a8riYAR9xCKnrpF/wHp+DD9pZNIr+gK963OOhieScdBP46IkPK/6t
+        R99iQ1dc9/gs1Y2MdF11eX7K7t2cVRdoh90B7oJLXtH6SjvVQqdDzLgyxdZ5un/JrezI4zGCMb/k
+        FCy7Xnus8x1nZ7Qpk0IEn5PAZLehV7JOht3+UxTWYmSIJYGD2KijKYnIWhv9LCMyw9yExRbY1Dj0
+        k55hAUnF5IFOJuC9VouItXnXAVOsXjDVGodowLRlUulGKxacmYONoZ8p8XEDFf4fFDXXmZT5qYa4
+        0yEk2pwMqHvIM7LPT6vB6dFQcCLFTqndgD/kyJouWf0zQaZNDM7FWQ7EW7JahDg7Ork8o0gopqKJ
+        Qv4Tv8XGW2nY2EetsNYe/wIBpFcte0yzGXLQY1/7j3320c3f4/qhf4M7QvagnG+QmZgow4dU30HD
+        jrDEBn7jauI8u7v+8PnT/XWB3LpSlbLgFe0uuW7WakC/DhoqIFsw4QoJkiZTgoImNW2dG6f3PQc7
+        z0r0K3FSHdcaCbgcSoGaJ0m1KGyHyibM/ZS2sHtv5biqjqsLJsRIiIy7H4DeRlv4Y0T1JgKb7eH5
+        bxCZVNQPWEVNf8K9jNHrOsW85zcysDHe6KWK1IJZpzBAuWRjaewkGfO9dHTz5A7fMxinsojLK8Nk
+        nFqTqXTMJyR9r5SzhGwwsGRSO/dj8xzQBevXqStrXMYynEqjMagFv0F6ZV7nVVB2A8gDac2mrqYR
+        SBY5l9rI2sAE31Hyplg3t+IJmG0Jb7JF2+5uSn0Hq1o5ixsQeuSHE/KgJcVhov3eIHo1/+ZUkqI5
+        sGVntVq9ewEAAP//AwDupIGczwUAAA==
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Sun, 25 Oct 2026 10:27:00 GMT
+      ncbi-phid:
+      - 1D334F858372F89500005E82A67AC8E3.1.1.m_1
+      ncbi-sid:
+      - 61EBBA2F6F88C7A7_1446SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1
