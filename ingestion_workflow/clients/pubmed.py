@@ -10,6 +10,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
+from xml.parsers.expat import ExpatError
 
 import httpx
 import xmltodict
@@ -19,7 +20,7 @@ from ingestion_workflow.models import Identifier, Identifiers
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
 from ingestion_workflow.models.notices import Correction, PartialAnswer, corrections_from_pubmed
 from ingestion_workflow.utils import authors as author_ids
-from ingestion_workflow.utils.http import Pacer, retry_transient
+from ingestion_workflow.utils.http import Pacer, retry_transient, transient
 from ingestion_workflow.utils.pmcid import normalize_pmcid
 
 logger = logging.getLogger(__name__)
@@ -36,6 +37,11 @@ DOI_SEARCH_BATCH_SIZE = 50
 
 #: One pace for every client in the process: NCBI counts a caller's requests, not a client's.
 _PACE = Pacer()
+
+
+def _transient_or_cut_short(exc: BaseException) -> bool:
+    """efetch sometimes ends a 200 answer part-way, which no XML parser reads."""
+    return transient(exc) or isinstance(exc, ExpatError)
 
 
 @dataclass(frozen=True)
@@ -362,9 +368,6 @@ class PubMedClient:
 
             identifier.other_ids.setdefault(field, str(value))
 
-    def _rate_limit_sleep(self) -> None:
-        _PACE.wait(self._min_interval)
-
     def _collect_esearch_ids(
         self,
         query: str,
@@ -479,7 +482,7 @@ class PubMedClient:
         url: str,
         params: Mapping[str, str] | Sequence[Tuple[str, str]],
     ) -> Dict[str, object]:
-        self._rate_limit_sleep()
+        _PACE.wait(self._min_interval)
         response = self._get(url, params)
         response.raise_for_status()
         try:
@@ -510,7 +513,7 @@ class PubMedClient:
         url: str,
         params: Mapping[str, str] | Sequence[Tuple[str, str]],
     ) -> Dict[str, Any]:
-        self._rate_limit_sleep()
+        _PACE.wait(self._min_interval)
         response = self._get(url, params)
         response.raise_for_status()
         return xmltodict.parse(response.text)
@@ -699,7 +702,7 @@ class PubMedClient:
                     found[pmid] = corrections_from_pubmed(article)
         return found
 
-    @retry_transient(3, 8)
+    @retry_transient(3, 8, retry_on=_transient_or_cut_short)
     def _request_efetch(self, pmids: List[str]) -> Dict[str, Any]:
         """Request article metadata from PubMed efetch endpoint."""
         params: List[Tuple[str, str]] = [

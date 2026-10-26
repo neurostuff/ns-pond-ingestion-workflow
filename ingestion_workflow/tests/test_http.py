@@ -4,14 +4,18 @@ from __future__ import annotations
 
 import threading
 import time
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import httpx
 import pytest
 import requests
 import tenacity
-from ingestion_workflow.clients.orcid import ORCID_REQUEST_LIMIT, OrcidClient
+from ingestion_workflow.clients.crossref import CrossrefClient
+from ingestion_workflow.clients.doi_registry import DoiRegistry
+from ingestion_workflow.clients.openalex import OpenAlexClient
+from ingestion_workflow.clients.orcid import OrcidClient
+from ingestion_workflow.clients.pubmed import PubMedClient
 from ingestion_workflow.clients.sciencedirect import ScienceDirectClient
+from ingestion_workflow.clients.semantic_scholar import SemanticScholarClient
 from ingestion_workflow.utils.http import Pacer, retry_transient, transient
 
 
@@ -90,48 +94,17 @@ def test_a_refusal_is_asked_once():
     assert len(calls) == 1
 
 
-class _Provider(BaseHTTPRequestHandler):
-    statuses: list
-    asked: list
 
-    def _answer(self):
-        self.asked.append(time.monotonic())
-        status = self.statuses[min(len(self.asked), len(self.statuses)) - 1]
-        body = b'{"email": [], "results": [], "resultsFound": 0}'
-        self.send_response(status)
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
-
-    do_GET = do_PUT = _answer
-
-    def log_message(self, *args):
-        pass
+def _gaps(provider):
+    return [b - a for a, b in zip(provider.asked, provider.asked[1:])]
 
 
-@pytest.fixture
-def provider():
-    handler = type("Handler", (_Provider,), {"statuses": [], "asked": []})
-    server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
-    thread = threading.Thread(target=server.serve_forever, daemon=True)
-    thread.start()
-    handler.url = f"http://127.0.0.1:{server.server_port}/"
-    yield handler
-    server.shutdown()
-    thread.join()
-    server.server_close()
-
-
-def test_orcid_keeps_its_rate_and_asks_again_after_a_busy_answer(provider, monkeypatch):
-    provider.statuses = [503, 200, 200]
+def test_orcid_asks_again_after_a_busy_answer(provider, monkeypatch):
+    provider.statuses = [503, 200]
     monkeypatch.setattr(OrcidClient, "BASE_URL", provider.url)
     monkeypatch.setattr(OrcidClient.emails.retry, "wait", tenacity.wait_none())
-    client = OrcidClient()
-    client.emails("0000-0000-0000-0001")
-    client.emails("0000-0000-0000-0002")
-    gaps = [b - a for a, b in zip(provider.asked, provider.asked[1:])]
-    assert len(provider.asked) == 3
-    assert min(gaps) >= 0.9 / ORCID_REQUEST_LIMIT
+    OrcidClient().emails("0000-0000-0000-0001")
+    assert len(provider.asked) == 2
 
 
 def test_sciencedirect_asks_again_after_a_busy_answer_not_a_refusal(provider, monkeypatch):
@@ -147,3 +120,98 @@ def test_sciencedirect_asks_again_after_a_busy_answer_not_a_refusal(provider, mo
     with pytest.raises(requests.HTTPError):
         client.count({"qs": "x"})
     assert len(provider.asked) == 1
+
+
+def _crossref_work(provider, monkeypatch):
+    monkeypatch.setattr(CrossrefClient, "BASE_URL", provider.url)
+    client = CrossrefClient()
+    return lambda: client.work("10.1/x")
+
+
+def _crossref_list(provider, monkeypatch):
+    monkeypatch.setattr(CrossrefClient, "BASE_URL", provider.url)
+    client = CrossrefClient()
+    return lambda: client._list({})
+
+
+def _openalex(provider, monkeypatch):
+    monkeypatch.setattr(OpenAlexClient, "BASE_URL", provider.url)
+    client = OpenAlexClient()
+    return lambda: client._request_openalex({})
+
+
+def _semantic_scholar(provider, monkeypatch):
+    monkeypatch.setattr(SemanticScholarClient, "BULK_SEARCH_URL", provider.url)
+    client = SemanticScholarClient("key")
+    return lambda: client._request_bulk_search({})
+
+
+def _orcid(provider, monkeypatch):
+    monkeypatch.setattr(OrcidClient, "BASE_URL", provider.url)
+    client = OrcidClient()
+    return lambda: client.emails("0000-0000-0000-0001")
+
+
+def _sciencedirect(provider, monkeypatch):
+    monkeypatch.setattr(ScienceDirectClient, "URL", provider.url)
+    client = ScienceDirectClient("key")
+    return lambda: client._request({})
+
+
+def _pubmed(provider, monkeypatch):
+    client = PubMedClient("t@example.com")
+    return lambda: client._request_json(provider.url, [])
+
+
+def _pubmed_keyed(provider, monkeypatch):
+    client = PubMedClient("t@example.com", api_key="k")
+    return lambda: client._request_json(provider.url, [])
+
+
+#: Each provider's rate as its limit says it, in seconds between requests, and how long to
+#: look: a request in each of these is never closer to the one before than the interval.
+RATES = [
+    pytest.param(_crossref_work, 1 / 10, 3, id="crossref"),
+    pytest.param(_crossref_list, 1 / 3, 3, id="crossref-list"),
+    pytest.param(_openalex, 1 / 10, 3, id="openalex"),
+    pytest.param(_semantic_scholar, 1.0, 2, id="semantic-scholar"),
+    pytest.param(_orcid, 1 / 12, 3, id="orcid"),
+    pytest.param(_sciencedirect, 1.0, 2, id="sciencedirect"),
+    pytest.param(_pubmed, 1 / 3, 3, id="pubmed"),
+    pytest.param(_pubmed_keyed, 1 / 10, 3, id="pubmed-with-key"),
+]
+
+
+@pytest.mark.parametrize("client, interval, requests_made", RATES)
+def test_each_provider_is_asked_no_faster_than_its_rate_and_no_slower(
+        client, interval, requests_made, provider, monkeypatch):
+    ask = client(provider, monkeypatch)
+    for _ in range(requests_made):
+        ask()
+    assert len(provider.asked) == requests_made
+    # Requests are spaced to the rate, not left a second apart whatever it is.
+    assert all(interval * 0.9 <= gap <= interval * 1.5 + 0.1 for gap in _gaps(provider))
+
+
+#: How many times each provider is asked for one request that keeps failing, and the longest
+#: wait between asks.
+ATTEMPTS = [
+    (CrossrefClient.work, 4, None),
+    (CrossrefClient._page, 4, None),
+    (OpenAlexClient._request_openalex, 3, 8),
+    (SemanticScholarClient._request_semantic_scholar, 3, 8),
+    (SemanticScholarClient._request_bulk_search, 3, 8),
+    (SemanticScholarClient._request_metadata_batch, 3, 8),
+    (OrcidClient.emails, 4, 16),
+    (ScienceDirectClient._request, 3, 8),
+    (DoiRegistry._work, 6, 30),
+    (PubMedClient._request_json, 6, 30),
+    (PubMedClient._request_efetch, 3, 8),
+]
+
+
+@pytest.mark.parametrize("method, attempts, longest_wait", ATTEMPTS)
+def test_each_provider_is_asked_as_many_times_as_it_always_was(method, attempts, longest_wait):
+    assert method.retry.stop.max_attempt_number == attempts
+    if longest_wait:  # Crossref waits as its Retry-After says, else as _wait does
+        assert method.retry.wait.max == longest_wait

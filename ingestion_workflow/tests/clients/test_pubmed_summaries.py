@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 import tenacity
 from ingestion_workflow.clients.pubmed import (
+    _PACE,
     PUBMED_REQUEST_LIMIT,
     PubMedClient,
     summary_of_record,
@@ -46,7 +47,7 @@ def test_every_client_in_the_process_keeps_one_pace_with_ncbi():
     second = PubMedClient(email=cassette_secrets.REPLAY_EMAIL)
     started = time.monotonic()
     for client in (first, second, first, second):
-        client._rate_limit_sleep()
+        _PACE.wait(client._min_interval)
     assert time.monotonic() - started >= 3 / PUBMED_REQUEST_LIMIT - 0.05
 
 

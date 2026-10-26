@@ -22,8 +22,8 @@ import hashlib
 import json
 import logging
 from dataclasses import dataclass, replace
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
 from urllib.parse import urlsplit
 
@@ -38,7 +38,6 @@ from study_schema.models.paper_parse import (
     OaStatus,
     ReportedCopy,
 )
-from tenacity import RetryError
 
 from ingestion_workflow.clients.crossref import CrossrefClient
 from ingestion_workflow.clients.openalex import OpenAlexClient, _locations_from
@@ -367,7 +366,7 @@ class MetadataService:
                     continue
                 try:
                     author.emails = self._orcid_client.emails(author.orcid)
-                except (requests.RequestException, RetryError) as exc:
+                except requests.RequestException as exc:
                     logger.warning("ORCID did not give %s's addresses: %s", author.orcid, exc)
                     continue
                 cache_file.write_text(json.dumps(author.emails))
@@ -750,16 +749,9 @@ _LICENSE_PROVIDERS = {source.value for source in LICENSE_PROVIDERS}
 OUTAGE = "did not answer"
 
 
-def _cause(exc: BaseException) -> BaseException:
-    """The error a retried request last raised, or `exc`."""
-    if isinstance(exc, RetryError):
-        return exc.last_attempt.exception() or exc
-    return exc
-
-
 def _outage(exc: BaseException) -> bool:
     """A provider that was down or busy, not one that refused the request."""
-    return transient(_cause(exc))
+    return transient(exc)
 _OA_STATUSES = {status.value for status in OaStatus}
 #: OpenAlex lists the paper's PubMed record as a location; it is an index entry, not a copy.
 _PUBMED = "pubmed.ncbi.nlm.nih.gov"
