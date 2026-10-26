@@ -1,3 +1,4 @@
+# Composed, not recorded: a proxy's 503 for every try and for the health check.
 interactions:
 - &id001
   request:

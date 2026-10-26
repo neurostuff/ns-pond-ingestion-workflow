@@ -21,7 +21,7 @@ interactions:
     uri: http://127.0.0.1:28084/api/study-schema-uploads/
   response:
     body:
-      string: '{"kind":"parse","base_study_id":"BS21","parse_id":"023d485787b4e848d8cc8d350f964efc27e70d2cae39c1614f67b11dcfb75895","skeleton":{"created":1,"updated":0,"superseded":0,"orphaned_claims":[],"omitted_analyses":0},"set_aside_resolved":[],"study_id":"Q4BZuSviEST8","provenance":{"parse":{"result_id":"6mdGhLzA7ZW6","config_id":"7ToQiQQZgwUb","run_id":null,"pipeline":"coordinate-parse","version":"paper_parse.10","commit":null,"schema":{"name":"neuroimaging-paper-parse","version":"0.10.0"},"parse_version":{"name":"ns-pond-ingestion-workflow","model":null,"stage":"sync","version":"paper_parse.10","prompt_version":null},"date_executed":"2026-10-23T21:26:40.070093+00:00","created_at":"2026-10-23T21:26:40.037778+00:00","updated_at":null}}}
+      string: '{"kind":"parse","base_study_id":"BS21","parse_id":"023d485787b4e848d8cc8d350f964efc27e70d2cae39c1614f67b11dcfb75895","skeleton":{"created":1,"updated":0,"superseded":0,"orphaned_claims":[],"omitted_analyses":0},"set_aside_resolved":[],"study_id":"MaVX9Lh86cm3","provenance":{"parse":{"result_id":"3zw6SVSYForQ","config_id":"EnDJeEQcJAKP","run_id":null,"pipeline":"coordinate-parse","version":"paper_parse.10","commit":null,"schema":{"name":"neuroimaging-paper-parse","version":"0.10.0"},"parse_version":{"name":"ns-pond-ingestion-workflow","model":null,"stage":"sync","version":"paper_parse.10","prompt_version":null},"date_executed":"2026-10-25T08:16:30.140479+00:00","created_at":"2026-10-25T08:16:29.690220+00:00","updated_at":null}}}
 
         '
     headers:
@@ -30,13 +30,13 @@ interactions:
       content-type:
       - application/json
       date:
-      - Fri, 23 Oct 2026 21:26:39 GMT
+      - Sun, 25 Oct 2026 08:16:29 GMT
       server:
       - uvicorn
       vary:
       - Origin
       x-request-id:
-      - 63d7e87273b04473
+      - d200b3626534478f
     status:
       code: 200
       message: OK

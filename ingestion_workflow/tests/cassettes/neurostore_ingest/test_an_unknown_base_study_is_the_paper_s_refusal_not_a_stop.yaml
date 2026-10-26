@@ -35,21 +35,21 @@ interactions:
   response:
     body:
       string: '{"status": 404, "title": "Not Found", "detail": "Record doesnotexist1
-        not found in BaseStudy", "type": "about:blank", "timestamp": "2026-10-23T21:26:39.453262Z",
-        "request_id": "911d1124b2484a78"}'
+        not found in BaseStudy", "type": "about:blank", "timestamp": "2026-10-25T08:12:28.641012Z",
+        "request_id": "053e518c2fdd46ba"}'
     headers:
       content-length:
       - '195'
       content-type:
       - application/json
       date:
-      - Fri, 23 Oct 2026 21:26:38 GMT
+      - Sun, 25 Oct 2026 08:12:27 GMT
       server:
       - uvicorn
       vary:
       - Origin
       x-request-id:
-      - 911d1124b2484a78
+      - 053e518c2fdd46ba
     status:
       code: 404
       message: Not Found

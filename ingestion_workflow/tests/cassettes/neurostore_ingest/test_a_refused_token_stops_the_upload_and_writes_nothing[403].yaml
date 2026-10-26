@@ -35,21 +35,21 @@ interactions:
   response:
     body:
       string: '{"status": 403, "title": "Forbidden", "detail": "Only an admin can
-        upload study_schema artifacts.", "type": "about:blank", "timestamp": "2026-10-23T21:26:47.234059Z",
-        "request_id": "0c97e81591f44a5d"}'
+        upload study_schema artifacts.", "type": "about:blank", "timestamp": "2026-10-25T08:12:56.960410Z",
+        "request_id": "42cde56780c947d9"}'
     headers:
       content-length:
       - '200'
       content-type:
       - application/json
       date:
-      - Fri, 23 Oct 2026 21:26:46 GMT
+      - Sun, 25 Oct 2026 08:12:56 GMT
       server:
       - uvicorn
       vary:
       - Origin
       x-request-id:
-      - 0c97e81591f44a5d
+      - 42cde56780c947d9
     status:
       code: 403
       message: Forbidden
