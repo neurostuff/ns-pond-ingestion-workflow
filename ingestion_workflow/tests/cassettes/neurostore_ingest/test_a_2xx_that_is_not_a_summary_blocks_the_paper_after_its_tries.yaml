@@ -1,3 +1,4 @@
+# Composed, not recorded: a 200 whose body is not the ingester's summary, which neurostore does not send.
 interactions:
 - &id001
   request:

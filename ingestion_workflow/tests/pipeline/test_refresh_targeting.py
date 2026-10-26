@@ -61,12 +61,12 @@ def test_a_source_of_another_stage_is_untouched(settings):
     assert c.is_fresh(artifact(stage="download", source="ace"), "fp")
 
 
-def test_it_requeues_only_articles_with_nothing_higher(settings):
+def test_it_requeues_only_articles_with_nothing_higher(settings, evidence):
     """The whole point: an ACE article that pubget already handled stays
     fresh, because a success from any source makes the article fresh."""
     with Catalog.open(settings.catalog_root) as catalog:
-        ace_only = catalog.register(Identifier(pmid="1"))
-        also_pubget = catalog.register(Identifier(pmcid="PMC2", pmid="2"))
+        ace_only = catalog.register(Identifier(pmid="1"), evidence)
+        also_pubget = catalog.register(Identifier(pmcid="PMC2", pmid="2"), evidence)
 
         for ref, sources in ((ace_only, ["ace"]), (also_pubget, ["ace", "pubget"])):
             for source in sources:
@@ -99,9 +99,9 @@ def test_it_requeues_only_articles_with_nothing_higher(settings):
     assert plan.fresh == 1
 
 
-def _failed_ace(catalog, stage):
+def _failed_ace(catalog, stage, evidence):
     """An article whose ACE attempt failed moments ago, so backoff holds it."""
-    ref = catalog.register(Identifier(pmid="1"))
+    ref = catalog.register(Identifier(pmid="1"), evidence)
     if stage == "extract":
         catalog.record([Outcome(article_id=ref.id, stage="download", source="ace",
                                 fingerprint="dl-ace", payload={"files": []})])
@@ -110,11 +110,11 @@ def _failed_ace(catalog, stage):
     return ref
 
 
-def test_naming_the_source_retries_a_failed_extraction(settings):
+def test_naming_the_source_retries_a_failed_extraction(settings, evidence):
     """It was ignored: the planner asked about the stage, not the source, so a
     failed ACE extraction inside its backoff stayed out of the plan."""
     with Catalog.open(settings.catalog_root) as catalog:
-        ref = _failed_ace(catalog, "extract")
+        ref = _failed_ace(catalog, "extract", evidence=evidence)
         ids = [ref.id]
         args = ([ref], catalog.artifacts(ids, "extract"), catalog.artifacts(ids, "download"))
         stage = ExtractStage(settings)
@@ -124,9 +124,9 @@ def test_naming_the_source_retries_a_failed_extraction(settings):
     assert [w.source for w in named.pending] == ["ace"]
 
 
-def test_naming_the_source_retries_a_failed_download(settings):
+def test_naming_the_source_retries_a_failed_download(settings, evidence):
     with Catalog.open(settings.catalog_root) as catalog:
-        ref = _failed_ace(catalog, "download")
+        ref = _failed_ace(catalog, "download", evidence=evidence)
         settings.download_sources = ["ace"]
         args = ([ref], catalog.artifacts([ref.id], "download"), {})
         stage = DownloadStage(settings)

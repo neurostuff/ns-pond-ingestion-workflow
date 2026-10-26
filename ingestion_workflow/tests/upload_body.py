@@ -23,6 +23,8 @@ def without_input_fingerprints(node):
 
 
 def _canonical(request) -> str:
+    if not request.body:
+        return ""
     return json.dumps(without_input_fingerprints(json.loads(request.body)), sort_keys=True)
 
 

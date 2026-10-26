@@ -20,14 +20,15 @@ def _config(tmp_path):
     path = tmp_path / "settings.yaml"
     path.write_text(json.dumps({
         "data_root": str(tmp_path / "data"), "cache_root": str(tmp_path / "cache"),
-        "catalog_root": str(tmp_path / "catalog"), "ns_pond_root": str(tmp_path / "pond"),
+        "catalog_root": str(tmp_path / "catalog"), "pubmed_email": "replay@example.com",
+        "ns_pond_root": str(tmp_path / "pond"),
         "log_to_file": False, "show_progress": False, "max_workers": 1,
     }), encoding="utf-8")
     (tmp_path / "pond").mkdir()
     return path
 
 
-def _extractions(tmp_path, n):
+def _extractions(tmp_path, n, evidence):
     """`n` pubget extractions whose text is older than what their download now builds."""
     with Catalog.open(tmp_path / "catalog") as catalog:
         for i in range(n):
@@ -37,7 +38,7 @@ def _extractions(tmp_path, n):
             text = tmp_path / "texts" / f"{i}.txt"
             text.parent.mkdir(exist_ok=True)
             text.write_text(OLD, encoding="utf-8")
-            ref = catalog.register(Identifier(pmid=str(100 + i))).id
+            ref = catalog.register(Identifier(pmid=str(100 + i)), evidence).id
             catalog.record([
                 Outcome(article_id=ref, stage="download", source="pubget",
                         payload={"files": [{"file_path": str(xml), "file_type": "xml"}]}),
@@ -47,11 +48,11 @@ def _extractions(tmp_path, n):
     return xml
 
 
-def test_each_batch_of_texts_is_recorded_as_the_run_goes(tmp_path, monkeypatch):
+def test_each_batch_of_texts_is_recorded_as_the_run_goes(tmp_path, monkeypatch, evidence):
     """The run does not keep its results to record them at the end: a batch is recorded as
     soon as it is complete."""
     config = _config(tmp_path)
-    xml = _extractions(tmp_path, 5)
+    xml = _extractions(tmp_path, 5, evidence=evidence)
     new_sha = text_refresh.sha256(article_text(etree.parse(str(xml)), xml.parent))
     monkeypatch.setattr(text_refresh, "BATCH", 2)
 
@@ -79,9 +80,10 @@ def test_each_batch_of_texts_is_recorded_as_the_run_goes(tmp_path, monkeypatch):
     assert recorded() == 5
 
 
-def test_a_corpus_text_that_is_not_utf8_is_named_and_the_others_are_still_replaced(tmp_path):
+def test_a_corpus_text_that_is_not_utf8_is_named_and_the_others_are_still_replaced(
+        tmp_path, evidence):
     config = _config(tmp_path)
-    _extractions(tmp_path, 1)
+    _extractions(tmp_path, 1, evidence=evidence)
     bad = tmp_path / "pond" / "rec0" / "processed" / "pubget" / "text.txt"
     copy = tmp_path / "pond" / "rec1" / "processed" / "pubget" / "text.txt"
     for path, content in ((bad, b"Results\xc1\xb1 x"), (copy, OLD.encode("utf-8"))):
@@ -104,7 +106,7 @@ def test_a_corpus_text_that_is_not_utf8_is_named_and_the_others_are_still_replac
     assert bad.read_bytes() == b"Results\xc1\xb1 x"
 
 
-def _texts_with_passages(root, n):
+def _texts_with_passages(root, n, evidence):
     """`n` pubget extractions whose rebuilt text loses the first character of the one their
     passages were read on."""
     from ingestion_workflow.services.prose_passages import passages
@@ -123,7 +125,7 @@ def _texts_with_passages(root, n):
                       "hits": [{"x": h.x, "y": h.y, "z": h.z, "span": list(h.span)}
                                for h in p.hits]}
                      for p in passages(old)]
-            ref = catalog.register(Identifier(pmid=str(100 + i))).id
+            ref = catalog.register(Identifier(pmid=str(100 + i)), evidence).id
             catalog.record([
                 Outcome(article_id=ref, stage="download", source="pubget",
                         payload={"files": [{"file_path": str(xml), "file_type": "xml"}]}),
@@ -152,7 +154,8 @@ def _end_state(root):
     return out
 
 
-def test_a_run_stopped_partway_and_run_again_ends_where_one_run_would(tmp_path, monkeypatch):
+def test_a_run_stopped_partway_and_run_again_ends_where_one_run_would(
+        tmp_path, monkeypatch, evidence):
     """Texts and their hashes end as one run leaves them. A batch the stop caught after its
     texts were written keeps its passages on the old hash, which every reader of a span
     refuses, for the passages stage to read again."""
@@ -160,7 +163,7 @@ def test_a_run_stopped_partway_and_run_again_ends_where_one_run_would(tmp_path, 
     whole, stopped = tmp_path / "whole", tmp_path / "stopped"
     for root in (whole, stopped):
         root.mkdir()
-        _texts_with_passages(root, 5)
+        _texts_with_passages(root, 5, evidence=evidence)
     args = ["refresh-text", "--source", "pubget", "--no-corpus", "--config"]
 
     result = CliRunner().invoke(app, [*args, str(_config(whole))])

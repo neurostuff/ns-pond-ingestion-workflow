@@ -34,7 +34,7 @@ interactions:
     uri: http://127.0.0.1:28084/api/study-schema-uploads/
   response:
     body:
-      string: '{"kind":"parse","base_study_id":"vkDq3R3B6JpJ","parse_id":"2c2c9bcbd849105e105dfe4bfc12f9c5b0321aeb33ec00895d5940c911101b2b","skeleton":{"created":4,"updated":0,"superseded":0,"orphaned_claims":[],"omitted_analyses":0},"set_aside_resolved":[],"study_id":"koRxF3bRp423","provenance":{"parse":{"result_id":"hdwqnYvd9Vf6","config_id":"7ToQiQQZgwUb","run_id":null,"pipeline":"coordinate-parse","version":"paper_parse.10","commit":null,"schema":{"name":"neuroimaging-paper-parse","version":"0.10.0"},"parse_version":{"name":"ns-pond-ingestion-workflow","model":null,"stage":"sync","version":"paper_parse.10","prompt_version":null},"date_executed":"2026-10-23T21:26:38.974498+00:00","created_at":"2026-10-23T21:26:38.914116+00:00","updated_at":null}}}
+      string: '{"kind":"parse","base_study_id":"3KoFqH25yGcW","parse_id":"2c2c9bcbd849105e105dfe4bfc12f9c5b0321aeb33ec00895d5940c911101b2b","skeleton":{"created":4,"updated":0,"superseded":0,"orphaned_claims":[],"omitted_analyses":0},"set_aside_resolved":[],"study_id":"nikr7pKQYtaa","provenance":{"parse":{"result_id":"Ci4GZceYoGXb","config_id":"d5rA2SGjfWon","run_id":null,"pipeline":"coordinate-parse","version":"paper_parse.10","commit":null,"schema":{"name":"neuroimaging-paper-parse","version":"0.10.0"},"parse_version":{"name":"ns-pond-ingestion-workflow","model":null,"stage":"sync","version":"paper_parse.10","prompt_version":null},"date_executed":"2026-10-25T08:12:16.378938+00:00","created_at":"2026-10-25T08:12:15.916961+00:00","updated_at":null}}}
 
         '
     headers:
@@ -43,13 +43,13 @@ interactions:
       content-type:
       - application/json
       date:
-      - Fri, 23 Oct 2026 21:26:38 GMT
+      - Sun, 25 Oct 2026 08:12:15 GMT
       server:
       - uvicorn
       vary:
       - Origin
       x-request-id:
-      - b0138fc06962470f
+      - ec02030f305e4d22
     status:
       code: 200
       message: OK
@@ -67,27 +67,27 @@ interactions:
       user-agent:
       - python-httpx/0.28.1
     method: GET
-    uri: http://127.0.0.1:28084/api/base-studies/vkDq3R3B6JpJ
+    uri: http://127.0.0.1:28084/api/base-studies/3KoFqH25yGcW
   response:
     body:
-      string: '{"id":"vkDq3R3B6JpJ","user":null,"username":null,"created_at":"2026-10-23T21:26:38.914116+00:00","updated_at":"2026-10-23T21:26:38.914116+00:00","metadata":null,"name":"Faces
+      string: '{"publication_status":"published","preprint_dois":[],"preprint_pmids":[],"preprint_pmcids":[],"alternative_dois":[],"alternative_pmids":[],"alternative_pmcids":[],"id":"3KoFqH25yGcW","user":null,"username":null,"created_at":"2026-10-25T08:12:15.916961+00:00","updated_at":"2026-10-25T08:12:15.916961+00:00","metadata":null,"name":"Faces
         and houses","description":null,"publication":"PLoS ONE","doi":"10.5555/ingest.new.31000001","pmid":"31000001","pmcid":null,"authors":"Jones,
-        S","year":2012,"level":"group","is_oa":null,"has_coordinates":true,"has_images":false,"has_z_maps":false,"has_t_maps":false,"has_beta_and_variance_maps":false,"versions":["koRxF3bRp423"],"features":{}}
+        S","year":2012,"level":"group","is_oa":null,"has_coordinates":true,"has_images":false,"has_z_maps":false,"has_t_maps":false,"has_beta_and_variance_maps":false,"versions":["nikr7pKQYtaa"],"features":{}}
 
         '
     headers:
       content-length:
-      - '518'
+      - '680'
       content-type:
       - application/json
       date:
-      - Fri, 23 Oct 2026 21:26:38 GMT
+      - Sun, 25 Oct 2026 08:12:16 GMT
       server:
       - uvicorn
       vary:
       - Origin
       x-request-id:
-      - 2e7caf9f22fb472a
+      - f3460e9de9ba4c54
     status:
       code: 200
       message: OK

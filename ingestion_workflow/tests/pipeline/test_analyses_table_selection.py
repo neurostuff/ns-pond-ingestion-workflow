@@ -75,9 +75,9 @@ def _table(tmp_path, table_id, *, contains_coordinates=False):
                           footer="", contains_coordinates=contains_coordinates)
 
 
-def _run(env, tmp_path, tables, verdicts):
+def _run(env, tmp_path, tables, verdicts, evidence):
     settings, catalog, stub = env
-    ref = catalog.register(Identifier(pmid="123"))
+    ref = catalog.register(Identifier(pmid="123"), evidence)
     content = ExtractedContent(slug="a", source=DownloadSource.PUBGET, tables=tables)
     catalog.record([
         Outcome(ref.id, "extract", "pubget", Status.OK, "ex-1", content.to_dict(),
@@ -95,23 +95,24 @@ def _run(env, tmp_path, tables, verdicts):
     return list(stage.execute(ctx, [work]))
 
 
-def test_the_model_is_sent_exactly_the_tables_triage_passed(env, tmp_path):
+def test_the_model_is_sent_exactly_the_tables_triage_passed(env, tmp_path, evidence):
     # t1 holds coordinates but triage failed it; t2 triage passed; t3 neither.
     tables = [_table(tmp_path, "t1", contains_coordinates=True),
               _table(tmp_path, "t2"), _table(tmp_path, "t3")]
     verdicts = [{"table_id": "t1", "passes": False},
                 {"table_id": "t2", "passes": True},
                 {"table_id": "t3", "passes": False}]
-    (outcome,) = _run(env, tmp_path, tables, verdicts)
+    (outcome,) = _run(env, tmp_path, tables, verdicts, evidence=evidence)
     assert env[2].tables_sent(["t1", "t2", "t3"]) == ["t2"]
     assert outcome.status is Status.OK
     assert list(outcome.summary["readings"]) == ["t2"]
 
 
-def test_a_table_triage_passed_that_the_extraction_lacks_is_skipped_not_sent(env, tmp_path):
+def test_a_table_triage_passed_that_the_extraction_lacks_is_skipped_not_sent(
+        env, tmp_path, evidence):
     tables = [_table(tmp_path, "t1", contains_coordinates=True)]
     verdicts = [{"table_id": "t1", "passes": False}, {"table_id": "t9", "passes": True}]
-    (outcome,) = _run(env, tmp_path, tables, verdicts)
+    (outcome,) = _run(env, tmp_path, tables, verdicts, evidence=evidence)
     assert env[2].prompts == []
     assert outcome.status is Status.SKIPPED
     assert outcome.summary == {"tables": 0, "reason": "no coordinate tables"}

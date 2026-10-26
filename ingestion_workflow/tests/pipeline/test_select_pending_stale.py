@@ -16,7 +16,7 @@ from ingestion_workflow.pipeline.stages import ExtractStage
 
 
 @pytest.fixture()
-def world(tmp_path, request):
+def world(tmp_path, request, evidence):
     settings = Settings(
         data_root=tmp_path / "d",
         cache_root=tmp_path / "c",
@@ -28,7 +28,7 @@ def world(tmp_path, request):
     ids = {}
     with Catalog.open(settings.catalog_root) as catalog:
         for name in ("fresh", "stale", "permanent", "transient", "undone", "never"):
-            ref = catalog.register(Identifier(pmid=f"9{len(ids)}"))
+            ref = catalog.register(Identifier(pmid=f"9{len(ids)}"), evidence)
             ids[name] = ref.id
             if name == "never":
                 continue

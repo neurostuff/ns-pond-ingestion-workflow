@@ -59,12 +59,12 @@ class CountingStage:
 
 
 @pytest.fixture()
-def env(tmp_path):
+def env(tmp_path, evidence):
     settings = Settings(
         data_root=tmp_path / "data", cache_root=tmp_path / "c", catalog_root=tmp_path / "cat"
     )
     with Catalog.open(settings.catalog_root) as catalog:
-        refs = catalog.register_many([Identifier(pmid=str(n)) for n in range(10)])
+        refs = catalog.register_many([Identifier(pmid=str(n)) for n in range(10)], evidence)
         yield settings, catalog, refs
 
 
@@ -127,10 +127,10 @@ def test_dry_run_touches_nothing(env):
     assert catalog.status_counts() == {}
 
 
-def test_memory_does_not_scale_with_the_corpus(env):
+def test_memory_does_not_scale_with_the_corpus(env, evidence):
     """The scheduler batches; a stage never sees the whole selection at once."""
     settings, catalog, _ = env
-    refs = catalog.register_many([Identifier(pmid=f"b{n}") for n in range(1200)])
+    refs = catalog.register_many([Identifier(pmid=f"b{n}") for n in range(1200)], evidence)
 
     sizes: List[int] = []
 
@@ -189,7 +189,7 @@ def test_a_dry_run_shows_no_progress_bar(env, monkeypatch):
     assert made == []
 
 
-def test_a_dry_run_sums_each_stage_s_block_reasons_over_its_batches(tmp_path):
+def test_a_dry_run_sums_each_stage_s_block_reasons_over_its_batches(tmp_path, evidence):
     from ingestion_workflow.pipeline import BATCH_SIZE
 
     class Blocking(CountingStage):
@@ -202,14 +202,15 @@ def test_a_dry_run_sums_each_stage_s_block_reasons_over_its_batches(tmp_path):
     settings = Settings(data_root=tmp_path / "data", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "cat")
     with Catalog.open(settings.catalog_root) as catalog:
-        refs = catalog.register_many([Identifier(pmid=str(n)) for n in range(BATCH_SIZE + 2)])
+        refs = catalog.register_many([Identifier(pmid=str(n)) for n in range(BATCH_SIZE + 2)],
+                evidence)
         report = run_stages(Context(settings, catalog), [Blocking()], refs, dry_run=True)
 
     half = (BATCH_SIZE + 2) // 2
     assert report.stages["download"].reasons == {"waits too": half, "waits": half}
 
 
-def test_an_analyses_skip_is_reported_as_skipped_not_failed(tmp_path):
+def test_an_analyses_skip_is_reported_as_skipped_not_failed(tmp_path, evidence):
     # Triage passed table t9, which the extraction no longer has: the real analyses
     # stage records SKIPPED "no coordinate tables" without calling the model.
     from ingestion_workflow.catalog import Status
@@ -223,7 +224,7 @@ def test_an_analyses_skip_is_reported_as_skipped_not_failed(tmp_path):
         coordinate_gate_path=gate, llm_api_key="k",
     )
     with Catalog.open(settings.catalog_root) as catalog:
-        ref = catalog.register(Identifier(pmid="123"))
+        ref = catalog.register(Identifier(pmid="123"), evidence)
         content = ExtractedContent(slug="a", source=DownloadSource.PUBGET, tables=[])
         catalog.record([
             Outcome(ref.id, "extract", "pubget", Status.OK, "ex-1", content.to_dict(),

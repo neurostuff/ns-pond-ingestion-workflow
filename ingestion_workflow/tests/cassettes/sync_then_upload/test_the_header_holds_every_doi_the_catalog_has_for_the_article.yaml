@@ -1,0 +1,131 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=45&retmode=json&email=replay%40example.com&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
+        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
+    headers:
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json
+      date:
+      - Sun, 25 Oct 2026 10:27:04 GMT
+      referrer-policy:
+      - origin-when-cross-origin
+      retry-after:
+      - '2'
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 429
+      message: Too Many Requests
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=45&retmode=json&email=replay%40example.com&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAJRTTW/bMAz9K4QuuySO7DQJkluLFN2KZgha7FTsoFhMLUyWPH0Ey4L991Fy5gYD
+        BmQXW6Qfycen5xNrUEh0bHVi4dghWzH0sW2FO7IRO6DzyhpK8mLKfo2Yo486JHBU0rPVK7uZsa+j
+        9OxzBKXziHVxJ0VI7crlYgZrrKGiNL7nKfI2ujqd75StG2yVD3msiKGxLrU/MSPahNhiIC7WwPrp
+        DDizvc1YytU6esJkCkR1qHzQqLxBB4+b/6y80+KbxiM8XzeSZNDCh5783+VBBZ172oMyCFqRtCBV
+        c5TO7q0mScChjHUQHlfQRaf2qhaBxAdhJHTOduiCQg92D6FBQPPz2GKRVXThT/vdFe2v754cYHXM
+        YpQ3FCnvYwqqFHTiDemO2Kyal+MFS9ubt2QJpBeJYXQbjfoeMevDpws+r6Z9k+wozufjajnnyRZ9
+        qvdNr/IreyR3GKHhlpjVOpF5Ro/C1Q28xK6jrUfwpXgp4MEePtB5W3ykKE12WFsn6SpCTAS3cbdB
+        CWNQRuIPOu2tg839+unT5/t+5ABNe4l+Xu/vE1PyfO2Ea1GmBXKGCJekj9BZETJ9cs4AllZdIqfv
+        yJIXJa/KyU6RAMuZ4HyWvdOQ+y3ZP828pDSMvfifJmU14RVwvuI8z70sILQmE/yzohwqfgMAAP//
+        fFTBDsIwCL37FcY/8eY/eOoIy6q0XZDuYLJ/F8bqnCbeWlp4wIPXPDAL4/MfxNLUHhkzGOdXvQcR
+        jl2V5X66hMfxrBE5gBgFYwJ1gFKzOLF9Jbo5o2299kuPVHwkfZ00mQJrMyHK8mLDzgAlGzKpo2fS
+        lXJvC6BftP5Yk5/1KC5gTrQ6DcgN6cu85uUom0ox2qzlmjqTSbOEKUQKHWHPJVUmt7ao+oL0LuEn
+        W7VtsS31DRaGMEoDsbXeq+iOEv/QR/5QnL1ITlYRVLJ5Xpszz/PhBQAA//8DAObIzs3yBQAA
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Sun, 25 Oct 2026 10:27:05 GMT
+      ncbi-phid:
+      - 1D32BD61E5CE12B500002D6DAE55EC53.1.1.m_1
+      ncbi-sid:
+      - 9E0092265607D118_C91ASID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

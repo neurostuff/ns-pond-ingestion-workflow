@@ -32,16 +32,13 @@ def settings(tmp_path):
 
 @pytest.fixture()
 def catalog(tmp_path):
-    with PubMedClient(email=EMAIL) as pubmed:
-        registry = DoiRegistry(CrossrefClient(EMAIL))
-        with Catalog.open(tmp_path / "checked", evidence=Evidence(pubmed, registry)) as cat:
-            yield cat
-        registry.close()
+    with Catalog.open(tmp_path / "checked") as cat:
+        yield cat
 
 
 @pytest.fixture()
-def service(settings, catalog):
-    return CrossrefIDLookupService(settings, catalog)
+def service(settings, catalog, evidence):
+    return CrossrefIDLookupService(settings, catalog, evidence)
 
 
 def _looked_up(service, identifier: Identifier) -> Identifier:
@@ -161,8 +158,8 @@ def test_a_pubmed_doi_the_registry_gives_another_paper_is_not_filed(service, cat
 # -- collisions ---------------------------------------------------------------------------------
 
 @pytest.mark.vcr()
-def test_an_id_another_article_holds_is_left_there_and_recorded(service, catalog):
-    preprint = catalog.register(Identifier(doi="10.1101/2024.05.08.593260")).id
+def test_an_id_another_article_holds_is_left_there_and_recorded(service, catalog, evidence):
+    preprint = catalog.register(Identifier(doi="10.1101/2024.05.08.593260"), evidence).id
 
     found = _looked_up(service, Identifier(pmid="41799680", pmcid="PMC12964139",
                                            doi="10.1162/imag.a.1156"))
@@ -281,8 +278,8 @@ def test_posted_content_that_is_not_a_preprint_is_not_filed_as_one(service):
 # -- PubMed against the article the catalog holds ------------------------------------------------
 
 @pytest.mark.vcr()
-def test_a_refiled_pmid_is_held_by_the_catalog_as_the_preprint_s(service, catalog):
-    article = catalog.register(Identifier(pmid="38013996", pmcid="PMC10680589")).id
+def test_a_refiled_pmid_is_held_by_the_catalog_as_the_preprint_s(service, catalog, evidence):
+    article = catalog.register(Identifier(pmid="38013996", pmcid="PMC10680589"), evidence).id
 
     _looked_up(service, catalog.ref(article).identifier)
 
@@ -298,10 +295,10 @@ def test_a_refiled_pmid_is_held_by_the_catalog_as_the_preprint_s(service, catalo
 
 @pytest.mark.vcr()
 def test_a_doi_crossref_types_a_preprint_is_held_by_the_catalog_as_the_preprint_s(
-        service, catalog):
+        service, catalog, evidence):
     # an eLife reviewed preprint with no version of record, held as `doi` by a catalog that
     # could not tell it from a published eLife paper
-    article = catalog.register(Identifier(doi="10.7554/elife.112197")).id
+    article = catalog.register(Identifier(doi="10.7554/elife.112197"), evidence).id
 
     _looked_up(service, catalog.ref(article).identifier)
 
@@ -365,8 +362,8 @@ def test_pubmed_s_doi_is_not_filed_over_the_one_the_article_holds(service, catal
 
 
 @pytest.mark.vcr()
-def test_a_pmid_whose_pubmed_doi_another_article_holds_is_dropped(service, catalog):
-    holder = catalog.register(Identifier(doi="10.1016/j.biopsych.2011.09.005")).id
+def test_a_pmid_whose_pubmed_doi_another_article_holds_is_dropped(service, catalog, evidence):
+    holder = catalog.register(Identifier(doi="10.1016/j.biopsych.2011.09.005"), evidence).id
 
     found = _looked_up(service, Identifier(pmid="22015111"))
 
@@ -449,11 +446,11 @@ def test_an_article_whose_answer_is_not_a_work_does_not_stop_the_batch(service, 
 
 
 @pytest.mark.vcr()
-def test_a_rekind_the_catalog_refuses_is_recorded_not_swallowed(service, catalog):
+def test_a_rekind_the_catalog_refuses_is_recorded_not_swallowed(service, catalog, evidence):
     # the article holds only the preprint's PMID, and the bioRxiv DOI PubMed gives it is
     # another article's: with no DOI to name it, it cannot be held as the preprint's
-    other = catalog.register(Identifier(doi="10.1101/2023.11.12.566592")).id
-    article = catalog.register(Identifier(pmid="38013996")).id
+    other = catalog.register(Identifier(doi="10.1101/2023.11.12.566592"), evidence).id
+    article = catalog.register(Identifier(pmid="38013996"), evidence).id
 
     _looked_up(service, catalog.ref(article).identifier)
 
@@ -465,18 +462,19 @@ def test_a_rekind_the_catalog_refuses_is_recorded_not_swallowed(service, catalog
 
 
 @pytest.mark.vcr()
-def test_an_article_crossref_was_asked_of_is_not_asked_again(service, catalog, caplog):
-    article = catalog.register(Identifier(doi="10.7554/eLife.106070")).id
+def test_an_article_crossref_was_asked_of_is_not_asked_again(service, catalog, caplog, evidence):
+    article = catalog.register(Identifier(doi="10.7554/eLife.106070"), evidence).id
     _looked_up(service, catalog.ref(article).identifier)
 
     # a catalog opened again has no answers in hand, only what it was told; a request it made
     # would have no recording to play, and the article would be logged as failed
     with PubMedClient(email=EMAIL) as pubmed:
         registry = DoiRegistry(CrossrefClient(EMAIL))
-        with Catalog.open(catalog.root, evidence=Evidence(pubmed, registry)) as again:
+        with Catalog.open(catalog.root) as again:
             with caplog.at_level("WARNING"):
-                found = _looked_up(CrossrefIDLookupService(service.settings, again),
-                                   again.ref(article).identifier)
+                found = _looked_up(
+                    CrossrefIDLookupService(service.settings, again, Evidence(pubmed, registry)),
+                    again.ref(article).identifier)
         registry.close()
 
     assert [r.message for r in caplog.records if "lookup" in r.message] == []
@@ -517,18 +515,19 @@ def test_a_chunk_s_articles_are_asked_together_and_filed_as_each_alone(service, 
 
 
 @pytest.mark.vcr()
-def test_a_stopped_lookup_keeps_the_chunks_it_finished(service, catalog, monkeypatch, caplog):
-    first = catalog.register(Identifier(doi="10.7554/eLife.106070")).id
-    second = catalog.register(Identifier(doi="10.1162/imag.a.1156")).id
+def test_a_stopped_lookup_keeps_the_chunks_it_finished(service, catalog, evidence, monkeypatch,
+                                                      caplog):
+    first = catalog.register(Identifier(doi="10.7554/eLife.106070"), evidence).id
+    second = catalog.register(Identifier(doi="10.1162/imag.a.1156"), evidence).id
     monkeypatch.setattr(service, "chunk_size", 1)
-    asking = catalog.evidence.ask_crossref
+    asking = service.evidence.ask_crossref
 
     def stopped_at_the_second(dois):
         dois = list(dois)
         if "10.1162/imag.a.1156" in dois:
             raise KeyboardInterrupt
         return asking(dois)
-    monkeypatch.setattr(catalog.evidence, "ask_crossref", stopped_at_the_second)
+    monkeypatch.setattr(service.evidence, "ask_crossref", stopped_at_the_second)
 
     with caplog.at_level("INFO"), pytest.raises(KeyboardInterrupt):
         service.find_identifiers(Identifiers([catalog.ref(first).identifier,

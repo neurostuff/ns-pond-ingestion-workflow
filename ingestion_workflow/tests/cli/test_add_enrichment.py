@@ -42,7 +42,7 @@ class FakeLookup:
 
     KNOWN = {"111": "PMC111"}
 
-    def __init__(self, settings, catalog=None):
+    def __init__(self, settings, catalog, evidence):
         self.catalog = catalog
 
     def can_run(self):

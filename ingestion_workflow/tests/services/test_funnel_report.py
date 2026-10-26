@@ -88,9 +88,9 @@ def _through(article, last):
 
 
 @pytest.fixture()
-def catalog(tmp_path):
+def catalog(tmp_path, evidence):
     cat = Catalog.open(tmp_path / "catalog")
-    ids = {name: cat.register(Identifier(pmid=str(1000 + i))).id
+    ids = {name: cat.register(Identifier(pmid=str(1000 + i)), evidence).id
            for i, name in enumerate("ABCDEFGHIJ")}
     a, b, c, d, e, f, g, h, i, j = (ids[k] for k in "ABCDEFGHIJ")
     outcomes = _through(a, PATH[-1][0]) + [
@@ -274,11 +274,12 @@ def _read_from_ace(article, *, retracted=False):
 
 
 @pytest.fixture()
-def wider(tmp_path):
+def wider(tmp_path, evidence):
     """Articles for the branches the first fixture leaves out."""
     cat = Catalog.open(tmp_path / "wider")
     names = "KLMNOPQRSTVWYZXUHJ"
-    ids = {name: cat.register(Identifier(pmid=str(2000 + i))).id for i, name in enumerate(names)}
+    ids = {name: cat.register(Identifier(pmid=str(2000 + i)),
+            evidence).id for i, name in enumerate(names)}
     k, l_, m, n, o, p, q, r, s, t, v, w, y, z, x, u, h, j = (ids[c] for c in names)
     upto_prose = [_ok(a, "download", "pubget") for a in (l_, m, n, o)] + [
         _ok(a, "extract", "pubget") for a in (l_, m, n, o)] + [
@@ -513,10 +514,10 @@ def test_flow_check_fails_when_a_count_is_off(wide):
 
 
 @pytest.fixture()
-def stored(tmp_path):
+def stored(tmp_path, evidence):
     """One article whose extraction has a payload in the blob store."""
     cat = Catalog.open(tmp_path / "stored")
-    a = cat.register(Identifier(pmid="3001")).id
+    a = cat.register(Identifier(pmid="3001"), evidence).id
     cat.record([
         Outcome(article_id=a, stage="download", source="pubget", status=OK,
                 payload={"files": []}, summary={"files": 0}),
@@ -707,12 +708,12 @@ def test_state_labels_are_readable():
 
 
 @pytest.fixture()
-def read_text(tmp_path):
+def read_text(tmp_path, evidence):
     """Two articles with passages, whose plans open the extraction's payload."""
     from ingestion_workflow.pipeline.stages.passages import PassagesStage
 
     cat = Catalog.open(tmp_path / "text")
-    a, b = (cat.register(Identifier(pmid=p)).id for p in ("4001", "4002"))
+    a, b = (cat.register(Identifier(pmid=p), evidence).id for p in ("4001", "4002"))
     cat.record([
         Outcome(article_id=a, stage="download", source="pubget", status=OK, summary={}),
         Outcome(article_id=a, stage="extract", source="pubget", status=OK, fingerprint="e",
@@ -781,10 +782,11 @@ def test_a_stage_that_cannot_plan_names_the_setting(stored, tmp_path):
 
 
 @pytest.fixture()
-def failing(tmp_path):
+def failing(tmp_path, evidence):
     """Articles whose records failed with raw exception text, one of them unmatched."""
     cat = Catalog.open(tmp_path / "failing")
-    a, b, c, d = (cat.register(Identifier(pmid=p)).id for p in ("5001", "5002", "5003", "5004"))
+    a, b, c, d = (cat.register(Identifier(pmid=p),
+            evidence).id for p in ("5001", "5002", "5003", "5004"))
     secret = "sk_live_" + "A1b2C3d4" * 5
     cat.record([
         _ok(a, "download", "ace"),
@@ -873,9 +875,9 @@ def _page_js_with(prelude: str, page: str, harness: str) -> dict:
     return json.loads(run.stdout)
 
 
-def test_a_held_back_upload_says_which_upstream_and_how_many_are_missing(tmp_path):
+def test_a_held_back_upload_says_which_upstream_and_how_many_are_missing(tmp_path, evidence):
     cat = Catalog.open(tmp_path / "held")
-    a = cat.register(Identifier(pmid="6001")).id
+    a = cat.register(Identifier(pmid="6001"), evidence).id
     held = ("held back: upstream not fresh: roles stale; the parse holds 3 analyses, "
             "the last upload 5 (2 missing)")
     cat.record([*_through(a, _upstream("upload")), Outcome.failure(a, "upload", "", held)])
@@ -898,7 +900,7 @@ def test_a_held_back_upload_says_which_upstream_and_how_many_are_missing(tmp_pat
 # -- the upload's exits -----------------------------------------------------------
 
 
-def test_every_exit_sync_and_upload_record_is_counted_under_its_own_reason(tmp_path):
+def test_every_exit_sync_and_upload_record_is_counted_under_its_own_reason(tmp_path, evidence):
     """Each reason sync and upload record, in the words they record it, lands in one
     category of its own; the detail keeps the article's case."""
     from ingestion_workflow.pipeline.stages.sync import (
@@ -947,7 +949,8 @@ def test_every_exit_sync_and_upload_record_is_counted_under_its_own_reason(tmp_p
         "blocked": lambda a: synced_then(a, upload_failed(
             a, "blocked: Internal Server Error", permanent=False)),
     }
-    ids = {name: cat.register(Identifier(pmid=str(3000 + i))).id for i, name in enumerate(cases)}
+    ids = {name: cat.register(Identifier(pmid=str(3000 + i)),
+            evidence).id for i, name in enumerate(cases)}
     cat.record([o for name, make in cases.items() for o in make(ids[name])])
     cat.close()
     conn = open_readonly(tmp_path / "exits")

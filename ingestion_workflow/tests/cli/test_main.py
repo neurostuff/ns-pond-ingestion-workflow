@@ -8,6 +8,7 @@ import pytest
 import typer
 from ingestion_workflow.catalog import Catalog
 from ingestion_workflow.cli.main import _parse_identifier, app
+from ingestion_workflow.models.ids import Identifier
 from typer.testing import CliRunner
 
 runner = CliRunner()
@@ -73,15 +74,15 @@ def test_unrecognisable_identifiers_are_rejected():
 
 
 def test_add_registers_articles(config, tmp_path):
-    out = run("add", "37961286", "PMC10634720", "--config", str(config))
+    out = run("add", "37961286", "PMC10634720", "--no-enrich", "--config", str(config))
     assert "2 new articles" in out
     with Catalog.open(tmp_path / "catalog") as catalog:
         assert catalog.count_articles() == 2
 
 
 def test_add_is_idempotent(config, tmp_path):
-    run("add", "37961286", "--config", str(config))
-    out = run("add", "37961286", "--config", str(config))
+    run("add", "37961286", "--no-enrich", "--config", str(config))
+    out = run("add", "37961286", "--no-enrich", "--config", str(config))
     assert "0 new articles" in out
     with Catalog.open(tmp_path / "catalog") as catalog:
         assert catalog.count_articles() == 1
@@ -90,8 +91,47 @@ def test_add_is_idempotent(config, tmp_path):
 def test_add_from_a_file(config, tmp_path):
     listing = tmp_path / "ids.txt"
     listing.write_text("# a comment\n37961286\nPMC10634720\n\n", encoding="utf-8")
-    out = run("add", "--file", str(listing), "--config", str(config))
+    out = run("add", "--file", str(listing), "--no-enrich", "--config", str(config))
     assert "2 new articles" in out
+
+
+def _without_email(config):
+    settings = json.loads(config.read_text())
+    del settings["pubmed_email"]
+    config.write_text(json.dumps(settings), encoding="utf-8")
+
+
+def test_a_command_that_reads_needs_no_email(config):
+    _without_email(config)
+    assert "0 articles" in run("status", "--config", str(config))
+
+
+def test_a_command_that_registers_needs_the_email_registration_checks_with(config):
+    _without_email(config)
+    result = runner.invoke(app, ["add", "37961286", "--config", str(config)])
+    assert result.exit_code == 2
+    assert "pubmed_email" in result.output
+
+
+def test_run_with_a_manifest_registers_the_articles_it_names(config, tmp_path):
+    manifest = tmp_path / "m.jsonl"
+    manifest.write_text(json.dumps({"pmid": "37961286"}) + "\n", encoding="utf-8")
+    run("run", "--stage", "download", "--dry-run", "--manifest", str(manifest),
+        "--config", str(config))
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        assert catalog.resolve(Identifier(pmid="37961286")) is not None
+
+
+def test_run_with_a_manifest_and_migrate_need_the_email_too(config, tmp_path):
+    _without_email(config)
+    manifest = tmp_path / "m.jsonl"
+    manifest.write_text(json.dumps({"pmid": "37961286"}) + "\n", encoding="utf-8")
+    old_cache = tmp_path / "old"
+    old_cache.mkdir()
+    for args in (["run", "--manifest", str(manifest)], ["migrate", str(old_cache)]):
+        result = runner.invoke(app, [*args, "--config", str(config)])
+        assert result.exit_code == 2, args
+        assert "pubmed_email" in result.output
 
 
 def test_status_reports_an_empty_catalog(config):
@@ -101,7 +141,7 @@ def test_status_reports_an_empty_catalog(config):
 
 
 def test_dry_run_changes_nothing(config, tmp_path):
-    run("add", "37961286", "--config", str(config))
+    run("add", "37961286", "--no-enrich", "--config", str(config))
     out = run("run", "--stage", "download", "--dry-run", "--config", str(config))
     assert "plan" in out
     with Catalog.open(tmp_path / "catalog") as catalog:
@@ -115,7 +155,7 @@ def test_show_explains_an_unknown_article(config):
 
 
 def test_show_lists_what_is_known(config, tmp_path):
-    run("add", "37961286", "--config", str(config))
+    run("add", "37961286", "--no-enrich", "--config", str(config))
     out = run("show", "37961286", "--config", str(config))
     assert "pmid 37961286" in out
 
@@ -126,7 +166,7 @@ def test_show_resolves_every_kind_of_id(config, tmp_path):
     from ingestion_workflow.catalog import Catalog
     from ingestion_workflow.models.ids import Identifier
 
-    run("add", "PMC10634720", "--config", str(config))
+    run("add", "PMC10634720", "--no-enrich", "--config", str(config))
     with Catalog.open(tmp_path / "catalog") as catalog:
         ref = catalog.resolve(Identifier(pmcid="PMC10634720"))
         catalog.add_aliases([(ref.id, "neurostore", "5Qk2mNpXyJKH")])
@@ -138,7 +178,7 @@ def test_show_resolves_every_kind_of_id(config, tmp_path):
 
 
 def test_show_still_rejects_an_unknown_token(config):
-    run("add", "PMC10634720", "--config", str(config))
+    run("add", "PMC10634720", "--no-enrich", "--config", str(config))
     result = runner.invoke(app, ["show", "zzzzzzzzzzzz", "--config", str(config)])
     assert result.exit_code == 1
     assert "not in the catalog" in result.output
@@ -150,7 +190,7 @@ def test_add_accepts_a_neurostore_id(config, tmp_path):
     from ingestion_workflow.catalog import Catalog
     from ingestion_workflow.models.ids import Identifier
 
-    run("add", "--neurostore", "5Qk2mNpXyJKH", "--config", str(config))
+    run("add", "--neurostore", "5Qk2mNpXyJKH", "--no-enrich", "--config", str(config))
     with Catalog.open(tmp_path / "catalog") as catalog:
         ref = catalog.resolve(Identifier(neurostore="5Qk2mNpXyJKH"))
         assert ref is not None
@@ -161,7 +201,7 @@ def test_a_neurostore_only_article_has_nothing_to_download(config):
     """No extractor can address an article by base_study_id alone -- pubget
     needs a pmcid, elsevier a pmid or doi. Such an article is inert until its
     bibliographic ids are known."""
-    run("add", "--neurostore", "5Qk2mNpXyJKH", "--config", str(config))
+    run("add", "--neurostore", "5Qk2mNpXyJKH", "--no-enrich", "--config", str(config))
     out = run("run", "--select", "all", "--dry-run", "--config", str(config))
     download = next(line for line in out.splitlines() if "download" in line)
     assert "0 pending" in download
@@ -181,7 +221,8 @@ def test_add_reports_an_identifier_it_refused(config, tmp_path):
 
 
 @pytest.mark.vcr()
-def test_add_from_neurostore_registers_what_discovery_returns(config, tmp_path, monkeypatch):
+def test_add_from_neurostore_registers_what_discovery_returns(
+        config, tmp_path, monkeypatch):
     """The database is mocked; what is under test is that `add` registers the
     identifiers discovery hands back, aliases and all."""
     import ingestion_workflow.cli.main as cli
@@ -227,28 +268,29 @@ def _ready(output, stage):
     return int(rows[0].split()[-1].replace(",", "")) if rows else 0
 
 
-def _catalog_with_resolved_and_unresolved_articles(tmp_path):
+def _catalog_with_resolved_and_unresolved_articles(tmp_path, evidence):
     """Two articles analysed; only the first has been through resolve."""
     from ingestion_workflow.catalog import Outcome
     from ingestion_workflow.models.ids import Identifier
 
     with Catalog.open(tmp_path / "catalog") as catalog:
-        resolved, analysed = catalog.register_many([Identifier(pmid="1"), Identifier(pmid="2")])
+        resolved, analysed = catalog.register_many([Identifier(pmid="1"), Identifier(pmid="2")],
+                evidence)
         catalog.record(
             [Outcome(article_id=r.id, stage="analyses", source="") for r in (resolved, analysed)]
             + [Outcome(article_id=resolved.id, stage="resolve", source="")]
         )
 
 
-def test_status_counts_roles_against_analyses_without_prose(config, tmp_path):
-    _catalog_with_resolved_and_unresolved_articles(tmp_path)
+def test_status_counts_roles_against_analyses_without_prose(config, tmp_path, evidence):
+    _catalog_with_resolved_and_unresolved_articles(tmp_path, evidence=evidence)
     out = run("status", "--config", str(config))
     assert _ready(out, "roles") == 2
     assert _ready(out, "space") == 0
 
 
-def test_status_counts_roles_against_resolve_with_prose(config, tmp_path):
-    _catalog_with_resolved_and_unresolved_articles(tmp_path)
+def test_status_counts_roles_against_resolve_with_prose(config, tmp_path, evidence):
+    _catalog_with_resolved_and_unresolved_articles(tmp_path, evidence=evidence)
     settings = json.loads(config.read_text(encoding="utf-8"))
     config.write_text(json.dumps({**settings, "prose_model": "prose-model"}), encoding="utf-8")
     out = run("status", "--config", str(config))

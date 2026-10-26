@@ -102,7 +102,7 @@ def test_mixed_population(session):
     assert found(session) == {"a", "e"}
 
 
-def test_a_discovered_article_is_actionable(session, tmp_path):
+def test_a_discovered_article_is_actionable(session, tmp_path, evidence):
     """The point of carrying the doi and pmid: unlike a bare base_study_id, a
     discovered article has a handle some download source can use."""
     from ingestion_workflow.catalog import Catalog
@@ -118,7 +118,7 @@ def test_a_discovered_article_is_actionable(session, tmp_path):
         data_root=tmp_path / "d", cache_root=tmp_path / "c", catalog_root=tmp_path / "k"
     )
     with Catalog.open(settings.catalog_root) as catalog:
-        refs = catalog.register_many(discovered)
+        refs = catalog.register_many(discovered, evidence)
         stage = DownloadStage(settings)
         plan = stage.plan(Context(settings, catalog), refs, {}, {})
 

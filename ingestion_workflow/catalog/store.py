@@ -128,13 +128,10 @@ def _alias_pairs(identifier: Identifier) -> List[Tuple[str, str]]:
 class Catalog:
     """Read/write access to one catalog database."""
 
-    def __init__(
-        self, connection: sqlite3.Connection, root: Path, evidence: Optional[Evidence] = None
-    ) -> None:
+    def __init__(self, connection: sqlite3.Connection, root: Path) -> None:
         self._conn = connection
         self.root = Path(root)
         self.blobs = BlobStore(self.root / "blobs")
-        self._evidence = evidence
         #: Each identifier registration refused since the catalog was opened, as
         #: (kind, value, article id or None, why), for the caller to report.
         self.refused: List[Tuple[str, str, Optional[str], str]] = []
@@ -142,14 +139,8 @@ class Catalog:
     # -- lifecycle -----------------------------------------------------------
 
     @classmethod
-    def open(cls, root: Path | str, evidence: Optional[Evidence] = None) -> "Catalog":
-        """Open the catalog at `root`, creating it if need be.
-
-        `evidence` is what registration checks identifiers against: the PubMed
-        record of a PMID, and the registries' record of a DOI. The CLI always opens
-        the catalog with it; without it a PMID is added unchecked and a second
-        journal DOI is refused.
-        """
+    def open(cls, root: Path | str) -> "Catalog":
+        """Open the catalog at `root`, creating it if need be."""
         root = Path(root)
         root.mkdir(parents=True, exist_ok=True)
         conn = sqlite3.connect(root / "catalog.sqlite", isolation_level=None)
@@ -166,7 +157,7 @@ class Catalog:
                 f"{root / 'catalog.sqlite'} is schema version {version}; this code reads "
                 f"version {SCHEMA_VERSION}. Update the code instead of opening it with this one."
             )
-        catalog = cls(conn, root, evidence)
+        catalog = cls(conn, root)
         if version < SCHEMA_VERSION:
             try:
                 catalog._migrate()
@@ -178,11 +169,6 @@ class Catalog:
                 "INSERT INTO meta(key, value) VALUES('schema_version', ?)", (str(SCHEMA_VERSION),)
             )
         return catalog
-
-    @property
-    def evidence(self) -> Optional[Evidence]:
-        """What this catalog was opened to check identifiers against, if anything."""
-        return self._evidence
 
     def backup(self, target: Path | str) -> Path:
         """Copy this catalog's database to `target`, a path not yet taken.
@@ -379,8 +365,13 @@ class Catalog:
     #: articles holding different ones are two papers, whatever else joins them.
     ONE_EACH = SINGULAR + ("preprint_pmid", "preprint_pmcid", "neurostore")
 
-    def register_many(self, identifiers: Sequence[Identifier]) -> List[ArticleRef]:
+    def register_many(
+        self, identifiers: Sequence[Identifier], evidence: Evidence
+    ) -> List[ArticleRef]:
         """Register articles, adding aliases to existing ones. Idempotent.
+
+        `evidence` is what the ids are checked against: PubMed's record of a PMID and the
+        registries' record of a DOI.
 
         Returns one ref per identifier that carries any id, in order.
 
@@ -413,7 +404,7 @@ class Catalog:
         refs: List[str] = []
         now = utcnow()
         # Asked before the write lock is taken, so no writer waits on NCBI or a registry.
-        pubmed = self._pubmed_evidence(identifiers)
+        pubmed = self._pubmed_evidence(identifiers, evidence)
         second_dois: List[Tuple[str, str, List[str]]] = []
         with self._write() as conn:
             for identifier in identifiers:
@@ -485,7 +476,7 @@ class Catalog:
                     )
                 refs.append(article_id)
         if second_dois:
-            self._settle_second_dois(second_dois)
+            self._settle_second_dois(second_dois, evidence)
         return [self.ref(article_id) for article_id in refs]
 
     #: Refusals since this catalog was opened, of an identifier or of a merge.
@@ -513,15 +504,16 @@ class Catalog:
                      (kind, value, article_id, why, utcnow()))
         logger.warning("catalog: %s %s not added -- %s", kind, value, why)
 
-    def _settle_second_dois(self, rows: Sequence[Tuple[str, str, List[str]]]) -> None:
+    def _settle_second_dois(
+        self, rows: Sequence[Tuple[str, str, List[str]]], evidence: Evidence
+    ) -> None:
         """A journal DOI for an article holding another: an alternative DOI when the
         registries give both one work (a publisher's move, an alias spelling), else
         refused, with why."""
         decided = []
         for article_id, doi, held in rows:
             try:
-                same = self._evidence is not None and any(
-                    self._evidence.same_dois(doi, h) for h in held)
+                same = any(evidence.same_dois(doi, h) for h in held)
                 why = "which the registries do not give the same work"
             except Unreadable as exc:
                 same = False
@@ -529,7 +521,12 @@ class Catalog:
             decided.append((article_id, doi, held, same, why))
         with self._write() as conn:
             for article_id, doi, held, same, why in decided:
-                if self._holder(conn, "doi", doi) is not None:
+                holder = self._holder(conn, "doi", doi)
+                if holder is not None:
+                    if holder != article_id:
+                        self.refuse("doi", doi, article_id,
+                                    f"{article_id} holds the journal DOI {', '.join(held)}, "
+                                    f"and {holder} took {doi} in the same batch", conn)
                     continue
                 if same:
                     conn.execute("INSERT INTO aliases(kind, value, article_id) VALUES(?, ?, ?)",
@@ -539,7 +536,9 @@ class Catalog:
                                 f"{article_id} holds the journal DOI {', '.join(held)}, {why}",
                                 conn)
 
-    def _pubmed_evidence(self, identifiers: Sequence[Identifier]) -> Dict[str, Tuple[str, str]]:
+    def _pubmed_evidence(
+        self, identifiers: Sequence[Identifier], evidence: Evidence
+    ) -> Dict[str, Tuple[str, str]]:
         """For each PMID a record would add beside its other ids, (the DOI, why) it is
         refused unless the record also names that DOI's article: the
         DOI its PubMed record gives is held by another article and the registries give
@@ -548,21 +547,19 @@ class Catalog:
         A PMID already held is not added, and a PMID alone cannot attach to another
         paper's article, so neither is asked about.
         """
-        if self._evidence is None:
-            return {}
         asked = sorted({
             str(i.pmid) for i in identifiers
             if i.pmid and len(_alias_pairs(i)) > 1
             and not self._holder_row(self._conn, "pmid", str(i.pmid))
         })
         found = {}
-        for pmid, summary in self._evidence.summaries(asked).items():
+        for pmid, summary in evidence.summaries(asked).items():
             doi = normalize_doi(summary.doi)
             holder = self._holder(self._conn, "doi", doi) if doi else None
             if holder is None:
                 continue
             try:
-                if self._evidence.same_paper(doi, summary):
+                if evidence.same_paper(doi, summary):
                     found[pmid] = (doi, f"PubMed gives it {doi}, which {holder} holds")
             except Unreadable as exc:
                 found[pmid] = (doi, f"PubMed gives it {doi}, which {holder} holds, and the "
@@ -606,8 +603,8 @@ class Catalog:
                 seen |= values
         return True
 
-    def register(self, identifier: Identifier) -> ArticleRef:
-        refs = self.register_many([identifier])
+    def register(self, identifier: Identifier, evidence: Evidence) -> ArticleRef:
+        refs = self.register_many([identifier], evidence)
         if not refs:
             raise ValueError("Identifier carries no pmid, pmcid, doi or neurostore id")
         return refs[0]

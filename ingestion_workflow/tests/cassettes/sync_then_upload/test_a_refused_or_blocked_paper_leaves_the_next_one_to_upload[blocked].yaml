@@ -1,20 +1,7 @@
-# Composed, not recorded: real answers of the local neurostore in the order the test sends: five 500s and the route's 405 with its database stopped (test_an_api_that_is_up_but_fails_on_one_paper_fails_that_paper_only), then its 200 for BS21's parse (test_sync_writes_the_parse_with_no_upload_and_upload_sends_what_it_wrote).
 interactions:
 - request:
-    body: '{"coordinate_parse":{"header":{"artifact_kind":"coordinate_parse","schema_version":"0.6.0","article_id":"art-1","identifiers":{"pmid":"22848644","pmcid":"PMC3407125","doi":"10.1371/journal.pone.0041873","neurostore_base_study_id":"22tHjbNRU8t2"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.7","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"parsed_paper","fingerprint":"9c41b321fb51d29ee50c195904b82bad3195b089f23abbb7f2880500ff264104","producer_version":null},{"artifact_kind":"analyses","fingerprint":"fp-space","producer_version":null}],"created_at":null},"parse_id":"2c2c9bcbd849105e105dfe4bfc12f9c5b0321aeb33ec00895d5940c911101b2b","text_sha256":"9c41b321fb51d29ee50c195904b82bad3195b089f23abbb7f2880500ff264104","revision_of":null,"analyses":[{"key":"analysis#fc8087881826e87b","cells":[{"row":1,"column_group":0}],"text_spans":null,"origin":"table","table_id":"tbl1","name":"Faces
-      > Houses","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":false,"prior_study_evidence":null,"role_confidence":0.9,"role_source":"set-role-table@1","split":{"half":"original","original_analysis":null,"rule":"sign_of_directional_statistic"},"derived_from":null,"statistic":"t","statistic_df":null,"thresholds":null,"points":[{"coordinates":[-42.0,-55.0,-18.0],"space":null,"row":1,"column_group":0,"text_span":null,"values":[{"kind":"t","kind_as_printed":null,"value":6.1,"level":null,"correction":null}],"cluster_size":120.0,"cluster_measure":"voxels","is_subpeak":false,"label":null}]},{"key":"analysis#89177cdbd20fa702","cells":[{"row":2,"column_group":0}],"text_spans":null,"origin":"table","table_id":"tbl1","name":"Faces
-      > Houses","name_is_printed":false,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":false,"prior_study_evidence":null,"role_confidence":0.9,"role_source":"set-role-table@1","split":{"half":"inverse","original_analysis":"analysis#fc8087881826e87b","rule":"sign_of_directional_statistic"},"derived_from":null,"statistic":"t","statistic_df":null,"thresholds":null,"points":[{"coordinates":[22.0,-4.0,-20.0],"space":null,"row":2,"column_group":0,"text_span":null,"values":[{"kind":"t","kind_as_printed":null,"value":-4.2,"level":null,"correction":null}],"cluster_size":40.0,"cluster_measure":"voxels","is_subpeak":false,"label":null}]},{"key":"analysis#f1bf36dcc74097ba","cells":[{"row":3,"column_group":0}],"text_spans":null,"origin":"table","table_id":"tbl1","name":"Houses
-      > Faces","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":false,"prior_study_evidence":null,"role_confidence":0.9,"role_source":"set-role-table@1","split":null,"derived_from":null,"statistic":null,"statistic_df":null,"thresholds":null,"points":[]},{"key":"analysis#36bc1da16d970774","cells":null,"text_spans":[{"start_char":56,"end_char":68,"text":null}],"origin":"text","table_id":null,"name":"amygdala
-      seed","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"anchor","anchor_kind":"seed","from_prior_study":false,"prior_study_evidence":null,"role_confidence":0.9,"role_source":"set-role-text@1","split":null,"derived_from":null,"statistic":null,"statistic_df":null,"thresholds":null,"points":[{"coordinates":[-22.0,-4.0,-20.0],"space":null,"row":null,"column_group":null,"text_span":{"start_char":56,"end_char":68,"text":null},"values":null,"cluster_size":null,"cluster_measure":null,"is_subpeak":false,"label":null}]}],"tables":[{"table_id":"tbl1","reading":"coordinates","reason":null},{"table_id":"tbl2","reading":"rejected_by_triage","reason":"gate"},{"table_id":"tbl3","reading":"excluded_by_hand","reason":"not_coordinates;
-      a design matrix"}],"omitted_analyses":null,"text_sweep":{"passages_found":1,"passages_read":1,"truncated":false,"points_dropped_as_table_restatements":2},"verdicts":null},"parsed_paper":{"header":{"artifact_kind":"parsed_paper","schema_version":"0.6.0","article_id":"art-1","identifiers":{"pmid":"22848644","pmcid":"PMC3407125","doi":"10.1371/journal.pone.0041873","neurostore_base_study_id":"22tHjbNRU8t2"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.7","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"extraction","fingerprint":"fp-extract","producer_version":null}],"created_at":null},"source":"pubget","source_reason":null,"text_path":"processed/pubget/text.txt","text_sha256":"9c41b321fb51d29ee50c195904b82bad3195b089f23abbb7f2880500ff264104","text_length":117,"bibliography":{"title":"Faces
-      and houses","authors":["Jones, S"],"journal":"PLoS ONE","publication_year":2012,"volume":null,"issue":null,"pages":null,"abstract":null,"language":["eng"],"publication_types":["Journal
-      Article"],"keywords":null,"license":null,"open_access":null,"corrections":null,"provider":"pubmed","corresponding_authors":null},"is_meta_analysis":false,"is_meta_analysis_basis":null,"sections":[{"kind":"other","heading":null,"start_char":0,"end_char":7},{"kind":"methods","heading":null,"start_char":7,"end_char":96},{"kind":"results","heading":null,"start_char":96,"end_char":117}],"supplements":null,"references":null,"citations":null,"tables":[{"table_id":"tbl1","label":null,"number":"1","caption":"tbl1
-      caption","footer":null,"raw_path":"source/pubget/tables/tbl1.html","column_headings":["Region","x","y","z","t","k"],"rows":[{"row":0,"cells":["Faces
-      > Houses","","","","",""],"text_span":null},{"row":1,"cells":["Fusiform gyrus","-42","-55","-18","6.1","120"],"text_span":null},{"row":2,"cells":["Amygdala","22","-4","-20","-4.2","40"],"text_span":null},{"row":3,"cells":["Houses
-      > Faces","n.s."],"text_span":null}],"text_span":null,"coordinate_space_hint":null,"triage":{"passes":true,"score":0.97,"route":"read","located_by":null,"excluded_by_hand":null,"exclusion_reason":null}},{"table_id":"tbl2","label":null,"number":"2","caption":"tbl2
-      caption","footer":null,"raw_path":"source/pubget/tables/tbl2.html","column_headings":["Group","n"],"rows":[{"row":0,"cells":["Patients","20"],"text_span":null}],"text_span":null,"coordinate_space_hint":null,"triage":{"passes":false,"score":0.02,"route":"gate","located_by":null,"excluded_by_hand":null,"exclusion_reason":null}},{"table_id":"tbl3","label":null,"number":"3","caption":"tbl3
-      caption","footer":null,"raw_path":"source/pubget/tables/tbl3.html","column_headings":["x","y","z"],"rows":[{"row":0,"cells":["1","2","3"],"text_span":null}],"text_span":null,"coordinate_space_hint":null,"triage":{"passes":true,"score":0.8,"route":"gate","located_by":null,"excluded_by_hand":true,"exclusion_reason":"not_coordinates;
-      a design matrix"}}]}}'
+    body: '{"coordinate_parse":{"header":{"artifact_kind":"coordinate_parse","schema_version":"0.10.0","article_id":"3yy45ye5oujo","identifiers":{"pmid":"60","pmcid":null,"doi":null,"alternative_pmids":null,"alternative_pmcids":null,"alternative_dois":null,"preprint_dois":null,"preprint_pmids":null,"preprint_pmcids":null,"publication_status":"published"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.10","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"parsed_paper","fingerprint":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","producer_version":null},{"artifact_kind":"analyses","fingerprint":"f41fd5d24aa95045e853d73c70b7de64","producer_version":null}],"created_at":null,"neurostore_base_study_id":"BS60"},"parse_id":"023d485787b4e848d8cc8d350f964efc27e70d2cae39c1614f67b11dcfb75895","text_sha256":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","revision_of":null,"analyses":[{"key":"analysis#e6e0af1672caaffa","cells":null,"text_spans":[{"start_char":144,"end_char":164,"text":null}],"origin":"text","table_id":null,"name":"patients
+      > controls","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":null,"prior_study_evidence":null,"role_confidence":1.0,"role_source":"by-name@1","split":null,"derived_from":null,"statistic":"t","statistic_df":null,"thresholds":null,"points":[{"coordinates":[-22.0,-4.0,-18.0],"space":null,"row":null,"column_group":null,"text_span":{"start_char":144,"end_char":164,"text":null},"values":[{"kind":"t","kind_as_printed":null,"value":4.1,"level":null,"correction":null}],"cluster_size":null,"cluster_measure":null,"is_subpeak":false,"label":null}]}],"tables":null,"omitted_analyses":null,"text_sweep":{"passages_found":1,"passages_read":1,"truncated":false,"points_dropped_as_table_restatements":0},"verdicts":null},"parsed_paper":{"header":{"artifact_kind":"parsed_paper","schema_version":"0.10.0","article_id":"3yy45ye5oujo","identifiers":{"pmid":"60","pmcid":null,"doi":null,"alternative_pmids":null,"alternative_pmcids":null,"alternative_dois":null,"preprint_dois":null,"preprint_pmids":null,"preprint_pmcids":null,"publication_status":"published"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.10","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"extraction","fingerprint":"ex-1","producer_version":null},{"artifact_kind":"metadata","fingerprint":"me-1","producer_version":null},{"artifact_kind":"triage","fingerprint":"tr-1","producer_version":null}],"created_at":null,"neurostore_base_study_id":"BS60"},"source":"pubget","source_reason":null,"text_copy":{"route":"pmc","version":"vor","license":{"license_id":"all-rights-reserved","determination":"assumed","stated_by":null,"stated_as":null},"url":null,"preprint_server":null,"access":"public"},"reported_copies":null,"text_path":"processed/pubget/text.txt","text_sha256":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","text_length":313,"bibliography":{"title":"T","authors":null,"authors_provider":null,"correspondence_emails":null,"journal":null,"publication_year":null,"volume":null,"issue":null,"pages":null,"abstract":"A","abstract_provider":"pubmed","language":null,"publication_types":null,"keywords":null,"license":{"license_id":"all-rights-reserved","determination":"assumed","stated_by":null,"stated_as":null},"oa_status":null,"corrections":null,"provider":"pubmed"},"is_meta_analysis":false,"is_meta_analysis_basis":null,"sections":[{"kind":"other","heading":null,"start_char":0,"end_char":5},{"kind":"methods","heading":null,"start_char":5,"end_char":57},{"kind":"results","heading":null,"start_char":57,"end_char":239},{"kind":"discussion","heading":null,"start_char":239,"end_char":313}],"supplements":null,"references":null,"citations":null,"tables":[]}}'
     headers:
       accept:
       - '*/*'
@@ -23,7 +10,7 @@ interactions:
       connection:
       - keep-alive
       content-length:
-      - '6898'
+      - '3934'
       content-type:
       - application/json
       host:
@@ -34,40 +21,30 @@ interactions:
     uri: http://127.0.0.1:28084/api/study-schema-uploads/
   response:
     body:
-      string: '{"status": 500, "title": "Internal Server Error", "detail": "Internal
-        Server Error", "type": "about:blank", "timestamp": "2026-10-13T01:39:06.871628Z",
-        "request_id": "e12e1548c5904f7f"}'
+      string: '{"status": 500, "title": "Internal Server Error", "detail": "(psycopg2.OperationalError)
+        could not translate host name \"store-pgsql17\" to address: Temporary failure
+        in name resolution\n\n(Background on this error at: https://sqlalche.me/e/21/e3q8)",
+        "type": "about:blank", "timestamp": "2026-10-25T08:18:15.975739Z", "request_id":
+        "7c34f24fc6a54a77"}'
     headers:
       content-length:
-      - '185'
+      - '352'
       content-type:
       - application/json
       date:
-      - Tue, 13 Oct 2026 01:39:06 GMT
+      - Sun, 25 Oct 2026 08:18:15 GMT
       server:
-      - uvicorn
+      - BaseHTTP/0.6 Python/3.10.12
       vary:
       - Origin
       x-request-id:
-      - e12e1548c5904f7f
+      - 7c34f24fc6a54a77
     status:
       code: 500
       message: Internal Server Error
 - request:
-    body: '{"coordinate_parse":{"header":{"artifact_kind":"coordinate_parse","schema_version":"0.6.0","article_id":"art-1","identifiers":{"pmid":"22848644","pmcid":"PMC3407125","doi":"10.1371/journal.pone.0041873","neurostore_base_study_id":"22tHjbNRU8t2"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.7","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"parsed_paper","fingerprint":"9c41b321fb51d29ee50c195904b82bad3195b089f23abbb7f2880500ff264104","producer_version":null},{"artifact_kind":"analyses","fingerprint":"fp-space","producer_version":null}],"created_at":null},"parse_id":"2c2c9bcbd849105e105dfe4bfc12f9c5b0321aeb33ec00895d5940c911101b2b","text_sha256":"9c41b321fb51d29ee50c195904b82bad3195b089f23abbb7f2880500ff264104","revision_of":null,"analyses":[{"key":"analysis#fc8087881826e87b","cells":[{"row":1,"column_group":0}],"text_spans":null,"origin":"table","table_id":"tbl1","name":"Faces
-      > Houses","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":false,"prior_study_evidence":null,"role_confidence":0.9,"role_source":"set-role-table@1","split":{"half":"original","original_analysis":null,"rule":"sign_of_directional_statistic"},"derived_from":null,"statistic":"t","statistic_df":null,"thresholds":null,"points":[{"coordinates":[-42.0,-55.0,-18.0],"space":null,"row":1,"column_group":0,"text_span":null,"values":[{"kind":"t","kind_as_printed":null,"value":6.1,"level":null,"correction":null}],"cluster_size":120.0,"cluster_measure":"voxels","is_subpeak":false,"label":null}]},{"key":"analysis#89177cdbd20fa702","cells":[{"row":2,"column_group":0}],"text_spans":null,"origin":"table","table_id":"tbl1","name":"Faces
-      > Houses","name_is_printed":false,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":false,"prior_study_evidence":null,"role_confidence":0.9,"role_source":"set-role-table@1","split":{"half":"inverse","original_analysis":"analysis#fc8087881826e87b","rule":"sign_of_directional_statistic"},"derived_from":null,"statistic":"t","statistic_df":null,"thresholds":null,"points":[{"coordinates":[22.0,-4.0,-20.0],"space":null,"row":2,"column_group":0,"text_span":null,"values":[{"kind":"t","kind_as_printed":null,"value":-4.2,"level":null,"correction":null}],"cluster_size":40.0,"cluster_measure":"voxels","is_subpeak":false,"label":null}]},{"key":"analysis#f1bf36dcc74097ba","cells":[{"row":3,"column_group":0}],"text_spans":null,"origin":"table","table_id":"tbl1","name":"Houses
-      > Faces","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":false,"prior_study_evidence":null,"role_confidence":0.9,"role_source":"set-role-table@1","split":null,"derived_from":null,"statistic":null,"statistic_df":null,"thresholds":null,"points":[]},{"key":"analysis#36bc1da16d970774","cells":null,"text_spans":[{"start_char":56,"end_char":68,"text":null}],"origin":"text","table_id":null,"name":"amygdala
-      seed","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"anchor","anchor_kind":"seed","from_prior_study":false,"prior_study_evidence":null,"role_confidence":0.9,"role_source":"set-role-text@1","split":null,"derived_from":null,"statistic":null,"statistic_df":null,"thresholds":null,"points":[{"coordinates":[-22.0,-4.0,-20.0],"space":null,"row":null,"column_group":null,"text_span":{"start_char":56,"end_char":68,"text":null},"values":null,"cluster_size":null,"cluster_measure":null,"is_subpeak":false,"label":null}]}],"tables":[{"table_id":"tbl1","reading":"coordinates","reason":null},{"table_id":"tbl2","reading":"rejected_by_triage","reason":"gate"},{"table_id":"tbl3","reading":"excluded_by_hand","reason":"not_coordinates;
-      a design matrix"}],"omitted_analyses":null,"text_sweep":{"passages_found":1,"passages_read":1,"truncated":false,"points_dropped_as_table_restatements":2},"verdicts":null},"parsed_paper":{"header":{"artifact_kind":"parsed_paper","schema_version":"0.6.0","article_id":"art-1","identifiers":{"pmid":"22848644","pmcid":"PMC3407125","doi":"10.1371/journal.pone.0041873","neurostore_base_study_id":"22tHjbNRU8t2"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.7","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"extraction","fingerprint":"fp-extract","producer_version":null}],"created_at":null},"source":"pubget","source_reason":null,"text_path":"processed/pubget/text.txt","text_sha256":"9c41b321fb51d29ee50c195904b82bad3195b089f23abbb7f2880500ff264104","text_length":117,"bibliography":{"title":"Faces
-      and houses","authors":["Jones, S"],"journal":"PLoS ONE","publication_year":2012,"volume":null,"issue":null,"pages":null,"abstract":null,"language":["eng"],"publication_types":["Journal
-      Article"],"keywords":null,"license":null,"open_access":null,"corrections":null,"provider":"pubmed","corresponding_authors":null},"is_meta_analysis":false,"is_meta_analysis_basis":null,"sections":[{"kind":"other","heading":null,"start_char":0,"end_char":7},{"kind":"methods","heading":null,"start_char":7,"end_char":96},{"kind":"results","heading":null,"start_char":96,"end_char":117}],"supplements":null,"references":null,"citations":null,"tables":[{"table_id":"tbl1","label":null,"number":"1","caption":"tbl1
-      caption","footer":null,"raw_path":"source/pubget/tables/tbl1.html","column_headings":["Region","x","y","z","t","k"],"rows":[{"row":0,"cells":["Faces
-      > Houses","","","","",""],"text_span":null},{"row":1,"cells":["Fusiform gyrus","-42","-55","-18","6.1","120"],"text_span":null},{"row":2,"cells":["Amygdala","22","-4","-20","-4.2","40"],"text_span":null},{"row":3,"cells":["Houses
-      > Faces","n.s."],"text_span":null}],"text_span":null,"coordinate_space_hint":null,"triage":{"passes":true,"score":0.97,"route":"read","located_by":null,"excluded_by_hand":null,"exclusion_reason":null}},{"table_id":"tbl2","label":null,"number":"2","caption":"tbl2
-      caption","footer":null,"raw_path":"source/pubget/tables/tbl2.html","column_headings":["Group","n"],"rows":[{"row":0,"cells":["Patients","20"],"text_span":null}],"text_span":null,"coordinate_space_hint":null,"triage":{"passes":false,"score":0.02,"route":"gate","located_by":null,"excluded_by_hand":null,"exclusion_reason":null}},{"table_id":"tbl3","label":null,"number":"3","caption":"tbl3
-      caption","footer":null,"raw_path":"source/pubget/tables/tbl3.html","column_headings":["x","y","z"],"rows":[{"row":0,"cells":["1","2","3"],"text_span":null}],"text_span":null,"coordinate_space_hint":null,"triage":{"passes":true,"score":0.8,"route":"gate","located_by":null,"excluded_by_hand":true,"exclusion_reason":"not_coordinates;
-      a design matrix"}}]}}'
+    body: '{"coordinate_parse":{"header":{"artifact_kind":"coordinate_parse","schema_version":"0.10.0","article_id":"3yy45ye5oujo","identifiers":{"pmid":"60","pmcid":null,"doi":null,"alternative_pmids":null,"alternative_pmcids":null,"alternative_dois":null,"preprint_dois":null,"preprint_pmids":null,"preprint_pmcids":null,"publication_status":"published"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.10","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"parsed_paper","fingerprint":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","producer_version":null},{"artifact_kind":"analyses","fingerprint":"f41fd5d24aa95045e853d73c70b7de64","producer_version":null}],"created_at":null,"neurostore_base_study_id":"BS60"},"parse_id":"023d485787b4e848d8cc8d350f964efc27e70d2cae39c1614f67b11dcfb75895","text_sha256":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","revision_of":null,"analyses":[{"key":"analysis#e6e0af1672caaffa","cells":null,"text_spans":[{"start_char":144,"end_char":164,"text":null}],"origin":"text","table_id":null,"name":"patients
+      > controls","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":null,"prior_study_evidence":null,"role_confidence":1.0,"role_source":"by-name@1","split":null,"derived_from":null,"statistic":"t","statistic_df":null,"thresholds":null,"points":[{"coordinates":[-22.0,-4.0,-18.0],"space":null,"row":null,"column_group":null,"text_span":{"start_char":144,"end_char":164,"text":null},"values":[{"kind":"t","kind_as_printed":null,"value":4.1,"level":null,"correction":null}],"cluster_size":null,"cluster_measure":null,"is_subpeak":false,"label":null}]}],"tables":null,"omitted_analyses":null,"text_sweep":{"passages_found":1,"passages_read":1,"truncated":false,"points_dropped_as_table_restatements":0},"verdicts":null},"parsed_paper":{"header":{"artifact_kind":"parsed_paper","schema_version":"0.10.0","article_id":"3yy45ye5oujo","identifiers":{"pmid":"60","pmcid":null,"doi":null,"alternative_pmids":null,"alternative_pmcids":null,"alternative_dois":null,"preprint_dois":null,"preprint_pmids":null,"preprint_pmcids":null,"publication_status":"published"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.10","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"extraction","fingerprint":"ex-1","producer_version":null},{"artifact_kind":"metadata","fingerprint":"me-1","producer_version":null},{"artifact_kind":"triage","fingerprint":"tr-1","producer_version":null}],"created_at":null,"neurostore_base_study_id":"BS60"},"source":"pubget","source_reason":null,"text_copy":{"route":"pmc","version":"vor","license":{"license_id":"all-rights-reserved","determination":"assumed","stated_by":null,"stated_as":null},"url":null,"preprint_server":null,"access":"public"},"reported_copies":null,"text_path":"processed/pubget/text.txt","text_sha256":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","text_length":313,"bibliography":{"title":"T","authors":null,"authors_provider":null,"correspondence_emails":null,"journal":null,"publication_year":null,"volume":null,"issue":null,"pages":null,"abstract":"A","abstract_provider":"pubmed","language":null,"publication_types":null,"keywords":null,"license":{"license_id":"all-rights-reserved","determination":"assumed","stated_by":null,"stated_as":null},"oa_status":null,"corrections":null,"provider":"pubmed"},"is_meta_analysis":false,"is_meta_analysis_basis":null,"sections":[{"kind":"other","heading":null,"start_char":0,"end_char":5},{"kind":"methods","heading":null,"start_char":5,"end_char":57},{"kind":"results","heading":null,"start_char":57,"end_char":239},{"kind":"discussion","heading":null,"start_char":239,"end_char":313}],"supplements":null,"references":null,"citations":null,"tables":[]}}'
     headers:
       accept:
       - '*/*'
@@ -76,7 +53,7 @@ interactions:
       connection:
       - keep-alive
       content-length:
-      - '6898'
+      - '3934'
       content-type:
       - application/json
       host:
@@ -87,40 +64,30 @@ interactions:
     uri: http://127.0.0.1:28084/api/study-schema-uploads/
   response:
     body:
-      string: '{"status": 500, "title": "Internal Server Error", "detail": "Internal
-        Server Error", "type": "about:blank", "timestamp": "2026-10-13T01:39:06.890663Z",
-        "request_id": "3a3d0a54c4254149"}'
+      string: '{"status": 500, "title": "Internal Server Error", "detail": "(psycopg2.OperationalError)
+        could not translate host name \"store-pgsql17\" to address: Temporary failure
+        in name resolution\n\n(Background on this error at: https://sqlalche.me/e/21/e3q8)",
+        "type": "about:blank", "timestamp": "2026-10-25T08:18:15.993075Z", "request_id":
+        "b61ecbe669b4456d"}'
     headers:
       content-length:
-      - '185'
+      - '352'
       content-type:
       - application/json
       date:
-      - Tue, 13 Oct 2026 01:39:06 GMT
+      - Sun, 25 Oct 2026 08:18:15 GMT
       server:
-      - uvicorn
+      - BaseHTTP/0.6 Python/3.10.12
       vary:
       - Origin
       x-request-id:
-      - 3a3d0a54c4254149
+      - b61ecbe669b4456d
     status:
       code: 500
       message: Internal Server Error
 - request:
-    body: '{"coordinate_parse":{"header":{"artifact_kind":"coordinate_parse","schema_version":"0.6.0","article_id":"art-1","identifiers":{"pmid":"22848644","pmcid":"PMC3407125","doi":"10.1371/journal.pone.0041873","neurostore_base_study_id":"22tHjbNRU8t2"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.7","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"parsed_paper","fingerprint":"9c41b321fb51d29ee50c195904b82bad3195b089f23abbb7f2880500ff264104","producer_version":null},{"artifact_kind":"analyses","fingerprint":"fp-space","producer_version":null}],"created_at":null},"parse_id":"2c2c9bcbd849105e105dfe4bfc12f9c5b0321aeb33ec00895d5940c911101b2b","text_sha256":"9c41b321fb51d29ee50c195904b82bad3195b089f23abbb7f2880500ff264104","revision_of":null,"analyses":[{"key":"analysis#fc8087881826e87b","cells":[{"row":1,"column_group":0}],"text_spans":null,"origin":"table","table_id":"tbl1","name":"Faces
-      > Houses","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":false,"prior_study_evidence":null,"role_confidence":0.9,"role_source":"set-role-table@1","split":{"half":"original","original_analysis":null,"rule":"sign_of_directional_statistic"},"derived_from":null,"statistic":"t","statistic_df":null,"thresholds":null,"points":[{"coordinates":[-42.0,-55.0,-18.0],"space":null,"row":1,"column_group":0,"text_span":null,"values":[{"kind":"t","kind_as_printed":null,"value":6.1,"level":null,"correction":null}],"cluster_size":120.0,"cluster_measure":"voxels","is_subpeak":false,"label":null}]},{"key":"analysis#89177cdbd20fa702","cells":[{"row":2,"column_group":0}],"text_spans":null,"origin":"table","table_id":"tbl1","name":"Faces
-      > Houses","name_is_printed":false,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":false,"prior_study_evidence":null,"role_confidence":0.9,"role_source":"set-role-table@1","split":{"half":"inverse","original_analysis":"analysis#fc8087881826e87b","rule":"sign_of_directional_statistic"},"derived_from":null,"statistic":"t","statistic_df":null,"thresholds":null,"points":[{"coordinates":[22.0,-4.0,-20.0],"space":null,"row":2,"column_group":0,"text_span":null,"values":[{"kind":"t","kind_as_printed":null,"value":-4.2,"level":null,"correction":null}],"cluster_size":40.0,"cluster_measure":"voxels","is_subpeak":false,"label":null}]},{"key":"analysis#f1bf36dcc74097ba","cells":[{"row":3,"column_group":0}],"text_spans":null,"origin":"table","table_id":"tbl1","name":"Houses
-      > Faces","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":false,"prior_study_evidence":null,"role_confidence":0.9,"role_source":"set-role-table@1","split":null,"derived_from":null,"statistic":null,"statistic_df":null,"thresholds":null,"points":[]},{"key":"analysis#36bc1da16d970774","cells":null,"text_spans":[{"start_char":56,"end_char":68,"text":null}],"origin":"text","table_id":null,"name":"amygdala
-      seed","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"anchor","anchor_kind":"seed","from_prior_study":false,"prior_study_evidence":null,"role_confidence":0.9,"role_source":"set-role-text@1","split":null,"derived_from":null,"statistic":null,"statistic_df":null,"thresholds":null,"points":[{"coordinates":[-22.0,-4.0,-20.0],"space":null,"row":null,"column_group":null,"text_span":{"start_char":56,"end_char":68,"text":null},"values":null,"cluster_size":null,"cluster_measure":null,"is_subpeak":false,"label":null}]}],"tables":[{"table_id":"tbl1","reading":"coordinates","reason":null},{"table_id":"tbl2","reading":"rejected_by_triage","reason":"gate"},{"table_id":"tbl3","reading":"excluded_by_hand","reason":"not_coordinates;
-      a design matrix"}],"omitted_analyses":null,"text_sweep":{"passages_found":1,"passages_read":1,"truncated":false,"points_dropped_as_table_restatements":2},"verdicts":null},"parsed_paper":{"header":{"artifact_kind":"parsed_paper","schema_version":"0.6.0","article_id":"art-1","identifiers":{"pmid":"22848644","pmcid":"PMC3407125","doi":"10.1371/journal.pone.0041873","neurostore_base_study_id":"22tHjbNRU8t2"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.7","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"extraction","fingerprint":"fp-extract","producer_version":null}],"created_at":null},"source":"pubget","source_reason":null,"text_path":"processed/pubget/text.txt","text_sha256":"9c41b321fb51d29ee50c195904b82bad3195b089f23abbb7f2880500ff264104","text_length":117,"bibliography":{"title":"Faces
-      and houses","authors":["Jones, S"],"journal":"PLoS ONE","publication_year":2012,"volume":null,"issue":null,"pages":null,"abstract":null,"language":["eng"],"publication_types":["Journal
-      Article"],"keywords":null,"license":null,"open_access":null,"corrections":null,"provider":"pubmed","corresponding_authors":null},"is_meta_analysis":false,"is_meta_analysis_basis":null,"sections":[{"kind":"other","heading":null,"start_char":0,"end_char":7},{"kind":"methods","heading":null,"start_char":7,"end_char":96},{"kind":"results","heading":null,"start_char":96,"end_char":117}],"supplements":null,"references":null,"citations":null,"tables":[{"table_id":"tbl1","label":null,"number":"1","caption":"tbl1
-      caption","footer":null,"raw_path":"source/pubget/tables/tbl1.html","column_headings":["Region","x","y","z","t","k"],"rows":[{"row":0,"cells":["Faces
-      > Houses","","","","",""],"text_span":null},{"row":1,"cells":["Fusiform gyrus","-42","-55","-18","6.1","120"],"text_span":null},{"row":2,"cells":["Amygdala","22","-4","-20","-4.2","40"],"text_span":null},{"row":3,"cells":["Houses
-      > Faces","n.s."],"text_span":null}],"text_span":null,"coordinate_space_hint":null,"triage":{"passes":true,"score":0.97,"route":"read","located_by":null,"excluded_by_hand":null,"exclusion_reason":null}},{"table_id":"tbl2","label":null,"number":"2","caption":"tbl2
-      caption","footer":null,"raw_path":"source/pubget/tables/tbl2.html","column_headings":["Group","n"],"rows":[{"row":0,"cells":["Patients","20"],"text_span":null}],"text_span":null,"coordinate_space_hint":null,"triage":{"passes":false,"score":0.02,"route":"gate","located_by":null,"excluded_by_hand":null,"exclusion_reason":null}},{"table_id":"tbl3","label":null,"number":"3","caption":"tbl3
-      caption","footer":null,"raw_path":"source/pubget/tables/tbl3.html","column_headings":["x","y","z"],"rows":[{"row":0,"cells":["1","2","3"],"text_span":null}],"text_span":null,"coordinate_space_hint":null,"triage":{"passes":true,"score":0.8,"route":"gate","located_by":null,"excluded_by_hand":true,"exclusion_reason":"not_coordinates;
-      a design matrix"}}]}}'
+    body: '{"coordinate_parse":{"header":{"artifact_kind":"coordinate_parse","schema_version":"0.10.0","article_id":"3yy45ye5oujo","identifiers":{"pmid":"60","pmcid":null,"doi":null,"alternative_pmids":null,"alternative_pmcids":null,"alternative_dois":null,"preprint_dois":null,"preprint_pmids":null,"preprint_pmcids":null,"publication_status":"published"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.10","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"parsed_paper","fingerprint":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","producer_version":null},{"artifact_kind":"analyses","fingerprint":"f41fd5d24aa95045e853d73c70b7de64","producer_version":null}],"created_at":null,"neurostore_base_study_id":"BS60"},"parse_id":"023d485787b4e848d8cc8d350f964efc27e70d2cae39c1614f67b11dcfb75895","text_sha256":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","revision_of":null,"analyses":[{"key":"analysis#e6e0af1672caaffa","cells":null,"text_spans":[{"start_char":144,"end_char":164,"text":null}],"origin":"text","table_id":null,"name":"patients
+      > controls","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":null,"prior_study_evidence":null,"role_confidence":1.0,"role_source":"by-name@1","split":null,"derived_from":null,"statistic":"t","statistic_df":null,"thresholds":null,"points":[{"coordinates":[-22.0,-4.0,-18.0],"space":null,"row":null,"column_group":null,"text_span":{"start_char":144,"end_char":164,"text":null},"values":[{"kind":"t","kind_as_printed":null,"value":4.1,"level":null,"correction":null}],"cluster_size":null,"cluster_measure":null,"is_subpeak":false,"label":null}]}],"tables":null,"omitted_analyses":null,"text_sweep":{"passages_found":1,"passages_read":1,"truncated":false,"points_dropped_as_table_restatements":0},"verdicts":null},"parsed_paper":{"header":{"artifact_kind":"parsed_paper","schema_version":"0.10.0","article_id":"3yy45ye5oujo","identifiers":{"pmid":"60","pmcid":null,"doi":null,"alternative_pmids":null,"alternative_pmcids":null,"alternative_dois":null,"preprint_dois":null,"preprint_pmids":null,"preprint_pmcids":null,"publication_status":"published"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.10","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"extraction","fingerprint":"ex-1","producer_version":null},{"artifact_kind":"metadata","fingerprint":"me-1","producer_version":null},{"artifact_kind":"triage","fingerprint":"tr-1","producer_version":null}],"created_at":null,"neurostore_base_study_id":"BS60"},"source":"pubget","source_reason":null,"text_copy":{"route":"pmc","version":"vor","license":{"license_id":"all-rights-reserved","determination":"assumed","stated_by":null,"stated_as":null},"url":null,"preprint_server":null,"access":"public"},"reported_copies":null,"text_path":"processed/pubget/text.txt","text_sha256":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","text_length":313,"bibliography":{"title":"T","authors":null,"authors_provider":null,"correspondence_emails":null,"journal":null,"publication_year":null,"volume":null,"issue":null,"pages":null,"abstract":"A","abstract_provider":"pubmed","language":null,"publication_types":null,"keywords":null,"license":{"license_id":"all-rights-reserved","determination":"assumed","stated_by":null,"stated_as":null},"oa_status":null,"corrections":null,"provider":"pubmed"},"is_meta_analysis":false,"is_meta_analysis_basis":null,"sections":[{"kind":"other","heading":null,"start_char":0,"end_char":5},{"kind":"methods","heading":null,"start_char":5,"end_char":57},{"kind":"results","heading":null,"start_char":57,"end_char":239},{"kind":"discussion","heading":null,"start_char":239,"end_char":313}],"supplements":null,"references":null,"citations":null,"tables":[]}}'
     headers:
       accept:
       - '*/*'
@@ -129,7 +96,7 @@ interactions:
       connection:
       - keep-alive
       content-length:
-      - '6898'
+      - '3934'
       content-type:
       - application/json
       host:
@@ -140,40 +107,30 @@ interactions:
     uri: http://127.0.0.1:28084/api/study-schema-uploads/
   response:
     body:
-      string: '{"status": 500, "title": "Internal Server Error", "detail": "Internal
-        Server Error", "type": "about:blank", "timestamp": "2026-10-13T01:39:06.908753Z",
-        "request_id": "009ef440a4054d72"}'
+      string: '{"status": 500, "title": "Internal Server Error", "detail": "(psycopg2.OperationalError)
+        could not translate host name \"store-pgsql17\" to address: Temporary failure
+        in name resolution\n\n(Background on this error at: https://sqlalche.me/e/21/e3q8)",
+        "type": "about:blank", "timestamp": "2026-10-25T08:18:16.050623Z", "request_id":
+        "2e7a51f3a3c24568"}'
     headers:
       content-length:
-      - '185'
+      - '352'
       content-type:
       - application/json
       date:
-      - Tue, 13 Oct 2026 01:39:06 GMT
+      - Sun, 25 Oct 2026 08:18:16 GMT
       server:
-      - uvicorn
+      - BaseHTTP/0.6 Python/3.10.12
       vary:
       - Origin
       x-request-id:
-      - 009ef440a4054d72
+      - 2e7a51f3a3c24568
     status:
       code: 500
       message: Internal Server Error
 - request:
-    body: '{"coordinate_parse":{"header":{"artifact_kind":"coordinate_parse","schema_version":"0.6.0","article_id":"art-1","identifiers":{"pmid":"22848644","pmcid":"PMC3407125","doi":"10.1371/journal.pone.0041873","neurostore_base_study_id":"22tHjbNRU8t2"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.7","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"parsed_paper","fingerprint":"9c41b321fb51d29ee50c195904b82bad3195b089f23abbb7f2880500ff264104","producer_version":null},{"artifact_kind":"analyses","fingerprint":"fp-space","producer_version":null}],"created_at":null},"parse_id":"2c2c9bcbd849105e105dfe4bfc12f9c5b0321aeb33ec00895d5940c911101b2b","text_sha256":"9c41b321fb51d29ee50c195904b82bad3195b089f23abbb7f2880500ff264104","revision_of":null,"analyses":[{"key":"analysis#fc8087881826e87b","cells":[{"row":1,"column_group":0}],"text_spans":null,"origin":"table","table_id":"tbl1","name":"Faces
-      > Houses","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":false,"prior_study_evidence":null,"role_confidence":0.9,"role_source":"set-role-table@1","split":{"half":"original","original_analysis":null,"rule":"sign_of_directional_statistic"},"derived_from":null,"statistic":"t","statistic_df":null,"thresholds":null,"points":[{"coordinates":[-42.0,-55.0,-18.0],"space":null,"row":1,"column_group":0,"text_span":null,"values":[{"kind":"t","kind_as_printed":null,"value":6.1,"level":null,"correction":null}],"cluster_size":120.0,"cluster_measure":"voxels","is_subpeak":false,"label":null}]},{"key":"analysis#89177cdbd20fa702","cells":[{"row":2,"column_group":0}],"text_spans":null,"origin":"table","table_id":"tbl1","name":"Faces
-      > Houses","name_is_printed":false,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":false,"prior_study_evidence":null,"role_confidence":0.9,"role_source":"set-role-table@1","split":{"half":"inverse","original_analysis":"analysis#fc8087881826e87b","rule":"sign_of_directional_statistic"},"derived_from":null,"statistic":"t","statistic_df":null,"thresholds":null,"points":[{"coordinates":[22.0,-4.0,-20.0],"space":null,"row":2,"column_group":0,"text_span":null,"values":[{"kind":"t","kind_as_printed":null,"value":-4.2,"level":null,"correction":null}],"cluster_size":40.0,"cluster_measure":"voxels","is_subpeak":false,"label":null}]},{"key":"analysis#f1bf36dcc74097ba","cells":[{"row":3,"column_group":0}],"text_spans":null,"origin":"table","table_id":"tbl1","name":"Houses
-      > Faces","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":false,"prior_study_evidence":null,"role_confidence":0.9,"role_source":"set-role-table@1","split":null,"derived_from":null,"statistic":null,"statistic_df":null,"thresholds":null,"points":[]},{"key":"analysis#36bc1da16d970774","cells":null,"text_spans":[{"start_char":56,"end_char":68,"text":null}],"origin":"text","table_id":null,"name":"amygdala
-      seed","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"anchor","anchor_kind":"seed","from_prior_study":false,"prior_study_evidence":null,"role_confidence":0.9,"role_source":"set-role-text@1","split":null,"derived_from":null,"statistic":null,"statistic_df":null,"thresholds":null,"points":[{"coordinates":[-22.0,-4.0,-20.0],"space":null,"row":null,"column_group":null,"text_span":{"start_char":56,"end_char":68,"text":null},"values":null,"cluster_size":null,"cluster_measure":null,"is_subpeak":false,"label":null}]}],"tables":[{"table_id":"tbl1","reading":"coordinates","reason":null},{"table_id":"tbl2","reading":"rejected_by_triage","reason":"gate"},{"table_id":"tbl3","reading":"excluded_by_hand","reason":"not_coordinates;
-      a design matrix"}],"omitted_analyses":null,"text_sweep":{"passages_found":1,"passages_read":1,"truncated":false,"points_dropped_as_table_restatements":2},"verdicts":null},"parsed_paper":{"header":{"artifact_kind":"parsed_paper","schema_version":"0.6.0","article_id":"art-1","identifiers":{"pmid":"22848644","pmcid":"PMC3407125","doi":"10.1371/journal.pone.0041873","neurostore_base_study_id":"22tHjbNRU8t2"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.7","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"extraction","fingerprint":"fp-extract","producer_version":null}],"created_at":null},"source":"pubget","source_reason":null,"text_path":"processed/pubget/text.txt","text_sha256":"9c41b321fb51d29ee50c195904b82bad3195b089f23abbb7f2880500ff264104","text_length":117,"bibliography":{"title":"Faces
-      and houses","authors":["Jones, S"],"journal":"PLoS ONE","publication_year":2012,"volume":null,"issue":null,"pages":null,"abstract":null,"language":["eng"],"publication_types":["Journal
-      Article"],"keywords":null,"license":null,"open_access":null,"corrections":null,"provider":"pubmed","corresponding_authors":null},"is_meta_analysis":false,"is_meta_analysis_basis":null,"sections":[{"kind":"other","heading":null,"start_char":0,"end_char":7},{"kind":"methods","heading":null,"start_char":7,"end_char":96},{"kind":"results","heading":null,"start_char":96,"end_char":117}],"supplements":null,"references":null,"citations":null,"tables":[{"table_id":"tbl1","label":null,"number":"1","caption":"tbl1
-      caption","footer":null,"raw_path":"source/pubget/tables/tbl1.html","column_headings":["Region","x","y","z","t","k"],"rows":[{"row":0,"cells":["Faces
-      > Houses","","","","",""],"text_span":null},{"row":1,"cells":["Fusiform gyrus","-42","-55","-18","6.1","120"],"text_span":null},{"row":2,"cells":["Amygdala","22","-4","-20","-4.2","40"],"text_span":null},{"row":3,"cells":["Houses
-      > Faces","n.s."],"text_span":null}],"text_span":null,"coordinate_space_hint":null,"triage":{"passes":true,"score":0.97,"route":"read","located_by":null,"excluded_by_hand":null,"exclusion_reason":null}},{"table_id":"tbl2","label":null,"number":"2","caption":"tbl2
-      caption","footer":null,"raw_path":"source/pubget/tables/tbl2.html","column_headings":["Group","n"],"rows":[{"row":0,"cells":["Patients","20"],"text_span":null}],"text_span":null,"coordinate_space_hint":null,"triage":{"passes":false,"score":0.02,"route":"gate","located_by":null,"excluded_by_hand":null,"exclusion_reason":null}},{"table_id":"tbl3","label":null,"number":"3","caption":"tbl3
-      caption","footer":null,"raw_path":"source/pubget/tables/tbl3.html","column_headings":["x","y","z"],"rows":[{"row":0,"cells":["1","2","3"],"text_span":null}],"text_span":null,"coordinate_space_hint":null,"triage":{"passes":true,"score":0.8,"route":"gate","located_by":null,"excluded_by_hand":true,"exclusion_reason":"not_coordinates;
-      a design matrix"}}]}}'
+    body: '{"coordinate_parse":{"header":{"artifact_kind":"coordinate_parse","schema_version":"0.10.0","article_id":"3yy45ye5oujo","identifiers":{"pmid":"60","pmcid":null,"doi":null,"alternative_pmids":null,"alternative_pmcids":null,"alternative_dois":null,"preprint_dois":null,"preprint_pmids":null,"preprint_pmcids":null,"publication_status":"published"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.10","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"parsed_paper","fingerprint":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","producer_version":null},{"artifact_kind":"analyses","fingerprint":"f41fd5d24aa95045e853d73c70b7de64","producer_version":null}],"created_at":null,"neurostore_base_study_id":"BS60"},"parse_id":"023d485787b4e848d8cc8d350f964efc27e70d2cae39c1614f67b11dcfb75895","text_sha256":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","revision_of":null,"analyses":[{"key":"analysis#e6e0af1672caaffa","cells":null,"text_spans":[{"start_char":144,"end_char":164,"text":null}],"origin":"text","table_id":null,"name":"patients
+      > controls","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":null,"prior_study_evidence":null,"role_confidence":1.0,"role_source":"by-name@1","split":null,"derived_from":null,"statistic":"t","statistic_df":null,"thresholds":null,"points":[{"coordinates":[-22.0,-4.0,-18.0],"space":null,"row":null,"column_group":null,"text_span":{"start_char":144,"end_char":164,"text":null},"values":[{"kind":"t","kind_as_printed":null,"value":4.1,"level":null,"correction":null}],"cluster_size":null,"cluster_measure":null,"is_subpeak":false,"label":null}]}],"tables":null,"omitted_analyses":null,"text_sweep":{"passages_found":1,"passages_read":1,"truncated":false,"points_dropped_as_table_restatements":0},"verdicts":null},"parsed_paper":{"header":{"artifact_kind":"parsed_paper","schema_version":"0.10.0","article_id":"3yy45ye5oujo","identifiers":{"pmid":"60","pmcid":null,"doi":null,"alternative_pmids":null,"alternative_pmcids":null,"alternative_dois":null,"preprint_dois":null,"preprint_pmids":null,"preprint_pmcids":null,"publication_status":"published"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.10","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"extraction","fingerprint":"ex-1","producer_version":null},{"artifact_kind":"metadata","fingerprint":"me-1","producer_version":null},{"artifact_kind":"triage","fingerprint":"tr-1","producer_version":null}],"created_at":null,"neurostore_base_study_id":"BS60"},"source":"pubget","source_reason":null,"text_copy":{"route":"pmc","version":"vor","license":{"license_id":"all-rights-reserved","determination":"assumed","stated_by":null,"stated_as":null},"url":null,"preprint_server":null,"access":"public"},"reported_copies":null,"text_path":"processed/pubget/text.txt","text_sha256":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","text_length":313,"bibliography":{"title":"T","authors":null,"authors_provider":null,"correspondence_emails":null,"journal":null,"publication_year":null,"volume":null,"issue":null,"pages":null,"abstract":"A","abstract_provider":"pubmed","language":null,"publication_types":null,"keywords":null,"license":{"license_id":"all-rights-reserved","determination":"assumed","stated_by":null,"stated_as":null},"oa_status":null,"corrections":null,"provider":"pubmed"},"is_meta_analysis":false,"is_meta_analysis_basis":null,"sections":[{"kind":"other","heading":null,"start_char":0,"end_char":5},{"kind":"methods","heading":null,"start_char":5,"end_char":57},{"kind":"results","heading":null,"start_char":57,"end_char":239},{"kind":"discussion","heading":null,"start_char":239,"end_char":313}],"supplements":null,"references":null,"citations":null,"tables":[]}}'
     headers:
       accept:
       - '*/*'
@@ -182,7 +139,7 @@ interactions:
       connection:
       - keep-alive
       content-length:
-      - '6898'
+      - '3934'
       content-type:
       - application/json
       host:
@@ -193,40 +150,30 @@ interactions:
     uri: http://127.0.0.1:28084/api/study-schema-uploads/
   response:
     body:
-      string: '{"status": 500, "title": "Internal Server Error", "detail": "Internal
-        Server Error", "type": "about:blank", "timestamp": "2026-10-13T01:39:06.925497Z",
-        "request_id": "483a8a4bf1374e8f"}'
+      string: '{"status": 500, "title": "Internal Server Error", "detail": "(psycopg2.OperationalError)
+        could not translate host name \"store-pgsql17\" to address: Temporary failure
+        in name resolution\n\n(Background on this error at: https://sqlalche.me/e/21/e3q8)",
+        "type": "about:blank", "timestamp": "2026-10-25T08:18:16.107253Z", "request_id":
+        "3c28a5f9e6d44086"}'
     headers:
       content-length:
-      - '185'
+      - '352'
       content-type:
       - application/json
       date:
-      - Tue, 13 Oct 2026 01:39:06 GMT
+      - Sun, 25 Oct 2026 08:18:16 GMT
       server:
-      - uvicorn
+      - BaseHTTP/0.6 Python/3.10.12
       vary:
       - Origin
       x-request-id:
-      - 483a8a4bf1374e8f
+      - 3c28a5f9e6d44086
     status:
       code: 500
       message: Internal Server Error
 - request:
-    body: '{"coordinate_parse":{"header":{"artifact_kind":"coordinate_parse","schema_version":"0.6.0","article_id":"art-1","identifiers":{"pmid":"22848644","pmcid":"PMC3407125","doi":"10.1371/journal.pone.0041873","neurostore_base_study_id":"22tHjbNRU8t2"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.7","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"parsed_paper","fingerprint":"9c41b321fb51d29ee50c195904b82bad3195b089f23abbb7f2880500ff264104","producer_version":null},{"artifact_kind":"analyses","fingerprint":"fp-space","producer_version":null}],"created_at":null},"parse_id":"2c2c9bcbd849105e105dfe4bfc12f9c5b0321aeb33ec00895d5940c911101b2b","text_sha256":"9c41b321fb51d29ee50c195904b82bad3195b089f23abbb7f2880500ff264104","revision_of":null,"analyses":[{"key":"analysis#fc8087881826e87b","cells":[{"row":1,"column_group":0}],"text_spans":null,"origin":"table","table_id":"tbl1","name":"Faces
-      > Houses","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":false,"prior_study_evidence":null,"role_confidence":0.9,"role_source":"set-role-table@1","split":{"half":"original","original_analysis":null,"rule":"sign_of_directional_statistic"},"derived_from":null,"statistic":"t","statistic_df":null,"thresholds":null,"points":[{"coordinates":[-42.0,-55.0,-18.0],"space":null,"row":1,"column_group":0,"text_span":null,"values":[{"kind":"t","kind_as_printed":null,"value":6.1,"level":null,"correction":null}],"cluster_size":120.0,"cluster_measure":"voxels","is_subpeak":false,"label":null}]},{"key":"analysis#89177cdbd20fa702","cells":[{"row":2,"column_group":0}],"text_spans":null,"origin":"table","table_id":"tbl1","name":"Faces
-      > Houses","name_is_printed":false,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":false,"prior_study_evidence":null,"role_confidence":0.9,"role_source":"set-role-table@1","split":{"half":"inverse","original_analysis":"analysis#fc8087881826e87b","rule":"sign_of_directional_statistic"},"derived_from":null,"statistic":"t","statistic_df":null,"thresholds":null,"points":[{"coordinates":[22.0,-4.0,-20.0],"space":null,"row":2,"column_group":0,"text_span":null,"values":[{"kind":"t","kind_as_printed":null,"value":-4.2,"level":null,"correction":null}],"cluster_size":40.0,"cluster_measure":"voxels","is_subpeak":false,"label":null}]},{"key":"analysis#f1bf36dcc74097ba","cells":[{"row":3,"column_group":0}],"text_spans":null,"origin":"table","table_id":"tbl1","name":"Houses
-      > Faces","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":false,"prior_study_evidence":null,"role_confidence":0.9,"role_source":"set-role-table@1","split":null,"derived_from":null,"statistic":null,"statistic_df":null,"thresholds":null,"points":[]},{"key":"analysis#36bc1da16d970774","cells":null,"text_spans":[{"start_char":56,"end_char":68,"text":null}],"origin":"text","table_id":null,"name":"amygdala
-      seed","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"anchor","anchor_kind":"seed","from_prior_study":false,"prior_study_evidence":null,"role_confidence":0.9,"role_source":"set-role-text@1","split":null,"derived_from":null,"statistic":null,"statistic_df":null,"thresholds":null,"points":[{"coordinates":[-22.0,-4.0,-20.0],"space":null,"row":null,"column_group":null,"text_span":{"start_char":56,"end_char":68,"text":null},"values":null,"cluster_size":null,"cluster_measure":null,"is_subpeak":false,"label":null}]}],"tables":[{"table_id":"tbl1","reading":"coordinates","reason":null},{"table_id":"tbl2","reading":"rejected_by_triage","reason":"gate"},{"table_id":"tbl3","reading":"excluded_by_hand","reason":"not_coordinates;
-      a design matrix"}],"omitted_analyses":null,"text_sweep":{"passages_found":1,"passages_read":1,"truncated":false,"points_dropped_as_table_restatements":2},"verdicts":null},"parsed_paper":{"header":{"artifact_kind":"parsed_paper","schema_version":"0.6.0","article_id":"art-1","identifiers":{"pmid":"22848644","pmcid":"PMC3407125","doi":"10.1371/journal.pone.0041873","neurostore_base_study_id":"22tHjbNRU8t2"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.7","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"extraction","fingerprint":"fp-extract","producer_version":null}],"created_at":null},"source":"pubget","source_reason":null,"text_path":"processed/pubget/text.txt","text_sha256":"9c41b321fb51d29ee50c195904b82bad3195b089f23abbb7f2880500ff264104","text_length":117,"bibliography":{"title":"Faces
-      and houses","authors":["Jones, S"],"journal":"PLoS ONE","publication_year":2012,"volume":null,"issue":null,"pages":null,"abstract":null,"language":["eng"],"publication_types":["Journal
-      Article"],"keywords":null,"license":null,"open_access":null,"corrections":null,"provider":"pubmed","corresponding_authors":null},"is_meta_analysis":false,"is_meta_analysis_basis":null,"sections":[{"kind":"other","heading":null,"start_char":0,"end_char":7},{"kind":"methods","heading":null,"start_char":7,"end_char":96},{"kind":"results","heading":null,"start_char":96,"end_char":117}],"supplements":null,"references":null,"citations":null,"tables":[{"table_id":"tbl1","label":null,"number":"1","caption":"tbl1
-      caption","footer":null,"raw_path":"source/pubget/tables/tbl1.html","column_headings":["Region","x","y","z","t","k"],"rows":[{"row":0,"cells":["Faces
-      > Houses","","","","",""],"text_span":null},{"row":1,"cells":["Fusiform gyrus","-42","-55","-18","6.1","120"],"text_span":null},{"row":2,"cells":["Amygdala","22","-4","-20","-4.2","40"],"text_span":null},{"row":3,"cells":["Houses
-      > Faces","n.s."],"text_span":null}],"text_span":null,"coordinate_space_hint":null,"triage":{"passes":true,"score":0.97,"route":"read","located_by":null,"excluded_by_hand":null,"exclusion_reason":null}},{"table_id":"tbl2","label":null,"number":"2","caption":"tbl2
-      caption","footer":null,"raw_path":"source/pubget/tables/tbl2.html","column_headings":["Group","n"],"rows":[{"row":0,"cells":["Patients","20"],"text_span":null}],"text_span":null,"coordinate_space_hint":null,"triage":{"passes":false,"score":0.02,"route":"gate","located_by":null,"excluded_by_hand":null,"exclusion_reason":null}},{"table_id":"tbl3","label":null,"number":"3","caption":"tbl3
-      caption","footer":null,"raw_path":"source/pubget/tables/tbl3.html","column_headings":["x","y","z"],"rows":[{"row":0,"cells":["1","2","3"],"text_span":null}],"text_span":null,"coordinate_space_hint":null,"triage":{"passes":true,"score":0.8,"route":"gate","located_by":null,"excluded_by_hand":true,"exclusion_reason":"not_coordinates;
-      a design matrix"}}]}}'
+    body: '{"coordinate_parse":{"header":{"artifact_kind":"coordinate_parse","schema_version":"0.10.0","article_id":"3yy45ye5oujo","identifiers":{"pmid":"60","pmcid":null,"doi":null,"alternative_pmids":null,"alternative_pmcids":null,"alternative_dois":null,"preprint_dois":null,"preprint_pmids":null,"preprint_pmcids":null,"publication_status":"published"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.10","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"parsed_paper","fingerprint":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","producer_version":null},{"artifact_kind":"analyses","fingerprint":"f41fd5d24aa95045e853d73c70b7de64","producer_version":null}],"created_at":null,"neurostore_base_study_id":"BS60"},"parse_id":"023d485787b4e848d8cc8d350f964efc27e70d2cae39c1614f67b11dcfb75895","text_sha256":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","revision_of":null,"analyses":[{"key":"analysis#e6e0af1672caaffa","cells":null,"text_spans":[{"start_char":144,"end_char":164,"text":null}],"origin":"text","table_id":null,"name":"patients
+      > controls","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":null,"prior_study_evidence":null,"role_confidence":1.0,"role_source":"by-name@1","split":null,"derived_from":null,"statistic":"t","statistic_df":null,"thresholds":null,"points":[{"coordinates":[-22.0,-4.0,-18.0],"space":null,"row":null,"column_group":null,"text_span":{"start_char":144,"end_char":164,"text":null},"values":[{"kind":"t","kind_as_printed":null,"value":4.1,"level":null,"correction":null}],"cluster_size":null,"cluster_measure":null,"is_subpeak":false,"label":null}]}],"tables":null,"omitted_analyses":null,"text_sweep":{"passages_found":1,"passages_read":1,"truncated":false,"points_dropped_as_table_restatements":0},"verdicts":null},"parsed_paper":{"header":{"artifact_kind":"parsed_paper","schema_version":"0.10.0","article_id":"3yy45ye5oujo","identifiers":{"pmid":"60","pmcid":null,"doi":null,"alternative_pmids":null,"alternative_pmcids":null,"alternative_dois":null,"preprint_dois":null,"preprint_pmids":null,"preprint_pmcids":null,"publication_status":"published"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.10","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"extraction","fingerprint":"ex-1","producer_version":null},{"artifact_kind":"metadata","fingerprint":"me-1","producer_version":null},{"artifact_kind":"triage","fingerprint":"tr-1","producer_version":null}],"created_at":null,"neurostore_base_study_id":"BS60"},"source":"pubget","source_reason":null,"text_copy":{"route":"pmc","version":"vor","license":{"license_id":"all-rights-reserved","determination":"assumed","stated_by":null,"stated_as":null},"url":null,"preprint_server":null,"access":"public"},"reported_copies":null,"text_path":"processed/pubget/text.txt","text_sha256":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","text_length":313,"bibliography":{"title":"T","authors":null,"authors_provider":null,"correspondence_emails":null,"journal":null,"publication_year":null,"volume":null,"issue":null,"pages":null,"abstract":"A","abstract_provider":"pubmed","language":null,"publication_types":null,"keywords":null,"license":{"license_id":"all-rights-reserved","determination":"assumed","stated_by":null,"stated_as":null},"oa_status":null,"corrections":null,"provider":"pubmed"},"is_meta_analysis":false,"is_meta_analysis_basis":null,"sections":[{"kind":"other","heading":null,"start_char":0,"end_char":5},{"kind":"methods","heading":null,"start_char":5,"end_char":57},{"kind":"results","heading":null,"start_char":57,"end_char":239},{"kind":"discussion","heading":null,"start_char":239,"end_char":313}],"supplements":null,"references":null,"citations":null,"tables":[]}}'
     headers:
       accept:
       - '*/*'
@@ -235,7 +182,7 @@ interactions:
       connection:
       - keep-alive
       content-length:
-      - '6898'
+      - '3934'
       content-type:
       - application/json
       host:
@@ -246,22 +193,24 @@ interactions:
     uri: http://127.0.0.1:28084/api/study-schema-uploads/
   response:
     body:
-      string: '{"status": 500, "title": "Internal Server Error", "detail": "Internal
-        Server Error", "type": "about:blank", "timestamp": "2026-10-13T01:39:06.942392Z",
-        "request_id": "8da60d66767d495c"}'
+      string: '{"status": 500, "title": "Internal Server Error", "detail": "(psycopg2.OperationalError)
+        could not translate host name \"store-pgsql17\" to address: Temporary failure
+        in name resolution\n\n(Background on this error at: https://sqlalche.me/e/21/e3q8)",
+        "type": "about:blank", "timestamp": "2026-10-25T08:18:16.165423Z", "request_id":
+        "0644e11f95d44ae0"}'
     headers:
       content-length:
-      - '185'
+      - '352'
       content-type:
       - application/json
       date:
-      - Tue, 13 Oct 2026 01:39:06 GMT
+      - Sun, 25 Oct 2026 08:18:16 GMT
       server:
-      - uvicorn
+      - BaseHTTP/0.6 Python/3.10.12
       vary:
       - Origin
       x-request-id:
-      - 8da60d66767d495c
+      - 0644e11f95d44ae0
     status:
       code: 500
       message: Internal Server Error
@@ -283,8 +232,8 @@ interactions:
   response:
     body:
       string: '{"type": "about:blank", "title": "Method Not Allowed", "detail": "Method
-        Not Allowed", "status": 405, "request_id": "bf29fdb795494e00", "timestamp":
-        "2026-10-13T01:39:06.944049Z"}'
+        Not Allowed", "status": 405, "request_id": "f6dc607d63b748a2", "timestamp":
+        "2026-10-25T08:18:16.208519Z"}'
     headers:
       allow:
       - POST
@@ -293,19 +242,19 @@ interactions:
       content-type:
       - application/json
       date:
-      - Tue, 13 Oct 2026 01:39:06 GMT
+      - Sun, 25 Oct 2026 08:18:16 GMT
       server:
-      - uvicorn
+      - BaseHTTP/0.6 Python/3.10.12
       vary:
       - Origin
       x-request-id:
-      - bf29fdb795494e00
+      - f6dc607d63b748a2
     status:
       code: 405
       message: Method Not Allowed
 - request:
-    body: '{"coordinate_parse":{"header":{"artifact_kind":"coordinate_parse","schema_version":"0.6.0","article_id":"rrxoibkwbxrr","identifiers":{"pmid":"21","pmcid":null,"doi":null,"neurostore_base_study_id":"BS21"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.7","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"parsed_paper","fingerprint":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","producer_version":null},{"artifact_kind":"analyses","fingerprint":"bfd3219054b543524a1cb051025cb5da","producer_version":null}],"created_at":null},"parse_id":"023d485787b4e848d8cc8d350f964efc27e70d2cae39c1614f67b11dcfb75895","text_sha256":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","revision_of":null,"analyses":[{"key":"analysis#e6e0af1672caaffa","cells":null,"text_spans":[{"start_char":144,"end_char":164,"text":null}],"origin":"text","table_id":null,"name":"patients
-      > controls","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":null,"prior_study_evidence":null,"role_confidence":1.0,"role_source":"by-name@1","split":null,"derived_from":null,"statistic":"t","statistic_df":null,"thresholds":null,"points":[{"coordinates":[-22.0,-4.0,-18.0],"space":null,"row":null,"column_group":null,"text_span":{"start_char":144,"end_char":164,"text":null},"values":[{"kind":"t","kind_as_printed":null,"value":4.1,"level":null,"correction":null}],"cluster_size":null,"cluster_measure":null,"is_subpeak":false,"label":null}]}],"tables":null,"omitted_analyses":null,"text_sweep":{"passages_found":1,"passages_read":1,"truncated":false,"points_dropped_as_table_restatements":0},"verdicts":null},"parsed_paper":{"header":{"artifact_kind":"parsed_paper","schema_version":"0.6.0","article_id":"rrxoibkwbxrr","identifiers":{"pmid":"21","pmcid":null,"doi":null,"neurostore_base_study_id":"BS21"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.7","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"extraction","fingerprint":"ex-1","producer_version":null},{"artifact_kind":"metadata","fingerprint":"me-1","producer_version":null},{"artifact_kind":"triage","fingerprint":"tr-1","producer_version":null}],"created_at":null},"source":"pubget","source_reason":null,"text_path":"processed/pubget/text.txt","text_sha256":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","text_length":313,"bibliography":{"title":"T","authors":null,"journal":null,"publication_year":null,"volume":null,"issue":null,"pages":null,"abstract":"A","language":null,"publication_types":null,"keywords":null,"license":null,"open_access":null,"corrections":null,"provider":null,"corresponding_authors":null},"is_meta_analysis":false,"is_meta_analysis_basis":null,"sections":[{"kind":"other","heading":null,"start_char":0,"end_char":5},{"kind":"methods","heading":null,"start_char":5,"end_char":57},{"kind":"results","heading":null,"start_char":57,"end_char":239},{"kind":"discussion","heading":null,"start_char":239,"end_char":313}],"supplements":null,"references":null,"citations":null,"tables":[]}}'
+    body: '{"coordinate_parse":{"header":{"artifact_kind":"coordinate_parse","schema_version":"0.10.0","article_id":"rrxoibkwbxrr","identifiers":{"pmid":"21","pmcid":null,"doi":null,"alternative_pmids":null,"alternative_pmcids":null,"alternative_dois":null,"preprint_dois":null,"preprint_pmids":null,"preprint_pmcids":null,"publication_status":"published"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.10","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"parsed_paper","fingerprint":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","producer_version":null},{"artifact_kind":"analyses","fingerprint":"f41fd5d24aa95045e853d73c70b7de64","producer_version":null}],"created_at":null,"neurostore_base_study_id":"BS21"},"parse_id":"023d485787b4e848d8cc8d350f964efc27e70d2cae39c1614f67b11dcfb75895","text_sha256":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","revision_of":null,"analyses":[{"key":"analysis#e6e0af1672caaffa","cells":null,"text_spans":[{"start_char":144,"end_char":164,"text":null}],"origin":"text","table_id":null,"name":"patients
+      > controls","name_is_printed":null,"description":null,"coordinate_space":"MNI","space_as_printed":null,"space_basis":null,"role":"result","anchor_kind":null,"from_prior_study":null,"prior_study_evidence":null,"role_confidence":1.0,"role_source":"by-name@1","split":null,"derived_from":null,"statistic":"t","statistic_df":null,"thresholds":null,"points":[{"coordinates":[-22.0,-4.0,-18.0],"space":null,"row":null,"column_group":null,"text_span":{"start_char":144,"end_char":164,"text":null},"values":[{"kind":"t","kind_as_printed":null,"value":4.1,"level":null,"correction":null}],"cluster_size":null,"cluster_measure":null,"is_subpeak":false,"label":null}]}],"tables":null,"omitted_analyses":null,"text_sweep":{"passages_found":1,"passages_read":1,"truncated":false,"points_dropped_as_table_restatements":0},"verdicts":null},"parsed_paper":{"header":{"artifact_kind":"parsed_paper","schema_version":"0.10.0","article_id":"rrxoibkwbxrr","identifiers":{"pmid":"21","pmcid":null,"doi":null,"alternative_pmids":null,"alternative_pmcids":null,"alternative_dois":null,"preprint_dois":null,"preprint_pmids":null,"preprint_pmcids":null,"publication_status":"published"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.10","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"extraction","fingerprint":"ex-1","producer_version":null},{"artifact_kind":"metadata","fingerprint":"me-1","producer_version":null},{"artifact_kind":"triage","fingerprint":"tr-1","producer_version":null}],"created_at":null,"neurostore_base_study_id":"BS21"},"source":"pubget","source_reason":null,"text_copy":{"route":"pmc","version":"vor","license":{"license_id":"all-rights-reserved","determination":"assumed","stated_by":null,"stated_as":null},"url":null,"preprint_server":null,"access":"public"},"reported_copies":null,"text_path":"processed/pubget/text.txt","text_sha256":"a4c18caa5910676474251dc5a3bb468b51430fb759ad7c7a971eebef82ab6a54","text_length":313,"bibliography":{"title":"T","authors":null,"authors_provider":null,"correspondence_emails":null,"journal":null,"publication_year":null,"volume":null,"issue":null,"pages":null,"abstract":"A","abstract_provider":"pubmed","language":null,"publication_types":null,"keywords":null,"license":{"license_id":"all-rights-reserved","determination":"assumed","stated_by":null,"stated_as":null},"oa_status":null,"corrections":null,"provider":"pubmed"},"is_meta_analysis":false,"is_meta_analysis_basis":null,"sections":[{"kind":"other","heading":null,"start_char":0,"end_char":5},{"kind":"methods","heading":null,"start_char":5,"end_char":57},{"kind":"results","heading":null,"start_char":57,"end_char":239},{"kind":"discussion","heading":null,"start_char":239,"end_char":313}],"supplements":null,"references":null,"citations":null,"tables":[]}}'
     headers:
       accept:
       - '*/*'
@@ -314,7 +263,7 @@ interactions:
       connection:
       - keep-alive
       content-length:
-      - '3209'
+      - '3934'
       content-type:
       - application/json
       host:
@@ -325,22 +274,338 @@ interactions:
     uri: http://127.0.0.1:28084/api/study-schema-uploads/
   response:
     body:
-      string: '{"kind":"parse","base_study_id":"BS21","parse_id":"023d485787b4e848d8cc8d350f964efc27e70d2cae39c1614f67b11dcfb75895","skeleton":{"created":1,"updated":0,"superseded":0,"orphaned_claims":[],"omitted_analyses":0},"set_aside_resolved":[],"study_id":"aq7gAZPmwwBC","provenance":{"parse":{"result_id":"zQdkA6eNC5Yx","config_id":"NGE7UkMvM73P","run_id":null,"pipeline":"coordinate-parse","version":"paper_parse.7","commit":null,"schema":{"name":"neuroimaging-paper-parse","version":"0.6.0"},"parse_version":{"name":"ns-pond-ingestion-workflow","model":null,"stage":"sync","version":"paper_parse.7","prompt_version":null},"date_executed":"2026-10-13T01:39:24.217577+00:00","created_at":"2026-10-13T01:39:24.192783+00:00","updated_at":null}}}
+      string: '{"kind":"parse","base_study_id":"BS21","parse_id":"023d485787b4e848d8cc8d350f964efc27e70d2cae39c1614f67b11dcfb75895","skeleton":{"created":1,"updated":0,"superseded":0,"orphaned_claims":[],"omitted_analyses":0},"set_aside_resolved":[],"study_id":"nQTYqtEqdqS3","provenance":{"parse":{"result_id":"uezHTiXAbHHn","config_id":"cqmauzDcpBnt","run_id":null,"pipeline":"coordinate-parse","version":"paper_parse.10","commit":null,"schema":{"name":"neuroimaging-paper-parse","version":"0.10.0"},"parse_version":{"name":"ns-pond-ingestion-workflow","model":null,"stage":"sync","version":"paper_parse.10","prompt_version":null},"date_executed":"2026-10-25T08:18:19.942688+00:00","created_at":"2026-10-25T08:18:19.467091+00:00","updated_at":null}}}
 
         '
     headers:
       content-length:
-      - '735'
+      - '738'
       content-type:
       - application/json
       date:
-      - Tue, 13 Oct 2026 01:39:23 GMT
+      - Sun, 25 Oct 2026 08:18:19 GMT
       server:
-      - uvicorn
+      - BaseHTTP/0.6 Python/3.10.12
       vary:
       - Origin
       x-request-id:
-      - d527b95efab5479a
+      - 925280d96e264f3d
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=60&retmode=json&email=replay%40example.com&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
+        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
+    headers:
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json
+      date:
+      - Sun, 25 Oct 2026 10:30:04 GMT
+      referrer-policy:
+      - origin-when-cross-origin
+      retry-after:
+      - '2'
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 429
+      message: Too Many Requests
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=60&retmode=json&email=replay%40example.com&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
+        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
+    headers:
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json
+      date:
+      - Sun, 25 Oct 2026 10:30:04 GMT
+      referrer-policy:
+      - origin-when-cross-origin
+      retry-after:
+      - '2'
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 429
+      message: Too Many Requests
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=60&retmode=json&email=replay%40example.com&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAKpWSi0qyi9SslJyDPBUKEosSVXIyczNLFFIrUhOTU1JTVHSUUosyNTNTq0EqjE0
+        stAzM9IzMjLWMzQxB0ol55fmlQAlTIBssD4g21iplgsAAAD//wMA5yubNVcAAAA=
+    headers:
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining,Retry-After
+      alt-svc:
+      - clear
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json
+      date:
+      - Sun, 25 Oct 2026 10:30:04 GMT
+      referrer-policy:
+      - origin-when-cross-origin
+      retry-after:
+      - '2'
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 429
+      message: Too Many Requests
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=60&retmode=json&email=replay%40example.com&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAKRUS28TMRC+8yssn0BKWjvPNregVoWKIiS4VT14vZOuwWsvXrttiPLfmVnn2QIC
+        cdn1vL95rngFqoTAZyselw3wGYc21bUKS97jDxBa4x0yxcmQr3s8oNBGUk6mbPnslk8Ev+vRN/NQ
+        Fd893qSiVJHcyfPpmF2AZlIiH/YCpFqfgqb3W+N1ZWqG/6Zatmyuo0K5SrHygeKsuFN1p5mihcCu
+        N9IN5nmniDxtUxshdEAQ8M7sWi1b79jV1T/afX5U1vpHNv+7gFgKq9qYcT83jwahI/NLBSyA0hFL
+        ywqIjwCORWS2qYHgn0wJTDkSBlUarSxSJdPLiDUKvgamT7rahbj1+H/eqNHepi7fkThD0rRtImpI
+        nVT3gB3gAznuDwacEnT31HnAH+brbJ2c+Z6gK4EYyOlYDrOPbnCEmPSHQpAlZFYej1zIW36NM+AQ
+        1TxEozGbO5oy7UOJZYyJIn9KxQ2UrM+MK+EJXwsf2M3lxYf3Hy+zr53qiLqUHeX5XHFTblqGejWU
+        hKzjIBKJiSvbZYpDS13fKZfeHGoO95pSnEghJ6eYGBZkOjh7PR2/ORdyMOoPj3005sjHaO/j17aY
+        eWXa6HH1CPhhXjvsB0t1KgenUjIhZiKDPzRAbWsc/NZCvrAAFwP8+FOIrjMLCOA0TcQt0irGYIoU
+        O5q/U7i56DHgNFIfm1qjgfbJxdz2RbL2a+73dp3z4uNcMoisyOtPlMoXAKzXikY7Lxii83pTXm1i
+        J6FdCFp7R1AsFjBDK7z/tt0PVMGCmFTnNz5jPmt5fNCogrCN9Iy9AZqj7E9XgAYX0KW6oONJHPWg
+        jFWFhQWuVQo2c7deUQJ2l8ILtMjb+ybo+7C6Uk3cBqGtP76tRz3KCgsTDm7QwcV8oHR0srQim8qs
+        1+tXPwEAAP//AwBWYoksBQYAAA==
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Sun, 25 Oct 2026 10:30:30 GMT
+      ncbi-phid:
+      - 1D32BD61E5CE12B50000556EC9AA71B2.1.1.m_1
+      ncbi-sid:
+      - 1D37CAB167A40DD7_E30ASID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=21&retmode=json&email=replay%40example.com&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAJRUyW7bMBD9FYKXJoCVyM6G+OagKeqmaQt0Oxg5UNTIYkORKjk0mhj9s976Yx2S
+        3pKgRXoRxOEsjzNv3pK3IGpwfLzkeNcDH3PwoeuEu+MDvgDnlTVkLA+O+M8Bd3SpMToHVXs+nvHR
+        kN8M4jfbyJX+B7wPVS0wphuen52wj9CTEbZWOnkbnIz/E3dvQHUKEXRjnZdtMHNyEAFbOlKVJTei
+        i65TL4Rk71eXK8CT5Ec2qYNHcAkFod1EfWoVdODY1bPi6DlaeMzVH0WjQh1DZxfKyhY6JYVmHkOt
+        wDNrmBSd7ZQGJm3XWwMG/eF0Oj1gU8MWCp3dOIvKBmTYAhMGVQ89KsmEREVud8w2bK8o9guh+1YU
+        lfLkrq1mexnVC8/QCeP1/s1B6qTDNbLq2cCYUoqp/8aVILEtpIyIrRFF1lgdUt9HJ3RS3od4OI+s
+        EHPwkRNHJ6PimMdG06SJRXNiIPXd6C4Y9T1AGkV5dDY6PS1zjkTCsjwujodno8ilbMpUywOd8Usz
+        18q3bFJ5QiORbt8Qywz1YuLoIdShm0hiaV1NE8YQwXwI1TXUrKBe1PCD/oiD7Pry5dvpu8ucfuMa
+        IYucKNN/yVW9YhP5dVBHsMlC4IbUCqHT42knIq9a5dHSZsXA3byb2J2dOSzPD8shK8txWSYy7waQ
+        t1YG/hoxfBJBE3dw/68SqTMNODAyDmlGZ4HoVBUwnflr4bedpdu+kxQgbTCYJ9EErb/lfq82b3e1
+        i1c7uw3aSoGkLXnpCJaVq0ZKhekmEttJaU3EQGPFjKmy9nZNdnKhTqjQ5X/6xSxXeW6RC+DWlR6Z
+        Vwhzla0qOehpm0zoqiiK0SIWQmlRaWic7YLT2brOSjegN094gpZs29wR+rasbEWP6yJxhR9q5oPh
+        ZIdGuR1d2mrhIr5GBh2pmRuzlifqN7DPhsr4kFoPtO8kB1eCxECDUaYVGj2xsmnAkExlrSqSJhRf
+        chiw37+oG4z0YSsKKfNX5W4pKatJOPY2cnXxBwAA//+ClQ3Fekq1tbVcAAAAAP//AwDr9CgxZAYA
+        AA==
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Sun, 25 Oct 2026 10:30:30 GMT
+      ncbi-phid:
+      - 1D32BD61E5CE12B500003E6ECA206415.1.1.m_1
+      ncbi-sid:
+      - 1D37CAB167A40DD7_E30ASID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '1'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
     status:
       code: 200
       message: OK

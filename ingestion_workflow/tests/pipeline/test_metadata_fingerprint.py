@@ -35,9 +35,9 @@ def test_each_id_the_stage_asks_by_is_in_the_fingerprint(env):  # noqa: F811
 
 
 @pytest.mark.vcr("test_each_held_copy_and_the_paper_get_a_licence.yaml")
-def test_the_cache_files_the_stage_read_are_recorded_and_hashed(env):  # noqa: F811
+def test_the_cache_files_the_stage_read_are_recorded_and_hashed(env, evidence):  # noqa: F811
     settings, catalog = env
-    ref = _held(catalog, TDM_MANUSCRIPT)
+    ref = _held(catalog, TDM_MANUSCRIPT, evidence=evidence)
     stage, ctx = MetadataStage(settings), Context(settings, catalog)
 
     planned, (outcome,) = _run(stage, ctx, catalog, ref)
@@ -64,9 +64,9 @@ def test_the_cache_files_the_stage_read_are_recorded_and_hashed(env):  # noqa: F
 
 
 @pytest.mark.vcr("test_each_held_copy_and_the_paper_get_a_licence.yaml")
-def test_the_providers_listed_in_the_settings_are_not_in_it(env):  # noqa: F811
+def test_the_providers_listed_in_the_settings_are_not_in_it(env, evidence):  # noqa: F811
     settings, catalog = env
-    ref = _held(catalog, TDM_MANUSCRIPT)
+    ref = _held(catalog, TDM_MANUSCRIPT, evidence=evidence)
     stage, ctx = MetadataStage(settings), Context(settings, catalog)
     catalog.record(_run(stage, ctx, catalog, ref)[1])
 
@@ -75,9 +75,9 @@ def test_the_providers_listed_in_the_settings_are_not_in_it(env):  # noqa: F811
     assert _plan(stage, ctx, catalog, ref).fresh == 1
 
 
-def test_a_preprint_doi_the_article_gains_makes_its_metadata_stale(env):  # noqa: F811
+def test_a_preprint_doi_the_article_gains_makes_its_metadata_stale(env, evidence):  # noqa: F811
     settings, catalog = env
-    ref = _held(catalog, TDM_MANUSCRIPT)
+    ref = _held(catalog, TDM_MANUSCRIPT, evidence=evidence)
     stage, ctx = MetadataStage(settings), Context(settings, catalog)
     before = stage.inputs_of(ctx, ref, catalog.artifacts([ref.id], "download")[ref.id],
                              catalog.artifacts([ref.id], "extract")[ref.id])
@@ -89,9 +89,9 @@ def test_a_preprint_doi_the_article_gains_makes_its_metadata_stale(env):  # noqa
 
 
 @pytest.mark.vcr("test_each_held_copy_and_the_paper_get_a_licence.yaml")
-def test_the_fingerprint_stored_is_the_one_the_records_it_fetched_give(env):  # noqa: F811
+def test_the_fingerprint_stored_is_the_one_the_records_it_fetched_give(env, evidence):  # noqa: F811
     settings, catalog = env
-    ref = _held(catalog, TDM_MANUSCRIPT)
+    ref = _held(catalog, TDM_MANUSCRIPT, evidence=evidence)
     stage, ctx = MetadataStage(settings), Context(settings, catalog)
 
     planned, (outcome,) = _run(stage, ctx, catalog, ref)
@@ -104,11 +104,11 @@ def test_the_fingerprint_stored_is_the_one_the_records_it_fetched_give(env):  # 
 
 
 @pytest.mark.vcr()
-def test_a_paper_with_a_pubmed_record_and_a_preprint_reads_a_file_of_each(env):  # noqa: F811
+def test_a_paper_with_a_pubmed_record_and_a_preprint_reads_a_file_of_each(env, evidence):  # noqa: F811
     settings, catalog = env
     settings.pubmed_email = "replay@example.com"
     ref = _held(catalog, Identifier(pmid="38345852", doi="10.7554/elife.92563"),
-                source="pdf", fixture=None)
+                source="pdf", fixture=None, evidence=evidence)
     catalog.add_aliases([(ref.id, "preprint_doi", "10.1101/2023.09.27.559792")])
     ref = catalog.ref(ref.id)
     stage, ctx = MetadataStage(settings), Context(settings, catalog)

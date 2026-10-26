@@ -34,7 +34,7 @@ interactions:
     uri: http://127.0.0.1:28084/api/study-schema-uploads/
   response:
     body:
-      string: '{"kind":"parse","base_study_id":"22tHjbNRU8t2","parse_id":"2c2c9bcbd849105e105dfe4bfc12f9c5b0321aeb33ec00895d5940c911101b2b","skeleton":{"created":0,"updated":4,"superseded":0,"orphaned_claims":[],"omitted_analyses":0},"set_aside_resolved":[],"study_id":"mnX5a5qFmray","provenance":{"parse":{"result_id":"mi68TgHfHcZY","config_id":"7ToQiQQZgwUb","run_id":null,"pipeline":"coordinate-parse","version":"paper_parse.10","commit":null,"schema":{"name":"neuroimaging-paper-parse","version":"0.10.0"},"parse_version":{"name":"ns-pond-ingestion-workflow","model":null,"stage":"sync","version":"paper_parse.10","prompt_version":null},"date_executed":"2026-10-23T21:26:38.249923+00:00","created_at":"2026-10-23T21:26:37.442344+00:00","updated_at":null}}}
+      string: '{"kind":"parse","base_study_id":"22tHjbNRU8t2","parse_id":"2c2c9bcbd849105e105dfe4bfc12f9c5b0321aeb33ec00895d5940c911101b2b","skeleton":{"created":4,"updated":0,"superseded":0,"orphaned_claims":[],"omitted_analyses":0},"set_aside_resolved":[],"study_id":"TrqwAmfgm6BT","provenance":{"parse":{"result_id":"QwLdUQHuHtMJ","config_id":"GH3BQ9LEgcKF","run_id":null,"pipeline":"coordinate-parse","version":"paper_parse.10","commit":null,"schema":{"name":"neuroimaging-paper-parse","version":"0.10.0"},"parse_version":{"name":"ns-pond-ingestion-workflow","model":null,"stage":"sync","version":"paper_parse.10","prompt_version":null},"date_executed":"2026-10-25T08:12:34.835609+00:00","created_at":"2026-10-25T08:12:34.307733+00:00","updated_at":null}}}
 
         '
     headers:
@@ -43,13 +43,13 @@ interactions:
       content-type:
       - application/json
       date:
-      - Fri, 23 Oct 2026 21:26:38 GMT
+      - Sun, 25 Oct 2026 08:12:33 GMT
       server:
       - uvicorn
       vary:
       - Origin
       x-request-id:
-      - 3c29deca7c1c4660
+      - 4e056c2adada4b0e
     status:
       code: 200
       message: OK
@@ -89,21 +89,21 @@ interactions:
   response:
     body:
       string: '{"status": 404, "title": "Not Found", "detail": "Record doesnotexist2
-        not found in BaseStudy", "type": "about:blank", "timestamp": "2026-10-23T21:26:39.830401Z",
-        "request_id": "601bdeefae7d4e30"}'
+        not found in BaseStudy", "type": "about:blank", "timestamp": "2026-10-25T08:12:34.931335Z",
+        "request_id": "a094dc4ce8f1432c"}'
     headers:
       content-length:
       - '195'
       content-type:
       - application/json
       date:
-      - Fri, 23 Oct 2026 21:26:38 GMT
+      - Sun, 25 Oct 2026 08:12:34 GMT
       server:
       - uvicorn
       vary:
       - Origin
       x-request-id:
-      - 601bdeefae7d4e30
+      - a094dc4ce8f1432c
     status:
       code: 404
       message: Not Found

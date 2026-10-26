@@ -21,7 +21,7 @@ interactions:
     uri: http://127.0.0.1:28084/api/study-schema-uploads/
   response:
     body:
-      string: '{"kind":"parse","base_study_id":"BS42","parse_id":"023d485787b4e848d8cc8d350f964efc27e70d2cae39c1614f67b11dcfb75895","skeleton":{"created":1,"updated":0,"superseded":0,"orphaned_claims":[],"omitted_analyses":0},"set_aside_resolved":[],"study_id":"6CLXq5oSFtej","provenance":{"parse":{"result_id":"qFq4igyEu4bw","config_id":"7ToQiQQZgwUb","run_id":null,"pipeline":"coordinate-parse","version":"paper_parse.10","commit":null,"schema":{"name":"neuroimaging-paper-parse","version":"0.10.0"},"parse_version":{"name":"ns-pond-ingestion-workflow","model":null,"stage":"sync","version":"paper_parse.10","prompt_version":null},"date_executed":"2026-10-23T21:26:40.310988+00:00","created_at":"2026-10-23T21:26:40.277813+00:00","updated_at":null}}}
+      string: '{"kind":"parse","base_study_id":"BS42","parse_id":"023d485787b4e848d8cc8d350f964efc27e70d2cae39c1614f67b11dcfb75895","skeleton":{"created":0,"updated":1,"superseded":0,"orphaned_claims":[],"omitted_analyses":0},"set_aside_resolved":[],"study_id":"zDL5RHN4YuMs","provenance":{"parse":{"result_id":"mnVjhYnuBBry","config_id":"k3XBeoreUJ9D","run_id":null,"pipeline":"coordinate-parse","version":"paper_parse.10","commit":null,"schema":{"name":"neuroimaging-paper-parse","version":"0.10.0"},"parse_version":{"name":"ns-pond-ingestion-workflow","model":null,"stage":"sync","version":"paper_parse.10","prompt_version":null},"date_executed":"2026-10-25T08:16:36.252764+00:00","created_at":"2026-10-25T08:16:35.803028+00:00","updated_at":null}}}
 
         '
     headers:
@@ -30,13 +30,86 @@ interactions:
       content-type:
       - application/json
       date:
-      - Fri, 23 Oct 2026 21:26:39 GMT
+      - Sun, 25 Oct 2026 08:16:35 GMT
       server:
       - uvicorn
       vary:
       - Origin
       x-request-id:
-      - fc186b077b8e4e43
+      - 92dd5794abcd4537
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=42&retmode=json&email=replay%40example.com&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAMRUyW4bMQy99ysEnZ1kxk6cxLcUCZouKYpegxw0Go5HrZapFqOp4X8vKY23BC16
+        68UeUY/kI/moNe9BtOD5Ys3j8wB8wSEkY4R/5hO+Ah+Us2isTmd8M+EeL3UkcFJt4ItHfj7lTxP6
+        LTaE4veED6lpRaRw9fXlBfvsVqy+QjvsL/AUXPKSvt8qJ3swKsScV6TYO0/x19wKQ4jbtFxqaJ7Z
+        13cjYKR7k7FokzqFCD5zQK47z49i0MKy+39yw1q0CLEQOHaOKursyaQzA+BRrYBp0YBWdskMoEvL
+        OudZ7IG1gEGNsiJiA5nrsjHXKIVmg3cD+Kgg0FVwWkXsOOuSlYRHxNK7NASmLGEjKBtOc8N83PL4
+        PyxIFU6n3Nn6HE8qhESH6YzGLpaAY+MX9fzq5PKCUzftknQC+IfNtdokq34kyP2uZpfVPDtilCyz
+        qpqfTK/nFUmlmIqYytQe+QdUDBG7QdoS2/BEmpTOtzizmCj1l9Q8QMtOkHQLP6H04uHu9tP7z3cl
+        1g5K9EUJVNS85qod9YE4Ay0xyxZkUmPlQudaUeIksB24deoQOdsj6+q0rqb1WaOwsutzUWG1JLIe
+        pe5Q65TzkNIu7cH2nNX1WX3FqmpRVTnvoQOicfDwR4/6lQfY6OHX31LkpnbgwUqa5iOeRYxeNSnm
+        M78Xgd1gRC9kpBEMRqKDdMnGMrEuaf2tjGrcwhcbDtrJLMqyd0jGybGZElVINyR3L6WzlFmjY2HS
+        OPd9uwIIwfpVMuUbP2N5rsqg0akHv830wjzyKln2T5KHAXfMJtPQo0gWsRIK90tD551JXhfrNmre
+        vF0Jr9iibR+bqO/Tyl4McZuEFvv4zTwaSQF0yh88Tccv4ooqkkmTnsfmbDabN78BAAD//wMAVxqD
+        ieAFAAA=
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Sun, 25 Oct 2026 10:29:32 GMT
+      ncbi-phid:
+      - 1D32BD61E5CE12B500002B6E852954CF.1.1.m_1
+      ncbi-sid:
+      - EC3D9425619D6458_64A3SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '0'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
     status:
       code: 200
       message: OK

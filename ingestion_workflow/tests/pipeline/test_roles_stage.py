@@ -282,11 +282,11 @@ def test_each_origin_s_model_is_checked_on_its_own(tmp_path, served, monkeypatch
 
 
 @pytest.fixture
-def env(tmp_path):
+def env(tmp_path, evidence):
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", ns_pond_root=tmp_path / "pond")
     with Catalog.open(settings.catalog_root) as catalog:
-        ref = catalog.register(Identifier(pmid="7"))
+        ref = catalog.register(Identifier(pmid="7"), evidence)
         catalog.record([Outcome(article_id=ref.id, stage="analyses", source="", fingerprint="an-1",
                                 payload=_tables(), summary={"tables": 1})])
         yield settings, catalog, ref
@@ -332,11 +332,11 @@ def test_without_a_table_model_the_article_is_blocked_and_everything_after_it(
     assert (plan.blocked, done.status) == (0, Status.OK)
 
 
-def test_a_missing_prose_model_blocks_only_articles_with_prose_sets(env, served):
+def test_a_missing_prose_model_blocks_only_articles_with_prose_sets(env, served, evidence):
     settings, catalog, ref = env
     settings.prose_model = "nu-prose"
     settings.role_model_table = TABLE_MODEL
-    other = catalog.register(Identifier(pmid="8"))
+    other = catalog.register(Identifier(pmid="8"), evidence)
     catalog.record([
         Outcome(article_id=ref.id, stage="resolve", source="", fingerprint="r-1",
                 payload=_tables(), summary={"tables": 1, "prose_analyses": 0, "basis": "an-1"}),
