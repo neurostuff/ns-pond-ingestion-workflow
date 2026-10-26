@@ -49,10 +49,9 @@ dependencies = [
   # set (services.set_roles; needs CoordinateRole.other), keys.normalize_name,
   # which resolve compares prose analysis names by, and keys.analysis_key, the
   # content key the parse mints for every analysis, and CopyRoute, CopyVersion and
-  # CopyAccess, the facts each download records about its copy, and CorrespondingAuthor.
-  # Pinned to neurostuff/study_schema feat/structured-authors (authors with ids and
-  # affiliations); repin to main once it merges.
-  "study-schema @ git+https://github.com/neurostuff/study_schema.git@c539965d830a9a7d3cd58661933a869957101d9c",
+  # CopyAccess, the facts each download records about its copy, and paper_parse.Author,
+  # each author with ids and affiliations. Pinned to study_schema main.
+  "study-schema @ git+https://github.com/neurostuff/study_schema.git@7737ab4e95fb63bd9cec27fa1e52b2d0e9bc9d38",
 ]
 
 [project.optional-dependencies]
