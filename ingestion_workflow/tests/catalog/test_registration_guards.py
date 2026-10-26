@@ -166,6 +166,23 @@ def test_a_pmid_whose_pubmed_doi_is_another_article_s_is_refused(catalog, eviden
     assert _refusals(catalog) == [("pmid", NLM[0], None)]
 
 
+
+@pytest.mark.vcr()
+def test_a_record_whose_only_id_is_a_refused_pmid_registers_nothing(catalog, evidence):
+    # 2026-10-26, 2006:2013 search: one provider gave the PMID beside another DOI, another
+    # gave it alone; refused for the first, it left the second with no id and the whole
+    # registration raised IndexError
+    nlm = catalog.register(Identifier(doi=NLM[1]), evidence).id
+    biopsych = catalog.register(Identifier(doi=BIOPSYCH[1]), evidence).id
+
+    refs = catalog.register_many([Identifier(doi=BIOPSYCH[1], pmid=NLM[0]),
+                                  Identifier(pmid=NLM[0])], evidence)
+
+    assert [ref.id for ref in refs] == [biopsych]
+    assert catalog.resolve(Identifier(pmid=NLM[0])) is None
+    assert catalog.aliases(nlm, "pmid") == []
+    assert _refusals(catalog) == [("pmid", NLM[0], None)]
+
 @pytest.mark.vcr()
 def test_a_pmid_whose_pubmed_doi_is_the_record_s_own_is_added(catalog, evidence):
     biopsych = catalog.register(Identifier(doi=BIOPSYCH[1]), evidence).id

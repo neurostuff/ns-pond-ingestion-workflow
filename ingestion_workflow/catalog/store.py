@@ -425,6 +425,9 @@ class Catalog:
                     if holder is not None and holder not in owners.values():
                         self.refuse("pmid", str(identifier.pmid), None, why, conn)
                         pairs = [p for p in pairs if p[0] != "pmid"]
+                        # the PubMed record was asked for another record with this PMID
+                        if not pairs:
+                            continue
                 # A preprint's PMID or PMCID is not the one its holder is judged by.
                 incoming = {k: v for k, v in pairs
                             if k in self.SINGULAR and (k, v) not in held_second}
