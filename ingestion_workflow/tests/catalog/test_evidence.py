@@ -368,3 +368,37 @@ def test_two_pubmed_records_of_one_doi_are_one_paper_though_one_has_a_subtitle(p
     # 5qxpg3twr524's 37401785 and w5rawsklx347's 35770780, both 10.1684/epd.2022.1433
     records = pubmed.summaries(["35770780", "37401785"])
     assert same_work(records["35770780"], records["37401785"])
+
+
+def _played(vcr):
+    return [vcr.requests[i].uri for i in sorted(vcr.play_counts)]
+
+
+@pytest.mark.vcr()
+def test_crossref_dois_are_read_in_one_query_and_another_agency_s_singly(evidence, vcr):
+    # Crossref's list query leaves out 10.1254/jjp.52.504, which doi.org sends on to
+    # Elsevier's 10.1016/S0021-5198(19)40046-2: it is asked of doi.org alone
+    crossref = ["10.1016/j.biopsych.2011.09.005", "10.1016/j.nlm.2011.06.006"]
+    evidence.ask_registry([*crossref, "10.1254/jjp.52.504"])
+
+    works = {doi: evidence.work(doi) for doi in [*crossref, "10.1254/jjp.52.504"]}
+
+    assert all(works.values())
+    played = _played(vcr)
+    assert sum("api.crossref.org/works?" in uri for uri in played) == 1
+    asked = [uri for uri in played if uri.startswith("https://doi.org/")]
+    assert asked[0] == "https://doi.org/10.1254/jjp.52.504"
+    assert not [uri for uri in asked if "biopsych" in uri or "nlm" in uri]
+
+
+@pytest.mark.vcr()
+def test_an_alias_doi_s_own_record_names_its_pubmed_paper(evidence, vcr):
+    # doi.org follows Crossref's alias 10.1016/0165-3806(96)00035-1 to
+    # 10.1016/s0165-3806(96)80004-6; the list query reads the alias's own record, which
+    # names the same paper (PubMed 8836571)
+    doi = "10.1016/0165-3806(96)00035-1"
+    summary = evidence.summaries(["8836571"])["8836571"]
+    evidence.ask_registry([doi])
+
+    assert evidence.same_paper(doi, summary)
+    assert not [uri for uri in _played(vcr) if uri.startswith("https://doi.org/")]

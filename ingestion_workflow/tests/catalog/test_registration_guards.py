@@ -269,3 +269,20 @@ def test_a_refusal_is_on_record_once_for_each_reason_with_its_latest_time(catalo
     assert catalog._conn.execute(
         "SELECT refused_at FROM refusals WHERE article_id=?", (a,)).fetchone()[0] > first
     assert len(catalog.refused) == 2
+
+
+@pytest.mark.vcr()
+def test_a_batch_s_registry_checks_are_one_list_query(catalog, evidence, vcr):
+    nlm = catalog.register(Identifier(doi=NLM[1]), evidence).id
+    biopsych = catalog.register(Identifier(doi=BIOPSYCH[1]), evidence).id
+
+    # a PMID whose PubMed DOI the other article holds, and a second journal DOI
+    catalog.register_many([Identifier(doi=BIOPSYCH[1], pmid=NLM[0]),
+                           Identifier(doi=NLM[1], pmid=NLM[0], neurostore="x"),
+                           Identifier(pmid=BIOPSYCH[0], doi=BIOPSYCH[1]),
+                           Identifier(pmid=BIOPSYCH[0], doi=NLM[1])], evidence)
+
+    played = [vcr.requests[i].uri for i in sorted(vcr.play_counts)]
+    assert not [uri for uri in played if uri.startswith("https://doi.org/")]
+    assert catalog.aliases(biopsych, "pmid") == [BIOPSYCH[0]]
+    assert catalog.aliases(nlm, "doi") == [NLM[1]]

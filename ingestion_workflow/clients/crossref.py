@@ -130,14 +130,19 @@ class CrossrefClient:
         working paper, so a posted-content work is left out, as is a DOI a filter cannot
         hold and one Crossref does not know: `record` asks for each of those singly.
         """
-        found: Dict[str, CrossrefWork] = {}
+        found = self.works(dois, "DOI,type,relation,update-to,alternative-id")
+        return {doi: _work_of(item) for doi, item in found.items()
+                if item.get("type") != "posted-content"}
+
+    def works(self, dois: Sequence[str], select: str) -> Dict[str, Dict]:
+        """The `select`ed fields of each of many DOIs' records, by list queries, keyed by
+        the DOI in lower case. A DOI a filter cannot hold, or one Crossref does not know,
+        is left out."""
+        found: Dict[str, Dict] = {}
         for batch in packed("doi", [d for d in dict.fromkeys(dois) if filterable(d)]):
-            for message in self._list({"filter": ",".join(f"doi:{d}" for d in batch),
-                                       "select": "DOI,type,relation,update-to,alternative-id",
-                                       "rows": str(len(batch))}):
-                if message.get("type") != "posted-content":
-                    work = _work_of(message)
-                    found[work.doi] = work
+            for item in self._list({"filter": ",".join(f"doi:{d}" for d in batch),
+                                    "select": select, "rows": str(len(batch))}):
+                found[item["DOI"].lower()] = item
         return found
 
     @retry(stop=stop_after_attempt(4), wait=_wait, retry=retry_if_exception(transient),

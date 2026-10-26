@@ -540,8 +540,9 @@ class CrossrefIDLookupService(IDLookupService):
         self.catalog.refuse(kind, value, article, why)
 
     def _ask_pubmed(self, identifiers: Sequence[Identifier]) -> None:
-        """PubMed's summary of each PMID, in as few requests as NCBI takes: the metadata
-        stage's stored record of an article when it holds one, else NCBI's."""
+        """PubMed's summary of each PMID, in as few requests as NCBI takes (the metadata
+        stage's stored record of an article when it holds one, else NCBI's), and the
+        registry's record of each DOI they give."""
         for identifier in identifiers:
             pmid = identifier.pmid
             path = (self.settings.get_cache_dir("metadata") / PROVIDER_CACHE_DIRS["pubmed"]
@@ -556,7 +557,9 @@ class CrossrefIDLookupService(IDLookupService):
             else:
                 if stored is not None and PubMedClient._extract_pmid(record) == pmid:
                     self.evidence.hold({pmid: stored})
-        self.evidence.summaries(i.pmid for i in identifiers if i.pmid)
+        summaries = self.evidence.summaries(i.pmid for i in identifiers if i.pmid)
+        # `_file_pubmed` asks the registry whether each PubMed DOI is the record's paper
+        self.evidence.ask_registry(normalize_doi(s.doi) for s in summaries.values() if s.doi)
 
     def _summary(self, identifier: Identifier, pmid: str) -> Optional[PubMedSummary]:
         """PubMed's summary of the PMID, as `_ask_pubmed` found it (NCBI's, when the batch

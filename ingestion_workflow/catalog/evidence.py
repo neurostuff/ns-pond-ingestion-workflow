@@ -13,15 +13,24 @@ from __future__ import annotations
 
 import difflib
 import html
+import logging
 import re
 import unicodedata
 from dataclasses import dataclass
 from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple, Union
 
 from ingestion_workflow.clients.crossref import CrossrefClient, CrossrefWork
-from ingestion_workflow.clients.doi_registry import DoiRegistry, RegisteredWork, Unreadable
+from ingestion_workflow.clients.doi_registry import (
+    REGISTERED_FIELDS,
+    DoiRegistry,
+    RegisteredWork,
+    Unreadable,
+    registered,
+)
 from ingestion_workflow.clients.pubmed import PmcRecord, PubMedClient, PubMedSummary
 from ingestion_workflow.utils.doi import normalize_doi
+
+logger = logging.getLogger(__name__)
 
 __all__ = ["Evidence", "Related", "Unreadable", "same_work"]
 
@@ -341,6 +350,24 @@ class Evidence:
                 p for p, other in others.items()
                 if same_work(summary, other, versions=True)]
         return self._title_versions[pmid]
+
+    def ask_registry(self, dois: Iterable[Optional[str]]) -> None:
+        """Ask Crossref for many DOIs' records at once, so `work` answers each from them:
+        a Crossref item reads as the CSL record doi.org gives. A DOI Crossref leaves out
+        (another agency's, or one a filter cannot hold), and every DOI of a batch whose
+        query fails, is left for `work` to ask doi.org singly."""
+        unasked = [d for d in dict.fromkeys(dois) if d and d not in self._works]
+        if not unasked:
+            return
+        try:
+            found = self._crossref.works(unasked, REGISTERED_FIELDS)
+        except Exception as exc:  # noqa: BLE001 - `work` asks each DOI singly instead
+            logger.warning("Crossref list query for %d DOIs failed; asking doi.org singly: %s",
+                           len(unasked), exc)
+            return
+        for doi in unasked:
+            if (item := found.get(doi.lower())) is not None:
+                self._works[doi] = registered(item)
 
     def work(self, doi: str) -> Optional[RegisteredWork]:
         """The registering agency's record of the DOI's work; None when no agency has the
