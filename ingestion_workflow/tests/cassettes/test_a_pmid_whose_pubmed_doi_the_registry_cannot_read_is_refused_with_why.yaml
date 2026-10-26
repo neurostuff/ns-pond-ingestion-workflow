@@ -17,22 +17,22 @@ interactions:
   response:
     body:
       string: !!binary |
-        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
+        H4sIAAAAAAAAALSUS28TMRCA/8rI5zSxs9nNg1NUEBUiqKKHlkY9OF4na3Ds4kdLiPjvjL1tNlWF
+        1By4eWb8eR6emT1pJK+lI7M9Cbt7SWZE+rjdcrcjPfIgnVfWoJL2C/KnRxwadUiXo6o9mS3JcDoe
+        lWU1IXe97tzaETtoeuQ+rmoekoMhZWOY3zsYlqiXnQElb6MT6XzVSLOB6wjfFNxECR8tiudZmcRb
+        DreNQoDH0FiXQtkTw7cJvW24hZsn21NS83wNdUJHH6TL0WFGx1B6+kTqOkHXJ0KfFWZ1InPVcFic
+        yKRqnezoi4KLE5GFwiK8fxOETaK5D+2nHaNBBZ245VfpJXeiAWsgNBJEwx0X6QUflPBg11ld79C5
+        ErCORgRsUa5BWGMkCg8q7MDI8GjdD3BSY2/VECzwDTq76+cmc+HZofu//tIQWR1znYoRSsr7mIcg
+        jQTfSOxcwip2xqoxScVBBKdKYG9jrYzeRqN+RpnLNx0Nq2I6aR9JQ8koZWdlyfIYtap20NpPWJIP
+        ZqOVb2C+8iFlhdZPOGAp+rnD9LACd2mohXU1/kqIKZrLuFrIun3ooEyh8xZpB39PVP3013hvm4FW
+        g2EwzJrrNs/nDZAapkO24vj+pLt/uTifTotyxKpXhHrho+wYtJ2pegYd++4lXFt1jBYdymh/XNLx
+        4FDKPm6nkjFaDHO3NtgGFndhSvi4HtIEJ3/jo91OmwxoOWAMaDWjNPs/Bg5FeiuAt7Uy8p8Ee+0C
+        y4D9J7l/SY0HtBgMJ0Bp9pN/fC2dNCJ13xJlHoJTqxiyTC647zoGrfguAsJGg5ufVT2yjlp/b/vo
+        sJ7SYn6MsFPwK/4FAAD//3xVSQ7DIAy89xX8IFXVXirlMYBIg0pKhCCHSPl7xzY0XaTewHHGC56x
+        UzdSa8tGuq5araNXvWrTB1YZH1Git7jBDZWCcnDvFWMxVENiIMFZWfRdiFYTDZkXeN2r+veQaEa0
+        dRSsz/wnyUCy4DBVDpJk6YSJ8d6kAS6UYZnkjGOWZSjcIGa51DL5Mte+SJR9vSU3Q3seZTK0csmi
+        F+2DNsENKU4lBbE2VHxx1YQSfrKFbcem1Pew0LE5tyAkeJ/7tzueu9OljoQ4DD69KfNriS5UjC2B
+        2F/7sm3b4QkAAP//AwANsobNOQgAAA==
     headers:
       access-control-allow-origin:
       - '*'
@@ -49,11 +49,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 10:14:41 GMT
+      - Mon, 26 Oct 2026 19:27:37 GMT
       ncbi-phid:
-      - 1D348A0161E73355000047A43EF9700C.1.1.m_1
+      - 1D34804F699094C50000388E20A055B6.1.1.m_1
       ncbi-sid:
-      - 80E7F17F4037F6E3_3D64SID
+      - 96E18FD94FE0C4B9_2F4DSID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -72,6 +72,56 @@ interactions:
       - IE=Edge
       x-xss-protection:
       - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.7507%2F1001-5515.201511032&rows=1&select=DOI%2Ctitle%2Cauthor%2Cissued%2Cpublished-print%2Cpublished-online%2Ccreated%2Ctype%2CISSN%2Ccontainer-title%2Cissue%2Cvolume%2Cpage
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 26 Oct 2026 19:27:39 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
     status:
       code: 200
       message: OK
@@ -101,15 +151,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4e7bc933be2b421-DFW
+      - a50bdc0ecd3f0c40-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Thu, 22 Oct 2026 10:14:42 GMT
+      - Mon, 26 Oct 2026 19:27:39 GMT
       expires:
-      - Thu, 22 Oct 2026 11:03:44 GMT
+      - Mon, 26 Oct 2026 19:35:17 GMT
       location:
       - http://122.115.55.36:8000/doi/10.7507%2F1001-5515.201511032
       nel:
@@ -117,7 +167,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=NoUovqok5gCDw9uJSubh%2FblC5mFTIMgfDegyjZaeYEpMvePmC3EqEshgJBhdW8uX7DKqdj0OLhfZsNnbQ74g6OkO%2FdqpPQtTj5heDx%2F%2FzS4uQPNzYF5xY6w%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=yqVW9o6Qwq7ixfgMvzBvlMgkO5630aG9EA4E51cmFNBYlPkEmxnDMuIh7x67J%2F6KPX0CgMMBDfkPlQkoUSBU2fXszVi97sRLmhrhsD%2B3Yf9iKmhhzJqy4p8%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -129,37 +179,4 @@ interactions:
     status:
       code: 302
       message: Found
-- request:
-    body: ''
-    headers:
-      accept:
-      - application/vnd.citationstyles.csl+json
-      accept-encoding:
-      - gzip, deflate
-      connection:
-      - keep-alive
-      host:
-      - 122.115.55.36:8000
-      user-agent:
-      - ns-pond-ingestion-workflow
-    method: GET
-    uri: http://122.115.55.36:8000/doi/10.7507%2F1001-5515.201511032
-  response:
-    body:
-      string: "{\"status\": \"error\", \"message\": \"\u672A\u67E5\u8BE2\u5230 DOI
-        \u5BF9\u5E94\u7684\u5143\u6570\u636E\u6216\u89E3\u6790\u5931\u8D25\uFF08DOI\uFF1A10.7507/1001-5515.201511032\uFF09\"}"
-    headers:
-      connection:
-      - close
-      content-length:
-      - '123'
-      content-type:
-      - application/json; charset=utf-8
-      date:
-      - Thu, 22 Oct 2026 10:14:43 GMT
-      server:
-      - Werkzeug/3.1.6 Python/3.13.5
-    status:
-      code: 404
-      message: NOT FOUND
 version: 1

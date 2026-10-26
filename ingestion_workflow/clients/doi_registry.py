@@ -64,7 +64,13 @@ def _first(value) -> Optional[str]:
     return value or None
 
 
-def _registered(csl: Dict) -> RegisteredWork:
+#: What `registered` reads, for a Crossref list query: a Crossref item has the CSL
+#: record's fields under the same names, and the same types.
+REGISTERED_FIELDS = ("DOI,title,author,issued,published-print,published-online,created,type,"
+                     "ISSN,container-title,issue,volume,page")
+
+
+def registered(csl: Dict) -> RegisteredWork:
     title = csl.get("title")
     if isinstance(title, list):
         title = title[0] if title else None
@@ -141,4 +147,4 @@ class DoiRegistry:
                 raise Unreadable(f"{doi}: doi.org sends it to {url.host}, which has no record")
             return None
         response.raise_for_status()
-        return _registered(response.json())
+        return registered(response.json())

@@ -17,22 +17,22 @@ interactions:
   response:
     body:
       string: !!binary |
-        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
+        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
     headers:
       access-control-allow-origin:
       - '*'
@@ -49,11 +49,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Thu, 22 Oct 2026 11:09:53 GMT
+      - Mon, 26 Oct 2026 19:27:52 GMT
       ncbi-phid:
-      - 1D3238309BD9AC75000070A8A85A5732.1.1.m_1
+      - 1D33F91035322F4500004D8F51244E8C.1.1.m_1
       ncbi-sid:
-      - 69C8244402044224_5C1CSID
+      - BD58259268B3E4E2_38C4SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -72,6 +72,63 @@ interactions:
       - IE=Edge
       x-xss-protection:
       - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.7507%2F1001-5515.201511032%2Cdoi%3A10.1016%2Fj.biopsych.2011.09.005&rows=2&select=DOI%2Ctitle%2Cauthor%2Cissued%2Cpublished-print%2Cpublished-online%2Ccreated%2Ctype%2CISSN%2Ccontainer-title%2Cissue%2Cvolume%2Cpage
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":1,"items":[{"issue":"1","published-print":{"date-parts":[[2012,1]]},"DOI":"10.1016\/j.biopsych.2011.09.005","type":"journal-article","created":{"date-parts":[[2011,10,22]],"date-time":"2011-10-22T04:42:48Z","timestamp":1319258568000},"page":"59-67","title":["Fronto-Striato-Cerebellar
+        Dysregulation in Adolescents with Depression During Motivated Attention"],"volume":"71","author":[{"given":"Kaylita","family":"Chantiluke","sequence":"first","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Rozmin","family":"Halari","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Mima","family":"Simic","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Carmine
+        M.","family":"Pariante","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Andrew","family":"Papadopoulos","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Vincent","family":"Giampietro","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Katya","family":"Rubia","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"container-title":["Biological
+        Psychiatry"],"issued":{"date-parts":[[2012,1]]},"ISSN":["0006-3223"]}],"items-per-page":2,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '610'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 26 Oct 2026 19:27:54 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
     status:
       code: 200
       message: OK
@@ -101,15 +158,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4e80d6848ae70a3-DFW
+      - a50bdc6bf8634683-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Thu, 22 Oct 2026 11:09:53 GMT
+      - Mon, 26 Oct 2026 19:27:54 GMT
       expires:
-      - Thu, 22 Oct 2026 11:16:41 GMT
+      - Mon, 26 Oct 2026 19:36:29 GMT
       location:
       - http://122.115.55.36:8000/doi/10.7507%2F1001-5515.201511032
       nel:
@@ -117,7 +174,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=Nsu09afYApkk%2Bc%2Bnc0w8aLlsoX%2BY4qJxD1TUYwEkoBMllDqaYFVtycdO2BBmgYX%2B0EjgDegxWzYlvoaHiagTsQOK7vH0H%2BpMDULeqExuKI%2BgVrqEYgIs6Rw%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=looMjygef1BDLBBlL%2BqRApvRdtH1HWAJxpLkhLOdJsNTi7yW7ql3pezDgcHdodcY3pvbN9wSHeSsSYuKocsgqlEoj2RgcebTjbXCeotsay9CJhBukrPMSls%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -129,37 +186,4 @@ interactions:
     status:
       code: 302
       message: Found
-- request:
-    body: ''
-    headers:
-      accept:
-      - application/vnd.citationstyles.csl+json
-      accept-encoding:
-      - gzip, deflate
-      connection:
-      - keep-alive
-      host:
-      - 122.115.55.36:8000
-      user-agent:
-      - ns-pond-ingestion-workflow
-    method: GET
-    uri: http://122.115.55.36:8000/doi/10.7507%2F1001-5515.201511032
-  response:
-    body:
-      string: "{\"status\": \"error\", \"message\": \"\u672A\u67E5\u8BE2\u5230 DOI
-        \u5BF9\u5E94\u7684\u5143\u6570\u636E\u6216\u89E3\u6790\u5931\u8D25\uFF08DOI\uFF1A10.7507/1001-5515.201511032\uFF09\"}"
-    headers:
-      connection:
-      - close
-      content-length:
-      - '123'
-      content-type:
-      - application/json; charset=utf-8
-      date:
-      - Thu, 22 Oct 2026 11:09:54 GMT
-      server:
-      - Werkzeug/3.1.6 Python/3.13.5
-    status:
-      code: 404
-      message: NOT FOUND
 version: 1

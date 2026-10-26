@@ -1,0 +1,136 @@
+interactions:
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&email=replay%40example.com&id=8836571&retmode=json&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAJxUwXLaMBD9lR1d2k7ByDghwA2aTBPaZJikPWV6ELLAamTJlaVMKdN/70oCQtKk
+        k+nJu6t9u2/XT9qQSrBSWDLeELduBBkT0fq6ZnZNOuRe2FYajUGaFeR3h1g8VC4ke1m2ZHxLhsNi
+        cHySk2+dvZlOEbQLdEjjFyVzoXo+Gg1g5hX0KcbFwwF6rfGWB3tqmdRwLVo4Ffew9zCFeVcZGzpv
+        iGZ1SJ55vYLJdHu4HWIS8zDGlW+dsJEPTrBHTYXWwjmYzWFmX4XFCRVrXWLwTAUnnQpwpCyUaWqh
+        HZgltM5K5piC0jSsllrYleSw9Jo7XG0GFxcXY5hb0QWmS2hM63RKf6FMyOLGOsnRqa+vJi0sjQVX
+        CdDCW+OsaSrclxVcNA53Bc7eTb98eh+RaH9IRiWkxaSVVywQgcUa2rVmDRbeU83iT7FuN9pLnJ4d
+        DaSU0FjxX3NZzV4z18Ld7cbirx8rKNsoH3UwOkJPtq0PTj9Ila1QaSjUougeFST8dL0KShf4QQ1o
+        VXstf3iRJD6iw0ExSjXiRckHx91iSAdB3SmU9J/EdUtmKHKNI07CqCpwQWULZnkFN75pcAMd+Jrd
+        ZPDR3L9Be56doxc64+TGlqhA5wPBuV9cihK6IHUpfqIV1nV5dvr54uostdynhhlZ6peu7YbIcqt2
+        zKtFGQaIESSc43qYigvZ3eBwcfaI0sjD9OIhPadZjgvo7ZfwdjR4RyktjrtPajTyUY2jhxoBG6Cj
+        QQTm8eJVssVfvo7MDwfbkz94XXr0pNenQOmY0tj0EIDZKilgi+hTmvdo0esPIUdE/hcCdWrFr3+1
+        iL9mKazQPCjnFn3mUNYL76JPzlHLE6xoGXfhRzY1RwA3Xrskj6VX6nvSxe55im+e3Sojg4NHBbWz
+        eHQalKYMj3pPbxWSNXy7aS5dPAlX2XJudGCmcJ+J6cKYu931xhTcj/R1stF06fVPckJQJeyu05Pw
+        lnfs8gcAAP//ZFXLCgAhCLzvX5oYG9guCHXz31Oi3NjrKL6dwaB0Ib/op9XkGuMIdCgMiSnLW5vw
+        RFdUsxDvFn7VGhaxvfRIi7c9+UripHVqzrGy6ZCLfOg8ZKR7N2gEInswqnoNAAAA//8DAO2G6fAr
+        BwAA
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - application/json; charset=UTF-8
+      date:
+      - Mon, 26 Oct 2026 19:39:45 GMT
+      ncbi-phid:
+      - 1D320F418981B4650000268032BDC36F.1.1.m_1
+      ncbi-sid:
+      - 551DE454E09F4BB7_2223SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.1016%2F0165-3806%2896%2900035-1&rows=1&select=DOI%2Ctitle%2Cauthor%2Cissued%2Cpublished-print%2Cpublished-online%2Ccreated%2Ctype%2CISSN%2Ccontainer-title%2Cissue%2Cvolume%2Cpage
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":1,"items":[{"issue":"2","published-print":{"date-parts":[[1996,7,20]]},"DOI":"10.1016\/0165-3806(96)00035-1","type":"journal-article","created":{"date-parts":[[2002,7,25]],"date-time":"2002-07-25T13:13:06Z","timestamp":1027602786000},"page":"133-143","title":["Development
+        of striatal dopaminergic function. III: Pre- and postnatal development of
+        striatal and cortical mRNAs for the neurotrophin receptors trkBTK+ and trkC
+        and their regulation by synaptic dopamine"],"volume":"94","author":[{"given":"A","family":"Jung","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"container-title":["Developmental
+        Brain Research"],"issued":{"date-parts":[[1996,7,20]]},"ISSN":["0165-3806"]}],"items-per-page":1,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '546'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 26 Oct 2026 19:39:46 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+version: 1

@@ -510,6 +510,7 @@ class Catalog:
         """A journal DOI for an article holding another: an alternative DOI when the
         registries give both one work (a publisher's move, an alias spelling), else
         refused, with why."""
+        evidence.ask_registry(d for _, doi, held in rows for d in (doi, *held))
         decided = []
         for article_id, doi, held in rows:
             try:
@@ -552,12 +553,15 @@ class Catalog:
             if i.pmid and len(_alias_pairs(i)) > 1
             and not self._holder_row(self._conn, "pmid", str(i.pmid))
         })
-        found = {}
+        held = []
         for pmid, summary in evidence.summaries(asked).items():
             doi = normalize_doi(summary.doi)
             holder = self._holder(self._conn, "doi", doi) if doi else None
-            if holder is None:
-                continue
+            if holder is not None:
+                held.append((pmid, summary, doi, holder))
+        evidence.ask_registry(doi for _, _, doi, _ in held)
+        found = {}
+        for pmid, summary, doi, holder in held:
             try:
                 if evidence.same_paper(doi, summary):
                     found[pmid] = (doi, f"PubMed gives it {doi}, which {holder} holds")

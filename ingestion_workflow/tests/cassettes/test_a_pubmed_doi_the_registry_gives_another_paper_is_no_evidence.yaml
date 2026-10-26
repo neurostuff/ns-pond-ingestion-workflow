@@ -17,21 +17,21 @@ interactions:
   response:
     body:
       string: !!binary |
-        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
+        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
     headers:
       access-control-allow-origin:
       - '*'
@@ -48,11 +48,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Wed, 21 Oct 2026 12:29:55 GMT
+      - Mon, 26 Oct 2026 19:27:41 GMT
       ncbi-phid:
-      - 1D32D4D41D5E708500002DD2E36C65BE.1.1.m_1
+      - 1D320F418981B4650000347B4D98CA24.1.1.m_1
       ncbi-sid:
-      - 4B088EDC6C7EC24D_2C8ESID
+      - CB9A5B6E904FEA6B_A118SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -66,7 +66,7 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '0'
+      - '2'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
@@ -125,11 +125,11 @@ interactions:
       content-type:
       - application/json; charset=UTF-8
       date:
-      - Wed, 21 Oct 2026 12:29:55 GMT
+      - Mon, 26 Oct 2026 19:27:41 GMT
       ncbi-phid:
-      - 1D33E73F2DDD1E7500002AE7AF76BE97.1.1.m_1
+      - 1D34804F699094C50000238E2737DCEB.1.1.m_1
       ncbi-sid:
-      - 4B088EDC6C7EC24D_2C8ESID
+      - CB9A5B6E904FEA6B_A118SID
       referrer-policy:
       - origin-when-cross-origin
       server:
@@ -143,11 +143,61 @@ interactions:
       x-ratelimit-limit:
       - '3'
       x-ratelimit-remaining:
-      - '0'
+      - '1'
       x-ua-compatible:
       - IE=Edge
       x-xss-protection:
       - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.14670%2Fhh-25-013&rows=1&select=DOI%2Ctitle%2Cauthor%2Cissued%2Cpublished-print%2Cpublished-online%2Ccreated%2Ctype%2CISSN%2Ccontainer-title%2Cissue%2Cvolume%2Cpage
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 26 Oct 2026 19:27:44 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
     status:
       code: 200
       message: OK
@@ -163,7 +213,7 @@ interactions:
       host:
       - doi.org
       user-agent:
-      - ingestion-workflow
+      - ns-pond-ingestion-workflow
     method: GET
     uri: https://doi.org/10.14670/hh-25-013
   response:
@@ -177,15 +227,15 @@ interactions:
       cf-cache-status:
       - DYNAMIC
       cf-ray:
-      - a4e0454ae9bde55e-DFW
+      - a50bdc2ceba4eaf2-DFW
       connection:
       - keep-alive
       content-type:
       - text/html;charset=utf-8
       date:
-      - Wed, 21 Oct 2026 12:29:56 GMT
+      - Mon, 26 Oct 2026 19:27:44 GMT
       expires:
-      - Wed, 21 Oct 2026 13:17:01 GMT
+      - Mon, 26 Oct 2026 19:36:38 GMT
       location:
       - https://data.medra.org/10.14670%2Fhh-25-013
       nel:
@@ -193,7 +243,7 @@ interactions:
       permissions-policy:
       - interest-cohort=(),browsing-topics=()
       report-to:
-      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=D4%2Bljz%2BDR%2FIFKBFphMknWMuUFregqBKcWdQvxM3YLhRQK5%2BUvOcuzg3U30uvopYe2JHWbX59T9TNAEx4Zwhw%2FlkMBmPdeV06XDVyB4paK6aDHW5KlXZXDi0%3D"}]}'
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=f6RVo5T%2FNhiLGUtsrP3dINVBzqObIpmcFUODV94xLEx8jagIUhFu%2F4uhOxl2hQZckkN1GxOSyVZz%2F5E%2F6muXx0FoS%2BULt1JUqpXjdiKdP5KlD4FWVhmC9Bs%3D"}]}'
       server:
       - cloudflare
       strict-transport-security:
@@ -218,7 +268,7 @@ interactions:
       host:
       - data.medra.org
       user-agent:
-      - ingestion-workflow
+      - ns-pond-ingestion-workflow
     method: GET
     uri: https://data.medra.org/10.14670%2Fhh-25-013
   response:
@@ -241,7 +291,7 @@ interactions:
       content-type:
       - application/vnd.citationstyles.csl+json;charset=UTF-8
       date:
-      - Wed, 21 Oct 2026 12:29:56 GMT
+      - Mon, 26 Oct 2026 19:27:44 GMT
       server:
       - Apache/2.4.59 (Debian)
       vary:

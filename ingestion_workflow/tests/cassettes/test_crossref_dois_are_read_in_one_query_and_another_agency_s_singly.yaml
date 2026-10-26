@@ -1,0 +1,266 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.1016%2Fj.biopsych.2011.09.005%2Cdoi%3A10.1016%2Fj.nlm.2011.06.006%2Cdoi%3A10.1254%2Fjjp.52.504&rows=3&select=DOI%2Ctitle%2Cauthor%2Cissued%2Cpublished-print%2Cpublished-online%2Ccreated%2Ctype%2CISSN%2Ccontainer-title%2Cissue%2Cvolume%2Cpage
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":2,"items":[{"issue":"4","published-print":{"date-parts":[[2011,11]]},"DOI":"10.1016\/j.nlm.2011.06.006","type":"journal-article","created":{"date-parts":[[2011,6,26]],"date-time":"2011-06-26T01:21:02Z","timestamp":1309051262000},"page":"553-563","title":["Cognitive
+        dysfunction in depression: Neurocircuitry and new therapeutic strategies"],"volume":"96","author":[{"given":"James
+        W.","family":"Murrough","sequence":"first","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Brian","family":"Iacoviello","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Alexander","family":"Neumeister","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Dennis
+        S.","family":"Charney","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Dan
+        V.","family":"Iosifescu","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"container-title":["Neurobiology
+        of Learning and Memory"],"issued":{"date-parts":[[2011,11]]},"ISSN":["1074-7427"]},{"issue":"1","published-print":{"date-parts":[[2012,1]]},"DOI":"10.1016\/j.biopsych.2011.09.005","type":"journal-article","created":{"date-parts":[[2011,10,22]],"date-time":"2011-10-22T04:42:48Z","timestamp":1319258568000},"page":"59-67","title":["Fronto-Striato-Cerebellar
+        Dysregulation in Adolescents with Depression During Motivated Attention"],"volume":"71","author":[{"given":"Kaylita","family":"Chantiluke","sequence":"first","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Rozmin","family":"Halari","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Mima","family":"Simic","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Carmine
+        M.","family":"Pariante","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Andrew","family":"Papadopoulos","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Vincent","family":"Giampietro","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Katya","family":"Rubia","sequence":"additional","affiliation":[],"role":[{"vocabulary":"crossref","role":"author"}]}],"container-title":["Biological
+        Psychiatry"],"issued":{"date-parts":[[2012,1]]},"ISSN":["0006-3223"]}],"items-per-page":3,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '850'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 26 Oct 2026 19:39:45 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.1254/jjp.52.504
+  response:
+    body:
+      string: ''
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a50bedc6f904f063-DFW
+      connection:
+      - keep-alive
+      content-length:
+      - '0'
+      date:
+      - Mon, 26 Oct 2026 19:39:45 GMT
+      expires:
+      - Tue, 27 Oct 2026 19:39:45 GMT
+      location:
+      - https://doi.org/10.1016/S0021-5198(19)40046-2
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=HRNBQSeQghe8kEaM3lgmoz9wWBbnktTCLrfHQV9Jo1mYpKOKdw6MLaf%2FDw8r%2BxHk9I8Iz%2FESAY7XDArGR9h8ljqwLol5b2soCoXnfybQfHc7DG%2BoNDlg7m4%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      vary:
+      - Origin
+    status:
+      code: 301
+      message: Moved Permanently
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - doi.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://doi.org/10.1016/S0021-5198(19)40046-2
+  response:
+    body:
+      string: '<html><head><title>Handle Redirect</title></head>
+
+        <body><a href="https://api.crossref.org/v1/works/10.1016%2FS0021-5198%2819%2940046-2/transform">https://api.crossref.org/v1/works/10.1016%2FS0021-5198%2819%2940046-2/transform</a></body></html>'
+    headers:
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      cf-ray:
+      - a50bedc7cbc6f063-DFW
+      connection:
+      - keep-alive
+      content-type:
+      - text/html;charset=utf-8
+      date:
+      - Mon, 26 Oct 2026 19:39:45 GMT
+      expires:
+      - Mon, 26 Oct 2026 20:32:47 GMT
+      link:
+      - <https://dul.usage.elsevier.com/doi/>; rel=dul
+      - <https://dul.usage.elsevier.com/doi/>; rel=dul
+      location:
+      - https://api.crossref.org/v1/works/10.1016%2FS0021-5198%2819%2940046-2/transform
+      nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      permissions-policy:
+      - interest-cohort=(),browsing-topics=()
+      report-to:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=mwzmoWDvfD7xf2FSgpuvsDjK8Le6ekPgur16l1%2Fo0CPiBfcgxAa1qgG5%2Ffggv%2FZw1hkhIaFbm7uZHa3MqOjMxLfGo6owHD0pD7kIEOpL4U2SZi3JAK09O0Y%3D"}]}'
+      server:
+      - cloudflare
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      vary:
+      - Origin
+      - Accept
+    status:
+      code: 302
+      message: Found
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/vnd.citationstyles.csl+json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - api.crossref.org
+      user-agent:
+      - ns-pond-ingestion-workflow
+    method: GET
+    uri: https://api.crossref.org/v1/works/10.1016%2FS0021-5198%2819%2940046-2/transform
+  response:
+    body:
+      string: !!binary |
+        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
+        qL8vQGwUP67y/wCmWgM8RBoAAA==
+    headers:
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      connection:
+      - keep-alive
+      content-encoding:
+      - gzip
+      content-length:
+      - '2185'
+      content-type:
+      - application/vnd.citationstyles.csl+json
+      date:
+      - Mon, 26 Oct 2026 19:39:45 GMT
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept, Accept-Encoding
+      x-api-pool:
+      - public-single
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '5'
+    status:
+      code: 200
+      message: OK
+version: 1
