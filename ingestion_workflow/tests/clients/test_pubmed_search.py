@@ -1,4 +1,3 @@
-import json
 import pytest
 from ingestion_workflow.clients.pubmed import (
     ESEARCH_MAX_RESULTS,
@@ -181,26 +180,12 @@ def test_pubmed_search_service_requires_email(monkeypatch):
         PubMedSearchService(parse("query"), settings)
 
 
-def test_pubmed_request_json_handles_invalid_control_chars(monkeypatch):
+def test_pubmed_request_json_handles_invalid_control_chars(provider):
     client = PubMedClient(email="tests@example.com")
-    invalid_json = '{"esearchresult": {"ERROR": "Search Backend failed\nTry again"}}'
+    client._min_interval = 0
+    provider.body = b'{"esearchresult": {"ERROR": "Search Backend failed\nTry again"}}'
 
-    class DummyResponse:
-        def __init__(self, text: str) -> None:
-            self.text = text
-
-        def raise_for_status(self) -> None:
-            return None
-
-        def json(self):
-            raise json.JSONDecodeError("bad json", self.text, 0)
-
-    monkeypatch.setattr(client, "_rate_limit_sleep", lambda: None)
-    monkeypatch.setattr(
-        client._client, "get", lambda *_args, **_kwargs: DummyResponse(invalid_json)
-    )
-
-    payload = client._request_json("https://example.com", params=[])
+    payload = client._request_json(provider.url, params=[])
     assert payload["esearchresult"]["ERROR"].startswith("Search Backend failed")
 
 

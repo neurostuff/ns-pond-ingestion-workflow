@@ -9,7 +9,8 @@ import httpx
 import pytest
 from ingestion_workflow.catalog.evidence import same_work
 from ingestion_workflow.clients.doi_registry import DoiRegistry, RegisteredWork, Unreadable
-from ingestion_workflow.clients.pubmed import PubMedSummary, _retryable
+from ingestion_workflow.clients.pubmed import PubMedSummary
+from ingestion_workflow.utils.http import transient
 
 #: Pairs of PubMed records that are two works.
 TWO_PUBMED_WORKS = [
@@ -290,8 +291,8 @@ def test_ncbi_is_asked_again_after_a_refusal_to_come_back_later(response, retrie
     request = httpx.Request("GET", "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi")
     error = httpx.HTTPStatusError(
         "x", request=request, response=httpx.Response(response, request=request))
-    assert _retryable(error) is retried
-    assert _retryable(httpx.ConnectError("refused", request=request)) is True
+    assert transient(error) is retried
+    assert transient(httpx.ConnectError("refused", request=request)) is True
 
 
 def test_a_preprint_by_another_first_author_is_its_paper_s_only_word_for_word():

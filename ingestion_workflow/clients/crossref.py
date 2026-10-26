@@ -5,20 +5,19 @@ licences publishers deposit."""
 from __future__ import annotations
 
 import re
-import time
 from dataclasses import dataclass
 from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 from urllib.parse import quote
 
 import requests
 from study_schema.models.paper_parse import MetadataSource
-from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
+from tenacity import wait_exponential
 
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.models.metadata import ArticleMetadata
 from ingestion_workflow.models.notices import PartialAnswer
 from ingestion_workflow.utils.doi import normalize_doi
-from ingestion_workflow.utils.http import transient
+from ingestion_workflow.utils.http import Pacer, retry_transient
 
 #: The polite pool's single-record limit. Sending an email puts a client in it; there is no key.
 CROSSREF_REQUEST_LIMIT = 10
@@ -98,19 +97,12 @@ class CrossrefClient:
         self._session = requests.Session()
         agent = "ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow"
         self._session.headers["User-Agent"] = agent + (f"; mailto:{email})" if email else ")")
-        self._last_request = 0.0
+        self._pace = Pacer()
 
-    def _rate_limit_sleep(self, limit: int = CROSSREF_REQUEST_LIMIT) -> None:
-        elapsed = time.monotonic() - self._last_request
-        if elapsed < 1 / limit:
-            time.sleep(1 / limit - elapsed)
-        self._last_request = time.monotonic()
-
-    @retry(stop=stop_after_attempt(4), wait=_wait, retry=retry_if_exception(transient),
-           reraise=True)
+    @retry_transient(4, 16, wait=_wait)
     def work(self, doi: str) -> Optional[Dict]:
         """The work's `message`, or None when Crossref does not know the DOI."""
-        self._rate_limit_sleep()
+        self._pace.wait(1 / CROSSREF_REQUEST_LIMIT)
         params = {"mailto": self.email} if self.email else {}
         response = self._session.get(self.BASE_URL + quote(doi.strip(), safe="/"), params=params, timeout=30)
         if response.status_code == 404:
@@ -145,10 +137,9 @@ class CrossrefClient:
                 found[item["DOI"].lower()] = item
         return found
 
-    @retry(stop=stop_after_attempt(4), wait=_wait, retry=retry_if_exception(transient),
-           reraise=True)
+    @retry_transient(4, 16, wait=_wait)
     def _page(self, params: Dict) -> Dict:
-        self._rate_limit_sleep(CROSSREF_LIST_REQUEST_LIMIT)
+        self._pace.wait(1 / CROSSREF_LIST_REQUEST_LIMIT)
         response = self._session.get(self.BASE_URL.rstrip("/"), params=params, timeout=60)
         response.raise_for_status()
         return response.json()["message"]

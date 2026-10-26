@@ -1,6 +1,9 @@
 import json
 import os
 import tempfile
+import threading
+import time
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import pytest
@@ -118,3 +121,39 @@ def semantic_scholar_api_key() -> str:
     if not api_key:
         pytest.skip("SEMANTIC_SCHOLAR_API_KEY not configured")
     return api_key
+
+
+class _Provider(BaseHTTPRequestHandler):
+    statuses: list
+    asked: list
+    body: bytes
+
+    def _answer(self):
+        self.asked.append(time.monotonic())
+        status = self.statuses[min(len(self.asked), len(self.statuses)) - 1]
+        self.send_response(status)
+        self.send_header("Content-Length", str(len(self.body)))
+        self.end_headers()
+        self.wfile.write(self.body)
+
+    do_GET = do_PUT = do_POST = _answer
+
+    def log_message(self, *args):
+        pass
+
+
+@pytest.fixture
+def provider():
+    """A provider on localhost that answers each request with the next of `statuses` (the
+    last one from then on) and `body`, and notes when each was asked."""
+    handler = type("Handler", (_Provider,), {
+        "statuses": [200], "asked": [],
+        "body": b'{"message": {"items": []}, "email": [], "results": [], "resultsFound": 0}'})
+    server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    handler.url = f"http://127.0.0.1:{server.server_port}/"
+    yield handler
+    server.shutdown()
+    thread.join()
+    server.server_close()
