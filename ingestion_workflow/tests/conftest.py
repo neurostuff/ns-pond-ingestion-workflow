@@ -50,8 +50,8 @@ def pubmed():
 def evidence(pubmed):
     """NCBI and the registries, asked with the placeholder email and answered from the
     test's cassette, so what a test registers is checked against recorded answers."""
-    registry = DoiRegistry(CrossrefClient(cassette_secrets.REPLAY_EMAIL))
-    yield Evidence(pubmed, registry)
+    registry = DoiRegistry()
+    yield Evidence(pubmed, registry, CrossrefClient(cassette_secrets.REPLAY_EMAIL))
     registry.close()
 
 

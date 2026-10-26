@@ -18,7 +18,7 @@ import unicodedata
 from dataclasses import dataclass
 from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple, Union
 
-from ingestion_workflow.clients.crossref import CrossrefWork
+from ingestion_workflow.clients.crossref import CrossrefClient, CrossrefWork
 from ingestion_workflow.clients.doi_registry import DoiRegistry, RegisteredWork, Unreadable
 from ingestion_workflow.clients.pubmed import PmcRecord, PubMedClient, PubMedSummary
 from ingestion_workflow.utils.doi import normalize_doi
@@ -276,9 +276,12 @@ def _near(a: Optional[int], b: Optional[int]) -> bool:
 
 
 class Evidence:
-    def __init__(self, pubmed: PubMedClient, registry: DoiRegistry) -> None:
+    def __init__(
+        self, pubmed: PubMedClient, registry: DoiRegistry, crossref: CrossrefClient
+    ) -> None:
         self._pubmed = pubmed
         self._registry = registry
+        self._crossref = crossref
         self._summaries: Dict[str, Optional[PubMedSummary]] = {}
         self._pmc: Dict[str, Optional[PmcRecord]] = {}
         self._works: Dict[str, Union[RegisteredWork, Unreadable, None]] = {}
@@ -367,7 +370,7 @@ class Evidence:
     def record(self, doi: str) -> Optional[CrossrefWork]:
         """Crossref's own record of the DOI; None when Crossref does not have it."""
         if doi not in self._records:
-            self._records[doi] = self._registry.record(doi)
+            self._records[doi] = self._crossref.record(doi)
         return self._records[doi]
 
     def _spelled(self, doi: str) -> List[str]:
@@ -396,7 +399,7 @@ class Evidence:
         dois = [d for d in dict.fromkeys(dois) if d]
         unasked = [d for d in dois if d not in self._records]
         if unasked:
-            found = self._registry.records(unasked)
+            found = self._crossref.records(unasked)
             for doi in unasked:
                 if (record := found.get(doi.lower())) is not None:
                     self._records[doi] = record
@@ -414,7 +417,7 @@ class Evidence:
     def _relate(self, spelled: Dict[str, List[str]]) -> None:
         """Ask for the works naming each DOI by any of its spellings, in as few queries as
         they fit, and hold what each DOI is related to."""
-        relating = self._registry.relating(
+        relating = self._crossref.relating(
             list(dict.fromkeys(s for spellings in spelled.values() for s in spellings)),
             _VERSION_OF + _SAME_WORK)
         for doi, spellings in spelled.items():
@@ -448,7 +451,7 @@ class Evidence:
         cannot be read for one of them."""
         if doi not in self._versions:
             relations = (self.record(doi) or CrossrefWork(doi, (), None, None, {}, ())).relations
-            relating = self._registry.relating(self._spelled(doi), _VERSION_OF).values()
+            relating = self._crossref.relating(self._spelled(doi), _VERSION_OF).values()
             related = [r for kind in _VERSION_OF
                        for r in [*relations.get(kind, ()), *(r for found in relating
                                                              for r in found.get(kind, ()))]]

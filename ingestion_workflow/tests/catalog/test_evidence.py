@@ -8,7 +8,6 @@ from __future__ import annotations
 import httpx
 import pytest
 from ingestion_workflow.catalog.evidence import same_work
-from ingestion_workflow.clients.crossref import CrossrefClient
 from ingestion_workflow.clients.doi_registry import DoiRegistry, RegisteredWork, Unreadable
 from ingestion_workflow.clients.pubmed import PubMedSummary, _retryable
 
@@ -257,7 +256,7 @@ def test_a_preprint_and_its_paper_are_versions_of_one_work(pubmed, preprint, pap
 
 @pytest.mark.vcr()
 def test_the_registry_tells_an_unregistered_doi_from_one_it_cannot_read():
-    registry = DoiRegistry(CrossrefClient())
+    registry = DoiRegistry()
     assert registry.work("10.137/journal.pone.0066241") is None
     assert registry.work("10.14670/hh-25-014").title.startswith("Ocular adnexal lymphomas")
     # doi.org sends it to chinadoi over plain HTTP: not followed
@@ -271,7 +270,7 @@ def test_an_agency_serving_another_host_s_certificate_cannot_be_read(monkeypatch
     bad = httpx.ConnectError(
         "[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, "
         "certificate is not valid for 'data.chinadoi.cn'.", request=request)
-    registry = DoiRegistry(CrossrefClient())
+    registry = DoiRegistry()
     asked = []
 
     def refuse(doi):
@@ -362,11 +361,6 @@ def test_titles_of_the_same_letters_are_one_title_across_two_dois():
 def test_a_two_letter_family_name_ending_another_is_another_author():
     assert not same_work(_as(first_author="Ng"), _as(first_author="Wang"))
     assert same_work(_as(first_author="Raichle"), _as(first_author="Marcus E. Raichle"))
-
-
-def test_the_registry_sends_no_contact_email():
-    registry = DoiRegistry(CrossrefClient(email="someone@example.org"))
-    assert "someone@example.org" not in str(registry._client.headers)
 
 
 @pytest.mark.vcr()

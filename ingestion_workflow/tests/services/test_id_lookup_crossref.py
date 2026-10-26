@@ -469,11 +469,13 @@ def test_an_article_crossref_was_asked_of_is_not_asked_again(service, catalog, c
     # a catalog opened again has no answers in hand, only what it was told; a request it made
     # would have no recording to play, and the article would be logged as failed
     with PubMedClient(email=EMAIL) as pubmed:
-        registry = DoiRegistry(CrossrefClient(EMAIL))
+        registry = DoiRegistry()
         with Catalog.open(catalog.root) as again:
             with caplog.at_level("WARNING"):
                 found = _looked_up(
-                    CrossrefIDLookupService(service.settings, again, Evidence(pubmed, registry)),
+                    CrossrefIDLookupService(
+                        service.settings, again,
+                        Evidence(pubmed, registry, CrossrefClient(EMAIL))),
                     again.ref(article).identifier)
         registry.close()
 
