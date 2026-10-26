@@ -1,8 +1,7 @@
 """What the DOI registration agencies say of a DOI.
 
 doi.org's citation (CSL) record is answered by whichever agency registered the DOI:
-Crossref, DataCite or mEDRA. Crossref's own record carries the relations between a
-preprint and its version of record.
+Crossref, DataCite or mEDRA.
 """
 
 from __future__ import annotations
@@ -11,13 +10,13 @@ import logging
 import threading
 import time
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, Optional, Tuple
 from urllib.parse import quote
 
 import httpx
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
-from .crossref import CROSSREF_REQUEST_LIMIT, CrossrefClient, CrossrefWork
+from .crossref import CROSSREF_REQUEST_LIMIT
 from .pubmed import in_supplement
 
 logger = logging.getLogger(__name__)
@@ -92,8 +91,7 @@ MAX_REDIRECTS = 5
 
 
 class DoiRegistry:
-    def __init__(self, crossref: CrossrefClient) -> None:
-        self._crossref = crossref
+    def __init__(self) -> None:
         # No contact email: doi.org sends a request on to whichever agency registered the
         # DOI, some of them over plain HTTP.
         self._client = httpx.Client(timeout=30, follow_redirects=False,
@@ -144,16 +142,3 @@ class DoiRegistry:
             return None
         response.raise_for_status()
         return _registered(response.json())
-
-    def relating(self, dois: Sequence[str],
-                 kinds: Sequence[str]) -> Dict[str, Dict[str, List[str]]]:
-        """For each DOI, the DOIs Crossref relates to it by one of `kinds`, from their side."""
-        return self._crossref.relating(dois, kinds)
-
-    def record(self, doi: str) -> Optional[CrossrefWork]:
-        """Crossref's own record of the DOI: its type, relations and updates."""
-        return self._crossref.record(doi)
-
-    def records(self, dois: Sequence[str]) -> Dict[str, CrossrefWork]:
-        """Crossref's records of many DOIs, by lower-case DOI; see `CrossrefClient.records`."""
-        return self._crossref.records(dois)

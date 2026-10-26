@@ -97,9 +97,9 @@ def _evidence(settings: Settings) -> Iterator[Evidence]:
             param_hint="--config")
     with PubMedClient(settings.pubmed_email, settings.pubmed_api_key,
                       tool=settings.pubmed_tool or "ingestion-workflow") as pubmed:
-        registry = DoiRegistry(CrossrefClient(settings.crossref_email))
+        registry = DoiRegistry()
         try:
-            yield Evidence(pubmed, registry)
+            yield Evidence(pubmed, registry, CrossrefClient(settings.crossref_email))
         finally:
             registry.close()
 
