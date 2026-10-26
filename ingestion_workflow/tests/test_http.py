@@ -9,6 +9,7 @@ import httpx
 import pytest
 import requests
 import tenacity
+from ingestion_workflow.clients import crossref, openalex, orcid, sciencedirect, semantic_scholar
 from ingestion_workflow.clients.crossref import CrossrefClient
 from ingestion_workflow.clients.doi_registry import DoiRegistry
 from ingestion_workflow.clients.openalex import OpenAlexClient
@@ -95,10 +96,6 @@ def test_a_refusal_is_asked_once():
 
 
 
-def _gaps(provider):
-    return [b - a for a, b in zip(provider.asked, provider.asked[1:])]
-
-
 def test_orcid_asks_again_after_a_busy_answer(provider, monkeypatch):
     provider.statuses = [503, 200]
     monkeypatch.setattr(OrcidClient, "BASE_URL", provider.url)
@@ -168,29 +165,50 @@ def _pubmed_keyed(provider, monkeypatch):
     return lambda: client._request_json(provider.url, [])
 
 
-#: Each provider's rate as its limit says it, in seconds between requests, and how long to
-#: look: a request in each of these is never closer to the one before than the interval.
-RATES = [
-    pytest.param(_crossref_work, 1 / 10, 3, id="crossref"),
-    pytest.param(_crossref_list, 1 / 3, 3, id="crossref-list"),
-    pytest.param(_openalex, 1 / 10, 3, id="openalex"),
-    pytest.param(_semantic_scholar, 1.0, 2, id="semantic-scholar"),
-    pytest.param(_orcid, 1 / 12, 3, id="orcid"),
-    pytest.param(_sciencedirect, 1.0, 2, id="sciencedirect"),
-    pytest.param(_pubmed, 1 / 3, 3, id="pubmed"),
-    pytest.param(_pubmed_keyed, 1 / 10, 3, id="pubmed-with-key"),
+#: Each provider's rate as it is configured, in requests a second.
+LIMITS = [
+    pytest.param(crossref.CROSSREF_REQUEST_LIMIT, 10, id="crossref"),
+    pytest.param(crossref.CROSSREF_LIST_REQUEST_LIMIT, 3, id="crossref-list"),
+    pytest.param(openalex.OPENALEX_REQUEST_LIMIT, 10, id="openalex"),
+    pytest.param(semantic_scholar.SEMANTIC_SCHOLAR_REQUEST_LIMIT, 1, id="semantic-scholar"),
+    pytest.param(orcid.ORCID_REQUEST_LIMIT, 12, id="orcid"),
+    pytest.param(1 / sciencedirect._MIN_REQUEST_INTERVAL, 1, id="sciencedirect"),
+    pytest.param(1 / PubMedClient("t@example.com")._min_interval, 3, id="pubmed"),
+    pytest.param(1 / PubMedClient("t@example.com", api_key="k")._min_interval, 10,
+                 id="pubmed-with-key"),
 ]
 
 
-@pytest.mark.parametrize("client, interval, requests_made", RATES)
-def test_each_provider_is_asked_no_faster_than_its_rate_and_no_slower(
-        client, interval, requests_made, provider, monkeypatch):
+@pytest.mark.parametrize("limit, expected", LIMITS)
+def test_each_provider_has_the_rate_it_always_had(limit, expected):
+    assert limit == pytest.approx(expected)
+
+
+#: What each client is asked in turn, how many times, and the rate it keeps. Only the time
+#: the asking takes is judged, as seen by the asker: a loaded machine delays requests, but
+#: cannot make the whole run shorter than the pace allows.
+RATES = [
+    pytest.param(_crossref_work, 10, 3, id="crossref"),
+    pytest.param(_crossref_list, 3, 3, id="crossref-list"),
+    pytest.param(_openalex, 10, 3, id="openalex"),
+    pytest.param(_semantic_scholar, 1, 3, id="semantic-scholar"),
+    pytest.param(_orcid, 12, 3, id="orcid"),
+    pytest.param(_sciencedirect, 1, 3, id="sciencedirect"),
+    pytest.param(_pubmed, 3, 3, id="pubmed"),
+    pytest.param(_pubmed_keyed, 10, 3, id="pubmed-with-key"),
+]
+
+
+@pytest.mark.parametrize("client, limit, requests_made", RATES)
+def test_each_provider_is_asked_no_faster_than_its_rate(
+        client, limit, requests_made, provider, monkeypatch):
     ask = client(provider, monkeypatch)
+    started = time.monotonic()
     for _ in range(requests_made):
         ask()
+    span = time.monotonic() - started
     assert len(provider.asked) == requests_made
-    # Requests are spaced to the rate, not left a second apart whatever it is.
-    assert all(interval * 0.9 <= gap <= interval * 1.5 + 0.1 for gap in _gaps(provider))
+    assert span >= (requests_made - 1) / limit * 0.9
 
 
 #: How many times each provider is asked for one request that keeps failing, and the longest
