@@ -275,6 +275,16 @@ def test_posted_content_that_is_not_a_preprint_is_not_filed_as_one(service):
     assert found.preprint_dois == ()
 
 
+@pytest.mark.vcr()
+def test_a_supplement_crossref_relates_as_the_preprint_is_an_alternative(service):
+    # AACR deposits each figshare supplement of a Cancer Research paper as posted-content,
+    # subtype other, that is-preprint-of the paper.
+    found = _looked_up(service, Identifier(doi="10.1158/0008-5472.can-17-0821"))
+
+    assert found.preprint_dois == ()
+    assert found.alternative_dois == ("10.1158/0008-5472.c.6510299", "10.1158/0008-5472.c.6510299.v1")
+
+
 # -- PubMed against the article the catalog holds ------------------------------------------------
 
 @pytest.mark.vcr()

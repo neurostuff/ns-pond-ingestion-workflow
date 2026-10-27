@@ -1,0 +1,264 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, zstd
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.1158%2F0008-5472.can-17-0821&rows=1&select=DOI%2Ctype%2Crelation%2Cupdate-to%2Calternative-id
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":1,"items":[{"DOI":"10.1158\/0008-5472.can-17-0821","type":"journal-article","relation":{"is-supplemented-by":[{"id-type":"doi","id":"10.1158\/0008-5472.22419134.v1","asserted-by":"object"},{"id-type":"doi","id":"10.1158\/0008-5472.22419140.v1","asserted-by":"object"},{"id-type":"doi","id":"10.1158\/0008-5472.22419140","asserted-by":"object"},{"id-type":"doi","id":"10.1158\/0008-5472.22419134","asserted-by":"object"},{"id-type":"doi","id":"10.1158\/0008-5472.22419137.v1","asserted-by":"object"},{"id-type":"doi","id":"10.1158\/0008-5472.22419137","asserted-by":"object"}],"has-preprint":[{"id-type":"doi","id":"10.1158\/0008-5472.c.6510299","asserted-by":"object"},{"id-type":"doi","id":"10.1158\/0008-5472.c.6510299.v1","asserted-by":"object"}]}}],"items-per-page":1,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '311'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 27 Oct 2026 16:06:10 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, zstd
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works?cursor=%2A&filter=relation.object%3A10.1158%2F0008-5472.can-17-0821%2Crelation.type%3Ais-preprint-of%2Crelation.type%3Ahas-preprint%2Crelation.type%3Ais-version-of%2Crelation.type%3Ahas-version%2Crelation.type%3Ais-same-as%2Crelation.type%3Ais-identical-to&mailto=replay%40example.com&rows=1000&select=DOI%2Crelation
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":0,"items":[],"items-per-page":1000,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 27 Oct 2026 16:06:11 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - polite-array
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '3'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, zstd
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1158/0008-5472.c.6510299?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"institution":[{"name":"American
+        Association for Cancer Research"}],"indexed":{"date-parts":[[2024,3,24]],"date-time":"2024-03-24T00:56:07Z","timestamp":1711241767496},"posted":{"date-parts":[[2023,3,31]]},"reference-count":0,"publisher":"American
+        Association for Cancer Research (AACR)","license":[{"start":{"date-parts":[[2023,3,31]],"date-time":"2023-03-31T00:00:00Z","timestamp":1680220800000},"content-version":"unspecified","delay-in-days":0,"URL":"https:\/\/creativecommons.org\/licenses\/by\/4.0\/"}],"content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"abstract":"<jats:p>&lt;div&gt;Abstract&lt;p&gt;Three-dimensional
+        (3D) tumor spheroid models have gained increased recognition as important
+        tools in cancer research and anticancer drug development. However, currently
+        available imaging approaches used in high-throughput screening drug discovery
+        platforms, for example, bright-field, phase contrast, and fluorescence microscopies,
+        are unable to resolve 3D structures deep inside (&gt;50 \u03bcm) tumor spheroids.
+        In this study, we established a label-free, noninvasive optical coherence
+        tomography (OCT) imaging platform to characterize 3D morphologic and physiologic
+        information of multicellular tumor spheroids (MCTS) growing from approximately
+        250 to 600 \u03bcm in height over 21 days. In particular, tumor spheroids
+        of two cell lines, glioblastoma (U-87MG) and colorectal carcinoma (HCT116),
+        exhibited distinctive evolutions in their geometric shapes at late growth
+        stages. Volumes of MCTS were accurately quantified using a voxel-based approach
+        without presumptions of their geometries. In contrast, conventional diameter-based
+        volume calculations assuming perfect spherical shape resulted in large quantification
+        errors. Furthermore, we successfully detected necrotic regions within these
+        tumor spheroids based on increased intrinsic optical attenuation, suggesting
+        a promising alternative of label-free viability tests in tumor spheroids.
+        Therefore, OCT can serve as a promising imaging modality to characterize morphologic
+        and physiologic features of MCTS, showing great potential for high-throughput
+        drug screening. &lt;i&gt;Cancer Res; 77(21); 6011\u201320. \u00a92017 AACR&lt;\/i&gt;.&lt;\/p&gt;&lt;\/div&gt;<\/jats:p>","DOI":"10.1158\/0008-5472.c.6510299","type":"posted-content","created":{"date-parts":[[2024,3,12]],"date-time":"2024-03-12T22:51:02Z","timestamp":1710283862000},"source":"Crossref","is-referenced-by-count":0,"title":["Data
+        from Optical Coherence Tomography Detects Necrotic Regions and Volumetrically
+        Quantifies Multicellular Tumor Spheroids"],"prefix":"10.1158","author":[{"given":"Yongyang","family":"Huang","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Shunqiang","family":"Wang","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Qiongyu","family":"Guo","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Sarah","family":"Kessel","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Ian","family":"Rubinoff","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Leo
+        Li-Ying","family":"Chan","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Peter","family":"Li","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Yaling","family":"Liu","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Jean","family":"Qiu","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Chao","family":"Zhou","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"1086","container-title":[],"original-title":[],"deposited":{"date-parts":[[2024,3,23]],"date-time":"2024-03-23T14:03:11Z","timestamp":1711202591000},"score":1,"resource":{"primary":{"URL":"https:\/\/aacr.figshare.com\/collections\/Data_from_Optical_Coherence_Tomography_Detects_Necrotic_Regions_and_Volumetrically_Quantifies_Multicellular_Tumor_Spheroids\/6510299"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2023,3,31]]},"references-count":0,"URL":"https:\/\/doi.org\/10.1158\/0008-5472.c.6510299","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.1158\/0008-5472.CAN-17-0821","asserted-by":"subject"}]},"subject":[],"published":{"date-parts":[[2023,3,31]]},"subtype":"other"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1859'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 27 Oct 2026 16:06:11 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, zstd
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1158/0008-5472.c.6510299.v1?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"institution":[{"name":"American
+        Association for Cancer Research"}],"indexed":{"date-parts":[[2024,3,24]],"date-time":"2024-03-24T00:33:57Z","timestamp":1711240437151},"posted":{"date-parts":[[2023,3,31]]},"reference-count":0,"publisher":"American
+        Association for Cancer Research (AACR)","license":[{"start":{"date-parts":[[2023,3,31]],"date-time":"2023-03-31T00:00:00Z","timestamp":1680220800000},"content-version":"unspecified","delay-in-days":0,"URL":"https:\/\/creativecommons.org\/licenses\/by\/4.0\/"}],"content-domain":{"domain":[],"crossmark-restriction":false},"short-container-title":[],"abstract":"<jats:p>&lt;div&gt;Abstract&lt;p&gt;Three-dimensional
+        (3D) tumor spheroid models have gained increased recognition as important
+        tools in cancer research and anticancer drug development. However, currently
+        available imaging approaches used in high-throughput screening drug discovery
+        platforms, for example, bright-field, phase contrast, and fluorescence microscopies,
+        are unable to resolve 3D structures deep inside (&gt;50 \u03bcm) tumor spheroids.
+        In this study, we established a label-free, noninvasive optical coherence
+        tomography (OCT) imaging platform to characterize 3D morphologic and physiologic
+        information of multicellular tumor spheroids (MCTS) growing from approximately
+        250 to 600 \u03bcm in height over 21 days. In particular, tumor spheroids
+        of two cell lines, glioblastoma (U-87MG) and colorectal carcinoma (HCT116),
+        exhibited distinctive evolutions in their geometric shapes at late growth
+        stages. Volumes of MCTS were accurately quantified using a voxel-based approach
+        without presumptions of their geometries. In contrast, conventional diameter-based
+        volume calculations assuming perfect spherical shape resulted in large quantification
+        errors. Furthermore, we successfully detected necrotic regions within these
+        tumor spheroids based on increased intrinsic optical attenuation, suggesting
+        a promising alternative of label-free viability tests in tumor spheroids.
+        Therefore, OCT can serve as a promising imaging modality to characterize morphologic
+        and physiologic features of MCTS, showing great potential for high-throughput
+        drug screening. &lt;i&gt;Cancer Res; 77(21); 6011\u201320. \u00a92017 AACR&lt;\/i&gt;.&lt;\/p&gt;&lt;\/div&gt;<\/jats:p>","DOI":"10.1158\/0008-5472.c.6510299.v1","type":"posted-content","created":{"date-parts":[[2023,3,31]],"date-time":"2023-03-31T22:04:44Z","timestamp":1680300284000},"source":"Crossref","is-referenced-by-count":0,"title":["Data
+        from Optical Coherence Tomography Detects Necrotic Regions and Volumetrically
+        Quantifies Multicellular Tumor Spheroids"],"prefix":"10.1158","author":[{"given":"Yongyang","family":"Huang","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Shunqiang","family":"Wang","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Qiongyu","family":"Guo","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Sarah","family":"Kessel","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Ian","family":"Rubinoff","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Leo
+        Li-Ying","family":"Chan","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Peter","family":"Li","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Yaling","family":"Liu","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Jean","family":"Qiu","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]},{"given":"Chao","family":"Zhou","sequence":"first","affiliation":[],"role":[{"role":"author","vocabulary":"crossref"}]}],"member":"1086","container-title":[],"original-title":[],"deposited":{"date-parts":[[2024,3,23]],"date-time":"2024-03-23T14:03:12Z","timestamp":1711202592000},"score":1,"resource":{"primary":{"URL":"https:\/\/aacr.figshare.com\/collections\/Data_from_Optical_Coherence_Tomography_Detects_Necrotic_Regions_and_Volumetrically_Quantifies_Multicellular_Tumor_Spheroids\/6510299\/1"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2023,3,31]]},"references-count":0,"URL":"https:\/\/doi.org\/10.1158\/0008-5472.c.6510299.v1","relation":{"is-preprint-of":[{"id-type":"doi","id":"10.1158\/0008-5472.CAN-17-0821","asserted-by":"subject"}]},"subject":[],"published":{"date-parts":[[2023,3,31]]},"subtype":"other"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1861'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 27 Oct 2026 16:06:11 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+version: 1
