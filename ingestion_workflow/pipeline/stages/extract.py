@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+from functools import partial
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Sequence
 
@@ -18,7 +19,7 @@ from ingestion_workflow.models.extract import text_from
 from ingestion_workflow.extractors.figure_captions import captions_digest
 
 from ..plan import StagePlan, Work
-from ..stage import Context
+from ..stage import Context, alone
 from .download import build_extractor
 
 logger = logging.getLogger(__name__)
@@ -327,19 +328,8 @@ class ExtractStage:
             if not usable:
                 continue
             downloads = [download for _, download in usable]
-            try:
-                results = self.extractor(source).extract(downloads)
-            except Exception as exc:
-                logger.warning("extract[%s] batch failed: %s", source_name, exc)
-                for work, _ in usable:
-                    yield Outcome.failure(
-                        work.article_id,
-                        self.name,
-                        source_name,
-                        f"{type(exc).__name__}: {exc}",
-                        fingerprint=work.fingerprint,
-                    )
-                continue
+            # An error here is narrowed by the scheduler to the article that raised it.
+            results = self.extractor(source).extract(downloads)
             if len(results) != len(usable):
                 logger.error(
                     "extract[%s] returned %d results for %d inputs",
@@ -348,7 +338,7 @@ class ExtractStage:
                     len(usable),
                 )
             for (work, _), content in zip(usable, results):
-                yield self._outcome(work, source_name, content)
+                yield alone(self.name, work, partial(self._outcome, work, source_name, content))
 
     def _split_usable(self, ctx: Context, works: Sequence[Work]):
         """Drop work whose downloaded files have gone missing, reporting each."""

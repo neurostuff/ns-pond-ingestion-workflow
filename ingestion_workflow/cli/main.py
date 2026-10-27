@@ -40,6 +40,7 @@ from ingestion_workflow.pipeline import (
     build,
     everything,
     narrow,
+    parse_select,
     register_manifest,
     resolve_manifest,
     run_stages,
@@ -521,15 +522,17 @@ def run(
     stage: Optional[List[str]] = typer.Option(
         None, "--stage", "-s", help=f"Stages to run: {', '.join(STAGE_ORDER)} (repeatable)."
     ),
-    select: Select = typer.Option(
-        Select.PENDING,
+    select: str = typer.Option(
+        Select.PENDING.value,
         "--select",
         help=(
             "Which articles to run. `pending` (default): anything a stage would "
             "act on -- never run, stale (its inputs or the code changed since it "
             "was built), or failed transiently and due a retry; not permanent "
             "failures, not fresh results. `new`: never attempted. `failed`: has a "
-            "retryable failure. `all`: every article."
+            "retryable failure. `errors`: kept despite an error its summary notes; "
+            "`errors:<field>` (`errors:license`) one field's. `all`: every article. "
+            "With `errors`, pair `--refresh <stage>` to redo them."
         ),
     ),
     manifest: Optional[Path] = manifest_option("Restrict to a JSONL manifest."),
@@ -560,7 +563,11 @@ def run(
 
     # A manifest's identifiers are registered.
     with _catalog(settings) as catalog:
-        selection = _select(catalog, manifest, select, stage, refresh or [], settings)
+        try:
+            mode, field = parse_select(select)
+        except ValueError as exc:
+            raise typer.BadParameter(str(exc)) from exc
+        selection = _select(catalog, manifest, mode, stage, refresh or [], settings, field)
         if limit:
             selection = Selection(selection.refs[:limit], f"{limit:,} of {selection.description}")
         typer.echo(f"selection: {selection.description}\n")
@@ -582,6 +589,7 @@ def _select(
     stage,
     refresh: Sequence[str],
     settings: Settings,
+    field: Optional[str] = None,
 ) -> Selection:
     if manifest:
         with _evidence(settings) as evidence:
@@ -590,7 +598,7 @@ def _select(
     else:
         base = everything(catalog)
     only = stage[0] if stage and len(stage) == 1 else None
-    return narrow(catalog, base, mode, only, refresh, settings, stages=stage or ())
+    return narrow(catalog, base, mode, only, refresh, settings, stages=stage or (), field=field)
 
 
 def _render(report, *, dry_run: bool) -> str:
@@ -1209,6 +1217,10 @@ def _echo_flow(funnel) -> None:
         typer.echo(f"  {step['stage']:>9}  in {step['in']:>9,}  passed {step['passed']:>9,}  "
                    f"left out {left:>9,}  waiting {waiting:>9,}  {check}"
                    + (f"  top: {top[2]:,} {top[0]}: {top[1]}" if top else ""))
+    for stage, by_field in funnel.noted.items():
+        typer.echo(f"  {stage:>9}  kept with notes: " + ", ".join(
+            f"{name} {errors:,} errors ({transient:,} transient), {missing:,} missing"
+            for name, (errors, transient, missing) in sorted(by_field.items())))
     for problem in funnel.reconcile():
         typer.echo(f"  does not reconcile: {problem}")
 

@@ -10,6 +10,8 @@ from ingestion_workflow.extractors.base import BaseExtractor, SourceExhausted, S
 from ingestion_workflow.extractors.copies import copy_of
 from ingestion_workflow.models import DownloadResult, DownloadSource, Identifiers
 from ingestion_workflow.services import download_check
+from ingestion_workflow.utils.http import transient
+from ingestion_workflow.utils.isolation import error_text
 
 from ..plan import StagePlan, Work
 from ..stage import Context
@@ -201,14 +203,14 @@ class DownloadStage:
             logger.error("download stopped: %s; %d article(s) left pending",
                          self._stopped, len(refs))
             return
-        except Exception as exc:  # a source outage must not lose the batch
-            logger.warning("download[%s] batch failed: %s", source.value, exc)
-            for ref in refs:
-                yield Outcome.failure(
-                    ref.id, self.name, source.value, f"{type(exc).__name__}: {exc}",
-                    fingerprint=fp,
-                    summary=_url_summary(with_dead_urls_kept(previous.get(ref.id, []), [])),
-                )
+        except Exception as exc:
+            # Narrowed by the scheduler to one article, which keeps the dead URLs it knew.
+            if len(refs) > 1 or transient(exc):
+                raise
+            logger.warning("download[%s] failed for %s: %s", source.value, refs[0].id, exc)
+            yield Outcome.failure(
+                refs[0].id, self.name, source.value, error_text(exc), fingerprint=fp,
+                summary=_url_summary(with_dead_urls_kept(previous.get(refs[0].id, []), [])))
             return
 
         seen = set()
@@ -221,7 +223,12 @@ class DownloadStage:
             result.url_attempts = with_dead_urls_kept(
                 previous.get(ref.id, []), result.url_attempts
             )
-            outcome = self._outcome(ref, source, result, fp)
+            try:
+                outcome = self._outcome(ref, source, result, fp)
+            except Exception as exc:  # noqa: BLE001 - this article's failure, not the batch's
+                logger.warning("download[%s] failed for %s: %s", source.value, ref.id, exc)
+                outcome = Outcome.failure(ref.id, self.name, source.value, error_text(exc),
+                                          fingerprint=fp)
             yield outcome
             if outcome.summary.get("bad_page"):
                 bad_pages[ref.id] = outcome.summary["bad_page"]

@@ -675,7 +675,10 @@ class PdfExtractor(BaseExtractor):
         try:
             return candidates(client.get_metadata(list(identifiers)))
         except PartialAnswer as exc:
-            unanswered = {i.slug: str(exc) for i in identifiers if i.slug not in exc.found}
+            # A request that failed leaves every article it did not answer; a record that
+            # could not be read, only its own.
+            unanswered = ({i.slug: str(exc) for i in identifiers if i.slug not in exc.found}
+                          if exc.causes else dict(exc.unreadable))
             raise LocationLookupFailed(str(exc), candidates(exc.found), unanswered) from exc
 
     def _openalex_pdf_candidates(self, identifiers: Identifiers) -> Dict[str, List[PdfCandidate]]:

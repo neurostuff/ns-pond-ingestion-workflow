@@ -565,6 +565,31 @@ JOIN articles r ON r.id = a.article_id WHERE r.merged_into IS NULL GROUP BY a.st
 """
 
 
+#: Per stage and field, the ok artifacts of live articles noting an error of it (`Notes`),
+#: how many of those errors are transient, and how many lack it (`missing`).
+_NOTED_SQL = """
+SELECT a.stage, e.key, COUNT(*),
+       SUM(EXISTS (SELECT 1 FROM json_each(a.summary, '$.transient') t WHERE t.value = e.key)), 0
+FROM artifacts a JOIN articles r ON r.id = a.article_id, json_each(a.summary, '$.errors') e
+WHERE r.merged_into IS NULL AND a.status = 'ok' GROUP BY a.stage, e.key
+UNION ALL
+SELECT a.stage, m.value, 0, 0, COUNT(*)
+FROM artifacts a JOIN articles r ON r.id = a.article_id, json_each(a.summary, '$.missing') m
+WHERE r.merged_into IS NULL AND a.status = 'ok' GROUP BY a.stage, m.value
+"""
+
+
+def noted(conn: sqlite3.Connection) -> Dict[str, Dict[str, List[int]]]:
+    """stage -> field -> [errors noted, of them transient, missing], for the kept records."""
+    out: Dict[str, Dict[str, List[int]]] = defaultdict(dict)
+    for stage, name, errors, transient, missing in conn.execute(_NOTED_SQL):
+        counts = out[stage].setdefault(name, [0, 0, 0])
+        counts[0] += errors
+        counts[1] += transient
+        counts[2] += missing
+    return dict(out)
+
+
 def open_readonly(catalog_root: Path | str) -> sqlite3.Connection:
     """The catalog opened read-only, so a report can never write to it."""
     path = Path(catalog_root).resolve() / "catalog.sqlite"
@@ -607,6 +632,8 @@ class Funnel:
     recorded: Dict[str, int] = field(default_factory=lambda: defaultdict(int))
     expected: Dict[str, int] = field(default_factory=dict)
     collected: List[Tuple[str, str, str, str]] = field(default_factory=list)
+    #: `noted`: what the kept records lack, and the errors that left it out.
+    noted: Dict[str, Dict[str, List[int]]] = field(default_factory=dict)
     seconds: float = 0.0
     samples: int = 0
 
@@ -756,6 +783,7 @@ def build_funnel(conn: sqlite3.Connection, *, prose: Optional[bool] = None, samp
     funnel = Funnel(graph=graph, samples=samples)
     names = {node.name for node in graph}
     funnel.expected = {stage: n for stage, n in conn.execute(_RECORDED_SQL) if stage in names}
+    funnel.noted = noted(conn)
     attempted: Dict[str, set] = defaultdict(set)
     for article_id, stage in conn.execute(_ATTEMPTED_SQL):
         attempted[article_id].add(stage)
@@ -835,6 +863,7 @@ def _encode(funnel: Funnel, catalog: str) -> dict:
         "stages": [{"name": n.name, "upstream": n.upstream, "flag": n.flag} for n in funnel.graph],
         "prose": any(n.name == "prose" for n in funnel.graph),
         "model": page_model(funnel),
+        "noted": funnel.noted,
         "flow_stages": flow_stages(funnel.graph),
         "on_attempt": sorted(_INPUT_ON_ATTEMPT),
         "not_tried": _NOT_TRIED,
@@ -1240,6 +1269,9 @@ span.click{cursor:pointer;text-decoration:underline dotted}
 <div class="scroll"><table id="stages"></table></div>
 <h2 id="reasons-title">Reasons</h2>
 <div class="scroll"><table id="reasons"></table></div>
+<h2>Kept with notes</h2>
+<div class="muted">Records that passed though a field is missing, or was left out by an error. A transient error (a provider busy or down) is retried by the next run after the retry delay; any other is redone with <code>--select errors:&lt;field&gt; --refresh &lt;stage&gt;</code>.</div>
+<div class="scroll"><table id="noted"></table></div>
 <h2>Sources</h2>
 <div class="muted">Download and extraction per source (one row per article and source, so an article counts once under every source it was tried at), the source whose text triage judged, and how many articles with that source reached upload. A bad page is a download that served something other than the article (a paywall, an error page, an empty shell, a citation stub).</div>
 <div class="scroll"><table id="sources"></table></div>
@@ -1444,7 +1476,9 @@ function trace(id){
         `<td>${x.built_from.map(u=>`<div>${esc(u.stage)}${u.source?":"+esc(u.source):""} ${esc(u.status)}, ${esc(u.fingerprint.slice(0,12)||"(none)")}, written ${esc(u.written)}${u.newer?' <span class="bad">rewritten after this record</span>':""}</div>`).join("")||"&mdash;"}</td>`+
         `<td>${esc(x.plan||"")}${x.records.filter(r=>r.freshness&&r.freshness!==x.plan).map(r=>`<div>${esc(r.source)}: ${esc(r.freshness)}</div>`).join("")}</td></tr>`).join("")+`</table>`;document.getElementById("trace-title").scrollIntoView()});
 }
-function render(){const m=M();flowView(m);sankey(m);stageTable(m);reasons(m);sourceTable(cells())}
+function notedTable(){const rows=Object.entries(D.noted||{}).flatMap(([st,by])=>Object.entries(by).map(([f,[e,t,m]])=>[st,f,e,t,m]));
+  document.getElementById("noted").innerHTML=rows.length?`<tr><th>stage</th><th>field</th><th>errors</th><th>of them transient</th><th>missing</th></tr>`+rows.map(([st,f,e,t,m])=>`<tr><td>${esc(st)}</td><td>${esc(f)}</td><td class="n">${fmt(e)}</td><td class="n">${fmt(t)}</td><td class="n">${fmt(m)}</td></tr>`).join(""):`<tr><td class="muted">None noted.</td></tr>`}
+function render(){const m=M();flowView(m);sankey(m);stageTable(m);reasons(m);sourceTable(cells());notedTable()}
 if(typeof document!=="undefined"&&document.getElementById("flow")){
 document.getElementById("trace-go").onclick=()=>{const v=document.getElementById("trace-id").value.trim();if(v)trace(v)};
 document.getElementById("trace-id").onkeydown=e=>{if(e.key==="Enter")document.getElementById("trace-go").onclick()};

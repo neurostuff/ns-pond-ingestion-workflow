@@ -18,7 +18,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
-from ingestion_workflow.models.notices import openalex_retraction, retraction_of
+from ingestion_workflow.models.notices import PartialAnswer, openalex_retraction, retraction_of
+from ingestion_workflow.utils.isolation import error_text
 
 from ..plan import StagePlan, Work
 from ..stage import Context
@@ -135,12 +136,12 @@ class NoticesStage:
             from_openalex = bool(doi) and doi in retracted
             if not (from_pubmed or from_openalex):
                 errors = [
-                    f"{name}: {type(exc).__name__}: {exc}"
+                    f"{name}: {why}"
                     for name, exc, asked in (
-                        ("pubmed", pubmed_error, pmid),
-                        ("openalex", openalex_error, doi),
+                        ("pubmed", pubmed_error, ident.pmids),
+                        ("openalex", openalex_error, [doi] if doi else []),
                     )
-                    if exc is not None and asked
+                    if (why := _failed_for(exc, asked))
                 ]
                 yield Outcome.failure(
                     work.article_id,
@@ -161,12 +162,12 @@ class NoticesStage:
             # OK only when every source asked has answered; otherwise the
             # answers received are kept but the paper is asked again next run.
             unanswered = [
-                f"{name}: {type(exc).__name__}: {exc}"
+                f"{name}: {why}"
                 for name, exc, asked, got in (
-                    ("pubmed", pubmed_error, pmid, len(answered) == len(ident.pmids)),
-                    ("openalex", openalex_error, doi, from_openalex),
+                    ("pubmed", pubmed_error, ident.pmids, len(answered) == len(ident.pmids)),
+                    ("openalex", openalex_error, [doi] if doi else [], from_openalex),
                 )
-                if exc is not None and asked and not got
+                if not got and (why := _failed_for(exc, asked))
             ]
             yield Outcome(
                 article_id=work.article_id,
@@ -190,3 +191,14 @@ class NoticesStage:
                     "corrections": len(corrections),
                 },
             )
+
+
+def _failed_for(exc: Optional[Exception], asked: Sequence[str]) -> Optional[str]:
+    """Why a source's failure leaves the article asked by `asked`, or None when it does not:
+    a request that failed leaves every article it did not answer, a record that could not
+    be read only its own."""
+    if exc is None or not asked:
+        return None
+    if isinstance(exc, PartialAnswer) and not exc.causes:
+        return next((exc.unreadable[key] for key in asked if key in exc.unreadable), None)
+    return error_text(exc)

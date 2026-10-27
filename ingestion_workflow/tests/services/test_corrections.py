@@ -483,3 +483,18 @@ def test_a_failed_batch_keeps_the_batches_before_it(monkeypatch):
     first, second = stage.execute(_ctx(), [_doi_work(RETRACTED_DOI), _doi_work("10.1/lost", aid="a2")])
     assert first.status is Status.OK and first.summary["retracted"]
     assert second.status is Status.FAILED
+
+
+def test_a_record_openalex_could_not_read_fails_only_its_own_paper():
+    """The DOIs OpenAlex does not know are not its failures."""
+    from ingestion_workflow.models.notices import PartialAnswer
+
+    unknown, odd = "10.1234/unknown", "10.1234/odd"
+    stage = _openalex_stage({}, error=PartialAnswer(
+        "OpenAlex: 1 record(s) could not be read", {}, unreadable={odd: "TypeError: list"}))
+    outs = {o.article_id: o for o in stage.execute(
+        _ctx(), [_doi_work(unknown, aid="known"), _doi_work(odd, aid="odd")])}
+
+    assert outs["odd"].status is Status.FAILED
+    assert outs["odd"].error == "openalex: TypeError: list"
+    assert outs["known"].error == "no source returned a record"

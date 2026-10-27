@@ -71,11 +71,12 @@ triage rejected keeps that reading.
   copyright line before an `other` mark. A copy from ACE is `access: unrecorded` whatever
   its page states; the page of a preprint DOI is the preprint (`submitted`, at its server).
 - When no source states one, the licence is `all-rights-reserved`, `assumed`.
-- A licence is undecided, and the metadata artifact fails with the sources named, while a
-  source before the deciding one (or, for an assumed licence, any source in the order) did
-  not answer or could not be read. It fails, too, while OpenAlex or Semantic Scholar has
-  not answered, since the copies they list are then unknown. A provider's outage spends
-  none of the article's tries: it is asked again once the retry delay has passed.
+- While a source before the deciding one (or, for an assumed licence, any source in the
+  order) did not answer or could not be read, the licence is assumed too, and the metadata
+  summary notes why under `errors.license`; so does OpenAlex or Semantic Scholar not
+  answering, since the copies they list are then unknown. A provider's outage is noted
+  `transient` and asked again once the retry delay has passed; any other error is redone
+  with `--select errors:license --refresh metadata`.
 - `bibliography.license` is the version of record's licence, or the preprint's when
   `publication_status` is `preprint`. `bibliography.oa_status` is OpenAlex's.
 - `bibliography.provider` is the metadata record's provider: `pubmed`, `semantic_scholar` or

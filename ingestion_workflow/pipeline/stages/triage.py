@@ -277,7 +277,7 @@ class TriageStage:
         if workers == 1 or len(jobs) < 4 or not path:
             gate = self.gate()
             for article_id, abstract, tables in jobs:
-                yield article_id, [judge_table(gate, t, abstract) for t in tables]
+                yield article_id, _judged_each(gate, tables, abstract)
             return
         with ProcessPoolExecutor(
             max_workers=workers,
@@ -312,15 +312,20 @@ def _judge_article(job: Tuple[str, str, List[Dict]]) -> Tuple[str, List[Dict]]:
     must not take the other few thousand articles with it.
     """
     article_id, abstract, tables = job
+    return article_id, _judged_each(_GATE, tables, abstract)
+
+
+def _judged_each(gate, tables: List[Dict], abstract: str) -> List[Dict]:
+    """Each table's verdict; one that raises is judged an error, not passed."""
     out = []
     for table in tables:
         try:
-            out.append(judge_table(_GATE, table, abstract))
+            out.append(judge_table(gate, table, abstract))
         except Exception as exc:  # noqa: BLE001 - one table must not lose the rest
             out.append({"table_id": table.get("table_id"), "passes": False,
                         "points": 0, "route": "error", "score": 0.0,
                         "reason": "%s: %s" % (type(exc).__name__, exc)})
-    return article_id, out
+    return out
 
 
 def judge_table(gate, table: Dict, abstract: str = "") -> Dict:

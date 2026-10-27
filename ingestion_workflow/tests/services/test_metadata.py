@@ -22,6 +22,11 @@ from ingestion_workflow.services.metadata import MetadataService, _filled
 from ingestion_workflow.tests import cassette_secrets
 
 
+def _licences_decided(service) -> bool:
+    """No licence of the last batch was assumed for an error."""
+    return all("license" not in notes.errors for notes in service.notes.values())
+
+
 @pytest.fixture
 def test_settings(tmp_path):
     """Create test settings with API keys."""
@@ -531,7 +536,7 @@ class TestLicences:
         held = {extracted.slug: [_held("pmc", "pmc_tdm_manuscript", identifier)]}
         found = _enrich(service, [extracted], held)
 
-        assert service.undecided == {}
+        assert "license" not in service.notes[extracted.slug].errors
         meta = found[extracted.slug]
         assert _license(meta.copy_licenses["pmc"]) == {
             "license_id": "all-rights-reserved", "determination": "stated",
@@ -590,7 +595,7 @@ class TestLicences:
         service = MetadataService(_licence_settings(tmp_path))
         meta = _enrich(service, [extracted])[extracted.slug]
 
-        assert service.undecided == {}
+        assert "license" not in service.notes[extracted.slug].errors
         assert (meta.license.determination, meta.license.stated_by) == ("stated", "crossref")
         assert meta.license.stated_as.startswith("http://creativecommons.org/licenses/")
 
@@ -610,7 +615,7 @@ class TestLicences:
         meta = _enrich(service, [extracted], {extracted.slug: [ace]})[extracted.slug]
 
         assumed = {"license_id": "all-rights-reserved", "determination": "assumed"}
-        assert service.undecided == {}
+        assert _licences_decided(service)
         assert (_license(meta.license), _license(meta.copy_licenses["ace"])) == (assumed, assumed)
         # OpenAlex calls it closed, and lists its submitted versions at HAL and Toulouse
         # with no licence; Semantic Scholar lists HAL's PDF; the publisher's is ACE's.
@@ -660,6 +665,25 @@ def test_a_provider_that_does_not_answer_is_noted_for_each_article_it_left(tmp_p
     assert _Unavailable.paths and all(p.startswith("/works?filter=") for p in _Unavailable.paths)
 
 
+def test_a_record_a_provider_could_not_read_is_noted_for_its_article_alone(tmp_path):
+    """The rest of the answer is kept, and the article is not taken for an outage."""
+    from ingestion_workflow.models.notices import PartialAnswer
+
+    good, bad = Identifier(doi="10.1234/good"), Identifier(doi="10.1234/bad")
+
+    class Client:
+        def get_metadata(self, identifiers):
+            raise PartialAnswer("one record", {good.slug: ArticleMetadata(title="Good")},
+                                unreadable={bad.slug: "TypeError: odd author"})
+
+    unanswered = {}
+    found = MetadataService(_licence_settings(tmp_path))._cached(
+        "pubmed", Client(), [good, bad], unanswered)
+    assert list(found) == [good.slug]
+    assert unanswered == {
+        bad.slug: {"pubmed": "could not read its record (TypeError: odd author)"}}
+
+
 TDM_CASSETTE = "TestLicences.test_a_tdm_manuscript_of_an_openly_licensed_article.yaml"
 NOTHING_CASSETTE = "TestLicences.test_nothing_stated_anywhere_is_an_assumed_all_rights_reserved.yaml"
 ALZ = Identifier(pmid="35820077", pmcid="PMC10518222", doi="10.1002/alz.12697")
@@ -688,7 +712,7 @@ def test_a_manuscript_and_a_copy_of_no_known_version_never_take_the_vor_s_licenc
     service = MetadataService(_licence_settings(tmp_path))
     meta = _enrich(service, [_content(ALZ)], {ALZ.slug: held})[ALZ.slug]
 
-    assert service.undecided == {}
+    assert _licences_decided(service)
     assumed = {"license_id": "all-rights-reserved", "determination": "assumed"}
     assert {k: _license(v) for k, v in meta.copy_licenses.items()} == {
         "pdf": assumed, "europepmc": assumed}
@@ -696,18 +720,19 @@ def test_a_manuscript_and_a_copy_of_no_known_version_never_take_the_vor_s_licenc
 
 
 @pytest.mark.vcr(TDM_CASSETTE)
-def test_an_unreadable_own_record_leaves_its_copy_undecided(tmp_path):
+def test_an_unreadable_own_record_leaves_its_copy_assumed(tmp_path):
     record = tmp_path / "pmc_cloud.json"
     record.write_text('{"license_code": ', encoding="utf-8")
     held = [_copy("pmc", "pmc", "am", access="tdm_grant",
                   files=[COPIES / "pmc_tdm_manuscript" / "article.xml", record])]
     service = MetadataService(_licence_settings(tmp_path))
-    _enrich(service, [_content(ALZ, DownloadSource.PMC)], {ALZ.slug: held})
+    found = _enrich(service, [_content(ALZ, DownloadSource.PMC)], {ALZ.slug: held})
 
-    undecided = service.undecided[ALZ.slug]
-    assert str(undecided) == ("the licence of the pmc copy is undecided: "
-                              "its own record could not be read")
-    assert undecided.sources == ("own",)
+    assert found[ALZ.slug].copy_licenses["pmc"].determination == "assumed"
+    notes = service.notes[ALZ.slug]
+    assert notes.errors["license"] == ("the licence of the pmc copy is assumed: "
+                                       "its own record could not be read")
+    assert notes.transient == set()  # read again only when asked
 
 
 class _Unavailable(BaseHTTPRequestHandler):
@@ -740,17 +765,18 @@ def unavailable():
 
 
 @pytest.mark.vcr(NOTHING_CASSETTE, ignore_localhost=True)
-def test_crossref_down_leaves_a_licence_it_comes_before_undecided(tmp_path, unavailable):
+def test_crossref_down_leaves_a_licence_it_comes_before_assumed(tmp_path, unavailable):
     """Semantic Scholar and OpenAlex answer as recorded; Crossref does not."""
     service = MetadataService(_licence_settings(tmp_path))
     service._crossref_client.BASE_URL = unavailable + "/works/"
     held = [_copy("ace", "publisher", "vor", access="unrecorded")]
     found = _enrich(service, [_content(APA, DownloadSource.ACE)], {APA.slug: held})
 
-    assert found[APA.slug].license is None
-    undecided = service.undecided[APA.slug]
-    assert str(undecided) == "the licence of the ace copy is undecided: crossref did not answer"
-    assert (undecided.sources, undecided.outage) == (("crossref",), True)
+    assert found[APA.slug].copy_licenses["ace"].determination == "assumed"
+    notes = service.notes[APA.slug]
+    assert notes.errors["license"] == (
+        "the licence of the ace copy is assumed: crossref did not answer")
+    assert notes.transient == {"license"}
 
 
 @pytest.mark.vcr(NOTHING_CASSETTE, ignore_localhost=True)
@@ -759,9 +785,10 @@ def test_openalex_down_leaves_the_listed_copies_unknown(tmp_path, unavailable):
     service._openalex_client.BASE_URL = unavailable
     _enrich(service, [_content(APA, DownloadSource.ACE)])
 
-    undecided = service.undecided[APA.slug]
-    assert str(undecided) == "the copies the providers list are unknown: openalex did not answer"
-    assert undecided.sources == ("openalex",)
+    notes = service.notes[APA.slug]
+    assert notes.errors["license"] == (
+        "the copies the providers list are unknown: openalex did not answer")
+    assert notes.transient >= {"license"}
 
 
 class _HalfAnswered(BaseHTTPRequestHandler):
@@ -829,7 +856,7 @@ def test_another_copy_s_open_licence_is_not_the_version_of_record_s(tmp_path, do
     service = MetadataService(_licence_settings(tmp_path))
     meta = _enrich(service, [_content(identifier)])[identifier.slug]
 
-    assert service.undecided == {}
+    assert _licences_decided(service)
     assert (meta.license.license_id, meta.license.stated_by, meta.license.stated_as) == (
         "other", "crossref", stated_as)
     # the open copies keep their own licences
@@ -871,7 +898,7 @@ def test_a_page_s_bare_copyright_line_ranks_after_another_copy_s_record(tmp_path
 
     elsevier = {"license_id": "all-rights-reserved", "determination": "stated",
                 "stated_by": "elsevier", "stated_as": "© 2017 Elsevier Ltd. All rights reserved."}
-    assert service.undecided == {}
+    assert _licences_decided(service)
     # tried first, the ACE copy still takes Elsevier's record before its page's line
     assert {k: _license(v) for k, v in meta.copy_licenses.items()} == {
         "ace": elsevier, "elsevier": elsevier}
@@ -894,7 +921,7 @@ def test_a_page_s_footer_does_not_override_crossref_s_licence(tmp_path):
     meta = _enrich(service, [_content(identifier, DownloadSource.ACE)],
                    {identifier.slug: held})[identifier.slug]
 
-    assert service.undecided == {}
+    assert _licences_decided(service)
     found = _license(meta.copy_licenses["ace"])
     assert (found["license_id"], found["stated_by"]) == ("cc-by-nc-sa", "crossref")
     assert _license(meta.license) == found
@@ -911,7 +938,7 @@ def test_a_page_s_licence_mark_is_its_copy_s_own_record(tmp_path):
     meta = _enrich(service, [_content(identifier, DownloadSource.ACE)],
                    {identifier.slug: held})[identifier.slug]
 
-    assert service.undecided == {}
+    assert _licences_decided(service)
     assert _license(meta.copy_licenses["ace"]) == {
         "license_id": "cc-by-nc-nd", "determination": "stated", "stated_by": "publisher_page",
         "stated_as": "http://creativecommons.org/licenses/by-nc-nd/4.0/"}
@@ -936,7 +963,7 @@ def test_a_reported_manuscript_takes_the_licence_the_page_names_for_it(tmp_path)
     stated_by_page = {"license_id": "all-rights-reserved", "determination": "stated",
                       "stated_by": "publisher_page",
                       "stated_as": "Copyright © 2015 Elsevier Ltd. All rights reserved."}
-    assert service.undecided == {}
+    assert _licences_decided(service)
     assert _license(meta.copy_licenses["ace"]) == _license(meta.license) == stated_by_page
     manuscripts = [(c.url, _license(c.license)) for c in meta.reported_copies
                    if c.version == "am"]
@@ -961,7 +988,7 @@ def test_the_page_speaks_for_the_paper_when_no_other_source_does(tmp_path):
     stated_by_page = {"license_id": "all-rights-reserved", "determination": "stated",
                       "stated_by": "publisher_page",
                       "stated_as": "© 2017 Elsevier Ltd. All rights reserved."}
-    assert service.undecided == {}
+    assert _licences_decided(service)
     assert _license(meta.copy_licenses["ace"]) == _license(meta.license) == stated_by_page
 
 
@@ -975,7 +1002,7 @@ def test_a_paper_with_a_preprint_takes_its_journal_s_licence(tmp_path, vcr):
     meta = service.enrich_metadata([_content(identifier)], {}, {identifier.slug: dois}, NOW)[
         identifier.slug]
 
-    assert service.undecided == {}
+    assert _licences_decided(service)
     assert sorted(meta.raw_metadata["crossref"]) == dois
     assert (meta.license.stated_by, meta.license.stated_as) == (
         "crossref", "http://creativecommons.org/licenses/by/4.0/")
@@ -1038,7 +1065,7 @@ def test_two_journal_dois_are_a_catalog_conflict_and_nothing_is_asked(test_setti
     found = service.enrich_metadata(
         [content], {}, {content.slug: ["10.1016/j.biopsych.2010.04.013", "10.1038/mp.2009.121"]},
         NOW)
-    assert found == {} and service.undecided == {}
+    assert found == {} and _licences_decided(service)
     assert service.conflicts == {content.slug: (
         "catalog conflict: the article holds two DOIs of a version of record, "
         "10.1016/j.biopsych.2010.04.013 and 10.1038/mp.2009.121; its aliases need repair")}
@@ -1112,10 +1139,10 @@ def test_a_refused_request_is_not_an_outage(tmp_path):
     finally:
         server.shutdown()
         server.server_close()
-    undecided = service.undecided[APA.slug]
-    assert str(undecided).startswith(
-        "the licence of the ace copy is undecided: crossref refused the request (400")
-    assert (undecided.sources, undecided.outage) == (("crossref",), False)
+    notes = service.notes[APA.slug]
+    assert notes.errors["license"].startswith(
+        "the licence of the ace copy is assumed: crossref refused the request (400")
+    assert notes.transient == set()
 
 
 def test_an_article_with_two_dois_is_embargoed_until_the_first_deposit_starts():
@@ -1213,8 +1240,8 @@ def test_pubmed_s_publication_types_are_kept_when_semantic_scholar_filled_the_re
     assert meta.raw_metadata["pubmed"]["MedlineCitation"]["Article"]["Language"] == "eng"
 
 
-def test_an_article_whose_record_raises_fails_alone(metadata_service, monkeypatch):
-    """The other article in its batch is still finished."""
+def _batch_failing_for_bad(monkeypatch, name, error):
+    """A good and a bad article, with `name` raising `error` for the bad one."""
     import ingestion_workflow.services.metadata as service
 
     good, bad = Identifier(doi="10.1234/good"), Identifier(doi="10.1234/bad")
@@ -1222,17 +1249,44 @@ def test_an_article_whose_record_raises_fails_alone(metadata_service, monkeypatc
                 for i in (good, bad)]
     answers = {i.slug: ArticleMetadata(title=i.doi, authors=[Author(name="A")])
                for i in (good, bad)}
-    decide_authors = service._decide_authors
+    decide = getattr(service, name)
 
     def failing_for_bad(metadata, *args):
         if metadata.title == bad.doi:
-            raise ValueError("cannot read its authors")
-        return decide_authors(metadata, *args)
+            raise error
+        return decide(metadata, *args)
 
-    monkeypatch.setattr(service, "_decide_authors", failing_for_bad)
+    monkeypatch.setattr(service, name, failing_for_bad)
+    return good, bad, contents, answers
+
+
+def test_an_article_whose_licences_raise_is_kept_with_them_assumed(metadata_service, monkeypatch):
+    """The other article in its batch is still finished."""
+    good, bad, contents, answers = _batch_failing_for_bad(
+        monkeypatch, "_decide_licenses", ValueError("cannot read its licences"))
     with patch.object(metadata_service._s2_client, "get_metadata", return_value=answers):
         found = _enrich(metadata_service, contents)
 
-    assert list(found) == [good.slug]
-    assert metadata_service.failed == {bad.slug: "ValueError: cannot read its authors"}
-    assert bad.slug not in metadata_service.records_read
+    assert list(found) == [good.slug, bad.slug]
+    assert (found[bad.slug].license.license_id, found[bad.slug].license.determination) == (
+        "all-rights-reserved", "assumed")
+    assert metadata_service.notes[bad.slug].errors == {
+        "license": "licences: ValueError: cannot read its licences"}
+    assert "license" not in metadata_service.notes[good.slug].errors
+
+
+def test_an_article_whose_authors_raise_is_kept_without_authors(metadata_service, monkeypatch):
+    """The rest of its record stands, and the error is noted."""
+    good, bad, contents, answers = _batch_failing_for_bad(
+        monkeypatch, "_decide_authors", ValueError("cannot read its authors"))
+    with patch.object(metadata_service._s2_client, "get_metadata", return_value=answers):
+        found = _enrich(metadata_service, contents)
+
+    assert list(found) == [good.slug, bad.slug]
+    assert found[bad.slug].title == bad.doi
+    assert (found[bad.slug].authors, found[bad.slug].authors_provider) == ([], None)
+    assert [a.name for a in found[good.slug].authors] == ["A"]
+    assert metadata_service.notes[bad.slug].errors == {
+        name: "authors: ValueError: cannot read its authors"
+        for name in ("authors", "affiliations", "corresponding_authors")}
+    assert not metadata_service.notes[good.slug].errors

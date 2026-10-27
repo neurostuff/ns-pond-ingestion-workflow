@@ -9,9 +9,11 @@ from typing import Dict, Iterator, List, Optional, Sequence
 from ingestion_workflow.catalog import ArticleRef, Outcome, Status
 from ingestion_workflow.clients.model_server import ModelUnavailable
 from ingestion_workflow.utils.console import progress_bar
+from ingestion_workflow.utils.http import transient
+from ingestion_workflow.utils.isolation import error_text
 
-from .plan import StagePlan
-from .stage import NO_TEXT, TAKE_BACK_REASONS, Context, Stage
+from .plan import StagePlan, Work
+from .stage import NO_TEXT, TAKE_BACK_REASONS, Context, Stage, failure_of
 
 logger = logging.getLogger(__name__)
 
@@ -144,9 +146,9 @@ def _execute_batch(ctx: Context, stage: Stage, plan: StagePlan, report: StageRep
     """Run one planned batch and record its outcomes, those made before a stop included."""
     outcomes: List[Outcome] = []
     try:
-        outcomes.extend(stage.execute(ctx, plan.pending))
+        _execute_alone(ctx, stage, plan.pending, outcomes)
     finally:
-        ctx.catalog.record(outcomes)
+        _record(ctx, outcomes)
         report.ok += sum(1 for o in outcomes if o.status is Status.OK)
         # A skip is a decision about the article, not a failure: it is counted with the
         # plans' skips, and is not retried.
@@ -155,6 +157,55 @@ def _execute_batch(ctx: Context, stage: Stage, plan: StagePlan, report: StageRep
                              if o.status not in (Status.OK, Status.SKIPPED))
         report.taken_back += sum(1 for o in outcomes if o.error in TAKE_BACK_REASONS
                                  or (o.status is Status.OK and o.fingerprint == NO_TEXT))
+
+
+def _execute_alone(ctx: Context, stage: Stage, works: List[Work], outcomes: List[Outcome]) -> None:
+    """Run `works`, adding their outcomes to `outcomes`, so that one work's error fails it
+    alone: when the stage raises, the works it had not answered for are run again in halves
+    until the one that raises is alone. A provider busy or down (`transient`) is no work's
+    failure, so the works it left are left pending. A stop (`ModelUnavailable`) is raised."""
+    start = len(outcomes)
+    try:
+        outcomes.extend(stage.execute(ctx, works))
+        return
+    except ModelUnavailable:
+        raise
+    except Exception as exc:  # noqa: BLE001 - narrowed to the work that raised
+        answered = {(o.article_id, o.source) for o in outcomes[start:]}
+        rest = [w for w in works if (w.article_id, w.source) not in answered]
+        if transient(exc):
+            logger.warning("%s: %d article(s) left pending: %s", stage.name, len(rest), exc)
+            return
+        if len(rest) == 1:
+            outcomes.append(failure_of(stage.name, rest[0], exc))
+            return
+        if not rest:
+            logger.warning("%s raised after answering for its whole batch: %s", stage.name, exc)
+            return
+    half = len(rest) // 2
+    for part in (rest[:half], rest[half:]):
+        _execute_alone(ctx, stage, part, outcomes)
+
+
+def _record(ctx: Context, outcomes: List[Outcome]) -> None:
+    """Record the outcomes together; when that fails, each alone, and an outcome that cannot
+    be recorded is recorded as its article's failure in its place."""
+    try:
+        ctx.catalog.record(outcomes)
+        return
+    except Exception as exc:  # noqa: BLE001 - narrowed to the outcome that cannot be
+        logger.warning("recording %d outcomes failed (%s); recording each alone",
+                       len(outcomes), exc)
+    for index, outcome in enumerate(outcomes):
+        try:
+            ctx.catalog.record([outcome])
+        except Exception as exc:  # noqa: BLE001 - this outcome's failure alone
+            logger.warning("%s of %s could not be recorded: %s", outcome.stage,
+                           outcome.article_id, exc)
+            outcomes[index] = Outcome.failure(outcome.article_id, outcome.stage, outcome.source,
+                                              f"record: {error_text(exc)}",
+                                              fingerprint=outcome.fingerprint)
+            ctx.catalog.record([outcomes[index]])
 
 
 def _plan_batch(ctx: Context, stage: Stage, batch: List[ArticleRef]) -> StagePlan:

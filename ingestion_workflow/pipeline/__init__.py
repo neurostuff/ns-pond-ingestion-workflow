@@ -7,6 +7,7 @@ from .selection import (
     Selection,
     everything,
     narrow,
+    parse_select,
     register_manifest,
     resolve_manifest,
 )
@@ -29,5 +30,6 @@ __all__ = [
     "everything",
     "register_manifest",
     "narrow",
+    "parse_select",
     "run_stages",
 ]

@@ -18,6 +18,7 @@ from ingestion_workflow.models.metadata import ArticleMetadata
 from ingestion_workflow.models.notices import PartialAnswer
 from ingestion_workflow.utils.doi import normalize_doi
 from ingestion_workflow.utils.http import Pacer, retry_transient
+from ingestion_workflow.utils.isolation import error_text, parsed_each
 
 #: The polite pool's single-record limit. Sending an email puts a client in it; there is no key.
 CROSSREF_REQUEST_LIMIT = 10
@@ -120,21 +121,27 @@ class CrossrefClient:
 
         A list query cannot return `subtype`, which tells a posted-content preprint from a
         working paper, so a posted-content work is left out, as is a DOI a filter cannot
-        hold and one Crossref does not know: `record` asks for each of those singly.
+        hold and one Crossref does not know: `record` asks for each of those singly. So is
+        one whose record cannot be read, which is logged.
         """
         found = self.works(dois, "DOI,type,relation,update-to,alternative-id")
-        return {doi: _work_of(item) for doi, item in found.items()
-                if item.get("type") != "posted-content"}
+
+        def record(pair: Tuple[str, Dict]) -> Optional[Tuple[str, CrossrefWork]]:
+            doi, item = pair
+            return None if item.get("type") == "posted-content" else (doi, _work_of(item))
+
+        return parsed_each(found.items(), record, "Crossref work", key=lambda pair: pair[0])[0]
 
     def works(self, dois: Sequence[str], select: str) -> Dict[str, Dict]:
         """The `select`ed fields of each of many DOIs' records, by list queries, keyed by
         the DOI in lower case. A DOI a filter cannot hold, or one Crossref does not know,
-        is left out."""
+        is left out, as is an item with no readable DOI, which is logged."""
         found: Dict[str, Dict] = {}
         for batch in packed("doi", [d for d in dict.fromkeys(dois) if filterable(d)]):
-            for item in self._list({"filter": ",".join(f"doi:{d}" for d in batch),
-                                    "select": select, "rows": str(len(batch))}):
-                found[item["DOI"].lower()] = item
+            items = self._list({"filter": ",".join(f"doi:{d}" for d in batch),
+                                "select": select, "rows": str(len(batch))})
+            found.update(parsed_each(items, lambda item: (item["DOI"].lower(), item),
+                                     "Crossref work")[0])
         return found
 
     @retry_transient(4, 16, wait=_wait)
@@ -157,6 +164,7 @@ class CrossrefClient:
         Crossref matches a related DOI by case, so each spelling is asked as given and
         answered under it. Many are asked in one query, the `relation.object` filters
         being alternatives; a DOI with a comma cannot be put in a filter and has no answer.
+        A relating record that cannot be read is logged and passed over.
         """
         found: Dict[str, Dict[str, List[str]]] = {d: {} for d in dois}
         types = [f"relation.type:{kind}" for kind in kinds]
@@ -169,17 +177,23 @@ class CrossrefClient:
                       "select": "DOI,relation", "rows": str(CROSSREF_PAGE_ROWS), "cursor": "*"}
             if self.email:
                 params["mailto"] = self.email
+
+            def relate(item: Dict, asked: Dict[str, List[str]] = asked) -> None:
+                this = item["DOI"].lower()
+                named: List[Tuple[str, str]] = []
+                for kind, related in (item.get("relation") or {}).items():
+                    if kind not in kinds:
+                        continue
+                    # a record may name one DOI twice under a kind; it is related once
+                    named += [(doi, kind) for doi in sorted({
+                        doi for r in related for doi in asked.get((r.get("id") or "").lower(), ())
+                    })]
+                for doi, kind in named:
+                    found[doi].setdefault(kind, []).append(this)
+
             while True:
                 message = self._page(params)
-                for item in message["items"]:
-                    for kind, related in (item.get("relation") or {}).items():
-                        if kind not in kinds:
-                            continue
-                        # a record may name one DOI twice under a kind; it is related once
-                        named = {doi for r in related
-                                 for doi in asked.get((r.get("id") or "").lower(), ())}
-                        for doi in sorted(named):
-                            found[doi].setdefault(kind, []).append(item["DOI"].lower())
+                parsed_each(message["items"], relate, "Crossref work")
                 if len(message["items"]) < CROSSREF_PAGE_ROWS:
                     break
                 params["cursor"] = message["next-cursor"]
@@ -193,7 +207,8 @@ class CrossrefClient:
         licence deposit, or one Crossref does not know, has an empty list. A DOI a filter
         cannot hold (`filterable`) is asked for singly, as is a DOI a filter query did not
         return. A failed request raises `PartialAnswer` with the records of
-        the requests that did not fail.
+        the requests that did not fail; so does a work whose record cannot be read, its
+        articles in `unreadable`.
         """
         wanted: Dict[str, List[Identifier]] = {}
         for identifier in identifiers:
@@ -201,6 +216,7 @@ class CrossrefClient:
             if doi:
                 wanted.setdefault(doi, []).append(identifier)
         answered: Dict[str, List[Dict]] = {}
+        unread: Dict[str, str] = {}
         failures: List[BaseException] = []
         failed: set = set()
         for batch in packed("doi", [doi for doi in wanted if filterable(doi)]):
@@ -211,30 +227,50 @@ class CrossrefClient:
                 failures.append(exc)
                 failed.update(batch)
                 continue
-            for work in works:
+
+            def asked(work: Dict, batch: List[str] = batch) -> Optional[str]:
                 doi = normalize_doi(work.get("DOI"))
-                if doi in batch:
-                    answered[doi] = list(work.get("license") or [])
+                return doi if doi in batch else None
+
+            read, bad = parsed_each(
+                works, lambda work: (doi, _deposits(work)) if (doi := asked(work)) else None,
+                "Crossref work", key=asked)
+            answered.update(read)
+            unread.update(bad)
         # A DOI a filter query leaves out is asked for singly: Crossref may know it under
         # a spelling the filter does not match.
         for doi in wanted:
-            if doi not in answered and doi not in failed:
+            if doi not in answered and doi not in failed and doi not in unread:
                 try:
                     work = self.work(doi)
                 except Exception as exc:  # noqa: BLE001
                     failures.append(exc)
                     continue
-                answered[doi] = list((work or {}).get("license") or [])
+                try:
+                    answered[doi] = _deposits(work or {})
+                except Exception as exc:  # noqa: BLE001 - this work alone
+                    unread[doi] = error_text(exc)
         results = {
             identifier.slug: ArticleMetadata(
                 title="", source=MetadataSource.crossref.value,
                 raw_metadata={"crossref": {"license": entries}})
             for doi, entries in answered.items() for identifier in wanted[doi]
         }
+        unreadable = {identifier.slug: why for doi, why in unread.items()
+                      for identifier in wanted[doi]}
         if failures:
             first = failures[0]
-            raise PartialAnswer(f"Crossref: {type(first).__name__}: {first}", results, failures)
+            raise PartialAnswer(f"Crossref: {type(first).__name__}: {first}", results, failures,
+                                unreadable)
+        if unreadable:
+            raise PartialAnswer(f"Crossref: {len(unreadable)} record(s) could not be read",
+                                results, unreadable=unreadable)
         return results
+
+
+def _deposits(work: Dict) -> List[Dict]:
+    """A work's licence deposits."""
+    return list(work.get("license") or [])
 
 
 def _work_of(message: Dict) -> CrossrefWork:

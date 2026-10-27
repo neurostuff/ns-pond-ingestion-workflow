@@ -241,3 +241,81 @@ def test_an_analyses_skip_is_reported_as_skipped_not_failed(tmp_path, evidence):
     assert (analyses.ok, analyses.skipped, analyses.failed, analyses.taken_back) == (0, 1, 0, 0)
     assert "failed" not in analyses.line()
     assert "1 skipped" in analyses.line()
+
+
+class RaisingStage(CountingStage):
+    """Raises for the articles in `raise_for`, as a stage whose code meets their data does."""
+
+    def __init__(self, raise_for: Sequence[str], error: Exception = ValueError("odd record")):
+        super().__init__()
+        self.raise_for = set(raise_for)
+        self.error = error
+        self.batches: List[int] = []
+
+    def execute(self, ctx, works: List[Work]) -> Iterator[Outcome]:
+        self.batches.append(len(works))
+        if any(work.ref.identifier.pmid in self.raise_for for work in works):
+            raise self.error
+        yield from super().execute(ctx, works)
+
+
+def test_an_article_that_raises_fails_alone(env):
+    settings, catalog, refs = env
+    stage = RaisingStage(raise_for=["3", "7"])
+    report = run_stages(Context(settings, catalog), [stage], refs)
+
+    assert (report.stages["download"].ok, report.stages["download"].failed) == (8, 2)
+    stored = catalog.artifacts([r.id for r in refs], "download")
+    failed = {r.identifier.pmid: stored[r.id]["test"].error for r in refs
+              if not stored[r.id]["test"].ok}
+    assert failed == {"3": "ValueError: odd record", "7": "ValueError: odd record"}
+
+
+def test_a_provider_down_leaves_the_batch_pending(env):
+    import requests
+
+    settings, catalog, refs = env
+    stage = RaisingStage(raise_for=["3"], error=requests.ConnectionError("refused"))
+    report = run_stages(Context(settings, catalog), [stage], refs)
+
+    assert (report.stages["download"].ok, report.stages["download"].failed) == (0, 0)
+    assert stage.batches == [10]  # not narrowed: no article is at fault
+    assert catalog.artifacts([r.id for r in refs], "download") == {}
+
+
+def test_an_outcome_that_cannot_be_recorded_fails_alone(env):
+    settings, catalog, refs = env
+
+    class Unrecordable(CountingStage):
+        def execute(self, ctx, works):
+            for outcome in super().execute(ctx, works):
+                if outcome.summary.get("pmid") == "4":
+                    outcome.summary["odd"] = object()
+                yield outcome
+
+    report = run_stages(Context(settings, catalog), [Unrecordable()], refs)
+
+    assert (report.stages["download"].ok, report.stages["download"].failed) == (9, 1)
+    four = next(r for r in refs if r.identifier.pmid == "4")
+    error = catalog.artifact(four.id, "download", "test").error
+    assert error.startswith("record: TypeError:")
+
+
+@pytest.mark.parametrize("notes, redone", [
+    ({"errors": {"license": "crossref did not answer"}, "transient": ["license"]}, True),
+    ({"errors": {"authors": "authors: ValueError: odd"}}, False),
+])
+def test_only_a_transient_note_is_retried_on_its_own(env, notes, redone):
+    """After the retry delay; any other noted error is redone only when asked."""
+    from datetime import datetime, timedelta, timezone
+
+    settings, catalog, refs = env
+    stage = CountingStage()
+    fp = stage.fingerprint_for()
+    catalog.record([Outcome(article_id=refs[0].id, stage="download", source="test",
+                            fingerprint=fp, payload={}, summary=notes)])
+    soon = Context(settings, catalog)
+    later = Context(settings, catalog, now=datetime.now(timezone.utc) + timedelta(days=2))
+
+    assert run_stages(soon, [stage], refs[:1]).stages["download"].fresh == 1
+    assert run_stages(later, [stage], refs[:1]).stages["download"].ok == int(redone)

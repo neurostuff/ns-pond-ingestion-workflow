@@ -80,6 +80,7 @@ ingest run --stage download --stage extract        # just these stages
 ingest run --manifest staging/manifests/vbm.jsonl  # just these articles
 ingest run --select new                            # only never-attempted ones
 ingest run --select failed                         # retry transient failures
+ingest run --select errors:authors --refresh metadata  # redo records kept despite an error
 ingest run --limit 50                              # a small bite
 ingest run --refresh analyses                      # recompute despite the cache
 ingest run --dry-run                               # print the plan, change nothing

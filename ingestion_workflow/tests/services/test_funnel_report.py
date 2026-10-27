@@ -991,3 +991,24 @@ def test_every_exit_sync_and_upload_record_is_counted_under_its_own_reason(tmp_p
     # Each category has words of its own on the page.
     for _, _, reason in expected.values():
         assert any(key in reason for key, _ in GLOSSARY), reason
+
+
+def test_the_kept_records_notes_are_counted_by_field(tmp_path, evidence):
+    """A failed record's notes are not counted: it was not kept."""
+    from ingestion_workflow.catalog import Notes
+    from ingestion_workflow.services.funnel_report import noted
+
+    cat = Catalog.open(tmp_path / "catalog")
+    a, b, c = (cat.register(Identifier(pmid=str(n)), evidence).id for n in (1, 2, 3))
+    outage, authors = Notes(missing=["abstract"]), Notes(missing=["authors", "abstract"])
+    outage.error("license", "crossref did not answer", transient=True)
+    authors.error("authors", "authors: ValueError: odd")
+    cat.record([_ok(a, "metadata", **outage.summary()), _ok(b, "metadata", **authors.summary()),
+                Outcome.failure(c, "metadata", "", "catalog conflict", summary=outage.summary())])
+    cat.close()
+    conn = open_readonly(tmp_path / "catalog")
+    try:
+        assert noted(conn) == {"metadata": {"license": [1, 1, 0], "authors": [1, 0, 1],
+                                            "abstract": [0, 0, 2]}}
+    finally:
+        conn.close()

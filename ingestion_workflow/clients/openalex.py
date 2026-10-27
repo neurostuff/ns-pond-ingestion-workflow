@@ -5,7 +5,18 @@ from __future__ import annotations
 import logging
 import re
 from dataclasses import dataclass
-from typing import Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Hashable,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+)
 from urllib.parse import quote, urljoin
 
 import requests
@@ -20,6 +31,7 @@ from ingestion_workflow.services.corresponding_authors.common import words
 from ingestion_workflow.utils import authors as author_ids
 from ingestion_workflow.utils.doi import normalize_doi
 from ingestion_workflow.utils.http import Pacer, retry_transient
+from ingestion_workflow.utils.isolation import parsed_each
 
 logger = logging.getLogger(__name__)
 
@@ -51,16 +63,44 @@ def _identifier_from(
 def _identified(works: Optional[Iterable[Dict]]) -> Iterator[Tuple[Dict, Identifier]]:
     """Each work with its identifier.
 
-    A work with a malformed id is logged and skipped whole, its other ids too; nothing
-    is kept for it, so its article is asked about again on the next run.
+    A work with a malformed id, or one that cannot be read, is logged and skipped whole,
+    its other ids too; nothing is kept for it, so its article is asked about again on the
+    next run.
     """
     for work in works or []:
-        ids = work.get("ids") or {}
         try:
-            yield work, _identifier_from({**ids, "doi": ids.get("doi") or work.get("doi")})
-        except ValueError as exc:
-            logger.warning("OpenAlex work %s (doi %s, pmid %s): %s; its ids not used",
-                           ids.get("openalex"), ids.get("doi"), ids.get("pmid"), exc)
+            ids = work.get("ids") or {}
+            identifier = _identifier_from({**ids, "doi": ids.get("doi") or work.get("doi")})
+        except Exception as exc:  # noqa: BLE001 - this work alone
+            logger.warning("OpenAlex work %s: %s; its ids not used", _described(work), exc)
+            continue
+        yield work, identifier
+
+
+def _described(work: Any) -> str:
+    try:
+        ids = work.get("ids") or {}
+        return f"{ids.get('openalex')} (doi {ids.get('doi')}, pmid {ids.get('pmid')})"
+    except Exception:  # noqa: BLE001 - a work too broken to name
+        return repr(work)[:200]
+
+
+def _works_by(
+    works: Optional[Iterable[Any]],
+    asked: Callable[[Any], Optional[Hashable]],
+    read: Callable[[Any], Any],
+) -> Tuple[Dict[Hashable, Any], Dict[Hashable, str]]:
+    """`read` of each work, by what `asked` says it answers for (None: nothing asked, and
+    `read` giving None leaves it out), and the error of each that could not be read."""
+
+    def parse(work):
+        key = asked(work)
+        if key is None:
+            return None
+        value = read(work)
+        return None if value is None else (key, value)
+
+    return parsed_each(works or [], parse, "OpenAlex work", key=asked)
 
 
 def _metadata_from(work: Dict) -> ArticleMetadata:
@@ -227,6 +267,11 @@ def _locations_from(work: Dict) -> List[OaLocation]:
     return locations
 
 
+def _retracted(work: Dict) -> Optional[bool]:
+    flag = work.get("is_retracted")
+    return None if flag is None else bool(flag)
+
+
 def _abstract(inverted: Optional[Dict[str, List[int]]]) -> Optional[str]:
     """OpenAlex ships an abstract as word -> positions, for licensing reasons."""
     if not inverted:
@@ -302,16 +347,17 @@ class OpenAlexClient:
             }
             payload = self._request_openalex(params)
 
-            for work, found in _identified(payload.get("results")):
+            def enrich(pair: Tuple[Dict, Identifier]) -> None:
+                work, found = pair
                 ids_data = work.get("ids", {})
                 key = ids_data.get(id_type)
                 if not key:
-                    continue
+                    return
 
                 identifier = identifiers.lookup(key, key=id_type)
 
                 if identifier is None:
-                    continue
+                    return
 
                 openalex_id = ids_data.get("openalex")
                 if openalex_id:
@@ -328,15 +374,17 @@ class OpenAlexClient:
                         setattr(identifier, kind, found.asking(kind))
                 identifier.normalize()
 
+            parsed_each(_identified(payload.get("results")), enrich, "OpenAlex work")
+
         return identifiers
 
     def get_locations(self, identifiers: Identifiers) -> Dict[str, List[OaLocation]]:
         """Every location OpenAlex lists per identifier slug, best open copy first.
 
         A work OpenAlex returns gets an entry even when it has no location, so an
-        absent slug means OpenAlex does not know the article. A failed batch
-        raises `LocationLookupFailed`, naming the articles in it, rather than
-        reading as "no open-access copy".
+        absent slug means OpenAlex does not know the article. A failed batch, or a
+        work whose record cannot be read, raises `LocationLookupFailed`, naming the
+        articles in it, rather than reading as "no open-access copy".
         """
         found: Dict[str, List[OaLocation]] = {}
         failed: Dict[str, str] = {}
@@ -363,11 +411,15 @@ class OpenAlexClient:
                             failed[identifier.slug] = f"{id_type} batch of {len(batch)}: {exc}"
                     continue
 
-                for work in payload.get("results", []) or []:
+                def asked(work, id_type=id_type):
                     key = (work.get("ids", {}) or {}).get(id_type)
                     identifier = identifiers.lookup(key, key=id_type) if key else None
-                    if identifier is not None:
-                        found[identifier.slug] = _locations_from(work)
+                    return None if identifier is None else identifier.slug
+
+                listed, unread = _works_by(payload.get("results"), asked, _locations_from)
+                found.update(listed)
+                failed.update({slug: f"its record could not be read: {why}"
+                               for slug, why in unread.items()})
         # an article a later batch (by its other id) answered for did not fail
         failed = {slug: why for slug, why in failed.items() if slug not in found}
         if failed:
@@ -391,7 +443,13 @@ class OpenAlexClient:
         works = self._request_openalex({**params, "filter": f"title.search:{words}"}).get(
             "results"
         ) or self._request_openalex({**params, "search": words}).get("results")
-        return [(identifier, _metadata_from(work)) for work, identifier in _identified(works)]
+        found: List[Tuple[Identifier, ArticleMetadata]] = []
+        for work, identifier in _identified(works):
+            try:
+                found.append((identifier, _metadata_from(work)))
+            except Exception as exc:  # noqa: BLE001 - this work alone
+                logger.warning("OpenAlex work %s could not be read: %s", _described(work), exc)
+        return found
 
     def search(self, filter: str) -> Identifiers:
         """Every work matching the /works `filter`, by cursor to the last page.
@@ -422,14 +480,18 @@ class OpenAlexClient:
         """Article metadata by DOI or PMID, keyed by identifier slug.
 
         The provider of last resort: it indexes preprints and articles that
-        neither Semantic Scholar nor PubMed carries.
+        neither Semantic Scholar nor PubMed carries. A work whose record cannot be read
+        fails its own article alone: `PartialAnswer` carries the rest, and that article
+        in `unreadable`.
         """
         results: Dict[str, ArticleMetadata] = {}
+        unreadable: Dict[str, str] = {}
         for id_type in ("doi", "pmid"):
             wanted = {
                 str(identifier.asking(id_type)): identifier
                 for identifier in identifiers
                 if identifier.asking(id_type) and identifier.slug not in results
+                and identifier.slug not in unreadable
             }
             values = list(wanted)
             for index in range(0, len(values), OPENALEX_BATCH_LOOKUP_SIZE):
@@ -442,23 +504,29 @@ class OpenAlexClient:
                         "select": _METADATA_FIELDS,
                     }
                 )
-                answered = set()
-                for work in payload.get("results", []) or []:
+                def asked(work, wanted=wanted, id_type=id_type):
                     value = _identifier_from(work.get("ids"), [id_type]).asking(id_type)
-                    identifier = wanted.get(str(value)) if value else None
-                    if identifier is not None:
-                        answered.add(str(value))
-                        results[identifier.slug] = _metadata_from(work)
+                    return str(value) if value and str(value) in wanted else None
+
+                read, unread = _works_by(payload.get("results"), asked, _metadata_from)
                 if id_type == "doi":
-                    for doi, work in self._works_asked_singly(batch, answered, _METADATA_FIELDS):
-                        results[wanted[doi].slug] = _metadata_from(work)
+                    singly = self._works_asked_singly(batch, {*read, *unread}, _METADATA_FIELDS)
+                    more, more_unread = _works_by(singly, lambda pair: pair[0],
+                                                  lambda pair: _metadata_from(pair[1]))
+                    read, unread = {**read, **more}, {**unread, **more_unread}
+                results.update({wanted[value].slug: found for value, found in read.items()})
+                unreadable.update({wanted[value].slug: why for value, why in unread.items()})
+        if unreadable:
+            raise PartialAnswer(f"OpenAlex: {len(unreadable)} record(s) could not be read",
+                                results, unreadable=unreadable)
         return results
 
     def get_cited_works(self, dois: List[str]) -> Dict[str, Dict]:
         """Authors, year and PMID of works by DOI, keyed by canonical DOI.
 
         For a reference list that names its entries by DOI alone (most of
-        Crossref's): author-year citations are matched on these.
+        Crossref's): author-year citations are matched on these. A work whose record
+        cannot be read is logged and left out.
         """
         found: Dict[str, Dict] = {}
         wanted = sorted({d for d in (normalize_doi(d) for d in dois) if d})
@@ -472,14 +540,16 @@ class OpenAlexClient:
                     "select": "ids,publication_year,authorships",
                 }
             )
-            answered = set()
-            for work in payload.get("results", []) or []:
-                ids = _identifier_from(work.get("ids"), ["doi"])
-                if ids.asking_doi in batch:
-                    answered.add(ids.asking_doi)
-                    found[ids.asking_doi] = _cited_work(work)
-            for doi, work in self._works_asked_singly(batch, answered, "ids,publication_year,authorships"):
-                found[doi] = _cited_work(work)
+            def asked(work, batch=batch):
+                doi = _identifier_from(work.get("ids"), ["doi"]).asking_doi
+                return doi if doi in batch else None
+
+            read, unread = _works_by(payload.get("results"), asked, _cited_work)
+            found.update(read)
+            singly = self._works_asked_singly(batch, {*read, *unread},
+                                              "ids,publication_year,authorships")
+            found.update(_works_by(singly, lambda pair: pair[0],
+                                   lambda pair: _cited_work(pair[1]))[0])
         return found
 
     def get_retractions(self, dois: List[str]) -> Dict[str, bool]:
@@ -487,9 +557,11 @@ class OpenAlexClient:
 
         A DOI OpenAlex does not return is absent, not False. A failed batch raises
         `PartialAnswer`, which carries the earlier batches' results, rather than
-        reading as "not retracted".
+        reading as "not retracted"; so, after every batch, does a work whose record
+        cannot be read, naming it in `unreadable`.
         """
         found: Dict[str, bool] = {}
+        unreadable: Dict[str, str] = {}
         wanted = sorted({d for d in (normalize_doi(d) for d in dois) if d})
         for index in range(0, len(wanted), OPENALEX_RETRACTION_BATCH_SIZE):
             batch = wanted[index : index + OPENALEX_RETRACTION_BATCH_SIZE]
@@ -503,20 +575,26 @@ class OpenAlexClient:
                     }
                 )
             except Exception as exc:  # noqa: BLE001 - carries the earlier batches
-                raise PartialAnswer(str(exc), found) from exc
-            answered = set()
-            for work in payload.get("results", []) or []:
+                raise PartialAnswer(str(exc), found, (exc,), unreadable) from exc
+
+            def asked(work, batch=batch):
                 doi = normalize_doi(work.get("doi"))
-                if doi in batch and work.get("is_retracted") is not None:
-                    answered.add(doi)
-                    found[doi] = bool(work["is_retracted"])
+                return doi if doi in batch else None
+
+            read, unread = _works_by(payload.get("results"), asked, _retracted)
+            found.update(read)
+            unreadable.update(unread)
             try:
-                singly = self._works_asked_singly(batch, answered, "is_retracted")
+                singly = self._works_asked_singly(batch, {*read, *unread}, "is_retracted")
             except Exception as exc:  # noqa: BLE001 - carries the earlier batches
-                raise PartialAnswer(str(exc), found) from exc
-            for doi, work in singly:
-                if work.get("is_retracted") is not None:
-                    found[doi] = bool(work["is_retracted"])
+                raise PartialAnswer(str(exc), found, (exc,), unreadable) from exc
+            read, unread = _works_by(singly, lambda pair: pair[0],
+                                     lambda pair: _retracted(pair[1]))
+            found.update(read)
+            unreadable.update(unread)
+        if unreadable:
+            raise PartialAnswer(f"OpenAlex: {len(unreadable)} record(s) could not be read",
+                                found, unreadable=unreadable)
         return found
 
     def _works_asked_singly(

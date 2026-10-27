@@ -21,9 +21,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
-from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
+from ingestion_workflow.catalog import ArticleRef, Artifact, Notes, Outcome, Status, fingerprint
 from ingestion_workflow.models import DownloadResult, DownloadSource, ExtractedContent
-from ingestion_workflow.models.metadata import ArticleMetadata, is_sufficient
+from ingestion_workflow.models.metadata import ArticleMetadata, is_sufficient, missing_fields
 from ingestion_workflow.services.corresponding_authors import PDF_SOURCES
 
 from ..plan import StagePlan, Work
@@ -139,8 +139,9 @@ class MetadataStage:
                 continue
             count, last = attempts.get(ref.id, (0, None))
             if existing is not None and (existing.summary or {}).get("unanswered"):
-                # A provider's outage is not the article's failure: it waits out the
-                # retry delay but spends none of its tries.
+                # A provider's outage, which an earlier version failed the article for, is
+                # not the article's failure: it waits out the retry delay but spends none of
+                # its tries.
                 count = 0
             if not ctx.should_attempt(existing, count, last, self.name):
                 plan.permanent += 1
@@ -204,20 +205,12 @@ class MetadataStage:
 
         # Outside the batch's own failures: no article can be decided until it is configured.
         self.service.require_licence_providers()
-        try:
-            found = self.service.enrich_metadata(contents, held, dois, ctx.now)
-        except Exception as exc:
-            logger.warning("metadata batch failed: %s", exc)
-            for work in by_slug.values():
-                yield Outcome.failure(
-                    work.article_id, self.name, "", f"{type(exc).__name__}: {exc}",
-                    fingerprint=work.fingerprint,
-                )
-            return
+        # An error here is narrowed by the scheduler to the article that raised it.
+        found = self.service.enrich_metadata(contents, held, dois, ctx.now)
 
         for slug, work in by_slug.items():
             metadata = found.get(slug)
-            error = self.service.conflicts.get(slug) or self.service.failed.get(slug)
+            error = self.service.conflicts.get(slug)
             if error:
                 yield Outcome.failure(work.article_id, self.name, "", error,
                                       fingerprint=work.fingerprint)
@@ -226,14 +219,6 @@ class MetadataStage:
                 yield Outcome.failure(
                     work.article_id, self.name, "", "no provider returned metadata",
                     fingerprint=work.fingerprint,
-                )
-                continue
-            if slug in self.service.undecided:
-                undecided = self.service.undecided[slug]
-                yield Outcome.failure(
-                    work.article_id, self.name, "", str(undecided),
-                    fingerprint=work.fingerprint,
-                    summary={"unanswered": list(undecided.sources)} if undecided.outage else None,
                 )
                 continue
             payload = metadata.to_dict()
@@ -256,8 +241,16 @@ class MetadataStage:
                    "corresponding_authors": sum(1 for a in metadata.authors if a.corresponding),
                    "sufficient": is_sufficient(metadata),
                    "digests": metadata_digests(payload),
-                   "records": records},
+                   "records": records}
+                | _notes(self.service.notes.get(slug), metadata).summary(),
             )
+
+
+def _notes(notes: Optional[Notes], metadata: ArticleMetadata) -> Notes:
+    """The service's notes on the record, with the wanted fields it lacks."""
+    notes = notes or Notes()
+    notes.missing = missing_fields(metadata)
+    return notes
 
 
 def _text_of(ctx: Context, extraction: Optional[Artifact]):

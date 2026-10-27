@@ -315,3 +315,24 @@ def _present(value) -> bool:
     if isinstance(value, str):
         return bool(value.strip())
     return bool(value)
+
+
+#: The fields a record is wanted to have, which `missing_fields` names when it lacks one.
+WANTED = ("authors", "affiliations", "ror", "corresponding_authors", "abstract", "journal",
+          "publication_year")
+
+
+def missing_fields(metadata: ArticleMetadata) -> List[str]:
+    """The `WANTED` fields the record lacks: `affiliations` when no author has one, `ror`
+    when no affiliation names a ROR institution."""
+    affiliations = [a for author in metadata.authors for a in author.affiliations]
+    present = {
+        "authors": bool(metadata.authors),
+        "affiliations": bool(affiliations),
+        "ror": any(i.ror for a in affiliations for i in a.institutions or []),
+        "corresponding_authors": any(author.corresponding for author in metadata.authors),
+        "abstract": _present(metadata.abstract),
+        "journal": _present(metadata.journal),
+        "publication_year": _present(metadata.publication_year),
+    }
+    return [name for name in WANTED if not present[name]]

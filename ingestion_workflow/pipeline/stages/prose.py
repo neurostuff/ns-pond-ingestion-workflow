@@ -21,6 +21,7 @@ from ..plan import StagePlan, Work
 from ..stage import (
     NO_DIGESTS,
     Context,
+    alone,
     metadata_fingerprint,
     take_back_or_block,
     taking_back,
@@ -199,8 +200,6 @@ class ProseStage:
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
-        from ingestion_workflow.clients.prose_coordinates import clean_answer
-        from ingestion_workflow.services.prose_text import NORMALIZED_VERSION
 
         back, works = taking_back(self.name, works)
 
@@ -257,54 +256,64 @@ class ProseStage:
                 yield Outcome.failure(work.article_id, self.name, "", unreadable[work.article_id],
                                       fingerprint=work.fingerprint)
                 continue
-            out, errors, coords, named, unwritten = [], 0, 0, 0, 0
-            reused, read_again, made_by = [], collections.Counter(), collections.Counter()
-            passages = zip(payload.get("passages", []), read[work.article_id],
-                           plans[work.article_id])
-            for i, (p, passage, (earlier, reason, inputs)) in enumerate(passages):
-                if earlier is not None:
-                    raw, error, by = earlier["answer"], None, earlier["producer"]
-                    reused.append(i)
-                else:
-                    (raw, error), by = next(answered), current
-                    read_again[reason] += 1
-                made_by[by["prompt_version"]] += 1
-                answer = clean_answer(raw, passage.text) if error is None else {}
-                errors += error is not None
-                points = [q for a in answer.get("analyses", []) for q in a["points"]]
-                coords += len(points)
-                named += len(answer.get("analyses", []))
-                unwritten += sum(a.get("unwritten", 0)
-                                 for a in answer.get("analyses", []) + answer.get("omitted", []))
-                out.append({"span": p["span"], "from_legend": passage.from_legend,
-                            "text": passage.text, "heading": passage.heading,
-                            "space": answer.get("space") or p.get("space"),
-                            "analyses": answer.get("analyses", []),
-                            "omitted": answer.get("omitted", []), "error": error, "answer": raw,
-                            "producer": by, "inputs": inputs})
-            if errors:
-                # A partly read article would be cached as complete; retry it whole.
-                yield Outcome.failure(work.article_id, self.name, "",
-                                      f"{errors} of {len(out)} passages failed",
-                                      fingerprint=work.fingerprint)
-                continue
-            yield Outcome(
-                article_id=work.article_id, stage=self.name, source="", status=Status.OK,
-                fingerprint=work.fingerprint,
-                payload={"source": payload.get("source"), "read": payload.get("read"),
-                         "space": payload.get("space"), "text_sha256": payload.get("text_sha256"),
-                         "passages": out},
-                # the passages these `span`s and indices are into, for roles to check
-                summary={"source": payload.get("source"), "read": payload.get("read"),
-                         "passages": len(out),
-                         "coordinates": coords, "analyses": named, "unwritten": unwritten,
-                         # which passages took an earlier answer of their text, the
-                         # normalization that matched it, and why each other one was read
-                         "reused": reused, "text_normalization": NORMALIZED_VERSION,
-                         "read_again": dict(read_again), "prompt_versions": dict(made_by),
-                         "read_fingerprint": read_fps[work.article_id],
-                         "passages_read": work.upstream.fingerprint},
-            )
+            passages = list(zip(payload.get("passages", []), read[work.article_id],
+                                plans[work.article_id]))
+            # Taken before the article is made, so one that raises leaves the rest theirs.
+            fresh = [next(answered) for _, _, (earlier, _, _) in passages if earlier is None]
+            yield alone(self.name, work, lambda: self._outcome(
+                work, payload, passages, iter(fresh), current, read_fps[work.article_id]))
+
+    def _outcome(self, work, payload, passages, fresh, current, read_fingerprint) -> Outcome:
+        """The article's outcome from its passages' answers: `fresh` the model's, in order,
+        for those without an earlier one."""
+        from ingestion_workflow.clients.prose_coordinates import clean_answer
+        from ingestion_workflow.services.prose_text import NORMALIZED_VERSION
+
+        out, errors, coords, named, unwritten = [], 0, 0, 0, 0
+        reused, read_again, made_by = [], collections.Counter(), collections.Counter()
+        for i, (p, passage, (earlier, reason, inputs)) in enumerate(passages):
+            if earlier is not None:
+                raw, error, by = earlier["answer"], None, earlier["producer"]
+                reused.append(i)
+            else:
+                (raw, error), by = next(fresh), current
+                read_again[reason] += 1
+            made_by[by["prompt_version"]] += 1
+            answer = clean_answer(raw, passage.text) if error is None else {}
+            errors += error is not None
+            points = [q for a in answer.get("analyses", []) for q in a["points"]]
+            coords += len(points)
+            named += len(answer.get("analyses", []))
+            unwritten += sum(a.get("unwritten", 0)
+                             for a in answer.get("analyses", []) + answer.get("omitted", []))
+            out.append({"span": p["span"], "from_legend": passage.from_legend,
+                        "text": passage.text, "heading": passage.heading,
+                        "space": answer.get("space") or p.get("space"),
+                        "analyses": answer.get("analyses", []),
+                        "omitted": answer.get("omitted", []), "error": error, "answer": raw,
+                        "producer": by, "inputs": inputs})
+        if errors:
+            # A partly read article would be cached as complete; retry it whole.
+            return Outcome.failure(work.article_id, self.name, "",
+                                   f"{errors} of {len(out)} passages failed",
+                                   fingerprint=work.fingerprint)
+        return Outcome(
+            article_id=work.article_id, stage=self.name, source="", status=Status.OK,
+            fingerprint=work.fingerprint,
+            payload={"source": payload.get("source"), "read": payload.get("read"),
+                     "space": payload.get("space"), "text_sha256": payload.get("text_sha256"),
+                     "passages": out},
+            # the passages these `span`s and indices are into, for roles to check
+            summary={"source": payload.get("source"), "read": payload.get("read"),
+                     "passages": len(out),
+                     "coordinates": coords, "analyses": named, "unwritten": unwritten,
+                     # which passages took an earlier answer of their text, the
+                     # normalization that matched it, and why each other one was read
+                     "reused": reused, "text_normalization": NORMALIZED_VERSION,
+                     "read_again": dict(read_again), "prompt_versions": dict(made_by),
+                     "read_fingerprint": read_fingerprint,
+                     "passages_read": work.upstream.fingerprint},
+        )
 
     def _inputs(self, passage_text: str, metadata: Optional[str]) -> list:
         """What a passage's answer is read from, as study_schema InputRefs: its text first,

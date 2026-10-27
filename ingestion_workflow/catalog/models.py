@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Iterable, List, Optional, Set
 
 from ingestion_workflow.models.ids import Identifier
 
@@ -81,6 +81,31 @@ class Artifact:
     @property
     def ok(self) -> bool:
         return self.status is Status.OK
+
+
+@dataclass
+class Notes:
+    """What an article's output lacks and why, in the form every stage's summary keeps it:
+    `errors` by the field each error left out, the `transient` ones among them (a provider
+    busy or down, which the plans retry on their own), and the wanted fields `missing`."""
+
+    errors: Dict[str, str] = field(default_factory=dict)
+    transient: Set[str] = field(default_factory=set)
+    missing: List[str] = field(default_factory=list)
+
+    def error(self, fields: Iterable[str] | str, text: str, *, transient: bool = False) -> None:
+        """Note `text` under each of `fields`; a field's first error is kept."""
+        for name in [fields] if isinstance(fields, str) else fields:
+            if name not in self.errors:
+                self.errors[name] = text[:2000]
+                if transient:
+                    self.transient.add(name)
+
+    def summary(self) -> Dict[str, Any]:
+        """The summary's `errors`, `transient` and `missing`, each only when there is one."""
+        return {name: value for name, value in (("errors", dict(self.errors)),
+                                                ("transient", sorted(self.transient)),
+                                                ("missing", list(self.missing))) if value}
 
 
 @dataclass

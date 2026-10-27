@@ -27,7 +27,6 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
 from urllib.parse import urlsplit
 
-import requests
 from lxml import etree
 from pubget._utils import article_bucket_from_pmcid
 from study_schema.models.paper_parse import (
@@ -39,6 +38,7 @@ from study_schema.models.paper_parse import (
     ReportedCopy,
 )
 
+from ingestion_workflow.catalog import Notes
 from ingestion_workflow.clients.crossref import CrossrefClient
 from ingestion_workflow.clients.openalex import OpenAlexClient, _locations_from
 from ingestion_workflow.clients.orcid import OrcidClient
@@ -51,14 +51,19 @@ from ingestion_workflow.extractors.utils import safe_hash_stem
 from ingestion_workflow.models.download import DownloadCopy, DownloadSource
 from ingestion_workflow.models.extract import ExtractedContent
 from ingestion_workflow.models.ids import Identifier
-from ingestion_workflow.models.metadata import ArticleMetadata, Author, CorrespondingAuthor
+from ingestion_workflow.models.metadata import (
+    ArticleMetadata,
+    Author,
+    CorrespondingAuthor,
+    missing_fields,
+)
 from ingestion_workflow.models.notices import PartialAnswer
 from ingestion_workflow.services import corresponding_authors
 from ingestion_workflow.services.citations import JATS_SOURCES
 from ingestion_workflow.services.corresponding_authors.common import surname
 from ingestion_workflow.services.licenses import (
+    ASSUMED,
     HELD,
-    LICENSE_PROVIDERS,
     OWN,
     PAGE,
     Statement,
@@ -73,6 +78,7 @@ from ingestion_workflow.services.licenses import (
 )
 from ingestion_workflow.services.paper_parse import article_identifiers
 from ingestion_workflow.utils.http import transient
+from ingestion_workflow.utils.isolation import error_text
 from ingestion_workflow.utils.preprints import is_preprint_doi
 
 logger = logging.getLogger(__name__)
@@ -108,12 +114,10 @@ class MetadataService:
         self._openalex_client: Optional[OpenAlexClient] = None
         self._crossref_client = CrossrefClient(settings.crossref_email)
         self._orcid_client = OrcidClient()
-        #: Article slug -> why its licences could not be decided, for the last batch.
-        self.undecided: Dict[str, Undecided] = {}
         #: Article slug -> the catalog conflict it was not asked about for, for the last batch.
         self.conflicts: Dict[str, str] = {}
-        #: Article slug -> the error its record could not be finished for, for the last batch.
-        self.failed: Dict[str, str] = {}
+        #: Article slug -> what its record lacks and why, for the last batch.
+        self.notes: Dict[str, Notes] = {}
         #: Article slug -> the cache files its metadata was made from (a provider's record of
         #: each identifier asked, an author's ORCID record), for the last batch.
         self.records_read: Dict[str, List[Path]] = {}
@@ -159,15 +163,14 @@ class MetadataService:
         Returns
         -------
         dict
-            Mapping from slug to ArticleMetadata, each with its licences decided,
-            except an article `undecided` names, with why: a source that could state
-            one of its licences did not answer or could not be read. An article whose
-            record raised is left out, and `failed` says why.
+            Mapping from slug to ArticleMetadata, each with its licences decided. What a
+            record lacks for an error is noted in `notes`: a licence a source that could
+            state it did not answer for, or that could not be read, is assumed all rights
+            reserved; authors that could not be decided are left empty.
         """
         self.require_licence_providers()
-        self.undecided = {}
         self.conflicts = {}
-        self.failed = {}
+        self.notes = {}
         self.records_read = {}
         if not extracted_contents:
             return {}
@@ -302,9 +305,11 @@ class MetadataService:
                     )
 
         by_slug = {item.slug: item for item in extracted_contents}
-        for slug, metadata in list(results.items()):
+        for slug, metadata in results.items():
+            item = by_slug[slug]
+            notes = self.notes.setdefault(slug, Notes())
+            waiting: Dict[str, str] = {}
             try:
-                item = by_slug[slug]
                 if item.identifier is None:
                     continue
                 main_ident = _by_journal_doi(item.identifier, journal[slug])
@@ -335,21 +340,34 @@ class MetadataService:
                     metadata.raw_metadata["openalex"] = works
                 ids = article_identifiers(item.identifier, metadata)
                 try:
-                    _decide_licenses(metadata, ids, item.identifier.asking_doi, crossref_by_doi, works,
-                                     paper_work, answers.get(slug, {}), held.get(slug, ()), waiting, now)
-                except Undecided as exc:
-                    self.undecided[slug] = exc
-                _decide_authors(metadata, answers.get(slug, {}), openalex.get(main_ident.slug),
-                                _decide_corresponding(metadata, held.get(slug, ()),
-                                                      openalex.get(main_ident.slug)))
+                    _decide_licenses(metadata, ids, item.identifier.asking_doi, crossref_by_doi,
+                                     works, paper_work, answers.get(slug, {}), held.get(slug, ()),
+                                     waiting, now, notes)
+                except Exception as exc:
+                    logger.warning("licences of %s failed: %s", slug, exc)
+                    _assume_licenses(metadata, held.get(slug, ()))
+                    notes.error("license", f"licences: {error_text(exc)}")
+                try:
+                    _decide_authors(metadata, answers.get(slug, {}), openalex.get(main_ident.slug),
+                                    _decide_corresponding(metadata, held.get(slug, ()),
+                                                          openalex.get(main_ident.slug)))
+                except Exception as exc:
+                    logger.warning("authors of %s failed: %s", slug, exc)
+                    metadata.authors, metadata.correspondence_emails = [], []
+                    metadata.authors_provider = None
+                    notes.error(AUTHOR_FIELDS, f"authors: {error_text(exc)}")
             except Exception as exc:
-                # One article's record failing leaves the rest of its batch to finish.
+                # The record stands as the providers gave it, its licences assumed.
                 logger.warning("metadata of %s failed: %s", slug, exc)
-                self.failed[slug] = f"{type(exc).__name__}: {exc}"
-                self.records_read.pop(slug, None)
-                del results[slug]
-        for slug, read in zip(results, self._add_orcid_emails(results.values())):
-            self.records_read[slug].extend(read)
+                _assume_licenses(metadata, held.get(slug, ()))
+                notes.error(("license", *AUTHOR_FIELDS), f"metadata: {error_text(exc)}")
+                self.records_read.setdefault(slug, [])
+            finally:
+                if item.identifier is not None:
+                    _note_unanswered(notes, metadata, waiting)
+        for slug, read in zip(results, self._add_orcid_emails(results.values(),
+                                                              [self.notes[s] for s in results])):
+            self.records_read.setdefault(slug, []).extend(read)
         return results
 
     def _cache_file(self, name: str, slug: str) -> Path:
@@ -357,30 +375,33 @@ class MetadataService:
         return (self.settings.get_cache_dir("metadata") / PROVIDER_CACHE_DIRS[name]
                 / f"{slug}.json")
 
-    def _add_orcid_emails(self, records: Iterable[ArticleMetadata]) -> List[List[Path]]:
+    def _add_orcid_emails(self, records: Iterable[ArticleMetadata],
+                          notes: Optional[Sequence[Notes]] = None) -> List[List[Path]]:
         """Give each corresponding author no source gave an address the public ones on
         their ORCID record, each iD asked once and cached. A record that cannot be read
-        leaves its author without, and is asked again on a later run. Returns, for each
+        leaves its author without, noted in the article's `notes`. Returns, for each
         record, the cache files it read."""
         cache_dir = self.settings.get_cache_dir("metadata") / ORCID_CACHE_DIR
         cache_dir.mkdir(parents=True, exist_ok=True)
         read: List[List[Path]] = []
-        for record in records:
+        records = list(records)
+        for record, noted in zip(records, notes or [Notes() for _ in records]):
             read.append([])
             for author in record.authors:
                 if not (author.corresponding and author.orcid and not author.emails):
                     continue
                 cache_file = cache_dir / f"{author.orcid}.json"
                 read[-1].append(cache_file)
-                if cache_file.exists():
-                    author.emails = json.loads(cache_file.read_text())
-                    continue
                 try:
+                    if cache_file.exists():
+                        author.emails = json.loads(cache_file.read_text())
+                        continue
                     author.emails = self._orcid_client.emails(author.orcid)
-                except requests.RequestException as exc:
+                    cache_file.write_text(json.dumps(author.emails))
+                except Exception as exc:  # noqa: BLE001 - this author's addresses alone
                     logger.warning("ORCID did not give %s's addresses: %s", author.orcid, exc)
-                    continue
-                cache_file.write_text(json.dumps(author.emails))
+                    noted.error("orcid_emails", f"orcid {author.orcid}: {error_text(exc)}",
+                                transient=transient(exc))
         return read
 
     def require_licence_providers(self) -> None:
@@ -424,14 +445,14 @@ class MetadataService:
     ) -> Dict[str, ArticleMetadata]:
         """A provider's metadata, from `<cache>/metadata/<dir>/<slug>.json` when held.
 
-        A licence provider whose request fails is noted in `unanswered` for each article
-        it did not answer for.
+        A provider whose request fails, or whose record of an article cannot be read, is
+        noted in `unanswered` for each article it did not answer for.
         """
         cache_dir = self._cache_file(name, "").parent
         cache_dir.mkdir(parents=True, exist_ok=True)
 
         def missed(slugs, why: str) -> None:
-            if unanswered is not None and name in _LICENSE_PROVIDERS:
+            if unanswered is not None:
                 for slug in slugs:
                     unanswered.setdefault(slug, {})[name] = why
 
@@ -457,7 +478,11 @@ class MetadataService:
                 logger.error("%s metadata request failed: %s", name, exc)
                 fresh_results = exc.found if isinstance(exc, PartialAnswer) else {}
                 causes = exc.causes if isinstance(exc, PartialAnswer) else (exc,)
-                missed([i.slug for i in uncached if i.slug not in fresh_results],
+                unreadable = exc.unreadable if isinstance(exc, PartialAnswer) else {}
+                for slug, why in unreadable.items():
+                    missed([slug], f"{UNREADABLE} ({why})")
+                missed([i.slug for i in uncached
+                        if causes and i.slug not in fresh_results and i.slug not in unreadable],
                        OUTAGE if causes and all(map(_outage, causes))
                        else f"refused the request ({causes[0] if causes else exc})")
             for slug, metadata in fresh_results.items():
@@ -755,9 +780,38 @@ PROVIDER_CACHE_DIRS = {
 #: The public addresses on each ORCID record asked about, by iD.
 ORCID_CACHE_DIR = "orcid-emails"
 
-_LICENSE_PROVIDERS = {source.value for source in LICENSE_PROVIDERS}
 #: Why a provider that was down, or busy, left an article: asked again on a later run.
 OUTAGE = "did not answer"
+#: Why a provider's answer left an article out: its record there could not be read.
+UNREADABLE = "could not read its record"
+#: The fields an error deciding the authors leaves without.
+AUTHOR_FIELDS = ("authors", "affiliations", "corresponding_authors")
+#: The fields each provider's record fills, which it not answering may leave without. The
+#: licence is noted by the licence decision itself, which knows whose statement it needed.
+PROVIDER_FIELDS = {
+    MetadataSource.semantic_scholar.value: ("abstract", "journal", "publication_year"),
+    MetadataSource.pubmed.value: ("abstract", "authors", "affiliations", "journal",
+                                  "publication_year"),
+    MetadataSource.openalex.value: ("authors", "affiliations", "ror", "corresponding_authors",
+                                    "abstract", "journal", "publication_year"),
+    MetadataSource.crossref.value: (),
+}
+
+
+def _note_unanswered(notes: Notes, metadata: ArticleMetadata, unanswered: Mapping[str, str]):
+    """Note each provider that did not answer under those of its fields the record lacks."""
+    lacking = set(missing_fields(metadata))
+    for name, why in sorted(unanswered.items()):
+        fields = [f for f in PROVIDER_FIELDS.get(name, ()) if f in lacking]
+        notes.error(fields, f"{name} {why}", transient=why == OUTAGE)
+
+
+def _assume_licenses(metadata: ArticleMetadata, held: Sequence["HeldDownload"]) -> None:
+    """Every licence the record states assumed: all rights reserved."""
+    metadata.license = ASSUMED
+    metadata.copy_licenses = {download.source: ASSUMED for download in held}
+    metadata.reported_copies = [replace(copy, license=ASSUMED)
+                                for copy in metadata.reported_copies]
 
 
 def _outage(exc: BaseException) -> bool:
@@ -875,6 +929,7 @@ def _decide_licenses(
     held: Sequence[HeldDownload],
     unanswered: Mapping[str, str],
     now: datetime,
+    notes: Optional[Notes] = None,
 ) -> None:
     """Set the licence of each held copy, of the paper and of each reported copy, and
     `oa_status`, from every provider's record.
@@ -882,17 +937,20 @@ def _decide_licenses(
     `ids` are the paper's identifiers (`paper_parse.article_identifiers`), `crossref` each
     DOI's deposits, `works` OpenAlex's works for the article and `paper_work` the one it
     is asked about by (by its journal's DOI when it has one), and `held` the downloads in
-    the order their sources are tried. Raises Undecided while a
-    provider that lists copies (OpenAlex, Semantic Scholar) has not answered, or one that
-    comes before a licence's deciding statement has not.
+    the order their sources are tried. A licence a provider that comes before its deciding
+    statement did not answer for, or a record that could not be read, is assumed, and
+    noted under `license`; so is a provider that lists copies (OpenAlex, Semantic Scholar)
+    not answering, which leaves its copies unknown.
     """
+    notes = notes if notes is not None else Notes()
+
     def outage(sources) -> bool:
         return all(unanswered.get(name) == OUTAGE for name in sources)
 
     listing = sorted(set(unanswered) & _LOCATING)
     if listing:
-        raise Undecided("the copies the providers list are unknown: " + "; ".join(
-            f"{name} {unanswered[name]}" for name in listing), listing, outage(listing))
+        notes.error("license", "the copies the providers list are unknown: " + "; ".join(
+            f"{name} {unanswered[name]}" for name in listing), transient=outage(listing))
 
     listed = [_listed(MetadataSource.openalex, loc.pdf_url or loc.landing_page_url, doi,
                       OPENALEX_VERSIONS.get(str(loc.version)), _type_of(loc.source_type),
@@ -924,8 +982,9 @@ def _decide_licenses(
         except Undecided as exc:
             why = "; ".join(f"{name} {unanswered[name]}" if name in unanswered else
                             "its own record could not be read" for name in exc.sources)
-            raise Undecided(f"the licence of {what} is undecided: {why}", exc.sources,
-                            outage(exc.sources)) from exc
+            notes.error("license", f"the licence of {what} is assumed: {why}",
+                        transient=outage(exc.sources))
+            return ASSUMED
 
     # Each held copy's own record, read once; a copy fetched from a listed URL carries the
     # licence that listing stated then.
@@ -935,7 +994,7 @@ def _decide_licenses(
             own, unread = own_license(download.source, download.files), False
             ranked = page_statements(download.source, download.files, now)
             embargoes.append(page_embargo(download.source, download.files, now))
-        except Exception as exc:  # noqa: BLE001 - the copy is undecided, and retried
+        except Exception as exc:  # noqa: BLE001 - the copy's licence is assumed, and noted
             logger.warning("Failed to read the %s copy's licence: %s", download.source, exc)
             own, ranked, unread = None, [], True
         records.append((download, own, unread))
