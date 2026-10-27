@@ -51,7 +51,7 @@ dependencies = [
   # content key the parse mints for every analysis, and CopyRoute, CopyVersion and
   # CopyAccess, the facts each download records about its copy, and paper_parse.Author,
   # each author with ids and affiliations. Pinned to study_schema main.
-  "study-schema @ git+https://github.com/neurostuff/study_schema.git@7737ab4e95fb63bd9cec27fa1e52b2d0e9bc9d38",
+  "study-schema @ git+https://github.com/neurostuff/study_schema.git@bc414b3d9fe71a843fcfe8acaa80369cfb6ec060",
 ]
 
 [project.optional-dependencies]
