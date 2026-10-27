@@ -1071,6 +1071,23 @@ def test_two_journal_dois_are_a_catalog_conflict_and_nothing_is_asked(test_setti
         "10.1016/j.biopsych.2010.04.013 and 10.1038/mp.2009.121; its aliases need repair")}
 
 
+def test_a_doi_the_catalog_filed_as_a_preprint_is_no_conflict(test_settings):
+    """gbmhcaqmq4os: Copernicus's discussion paper of SOIL 2, 659, which no server pattern
+    names a preprint; the id lookup filed it as one, from Crossref's record."""
+    service = MetadataService(test_settings)
+    asked = []
+    for name in ("semantic_scholar", "pubmed", "crossref", "openalex"):
+        setattr(service, f"_get_{name}_metadata_cached",
+                lambda identifiers, unanswered=None: asked.extend(identifiers) or {})
+    content = _content(Identifier(doi="10.5194/soil-2-659-2016"))
+    service.enrich_metadata([content], {}, {content.slug: [
+        "10.5194/soil-2-659-2016", "10.5194/soil-2016-32"]}, NOW,
+        {content.slug: ["10.5194/soil-2016-32"]})
+
+    assert service.conflicts == {}
+    assert {i.doi for i in asked} == {"10.5194/soil-2-659-2016", "10.5194/soil-2016-32"}
+
+
 class _Refusing(BaseHTTPRequestHandler):
     """A provider refusing the request: 400 to everything."""
 
