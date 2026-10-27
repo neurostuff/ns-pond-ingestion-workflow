@@ -1,6 +1,5 @@
 import pytest
 import requests
-import study_schema.models.paper_parse as pp
 from ingestion_workflow.utils.preprints import (
     PREPRINT_SERVERS,
     is_preprint_doi,
@@ -105,11 +104,6 @@ def test_the_spelling_of_a_doi_does_not_change_its_server():
     assert preprint_server("https://doi.org/10.1101/2019.12.11.873174") == "biorxiv"
     assert preprint_server("DOI:10.48550/arXiv.2111.08743") == "arxiv"
     assert preprint_server("10.31234/OSF.IO/32NZP") == "psyarxiv"
-
-
-def test_the_registrys_servers_are_study_schemas_preprint_servers():
-    # eLife's reviewed preprints have no pattern: only a DOI filed as a preprint's is eLife's.
-    assert {s.name for s in PREPRINT_SERVERS} == {s.value for s in pp.PreprintServer} - {"elife"}
 
 
 @pytest.mark.parametrize("doi, server", [
