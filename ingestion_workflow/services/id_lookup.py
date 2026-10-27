@@ -453,7 +453,10 @@ class CrossrefIDLookupService(IDLookupService):
                            "which is another work")
         related = evidence.related(doi)
         for preprint in related.preprints:
-            self._add(identifier, "preprint_dois", preprint, article)
+            # Crossref relates it as the paper's preprint, which is evidence enough that it
+            # is another DOI of the paper when it is not one.
+            field = "preprint_dois" if self._is_preprint_doi(preprint) else "alternative_dois"
+            self._add(identifier, field, preprint, article)
         for paper in related.papers:
             self._add_paper(identifier, paper, article)
         for other in related.versions:
@@ -476,11 +479,17 @@ class CrossrefIDLookupService(IDLookupService):
                 and unversioned(doi) == unversioned(identifier.doi)):
             self._add(identifier, "alternative_dois", doi, article)
             return
-        record = None if is_preprint_doi(doi) else self.evidence.record(doi)
-        if is_preprint_doi(doi) or (record is not None and _is_preprint(record)):
+        if self._is_preprint_doi(doi):
             self._add(identifier, "preprint_dois", doi, article)
         else:
             self._add_alternative(identifier, doi, article)
+
+    def _is_preprint_doi(self, doi: str) -> bool:
+        """On a preprint server's pattern, or a work Crossref types a preprint."""
+        if is_preprint_doi(doi):
+            return True
+        record = self.evidence.record(doi)
+        return record is not None and _is_preprint(record)
 
     def _add_paper(self, identifier: Identifier, doi: str, article: Optional[str]) -> None:
         """The DOI of the paper a preprint is of: the version of record's, or another id of
