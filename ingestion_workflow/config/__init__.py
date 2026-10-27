@@ -197,6 +197,14 @@ class Settings(BaseSettings):
         description="API key for Elsevier full-text access",
     )
 
+    sciencedirect_keep_books: bool = Field(
+        default=False,
+        description=(
+            "Keep the book content a ScienceDirect search finds (a PII starting with B); "
+            "by default only journal content is kept"
+        ),
+    )
+
     wiley_api_key: Optional[str] = Field(
         default=None,
         description="Wiley Text and Data Mining token, sent as Wiley-TDM-Client-Token",

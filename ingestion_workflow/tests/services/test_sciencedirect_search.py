@@ -15,8 +15,10 @@ BY_BODY = ["method", "scheme", "host", "port", "path", "query", "body"]
 
 @pytest.fixture()
 def settings():
-    # the key header is dropped from the cassettes; any value replays
-    return Settings(elsevier_api_key=os.environ.get("ELSEVIER_API_KEY", "replay"))
+    # the key header is dropped from the cassettes; any value replays. Books are kept, so
+    # that what is paged is every record the counts include.
+    return Settings(elsevier_api_key=os.environ.get("ELSEVIER_API_KEY", "replay"),
+                    sciencedirect_keep_books=True)
 
 
 def _search(settings, text, years=None):
@@ -35,6 +37,18 @@ def test_one_page_holds_everything_found(settings):
     assert len(found) == 17
     assert all(i.doi == i.doi.lower() for i in found if i.doi)
     assert all(i.other_ids["pii"] for i in found)
+
+
+@pytest.mark.vcr("test_one_page_holds_everything_found.yaml", match_on=BY_BODY)
+def test_book_content_is_left_out_unless_kept(settings):
+    """Three of the 17 are chapters of books, whose PII starts with B; the count is the
+    search's, which has no filter for them."""
+    settings.sciencedirect_keep_books = False
+    service, found = _search(settings, "fMRI AND misophonia", "2026")
+
+    assert service.plan_report == ['{"qs": "fMRI AND misophonia", "date": "2026"}: 17 found']
+    assert len(found) == 14
+    assert not any(i.other_ids["pii"].startswith("B") for i in found)
 
 
 @pytest.mark.vcr(match_on=BY_BODY)

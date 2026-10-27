@@ -44,6 +44,7 @@ metadata_providers:  # Ordered list of providers searched by title when attachin
   - pubmed
   - openalex
 elsevier_api_key: "MY_ELSEVIER_API_KEY"  # API key for Elsevier full-text access
+sciencedirect_keep_books: false  # Keep the book content a ScienceDirect search finds (a PII starting with B); by default only journal content is kept
 elsevier_http_proxy: "socks5://127.0.0.1:1080"  # HTTP proxy URL to use for Elsevier requests (e.g., socks5://127.0.0.1:1080)
 elsevier_https_proxy: "socks5://127.0.0.1:1080"  # HTTPS proxy URL to use for Elsevier requests (e.g., socks5://127.0.0.1:1080)
 elsevier_use_proxy: true  # Whether to route Elsevier requests through configured proxy
