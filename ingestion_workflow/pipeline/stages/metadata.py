@@ -256,7 +256,9 @@ class MetadataStage:
                    "corresponding_authors": sum(1 for a in metadata.authors if a.corresponding),
                    "sufficient": is_sufficient(metadata),
                    "digests": metadata_digests(payload),
-                   "records": records},
+                   "records": records}
+                | ({"authors_error": self.service.authors_failed[slug]}
+                   if slug in self.service.authors_failed else {}),
             )
 
 

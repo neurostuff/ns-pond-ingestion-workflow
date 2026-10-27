@@ -1213,8 +1213,8 @@ def test_pubmed_s_publication_types_are_kept_when_semantic_scholar_filled_the_re
     assert meta.raw_metadata["pubmed"]["MedlineCitation"]["Article"]["Language"] == "eng"
 
 
-def test_an_article_whose_record_raises_fails_alone(metadata_service, monkeypatch):
-    """The other article in its batch is still finished."""
+def _batch_failing_for_bad(monkeypatch, name, error):
+    """A good and a bad article, with `name` raising `error` for the bad one."""
     import ingestion_workflow.services.metadata as service
 
     good, bad = Identifier(doi="10.1234/good"), Identifier(doi="10.1234/bad")
@@ -1222,17 +1222,39 @@ def test_an_article_whose_record_raises_fails_alone(metadata_service, monkeypatc
                 for i in (good, bad)]
     answers = {i.slug: ArticleMetadata(title=i.doi, authors=[Author(name="A")])
                for i in (good, bad)}
-    decide_authors = service._decide_authors
+    decide = getattr(service, name)
 
     def failing_for_bad(metadata, *args):
         if metadata.title == bad.doi:
-            raise ValueError("cannot read its authors")
-        return decide_authors(metadata, *args)
+            raise error
+        return decide(metadata, *args)
 
-    monkeypatch.setattr(service, "_decide_authors", failing_for_bad)
+    monkeypatch.setattr(service, name, failing_for_bad)
+    return good, bad, contents, answers
+
+
+def test_an_article_whose_record_raises_fails_alone(metadata_service, monkeypatch):
+    """The other article in its batch is still finished."""
+    good, bad, contents, answers = _batch_failing_for_bad(
+        monkeypatch, "_decide_licenses", ValueError("cannot read its licences"))
     with patch.object(metadata_service._s2_client, "get_metadata", return_value=answers):
         found = _enrich(metadata_service, contents)
 
     assert list(found) == [good.slug]
-    assert metadata_service.failed == {bad.slug: "ValueError: cannot read its authors"}
+    assert metadata_service.failed == {bad.slug: "ValueError: cannot read its licences"}
     assert bad.slug not in metadata_service.records_read
+
+
+def test_an_article_whose_authors_raise_is_kept_without_authors(metadata_service, monkeypatch):
+    """The rest of its record stands, and the error is noted."""
+    good, bad, contents, answers = _batch_failing_for_bad(
+        monkeypatch, "_decide_authors", ValueError("cannot read its authors"))
+    with patch.object(metadata_service._s2_client, "get_metadata", return_value=answers):
+        found = _enrich(metadata_service, contents)
+
+    assert list(found) == [good.slug, bad.slug]
+    assert found[bad.slug].title == bad.doi
+    assert (found[bad.slug].authors, found[bad.slug].authors_provider) == ([], None)
+    assert [a.name for a in found[good.slug].authors] == ["A"]
+    assert metadata_service.failed == {}
+    assert metadata_service.authors_failed == {bad.slug: "ValueError: cannot read its authors"}

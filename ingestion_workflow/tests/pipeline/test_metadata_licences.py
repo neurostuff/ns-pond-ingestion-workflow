@@ -130,6 +130,27 @@ def test_the_corresponding_authors_are_decided_from_every_source(env, evidence):
     assert any(i.ror for a in stored.authors for f in a.affiliations for i in f.institutions or [])
 
 
+@pytest.mark.vcr("test_each_held_copy_and_the_paper_get_a_licence.yaml")
+def test_an_error_deciding_the_authors_keeps_the_record_and_notes_it(env, evidence, monkeypatch):
+    """Triage and what follows are not held back by the authors."""
+    import ingestion_workflow.services.metadata as service
+
+    def failing(*args):
+        raise ValueError("cannot read its authors")
+
+    monkeypatch.setattr(service, "_decide_corresponding", failing)
+    settings, catalog = env
+    ref = _held(catalog, TDM_MANUSCRIPT, evidence=evidence)
+    catalog.record([Outcome.failure(ref.id, "download", "wiley", "HTTP 403")])
+    _, (outcome,) = _run(MetadataStage(settings), Context(settings, catalog), catalog, ref)
+
+    assert outcome.status is Status.OK, outcome.error
+    assert outcome.summary["authors_error"] == "ValueError: cannot read its authors"
+    assert (outcome.summary["authors"], outcome.summary["license"]) == (0, "cc-by-nc")
+    stored = ArticleMetadata.from_dict(catalog.payload(catalog.artifact(ref.id, "metadata", "")))
+    assert stored.title and stored.authors == []
+
+
 def test_a_pdf_s_corresponding_authors_are_read_from_its_extracted_text(env, tmp_path):
     """The PDF's own record names the author with an address; OpenAlex only names one."""
     from ingestion_workflow.models.metadata import CorrespondingAuthor

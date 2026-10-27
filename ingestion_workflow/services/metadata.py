@@ -114,6 +114,9 @@ class MetadataService:
         self.conflicts: Dict[str, str] = {}
         #: Article slug -> the error its record could not be finished for, for the last batch.
         self.failed: Dict[str, str] = {}
+        #: Article slug -> the error its authors could not be decided for, for the last batch;
+        #: its record is kept with no authors.
+        self.authors_failed: Dict[str, str] = {}
         #: Article slug -> the cache files its metadata was made from (a provider's record of
         #: each identifier asked, an author's ORCID record), for the last batch.
         self.records_read: Dict[str, List[Path]] = {}
@@ -162,12 +165,14 @@ class MetadataService:
             Mapping from slug to ArticleMetadata, each with its licences decided,
             except an article `undecided` names, with why: a source that could state
             one of its licences did not answer or could not be read. An article whose
-            record raised is left out, and `failed` says why.
+            record raised is left out, and `failed` says why; one whose authors could not
+            be decided is kept with none, and `authors_failed` says why.
         """
         self.require_licence_providers()
         self.undecided = {}
         self.conflicts = {}
         self.failed = {}
+        self.authors_failed = {}
         self.records_read = {}
         if not extracted_contents:
             return {}
@@ -339,9 +344,16 @@ class MetadataService:
                                      paper_work, answers.get(slug, {}), held.get(slug, ()), waiting, now)
                 except Undecided as exc:
                     self.undecided[slug] = exc
-                _decide_authors(metadata, answers.get(slug, {}), openalex.get(main_ident.slug),
-                                _decide_corresponding(metadata, held.get(slug, ()),
-                                                      openalex.get(main_ident.slug)))
+                try:
+                    _decide_authors(metadata, answers.get(slug, {}), openalex.get(main_ident.slug),
+                                    _decide_corresponding(metadata, held.get(slug, ()),
+                                                          openalex.get(main_ident.slug)))
+                except Exception as exc:
+                    # The rest of the record stands without its authors.
+                    logger.warning("authors of %s failed: %s", slug, exc)
+                    self.authors_failed[slug] = f"{type(exc).__name__}: {exc}"
+                    metadata.authors, metadata.correspondence_emails = [], []
+                    metadata.authors_provider = None
             except Exception as exc:
                 # One article's record failing leaves the rest of its batch to finish.
                 logger.warning("metadata of %s failed: %s", slug, exc)
