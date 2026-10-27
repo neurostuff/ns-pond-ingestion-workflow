@@ -210,7 +210,8 @@ class ScienceDirectSearchService(ArticleSearchService):
         self.rendered = json.dumps(to_sciencedirect(query))
         if not settings.elsevier_api_key:
             raise ValueError("elsevier_api_key must be configured to search ScienceDirect")
-        self._client = ScienceDirectClient(settings.elsevier_api_key)
+        self._client = ScienceDirectClient(settings.elsevier_api_key,
+                                           keep_books=settings.sciencedirect_keep_books)
         # None until `plan`; searching unplanned fails rather than finding nothing
         self._leaves: Optional[List[Tuple[Dict[str, str], int]]] = None
 

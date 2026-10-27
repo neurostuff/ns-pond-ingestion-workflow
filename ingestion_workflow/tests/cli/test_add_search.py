@@ -29,6 +29,8 @@ def config(tmp_path):
                 "openalex_email": "test@example.com",
                 "openalex_api_key": os.environ.get("OPENALEX_API_KEY", "replay"),
                 "elsevier_api_key": os.environ.get("ELSEVIER_API_KEY", "replay"),
+                # the cassettes were recorded with the book content ScienceDirect finds
+                "sciencedirect_keep_books": True,
             }
         ),
         encoding="utf-8",
