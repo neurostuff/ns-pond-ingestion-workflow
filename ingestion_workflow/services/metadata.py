@@ -112,6 +112,8 @@ class MetadataService:
         self.undecided: Dict[str, Undecided] = {}
         #: Article slug -> the catalog conflict it was not asked about for, for the last batch.
         self.conflicts: Dict[str, str] = {}
+        #: Article slug -> the error its record could not be finished for, for the last batch.
+        self.failed: Dict[str, str] = {}
         #: Article slug -> the cache files its metadata was made from (a provider's record of
         #: each identifier asked, an author's ORCID record), for the last batch.
         self.records_read: Dict[str, List[Path]] = {}
@@ -159,11 +161,13 @@ class MetadataService:
         dict
             Mapping from slug to ArticleMetadata, each with its licences decided,
             except an article `undecided` names, with why: a source that could state
-            one of its licences did not answer or could not be read.
+            one of its licences did not answer or could not be read. An article whose
+            record raised is left out, and `failed` says why.
         """
         self.require_licence_providers()
         self.undecided = {}
         self.conflicts = {}
+        self.failed = {}
         self.records_read = {}
         if not extracted_contents:
             return {}
@@ -298,45 +302,52 @@ class MetadataService:
                     )
 
         by_slug = {item.slug: item for item in extracted_contents}
-        for slug, metadata in results.items():
-            item = by_slug[slug]
-            if item.identifier is None:
-                continue
-            main_ident = _by_journal_doi(item.identifier, journal[slug])
-            self.records_read[slug] = [
-                self._cache_file(MetadataSource.semantic_scholar.value, item.identifier.slug),
-                *([self._cache_file(MetadataSource.pubmed.value, item.identifier.slug)]
-                  if self._pubmed_client else []),
-                *(self._cache_file(MetadataSource.crossref.value, i.slug)
-                  for _, i in by_doi[slug]),
-                *(self._cache_file(MetadataSource.openalex.value, i)
-                  for i in dict.fromkeys([main_ident.slug, *(i.slug for d, i in by_doi[slug]
-                                                             if d != main_ident.asking_doi)]))]
-            asked = [item.identifier.slug, main_ident.slug,
-                     *(ident.slug for _, ident in by_doi[slug])]
-            waiting = {name: why for a in asked for name, why in unanswered.get(a, {}).items()}
-            crossref_by_doi = {d: (crossref[i.slug].raw_metadata.get("crossref") or {})
-                               for d, i in by_doi[slug] if i.slug in crossref}
-            works = [(openalex[i].raw_metadata.get("openalex") or {})
-                     for i in dict.fromkeys([main_ident.slug, *(ident.slug for d, ident
-                                                                in by_doi[slug])])
-                     if i in openalex]
-            # Read before the record's own raw data is replaced: the record may be OpenAlex's.
-            paper_work = (openalex[main_ident.slug].raw_metadata.get("openalex")
-                          if main_ident.slug in openalex else None)
-            if crossref_by_doi:
-                metadata.raw_metadata["crossref"] = crossref_by_doi
-            if works:
-                metadata.raw_metadata["openalex"] = works
-            ids = article_identifiers(item.identifier, metadata)
+        for slug, metadata in list(results.items()):
             try:
-                _decide_licenses(metadata, ids, item.identifier.asking_doi, crossref_by_doi, works,
-                                 paper_work, answers.get(slug, {}), held.get(slug, ()), waiting, now)
-            except Undecided as exc:
-                self.undecided[slug] = exc
-            _decide_authors(metadata, answers.get(slug, {}), openalex.get(main_ident.slug),
-                            _decide_corresponding(metadata, held.get(slug, ()),
-                                                  openalex.get(main_ident.slug)))
+                item = by_slug[slug]
+                if item.identifier is None:
+                    continue
+                main_ident = _by_journal_doi(item.identifier, journal[slug])
+                self.records_read[slug] = [
+                    self._cache_file(MetadataSource.semantic_scholar.value, item.identifier.slug),
+                    *([self._cache_file(MetadataSource.pubmed.value, item.identifier.slug)]
+                      if self._pubmed_client else []),
+                    *(self._cache_file(MetadataSource.crossref.value, i.slug)
+                      for _, i in by_doi[slug]),
+                    *(self._cache_file(MetadataSource.openalex.value, i)
+                      for i in dict.fromkeys([main_ident.slug, *(i.slug for d, i in by_doi[slug]
+                                                                 if d != main_ident.asking_doi)]))]
+                asked = [item.identifier.slug, main_ident.slug,
+                         *(ident.slug for _, ident in by_doi[slug])]
+                waiting = {name: why for a in asked for name, why in unanswered.get(a, {}).items()}
+                crossref_by_doi = {d: (crossref[i.slug].raw_metadata.get("crossref") or {})
+                                   for d, i in by_doi[slug] if i.slug in crossref}
+                works = [(openalex[i].raw_metadata.get("openalex") or {})
+                         for i in dict.fromkeys([main_ident.slug, *(ident.slug for d, ident
+                                                                    in by_doi[slug])])
+                         if i in openalex]
+                # Read before the record's own raw data is replaced: the record may be OpenAlex's.
+                paper_work = (openalex[main_ident.slug].raw_metadata.get("openalex")
+                              if main_ident.slug in openalex else None)
+                if crossref_by_doi:
+                    metadata.raw_metadata["crossref"] = crossref_by_doi
+                if works:
+                    metadata.raw_metadata["openalex"] = works
+                ids = article_identifiers(item.identifier, metadata)
+                try:
+                    _decide_licenses(metadata, ids, item.identifier.asking_doi, crossref_by_doi, works,
+                                     paper_work, answers.get(slug, {}), held.get(slug, ()), waiting, now)
+                except Undecided as exc:
+                    self.undecided[slug] = exc
+                _decide_authors(metadata, answers.get(slug, {}), openalex.get(main_ident.slug),
+                                _decide_corresponding(metadata, held.get(slug, ()),
+                                                      openalex.get(main_ident.slug)))
+            except Exception as exc:
+                # One article's record failing leaves the rest of its batch to finish.
+                logger.warning("metadata of %s failed: %s", slug, exc)
+                self.failed[slug] = f"{type(exc).__name__}: {exc}"
+                self.records_read.pop(slug, None)
+                del results[slug]
         for slug, read in zip(results, self._add_orcid_emails(results.values())):
             self.records_read[slug].extend(read)
         return results

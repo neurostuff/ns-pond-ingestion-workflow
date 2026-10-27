@@ -217,11 +217,10 @@ class MetadataStage:
 
         for slug, work in by_slug.items():
             metadata = found.get(slug)
-            if slug in self.service.conflicts:
-                yield Outcome.failure(
-                    work.article_id, self.name, "", self.service.conflicts[slug],
-                    fingerprint=work.fingerprint,
-                )
+            error = self.service.conflicts.get(slug) or self.service.failed.get(slug)
+            if error:
+                yield Outcome.failure(work.article_id, self.name, "", error,
+                                      fingerprint=work.fingerprint)
                 continue
             if metadata is None:
                 yield Outcome.failure(

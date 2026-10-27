@@ -1211,3 +1211,28 @@ def test_pubmed_s_publication_types_are_kept_when_semantic_scholar_filled_the_re
                           "the Human Brain")
     assert "meta-analysis" in meta.keywords
     assert meta.raw_metadata["pubmed"]["MedlineCitation"]["Article"]["Language"] == "eng"
+
+
+def test_an_article_whose_record_raises_fails_alone(metadata_service, monkeypatch):
+    """The other article in its batch is still finished."""
+    import ingestion_workflow.services.metadata as service
+
+    good, bad = Identifier(doi="10.1234/good"), Identifier(doi="10.1234/bad")
+    contents = [ExtractedContent(slug=i.slug, source=DownloadSource.PUBGET, identifier=i)
+                for i in (good, bad)]
+    answers = {i.slug: ArticleMetadata(title=i.doi, authors=[Author(name="A")])
+               for i in (good, bad)}
+    decide_authors = service._decide_authors
+
+    def failing_for_bad(metadata, *args):
+        if metadata.title == bad.doi:
+            raise ValueError("cannot read its authors")
+        return decide_authors(metadata, *args)
+
+    monkeypatch.setattr(service, "_decide_authors", failing_for_bad)
+    with patch.object(metadata_service._s2_client, "get_metadata", return_value=answers):
+        found = _enrich(metadata_service, contents)
+
+    assert list(found) == [good.slug]
+    assert metadata_service.failed == {bad.slug: "ValueError: cannot read its authors"}
+    assert bad.slug not in metadata_service.records_read
