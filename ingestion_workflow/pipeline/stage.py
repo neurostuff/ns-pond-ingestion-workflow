@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional, Protocol, Sequence
@@ -16,9 +17,13 @@ from ingestion_workflow.catalog import (
     fingerprint,
     is_retryable,
 )
+from ingestion_workflow.clients.model_server import ModelUnavailable
 from ingestion_workflow.config import Settings
+from ingestion_workflow.utils.isolation import error_text
 
 from .plan import StagePlan, Work
+
+logger = logging.getLogger(__name__)
 
 #: Why an artifact was taken back: every extraction of the article ran and found no text,
 #: so what was made from its old text is no longer the article's. A plan whose input was
@@ -32,6 +37,24 @@ NO_ANALYSES = "no analyses after re-read"
 #: Why an artifact may be taken back. A take-back keeps NO_TEXT as its fingerprint, and
 #: records its reason as its error.
 TAKE_BACK_REASONS = (NO_TEXT, NO_ANALYSES)
+
+
+def failure_of(stage: str, work: Work, exc: BaseException) -> Outcome:
+    """The work's failure for an error it raised."""
+    logger.warning("%s failed for %s: %s", stage, work.article_id, exc)
+    return Outcome.failure(work.article_id, stage, work.source, error_text(exc),
+                           fingerprint=work.fingerprint)
+
+
+def alone(stage: str, work: Work, make: Callable[[], Outcome]) -> Outcome:
+    """`make()`, or the work's failure when it raises: for a stage whose batch has done
+    work too dear to redo, where the scheduler would narrow an error by running it again."""
+    try:
+        return make()
+    except ModelUnavailable:
+        raise
+    except Exception as exc:  # noqa: BLE001 - this article's failure, not the batch's
+        return failure_of(stage, work, exc)
 
 
 def publication_types(metadata: Mapping[str, Any]) -> List[str]:
@@ -188,7 +211,19 @@ class Context:
             return False
         if artifact.blob and not self.catalog.blobs.exists(artifact.blob):
             return False
-        return True
+        return not self.due_again(artifact)
+
+    def due_again(self, artifact: Artifact) -> bool:
+        """Whether an artifact kept despite an error noted `transient` (a provider busy or
+        down) is due its retry: as a failure is, after `retry_after`. Any other noted error
+        is redone only when asked (`--select errors`)."""
+        if not (artifact.summary or {}).get("transient"):
+            return False
+        try:
+            when = datetime.fromisoformat(artifact.updated_at)
+        except (TypeError, ValueError):
+            return True
+        return self.now - when >= self.retry_after
 
     def should_attempt(
         self,

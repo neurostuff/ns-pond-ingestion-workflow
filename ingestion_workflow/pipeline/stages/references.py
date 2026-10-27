@@ -16,14 +16,16 @@ import logging
 import multiprocessing
 import signal
 from concurrent.futures import ProcessPoolExecutor
+from functools import partial
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import DownloadResult
+from ingestion_workflow.utils.isolation import error_text
 
 from ..plan import StagePlan, Work
-from ..stage import Context
+from ..stage import Context, alone
 
 logger = logging.getLogger(__name__)
 
@@ -95,11 +97,19 @@ def _read_in_worker(job: Tuple[str, dict, Optional[str], Optional[List[dict]]]) 
     signal.signal(signal.SIGALRM, _alarm)
     signal.alarm(ARTICLE_SECONDS)
     try:
-        return read_article(*job)
+        return _read_alone(job)
     except _TooSlow:
         return "timeout", None
     finally:
         signal.alarm(0)
+
+
+def _read_alone(job) -> Tuple[str, Optional[dict]]:
+    """`read_article`, with an error it raises the article's reason it failed."""
+    try:
+        return read_article(*job)
+    except Exception as exc:  # noqa: BLE001 - this article's failure, not the batch's
+        return f"unreadable: {error_text(exc)}", None
 
 
 class ReferencesStage:
@@ -172,22 +182,26 @@ class ReferencesStage:
             ready.append(work)
         workers = max(1, getattr(self.settings, "max_workers", 1) or 1)
         if len(jobs) < 8 or workers == 1:
-            results = [read_article(*job) for job in jobs]
+            results = [_read_alone(job) for job in jobs]
         else:
             # fork: nothing here touches CUDA, and spawn would re-import the package per worker
             with ProcessPoolExecutor(max_workers=workers, mp_context=multiprocessing.get_context("fork")) as pool:
                 results = list(pool.map(_read_in_worker, jobs, chunksize=4))
         for work, (how, payload) in zip(ready, results):
-            if payload is None:
-                yield Outcome.failure(work.article_id, self.name, work.source, how, fingerprint=work.fingerprint)
-                continue
-            citations = payload["citations"]
-            yield Outcome(
-                article_id=work.article_id, stage=self.name, source=work.source, status=Status.OK,
-                fingerprint=work.fingerprint, payload=payload,
-                summary={"list": payload["list_provider"], "references": len(payload["references"]),
-                         "citations": len(citations),
-                         "with_sentence": sum(c["sentence"] is not None for c in citations),
-                         "markers_not_in_text": sum(not c["marker_in_text"] for c in citations),
-                         **{k: v for k, v in payload["notes"].items() if k in ("links_not_in_text", "ids_from_crossref")}},
-            )
+            yield alone(self.name, work, partial(self._outcome, work, how, payload))
+
+    def _outcome(self, work: Work, how: str, payload: Optional[dict]) -> Outcome:
+        if payload is None:
+            return Outcome.failure(work.article_id, self.name, work.source, how,
+                                   fingerprint=work.fingerprint)
+        citations = payload["citations"]
+        return Outcome(
+            article_id=work.article_id, stage=self.name, source=work.source, status=Status.OK,
+            fingerprint=work.fingerprint, payload=payload,
+            summary={"list": payload["list_provider"], "references": len(payload["references"]),
+                     "citations": len(citations),
+                     "with_sentence": sum(c["sentence"] is not None for c in citations),
+                     "markers_not_in_text": sum(not c["marker_in_text"] for c in citations),
+                     **{k: v for k, v in payload["notes"].items()
+                        if k in ("links_not_in_text", "ids_from_crossref")}},
+        )

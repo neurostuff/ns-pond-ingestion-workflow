@@ -13,6 +13,7 @@ from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
 from ingestion_workflow.models.notices import PartialAnswer
 from ingestion_workflow.utils.http import Pacer, retry_transient
+from ingestion_workflow.utils.isolation import parsed_each
 
 SEMANTIC_SCHOLAR_BATCH_SIZE = 500
 SEMANTIC_SCHOLAR_REQUEST_LIMIT = 1  # requests per second with API key
@@ -254,7 +255,9 @@ class SemanticScholarClient:
         Returns
         -------
         dict
-            Mapping from slug to ArticleMetadata
+            Mapping from slug to ArticleMetadata. A failed batch, or a paper whose record
+            cannot be read, raises `PartialAnswer` with the rest; such a paper's article
+            is in its `unreadable`.
         """
         if not identifiers:
             return {}
@@ -280,19 +283,25 @@ class SemanticScholarClient:
         ]
 
         failures: List[BaseException] = []
+        unreadable: Dict[str, str] = {}
         for batch in batches:
             try:
                 response_data = self._request_metadata_batch(batch)
-                self._process_metadata_response(batch, response_data, request_map, results)
             except Exception as exc:  # noqa: BLE001
                 # Continue with other batches, and say so: an unanswered article is not
                 # one Semantic Scholar has nothing for.
                 failures.append(exc)
+                continue
+            unreadable.update(
+                self._process_metadata_response(batch, response_data, request_map, results))
 
         if failures:
             first = failures[0]
             raise PartialAnswer(f"Semantic Scholar: {type(first).__name__}: {first}", results,
-                                failures)
+                                failures, unreadable)
+        if unreadable:
+            raise PartialAnswer(f"Semantic Scholar: {len(unreadable)} record(s) could not be read",
+                                results, unreadable=unreadable)
         return results
 
     @retry_transient(3, 8)
@@ -316,37 +325,42 @@ class SemanticScholarClient:
         response_data: List[Dict[str, object]],
         request_map: Dict[str, Identifier],
         results: Dict[str, ArticleMetadata],
-    ) -> None:
-        """Process metadata response and build ArticleMetadata objects."""
-        for req_id, record in zip(batch, response_data or []):
-            if not record or "error" in record:
-                continue
+    ) -> Dict[str, str]:
+        """Each answered paper's ArticleMetadata, into `results` by slug; returns the error
+        of each whose record could not be read, by slug."""
 
-            identifier = request_map.get(req_id)
-            if not identifier:
-                continue
+        def asked(pair) -> Optional[str]:
+            identifier = request_map.get(pair[0])
+            return identifier.slug if identifier else None
 
-            # Parse authors
-            authors_data = record.get("authors") or []
-            authors = [
-                Author(name=str(author.get("name", "")))
-                for author in authors_data
-                if author.get("name")
-            ]
+        def parse(pair):
+            slug, record = asked(pair), pair[1]
+            if not record or "error" in record or slug is None:
+                return None
+            return slug, _metadata_of(record)
 
-            open_access_pdf = record.get("openAccessPdf") or {}
-            pdf_url = open_access_pdf.get("url") if isinstance(open_access_pdf, dict) else None
+        read, unreadable = parsed_each(zip(batch, response_data or []), parse,
+                                       "Semantic Scholar paper", key=asked)
+        results.update(read)
+        return unreadable
 
-            # Build metadata
-            metadata = ArticleMetadata(
-                title=str(record.get("title", "")),
-                authors=authors,
-                abstract=record.get("abstract"),
-                journal=record.get("venue"),
-                publication_year=record.get("year"),
-                pdf_url=pdf_url,
-                source=MetadataSource.semantic_scholar.value,
-                raw_metadata={"semantic_scholar": record},
-            )
 
-            results[identifier.slug] = metadata
+def _metadata_of(record: Dict[str, object]) -> ArticleMetadata:
+    """One batch record's ArticleMetadata."""
+    authors = [
+        Author(name=str(author.get("name", "")))
+        for author in record.get("authors") or []
+        if author.get("name")
+    ]
+    open_access_pdf = record.get("openAccessPdf") or {}
+    pdf_url = open_access_pdf.get("url") if isinstance(open_access_pdf, dict) else None
+    return ArticleMetadata(
+        title=str(record.get("title", "")),
+        authors=authors,
+        abstract=record.get("abstract"),
+        journal=record.get("venue"),
+        publication_year=record.get("year"),
+        pdf_url=pdf_url,
+        source=MetadataSource.semantic_scholar.value,
+        raw_metadata={"semantic_scholar": record},
+    )

@@ -20,6 +20,7 @@ import logging
 import re
 import threading
 from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
+from functools import partial
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, Set, Tuple
 
@@ -36,7 +37,7 @@ from ingestion_workflow.services.set_roles.served import (
 from ingestion_workflow.services.set_roles.served_prompt import CONTEXT_VERSIONS, PROMPT
 
 from ..plan import StagePlan, Work
-from ..stage import Context, take_back_or_block, taking_back
+from ..stage import Context, alone, take_back_or_block, taking_back
 from .extract import READ_FROM_BAD_PAGE, read_from_bad_page
 from .passages import passage_from, read_text
 from .space import _article_text
@@ -547,7 +548,7 @@ class RolesStage:
                 for future in done:
                     work = window.pop(future)
                     try:
-                        outcome = self._outcome(work, future)
+                        outcome = alone(self.name, work, partial(self._outcome, work, future))
                     except ModelUnavailable as exc:
                         outage = outage or exc
                         continue
@@ -574,13 +575,13 @@ class RolesStage:
         connection belongs to; the pool only waits on the role servers.
         """
         future: Future = Future()
-        payload = ctx.payload(work.upstream)
-        if payload is None:
-            future.set_result(Outcome.failure(work.article_id, self.name, "",
-                                              f"the {self.requires} payload is gone",
-                                              fingerprint=work.fingerprint))
-            return future
         try:
+            payload = ctx.payload(work.upstream)
+            if payload is None:
+                future.set_result(Outcome.failure(work.article_id, self.name, "",
+                                                  f"the {self.requires} payload is gone",
+                                                  fingerprint=work.fingerprint))
+                return future
             read = passages.get(work.article_id, {}).get("")
             read_payload = (
                 ctx.payload(read) if read is not None and read.status is Status.OK else None

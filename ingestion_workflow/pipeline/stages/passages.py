@@ -17,13 +17,14 @@ import logging
 import multiprocessing
 import signal
 from concurrent.futures import ProcessPoolExecutor
+from functools import partial
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 
 from ..plan import StagePlan, Work
-from ..stage import NO_TEXT, Context, is_take_back, needs_taking_back
+from ..stage import NO_TEXT, Context, alone, is_take_back, needs_taking_back
 
 logger = logging.getLogger(__name__)
 
@@ -291,26 +292,29 @@ class PassagesStage:
             with ProcessPoolExecutor(max_workers=workers, mp_context=multiprocessing.get_context("fork")) as pool:
                 found = list(pool.map(_find_in_worker, jobs, chunksize=8))
 
+        for work, job, answer in zip(works, jobs, found):
+            yield alone(self.name, work, partial(self._outcome, work, job, *answer))
+
+    def _outcome(self, work: Work, job: dict, how: str, ps, article_space, text) -> Outcome:
         from ingestion_workflow.services.offsets import sha256
 
-        for work, job, (how, ps, article_space, text) in zip(works, jobs, found):
-            if how in ("timeout",) or how.startswith("unreadable"):
-                yield Outcome.failure(work.article_id, self.name, "", how, fingerprint=work.fingerprint)
-                continue
-            ps, over = ps[:MAX_PASSAGES], ps[MAX_PASSAGES:]
-            text_sha256 = sha256(text) if ps else None
-            stored = [passage_dict(p) for p in ps]
-            omitted = [{"span": list(p.span), "hits": len(p.hits),
-                        "reason": f"over the {MAX_PASSAGES}-passage cap"} for p in over]
-            yield Outcome(
-                article_id=work.article_id, stage=self.name, source="", status=Status.OK,
-                fingerprint=work.fingerprint,
-                payload={"source": work.upstream.source, "read": how, "space": article_space,
-                         "full_text_path": job["text_path"] if ps else None,
-                         "text_sha256": text_sha256,
-                         "passages": stored,
-                         "omitted": omitted},
-                summary={"source": work.upstream.source, "read": how, "passages": len(ps),
-                         "omitted": len(over), "hits": sum(len(p.hits) for p in ps),
-                         "spans": spans_digest(text_sha256, stored)},
-            )
+        if how in ("timeout",) or how.startswith("unreadable"):
+            return Outcome.failure(work.article_id, self.name, "", how,
+                                   fingerprint=work.fingerprint)
+        ps, over = ps[:MAX_PASSAGES], ps[MAX_PASSAGES:]
+        text_sha256 = sha256(text) if ps else None
+        stored = [passage_dict(p) for p in ps]
+        omitted = [{"span": list(p.span), "hits": len(p.hits),
+                    "reason": f"over the {MAX_PASSAGES}-passage cap"} for p in over]
+        return Outcome(
+            article_id=work.article_id, stage=self.name, source="", status=Status.OK,
+            fingerprint=work.fingerprint,
+            payload={"source": work.upstream.source, "read": how, "space": article_space,
+                     "full_text_path": job["text_path"] if ps else None,
+                     "text_sha256": text_sha256,
+                     "passages": stored,
+                     "omitted": omitted},
+            summary={"source": work.upstream.source, "read": how, "passages": len(ps),
+                     "omitted": len(over), "hits": sum(len(p.hits) for p in ps),
+                     "spans": spans_digest(text_sha256, stored)},
+        )

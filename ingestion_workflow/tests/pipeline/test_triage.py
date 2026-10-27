@@ -46,14 +46,20 @@ def test_judging_is_done_in_a_pool_with_one_gate_per_worker():
     assert "len(jobs) < 4" in src          # a tiny batch does not earn a pool
 
 
-def test_one_bad_table_does_not_lose_the_batch():
-    """A pool that raises loses every article in flight, not just the one."""
-    import inspect
-
+def test_one_bad_table_does_not_lose_the_batch(monkeypatch):
+    """A table that raises is judged an error, in the pool and out of it alike."""
     from ingestion_workflow.pipeline.stages import triage as t
 
-    src = inspect.getsource(t._judge_article)
-    assert "except Exception" in src and '"route": "error"' in src
+    def judge(gate, table, abstract=""):
+        if table["table_id"] == "bad":
+            raise ValueError("odd cell")
+        return {"table_id": table["table_id"], "passes": True}
+
+    monkeypatch.setattr(t, "judge_table", judge)
+    verdicts = t._judged_each(None, [{"table_id": "bad"}, {"table_id": "good"}], "")
+    assert verdicts == [{"table_id": "bad", "passes": False, "points": 0, "route": "error",
+                         "score": 0.0, "reason": "ValueError: odd cell"},
+                        {"table_id": "good", "passes": True}]
 
 
 def test_the_source_with_the_most_tables_is_triaged(monkeypatch):

@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 from enum import Enum
 from pathlib import Path
-from typing import List, Optional, Sequence
+from typing import List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Catalog, Status
 from ingestion_workflow.catalog.evidence import Evidence
@@ -22,7 +22,21 @@ class Select(str, Enum):
     PENDING = "pending"      # what a stage would do: new, stale, or due a retry (the default)
     NEW = "new"              # never attempted at any stage
     FAILED = "failed"        # has at least one retryable failure
+    ERRORS = "errors"        # kept despite an error its summary notes (`errors:<field>`: one)
     ALL = "all"
+
+
+def parse_select(text: str) -> Tuple[Select, Optional[str]]:
+    """`--select`'s mode, and the field `errors:<field>` names."""
+    mode, _, field = text.partition(":")
+    try:
+        selected = Select(mode)
+    except ValueError:
+        raise ValueError(f"--select takes {', '.join(s.value for s in Select)}; "
+                         f"not {text!r}") from None
+    if field and selected is not Select.ERRORS:
+        raise ValueError(f"only errors takes a field, as errors:<field>; not {text!r}")
+    return selected, field or None
 
 
 @dataclass
@@ -75,8 +89,12 @@ def narrow(
     refresh: Sequence[str] = (),
     settings=None,
     stages: Sequence[str] = (),
+    field: Optional[str] = None,
 ) -> Selection:
     """Restrict a selection by what the catalog already knows about it.
+
+    `Select.ERRORS` keeps the articles an ok artifact notes an error of, of `field` when
+    one is named.
 
     Work the operator asked to redo counts as pending however finished it
     looks, otherwise `--refresh` and the default `--select pending` contradict
@@ -113,10 +131,19 @@ def narrow(
         states = [artifact.status for artifact in artifacts]
         if mode is Select.NEW:
             return not states
+        if mode is Select.ERRORS:
+            return any(artifact.status is Status.OK and _notes_error(artifact, field)
+                       for artifact in artifacts)
         return Status.FAILED in states
 
     refs = [ref for ref in selection.refs if keep(ref)]
-    return Selection(refs, f"{len(refs):,} {mode.value} of {selection.description}")
+    what = f"{mode.value}:{field}" if field else mode.value
+    return Selection(refs, f"{len(refs):,} {what} of {selection.description}")
+
+
+def _notes_error(artifact, field: Optional[str]) -> bool:
+    errors = (artifact.summary or {}).get("errors") or {}
+    return field in errors if field else bool(errors)
 
 
 def _planned(

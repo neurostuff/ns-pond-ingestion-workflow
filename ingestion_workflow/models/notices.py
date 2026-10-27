@@ -21,14 +21,17 @@ Correction = Dict[str, Optional[str]]
 
 
 class PartialAnswer(RuntimeError):
-    """A batched lookup failed part-way; `found` holds what earlier batches returned, and
-    `causes` the failed requests' errors."""
+    """A batched lookup failed part-way; `found` holds what was answered, `causes` the
+    failed requests' errors, and `unreadable` each item whose own record in an answer could
+    not be read, with the error: that item's failure alone."""
 
     def __init__(self, message: str, found: Dict[str, Any],
-                 causes: Sequence[BaseException] = ()) -> None:
+                 causes: Sequence[BaseException] = (),
+                 unreadable: Optional[Dict[str, str]] = None) -> None:
         super().__init__(message)
         self.found = found
         self.causes = tuple(causes)
+        self.unreadable = dict(unreadable or {})
 
 
 def _as_list(value: Any) -> List[Any]:

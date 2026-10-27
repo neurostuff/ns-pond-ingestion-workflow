@@ -21,6 +21,7 @@ from ingestion_workflow.models.metadata import ArticleMetadata, Author
 from ingestion_workflow.models.notices import Correction, PartialAnswer, corrections_from_pubmed
 from ingestion_workflow.utils import authors as author_ids
 from ingestion_workflow.utils.http import Pacer, retry_transient, transient
+from ingestion_workflow.utils.isolation import parsed_each
 from ingestion_workflow.utils.pmcid import normalize_pmcid
 
 logger = logging.getLogger(__name__)
@@ -124,6 +125,17 @@ def summary_of_record(article: Mapping[str, Any]) -> Optional[PubMedSummary]:
         journal=text(journal.get("Title")) or None,
         supplement=in_supplement(issue.get("Issue"), issue.get("Volume"),
                                  (data.get("Pagination") or {}).get("StartPage")))
+
+
+def _pmc_record(record: Any) -> Optional[Tuple[str, PmcRecord]]:
+    """An ID converter record by its PMCID; None for one it has no record of."""
+    if (not isinstance(record, dict) or record.get("status") == "error"
+            or not record.get("pmcid")):
+        return None
+    return normalize_pmcid(str(record["pmcid"])), PmcRecord(
+        pmid=str(record["pmid"]) if record.get("pmid") else None,
+        doi=str(record["doi"]) if record.get("doi") else None,
+    )
 
 
 class PubMedClient:
@@ -530,7 +542,10 @@ class PubMedClient:
         payload = self._esearch(words, retstart=0, retmax=limit, sort="relevance")
         pmids = [str(pmid) for pmid in payload.get("esearchresult", {}).get("idlist", []) or []]
         identifiers = [Identifier(pmid=pmid) for pmid in pmids]
-        found = self.get_metadata(identifiers)
+        try:
+            found = self.get_metadata(identifiers)
+        except PartialAnswer as exc:
+            found = exc.found
         return [(i, found[i.slug]) for i in identifiers if i.slug in found]
 
     def get_metadata(self, identifiers: List[Identifier]) -> Dict[str, ArticleMetadata]:
@@ -545,7 +560,9 @@ class PubMedClient:
         Returns
         -------
         dict
-            Mapping from slug to ArticleMetadata
+            Mapping from slug to ArticleMetadata. A failed batch, or an article whose
+            record cannot be read, raises `PartialAnswer` with the rest; such an
+            article is in its `unreadable`.
         """
         if not identifiers:
             return {}
@@ -564,15 +581,23 @@ class PubMedClient:
         pmids = list(pmid_map.keys())
         batch_size = IDCONV_BATCH_SIZE
 
+        failures: List[BaseException] = []
+        unreadable: Dict[str, str] = {}
         for i in range(0, len(pmids), batch_size):
             batch = pmids[i : i + batch_size]
             try:
                 response_data = self._request_efetch(batch)
-                self._process_efetch_response(response_data, pmid_map, results)
-            except Exception:
-                # Continue with other batches on failure
-                continue
+                unreadable.update(self._process_efetch_response(response_data, pmid_map, results))
+            except Exception as exc:  # noqa: BLE001 - the other batches are still asked
+                failures.append(exc)
 
+        if failures:
+            first = failures[0]
+            raise PartialAnswer(f"PubMed: {type(first).__name__}: {first}", results, failures,
+                                unreadable)
+        if unreadable:
+            raise PartialAnswer(f"PubMed: {len(unreadable)} record(s) could not be read",
+                                results, unreadable=unreadable)
         return results
 
     def summaries(self, pmids: Sequence[str]) -> Dict[str, PubMedSummary]:
@@ -603,15 +628,15 @@ class PubMedClient:
             logger.warning("PubMed esummary fails on %d PMIDs from %s; asking in halves",
                            len(pmids), pmids[0])
             return {**self._summary_batch(pmids[:half]), **self._summary_batch(pmids[half:])}
-        found: Dict[str, PubMedSummary] = {}
-        for pmid in result.get("uids") or []:
+
+        def summary(pmid: str) -> Optional[Tuple[str, PubMedSummary]]:
             record = result.get(pmid) or {}
             if record.get("error"):
-                continue
+                return None
             ids = {a.get("idtype"): a.get("value") for a in record.get("articleids") or []
                    if a.get("value")}
             pmc = ids.get("pmc")
-            found[pmid] = PubMedSummary(
+            return pmid, PubMedSummary(
                 doi=html.unescape(ids["doi"]) if ids.get("doi") else None,
                 title=html.unescape(record.get("title") or ""),
                 pubtypes=tuple(record.get("pubtype") or ()),
@@ -624,7 +649,9 @@ class PubMedClient:
                 supplement=in_supplement(record.get("issue"), record.get("volume"),
                                          record.get("pages")),
             )
-        return found
+
+        return parsed_each(result.get("uids") or [], summary, "PubMed summary",
+                           key=lambda pmid: pmid)[0]
 
     def pmc_records(self, pmcids: Sequence[str]) -> Dict[str, PmcRecord]:
         """The PMID and DOI NCBI's ID converter gives each PMC record it knows."""
@@ -633,14 +660,8 @@ class PubMedClient:
         for i in range(0, len(pmcids), IDCONV_BATCH_SIZE):
             batch = pmcids[i : i + IDCONV_BATCH_SIZE]
             payload = self._request_idconv(self._build_params("pmcid", batch))
-            for record in payload.get("records") or []:
-                if (not isinstance(record, dict) or record.get("status") == "error"
-                        or not record.get("pmcid")):
-                    continue
-                found[normalize_pmcid(str(record["pmcid"]))] = PmcRecord(
-                    pmid=str(record["pmid"]) if record.get("pmid") else None,
-                    doi=str(record["doi"]) if record.get("doi") else None,
-                )
+            found.update(parsed_each(payload.get("records") or [], _pmc_record,
+                                     "PMC record", key=lambda record: record.get("pmcid"))[0])
         return found
 
     def pmids_for_title(self, title: str) -> List[str]:
@@ -687,19 +708,30 @@ class PubMedClient:
 
         Always asked of PubMed, never of a cache: a retraction can arrive years
         after the record was first fetched. A failed batch raises `PartialAnswer`, which
-        carries the earlier batches' results, rather than reading as "no notices".
+        carries the earlier batches' results, rather than reading as "no notices"; so,
+        after every batch, does a record that cannot be read, naming it in `unreadable`.
         """
         found: Dict[str, Tuple[List[Correction], bool]] = {}
+        unreadable: Dict[str, str] = {}
         pmids = list(dict.fromkeys(str(p) for p in pmids if p))
         for i in range(0, len(pmids), IDCONV_BATCH_SIZE):
             try:
                 response = self._request_efetch(pmids[i : i + IDCONV_BATCH_SIZE])
             except Exception as exc:  # noqa: BLE001 - carries the earlier batches
-                raise PartialAnswer(str(exc), found) from exc
+                raise PartialAnswer(str(exc), found, (exc,), unreadable) from exc
             articles = (response.get("PubmedArticleSet") or {}).get("PubmedArticle")
-            for article in self._ensure_list(articles):
-                if isinstance(article, dict) and (pmid := self._extract_pmid(article)):
-                    found[pmid] = corrections_from_pubmed(article)
+
+            def parse(article):
+                pmid = self._extract_pmid(article) if isinstance(article, dict) else None
+                return (pmid, corrections_from_pubmed(article)) if pmid else None
+
+            read, unread = parsed_each(self._ensure_list(articles), parse, "PubMed article",
+                                       key=self._extract_pmid)
+            found.update(read)
+            unreadable.update(unread)
+        if unreadable:
+            raise PartialAnswer(f"PubMed: {len(unreadable)} record(s) could not be read",
+                                found, unreadable=unreadable)
         return found
 
     @retry_transient(3, 8, retry_on=_transient_or_cut_short)
@@ -721,26 +753,25 @@ class PubMedClient:
         response_data: Dict[str, Any],
         pmid_map: Dict[str, Identifier],
         results: Dict[str, ArticleMetadata],
-    ) -> None:
+    ) -> Dict[str, str]:
+        """Each asked article's ArticleMetadata, into `results` by slug; returns the error
+        of each whose record could not be read, by slug."""
         article_set = response_data.get("PubmedArticleSet", {})
         articles = article_set.get("PubmedArticle")
-        if not articles:
-            return
-        if not isinstance(articles, list):
-            articles = [articles]
 
-        for article in articles:
-            if not isinstance(article, dict):
-                continue
-            pmid = self._extract_pmid(article)
-            if not pmid:
-                continue
-            identifier = pmid_map.get(pmid)
-            if not identifier:
-                continue
-            metadata = self._build_article_metadata(article)
-            if metadata:
-                results[identifier.slug] = metadata
+        def asked(article) -> Optional[str]:
+            identifier = pmid_map.get(self._extract_pmid(article) or "")
+            return identifier.slug if identifier else None
+
+        def parse(article):
+            slug = asked(article) if isinstance(article, dict) else None
+            metadata = self._build_article_metadata(article) if slug else None
+            return (slug, metadata) if metadata else None
+
+        read, unreadable = parsed_each(self._ensure_list(articles), parse, "PubMed article",
+                                       key=asked)
+        results.update(read)
+        return unreadable
 
     @staticmethod
     def _extract_pmid(article: Mapping[str, Any]) -> Optional[str]:

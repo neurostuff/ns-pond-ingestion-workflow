@@ -145,7 +145,12 @@ def test_an_error_deciding_the_authors_keeps_the_record_and_notes_it(env, eviden
     _, (outcome,) = _run(MetadataStage(settings), Context(settings, catalog), catalog, ref)
 
     assert outcome.status is Status.OK, outcome.error
-    assert outcome.summary["authors_error"] == "ValueError: cannot read its authors"
+    assert outcome.summary["errors"] == {
+        name: "authors: ValueError: cannot read its authors"
+        for name in ("authors", "affiliations", "corresponding_authors")}
+    assert "transient" not in outcome.summary
+    assert {"authors", "affiliations", "ror", "corresponding_authors"} <= set(
+        outcome.summary["missing"])
     assert (outcome.summary["authors"], outcome.summary["license"]) == (0, "cc-by-nc")
     stored = ArticleMetadata.from_dict(catalog.payload(catalog.artifact(ref.id, "metadata", "")))
     assert stored.title and stored.authors == []
@@ -306,14 +311,14 @@ class _Failing(BaseHTTPRequestHandler):
 
 
 @pytest.mark.vcr("test_a_licence_nobody_states_is_recorded_as_assumed.yaml", ignore_localhost=True)
-@pytest.mark.parametrize("status, summary", [
-    # down: asked about again without spending a try
-    (503, {"unanswered": ["crossref"]}),
-    # refusing the request: a try spent
+@pytest.mark.parametrize("status, transient", [
+    # down: asked about again after the retry delay
+    (503, ["license"]),
+    # refusing the request: redone only when asked
     (400, None),
 ])
 def test_crossref_s_failure_is_marked_an_outage_only_when_it_is_one(
-        env, status, summary, evidence):
+        env, status, transient, evidence):
     """Semantic Scholar and OpenAlex answer as recorded for 10.1037/npe0000112."""
     settings, catalog = env
     ref = _held(catalog, Identifier(doi="10.1037/npe0000112"), "ace", None, evidence=evidence)
@@ -327,9 +332,13 @@ def test_crossref_s_failure_is_marked_an_outage_only_when_it_is_one(
     finally:
         server.shutdown()
         server.server_close()
-    assert outcome.status is Status.FAILED
-    assert outcome.error.startswith("the licence of the ace copy is undecided: crossref ")
-    assert (outcome.summary or None) == summary
+    # The record passes, its licences assumed all rights reserved, and the error is noted.
+    assert outcome.status is Status.OK, outcome.error
+    assert (outcome.summary["license"], outcome.summary["license_determination"]) == (
+        "all-rights-reserved", "assumed")
+    assert outcome.summary["errors"]["license"].startswith(
+        "the licence of the ace copy is assumed: crossref ")
+    assert outcome.summary.get("transient") == transient
 
 
 @pytest.mark.vcr()

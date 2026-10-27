@@ -6,6 +6,7 @@ import logging
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
+from functools import partial
 from typing import Dict, Iterator, List, Optional, Sequence
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
@@ -31,7 +32,7 @@ EXTRACTION_VERSION = "2026-10-01.serialised+minus+dedupe+thinspace+selfclosing+b
 PROMPT_RULES_VERSION = "2026-10-09.no-placeholder+no-deactivation-seed"
 
 from ..plan import StagePlan, Work
-from ..stage import NO_DIGESTS, Context, metadata_fingerprint
+from ..stage import NO_DIGESTS, Context, alone, metadata_fingerprint
 from ..stage import metadata_read as read_fields
 
 #: What this stage reads of the article's metadata: the title and abstract it sends to
@@ -210,7 +211,8 @@ class AnalysesStage:
         metadata = self._metadata_for(ctx, [work for work, _ in jobs])
         with ThreadPoolExecutor(max_workers=workers) as pool:
             futures = [
-                pool.submit(self._run_one, work, content, metadata.get(work.article_id))
+                pool.submit(alone, self.name, work,
+                            partial(self._run_one, work, content, metadata.get(work.article_id)))
                 for work, content in jobs
             ]
             for future in futures:
