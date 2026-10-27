@@ -2057,9 +2057,11 @@ def test_a_reviewed_preprint_with_no_version_of_record_is_eLife_s_preprint(tmp_p
         "publication_status": "preprint"}
 
 
-def test_a_doi_filed_as_a_preprint_s_that_no_server_registered_is_refused(tmp_path):
-    with pytest.raises(ValueError, match="no server is known"):
-        _written(tmp_path, Identifier(pmid="1", preprint_dois=["10.1016/j.neuroimage.2020.117000"]))
+def test_a_doi_filed_as_a_preprint_s_on_an_unlisted_server_is_named_by_its_prefix(tmp_path):
+    # 10.31237 is Thesis Commons, an OSF member study_schema does not list.
+    paper, _, _ = _written(tmp_path, Identifier(pmid="1", preprint_dois=["10.31237/osf.io/8nvb9"]))
+    assert paper["header"]["identifiers"]["preprint_dois"] == [
+        {"doi": "10.31237/osf.io/8nvb9", "server": "10.31237"}]
 
 
 def test_a_duplicate_pubmed_record_goes_up_as_an_alternative(tmp_path):
