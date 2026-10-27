@@ -1,5 +1,6 @@
 import pytest
 import requests
+import study_schema.models.paper_parse as pp
 from ingestion_workflow.utils.preprints import (
     PREPRINT_SERVERS,
     is_preprint_doi,
@@ -44,6 +45,10 @@ PREPRINTS = [
     ("10.26434/chemrxiv-2023-5rglc-v2", "chemrxiv"),
     ("10.26434/chemrxiv.15010587/v1", "chemrxiv"),
     ("10.2196/preprints.25731", "jmir_preprints"),
+    ("10.7287/peerj.preprints.737", "peerj_preprints"),
+    ("10.7287/peerj.preprints.1071v2", "peerj_preprints"),
+    ("10.32388/219hxw", "qeios"),
+    ("10.32388/599711.2", "qeios"),
 ]
 
 NOT_PREPRINTS = [
@@ -76,6 +81,11 @@ NOT_PREPRINTS = [
     "10.2139/ssrn.",
     "10.26434/chemrxiv",
     "10.26434/chemrxiv_123",
+    # PeerJ's journal DOIs, and the reviews 10.7287 registers for them
+    "10.7717/peerj.923",
+    "10.7287/peerj.10052v0.1/reviews/2",
+    # a Qeios id is six characters
+    "10.32388/219hx",
 ]
 
 
@@ -97,21 +107,9 @@ def test_the_spelling_of_a_doi_does_not_change_its_server():
     assert preprint_server("10.31234/OSF.IO/32NZP") == "psyarxiv"
 
 
-#: study_schema's PreprintServer values, pinned from study_schema#40. Ingestion does not
-#: depend on study_schema yet, so this list is the contract until it does; the bump comes
-#: when #40 merges, and this becomes the enum itself.
-STUDY_SCHEMA_PREPRINT_SERVERS = {
-    "biorxiv", "medrxiv", "arxiv", "researchsquare", "osf_preprints", "arabixiv",
-    "metaarxiv", "engrxiv", "focus_archive", "frenxiv", "ina_rxiv", "lawarxiv",
-    "lis_scholarship_archive", "marxiv", "mindrxiv", "nutrixiv", "paleorxiv", "psyarxiv",
-    "socarxiv", "sportrxiv", "africarxiv", "mediarxiv", "bodoarxiv", "edarxiv",
-    "biohackrxiv", "ssrn", "preprints_org", "authorea", "techrxiv", "chemrxiv",
-    "jmir_preprints",
-}
-
-
 def test_the_registrys_servers_are_study_schemas_preprint_servers():
-    assert {s.name for s in PREPRINT_SERVERS} == STUDY_SCHEMA_PREPRINT_SERVERS
+    # eLife's reviewed preprints have no pattern: only a DOI filed as a preprint's is eLife's.
+    assert {s.name for s in PREPRINT_SERVERS} == {s.value for s in pp.PreprintServer} - {"elife"}
 
 
 @pytest.mark.parametrize("doi, server", [
@@ -226,7 +224,8 @@ def test_the_page_crossref_records_for_a_preprint_is_on_its_servers_host(doi, se
 
 
 def test_the_servers_that_hold_only_preprints():
-    """arXiv, SSRN and OSF's providers also take authors' accepted manuscripts."""
+    """arXiv, SSRN and OSF's providers also take authors' accepted manuscripts; Qeios
+    publishes articles it calls peer reviewed."""
     assert {s.name for s in PREPRINT_SERVERS if s.preprints_only} == {
         "biorxiv", "medrxiv", "researchsquare", "preprints_org", "authorea", "techrxiv",
-        "chemrxiv", "jmir_preprints"}
+        "chemrxiv", "jmir_preprints", "peerj_preprints"}

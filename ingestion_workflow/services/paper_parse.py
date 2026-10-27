@@ -562,12 +562,10 @@ def article_identifiers(identifier, meta):
             filed.update(pmcid=None,
                          preprint_pmcids=(*identifier.preprint_pmcids, identifier.pmcid))
         identifier = replace(identifier, **filed)
-    preprints = []
-    for doi in identifier.preprint_dois:
-        server = server_of_filed_preprint_doi(doi)
-        if server is None:
-            raise ValueError(f"{doi} is filed as a preprint's, and no server is known for it")
-        preprints.append(pp.PreprintDoi(doi=doi, server=server))
+    # A server study_schema does not list is named by the DOI's prefix.
+    preprints = [pp.PreprintDoi(doi=doi, server=server_of_filed_preprint_doi(doi)
+                                or doi.split("/", 1)[0])
+                 for doi in identifier.preprint_dois]
     return pp.ArticleIdentifiers(
         pmid=identifier.pmid,
         pmcid=identifier.pmcid,

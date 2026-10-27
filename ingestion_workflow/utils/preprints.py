@@ -51,7 +51,9 @@ def _osf(name: str, prefix: str, osf_ids: Tuple[str, ...], *domains: str) -> Pre
 #: Lifecycle Journal, which are not preprint servers) and share one DOI shape; engrXiv
 #: (10.31224) is run by another member on the same platform, and its newer DOIs are a bare
 #: number (10.31224/4330). JMIR Preprints has a host of its own because jmir.org also
-#: serves the journals.
+#: serves the journals. PeerJ Preprints (closed 2019) has no host of its own: peerj.com
+#: also serves the journals, and 10.7287 also registers their peer reviews. Qeios also
+#: publishes articles it calls peer reviewed.
 PREPRINT_SERVERS: Tuple[PreprintServer, ...] = (
     PreprintServer("biorxiv", (r"10\.1101/(\d{4}\.\d{2}\.\d{2}\.\d{6}|\d{6})",
                                r"10\.64898/\d{4}\.\d{2}\.\d{2}\.\d{6}"), ("biorxiv.org",)),
@@ -95,6 +97,9 @@ PREPRINT_SERVERS: Tuple[PreprintServer, ...] = (
                    ("chemrxiv.org",)),
     PreprintServer("jmir_preprints", (r"10\.2196/preprints\.\d+",),
                    ("preprints.jmir.org",)),
+    PreprintServer("peerj_preprints", (r"10\.7287/peerj\.preprints\.\d+(v\d+)?",)),
+    PreprintServer("qeios", (r"10\.32388/[a-z0-9]{6}(\.\d+)?",), ("qeios.com",),
+                   preprints_only=False),
 )
 
 
