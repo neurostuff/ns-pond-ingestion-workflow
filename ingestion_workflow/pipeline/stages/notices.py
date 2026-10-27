@@ -19,6 +19,7 @@ from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models.notices import PartialAnswer, openalex_retraction, retraction_of
+from ingestion_workflow.utils.http import transient
 from ingestion_workflow.utils.isolation import error_text
 
 from ..plan import StagePlan, Work
@@ -49,6 +50,8 @@ class NoticesStage:
         self.settings = settings
         self._client = None
         self._openalex = None
+        #: Articles left pending this run, every source that missed them busy or down.
+        self._left_pending = 0
 
     @property
     def client(self):
@@ -136,18 +139,20 @@ class NoticesStage:
             from_openalex = bool(doi) and doi in retracted
             if not (from_pubmed or from_openalex):
                 errors = [
-                    f"{name}: {why}"
+                    (f"{name}: {why}", exc)
                     for name, exc, asked in (
                         ("pubmed", pubmed_error, ident.pmids),
                         ("openalex", openalex_error, [doi] if doi else []),
                     )
                     if (why := _failed_for(exc, asked))
                 ]
+                if self._waits(errors):
+                    continue
                 yield Outcome.failure(
                     work.article_id,
                     self.name,
                     "",
-                    "; ".join(errors) or "no source returned a record",
+                    "; ".join(why for why, _ in errors) or "no source returned a record",
                     fingerprint=work.fingerprint,
                 )
                 continue
@@ -162,19 +167,21 @@ class NoticesStage:
             # OK only when every source asked has answered; otherwise the
             # answers received are kept but the paper is asked again next run.
             unanswered = [
-                f"{name}: {why}"
+                (f"{name}: {why}", exc)
                 for name, exc, asked, got in (
                     ("pubmed", pubmed_error, ident.pmids, len(answered) == len(ident.pmids)),
                     ("openalex", openalex_error, [doi] if doi else [], from_openalex),
                 )
                 if not got and (why := _failed_for(exc, asked))
             ]
+            if self._waits(unanswered):
+                continue
             yield Outcome(
                 article_id=work.article_id,
                 stage=self.name,
                 source="",
                 status=Status.FAILED if unanswered else Status.OK,
-                error="; ".join(unanswered)[:2000] or None,
+                error="; ".join(why for why, _ in unanswered)[:2000] or None,
                 fingerprint=work.fingerprint,
                 payload={
                     "pmid": pmid,
@@ -191,6 +198,29 @@ class NoticesStage:
                     "corrections": len(corrections),
                 },
             )
+
+
+    def _waits(self, errors: Sequence[Tuple[str, Exception]]) -> bool:
+        """Whether the article is left pending, spending no try and keeping what it holds:
+        every source that missed it was busy or down (`transient`), as a 429 says."""
+        if not errors or not all(_transient(exc) for _, exc in errors):
+            return False
+        self._left_pending += 1
+        return True
+
+    def take_notes(self) -> List[str]:
+        """What the run report says of the articles a source busy or down left pending."""
+        notes = ([f"{self._left_pending:,} article(s) left pending: a source was busy or down"]
+                 if self._left_pending else [])
+        self._left_pending = 0
+        return notes
+
+
+def _transient(exc: Exception) -> bool:
+    """A failure of a source busy or down, not one that refused or could not be read."""
+    if isinstance(exc, PartialAnswer):
+        return bool(exc.causes) and all(transient(cause) for cause in exc.causes)
+    return transient(exc)
 
 
 def _failed_for(exc: Optional[Exception], asked: Sequence[str]) -> Optional[str]:

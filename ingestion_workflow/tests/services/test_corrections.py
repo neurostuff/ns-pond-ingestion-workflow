@@ -498,3 +498,27 @@ def test_a_record_openalex_could_not_read_fails_only_its_own_paper():
     assert outs["odd"].status is Status.FAILED
     assert outs["odd"].error == "openalex: TypeError: list"
     assert outs["known"].error == "no source returned a record"
+
+
+def _quota_spent():
+    """OpenAlex's answer once its daily quota is spent, as the client raises it."""
+    from ingestion_workflow.models.notices import PartialAnswer
+
+    response = requests.Response()
+    response.status_code = 429
+    cause = requests.HTTPError("OpenAlex request failed (429)", response=response)
+    return PartialAnswer(str(cause), {}, (cause,))
+
+
+def test_a_source_busy_or_down_leaves_the_papers_it_missed_pending():
+    """No outcome, so no try is spent and what the paper held is kept; the report says how
+    many. A paper the other source answered for in full is still recorded."""
+    pubmed = {"9500320": corrections_from_pubmed(_articles()["9500320"])}
+    stage = _openalex_stage({}, error=_quota_spent(), pubmed=pubmed)
+    out = {o.article_id: o for o in stage.execute(_ctx(), [
+        _doi_work("10.1/x", pmid="9500320", aid="both"), _doi_work("10.1/y", aid="doi-only"),
+        _doi_work(None, pmid="9500320", aid="pmid-only")])}
+
+    assert set(out) == {"pmid-only"} and out["pmid-only"].status is Status.OK
+    assert stage.take_notes() == ["2 article(s) left pending: a source was busy or down"]
+    assert stage.take_notes() == []
