@@ -187,10 +187,12 @@ class MetadataStage:
                                           "extract")
         held: Dict[str, List[HeldDownload]] = {}
         dois: Dict[str, List[str]] = {}
+        preprints: Dict[str, List[str]] = {}
         # In the order the sources are tried, so the first held copy's record speaks first.
         order = {source: i for i, source in enumerate(self.settings.download_sources)}
         for slug, work in by_slug.items():
             dois[slug] = held_dois(ctx.catalog, work.article_id)
+            preprints[slug] = ctx.catalog.aliases(work.article_id, "preprint_doi")
             for source, download in sorted(downloads.get(work.article_id, {}).items(),
                                            key=lambda item: (order.get(item[0], len(order)),
                                                              item[0])):
@@ -206,7 +208,7 @@ class MetadataStage:
         # Outside the batch's own failures: no article can be decided until it is configured.
         self.service.require_licence_providers()
         # An error here is narrowed by the scheduler to the article that raised it.
-        found = self.service.enrich_metadata(contents, held, dois, ctx.now)
+        found = self.service.enrich_metadata(contents, held, dois, ctx.now, preprints)
 
         for slug, work in by_slug.items():
             metadata = found.get(slug)

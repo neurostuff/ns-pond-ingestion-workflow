@@ -24,7 +24,7 @@ import logging
 from dataclasses import dataclass, replace
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
+from typing import Collection, Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
 from urllib.parse import urlsplit
 
 from lxml import etree
@@ -140,6 +140,7 @@ class MetadataService:
         held: Mapping[str, Sequence[HeldDownload]],
         dois: Mapping[str, Sequence[str]],
         now: datetime,
+        filed_preprints: Optional[Mapping[str, Collection[str]]] = None,
     ) -> Dict[str, ArticleMetadata]:
         """
         Enrich extracted contents with article metadata.
@@ -159,6 +160,9 @@ class MetadataService:
         now : datetime
             The time the licence statements are read at: one starting later is embargoed,
             and the earliest such start is recorded as `license_embargo_until`.
+        filed_preprints : mapping of slug to DOIs, optional
+            The DOIs of `dois` the catalog holds as a preprint's: a preprint whatever its
+            pattern says, so a server `is_preprint_doi` does not know makes no conflict.
 
         Returns
         -------
@@ -175,11 +179,17 @@ class MetadataService:
         if not extracted_contents:
             return {}
 
+        filed = filed_preprints or {}
+
+        def preprint(slug: str, doi: str) -> bool:
+            """A preprint's DOI: by its server's pattern, or as the catalog filed it."""
+            return is_preprint_doi(doi) or doi in filed.get(slug, ())
+
         identified_items = []
         for item in extracted_contents:
             if not item.identifier:
                 continue
-            published = sorted(d for d in dois[item.slug] if not is_preprint_doi(d))
+            published = sorted(d for d in dois[item.slug] if not preprint(item.slug, d))
             if len(published) > 1:
                 self.conflicts[item.slug] = (
                     f"catalog conflict: the article holds two DOIs of a version of record, "
@@ -209,13 +219,11 @@ class MetadataService:
         # Each article's DOIs, a journal's apart from a preprint server's, and the
         # identifiers Crossref and OpenAlex are asked by for each.
         journal: Dict[str, Optional[str]] = {}
-        preprints: Dict[str, List[str]] = {}
         by_doi: Dict[str, List[Tuple[str, Identifier]]] = {}
         for item in identified_items:
             known = sorted({d for d in dois[item.slug] if d})
-            published = [d for d in known if not is_preprint_doi(d)]
+            published = [d for d in known if not preprint(item.slug, d)]
             journal[item.slug] = published[0] if published else None
-            preprints[item.slug] = [d for d in known if is_preprint_doi(d)]
             by_doi[item.slug] = [(d, Identifier(doi=d)) for d in known]
 
         def merge(found: Dict[str, ArticleMetadata]) -> None:
