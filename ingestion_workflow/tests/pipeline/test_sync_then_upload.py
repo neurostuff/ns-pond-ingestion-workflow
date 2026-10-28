@@ -4,10 +4,10 @@ Upload holds back a parse built from a table or prose reading that is stale or f
 the ingester keys analyses by the parse's keys and supersedes the ones a new parse lacks,
 so such a parse would take live analyses out of neurostore.
 
-Upload goes through the real client. The tests that send replay cassettes recorded
-against the private, local neurostore `test_neurostore_ingest` describes, which holds
-base studies BS21, BS29 and BS42; the rest allow no request at all, so a parse sent that
-should not be fails them.
+Upload goes through the real client. The tests that send ask for the `neurostore`
+fixture, which serves the ingester by its contract (`ingestion_workflow.tests.neurostore`);
+for the rest, `env` serves a neurostore that takes no request at all, so a parse sent
+that should not be fails them.
 """
 
 from __future__ import annotations
@@ -16,7 +16,6 @@ import dataclasses
 import hashlib
 import json
 import logging
-import os
 from pathlib import Path
 
 import pytest
@@ -57,13 +56,9 @@ from ingestion_workflow.pipeline.upstream import (
 from ingestion_workflow.services import neurostore_ingest
 from ingestion_workflow.services.funnel_report import FILTERED, build_funnel, open_readonly
 from ingestion_workflow.services.set_roles import COORDINATE_ROLES, Prediction
-from ingestion_workflow.tests.services.test_neurostore_ingest import (
-    LOCAL,
-    REPLAY_TOKEN,
-    _closed_port,
-)
+from ingestion_workflow.tests.services.test_neurostore_ingest import _closed_port
 from ingestion_workflow.tests import cassette_secrets
-from ingestion_workflow.tests.upload_body import without_input_fingerprints
+from ingestion_workflow.tests import neurostore as neurostore_mock
 from ingestion_workflow.pipeline.stage import metadata_digests
 from study_schema.models.paper_parse import CopyAccess, CopyRoute, CopyVersion
 from test_prose_stages import ARTICLE, _read_prose, _Reader, _record_upstream
@@ -83,11 +78,12 @@ def vcr_config():
         "filter_headers": ["authorization", "cookie", "set-cookie"],
         "before_record_response": cassette_secrets.scrub_response,
         "record_mode": "none",
-        "match_on": ["method", "scheme", "host", "port", "path", "query", "upload_body"],
+        # The mock neurostore answers in-process; the cassettes hold NCBI's answers.
+        "ignore_hosts": [neurostore_mock.HOST],
     }
 
 
-#: For the tests that send: they record their cassette once, against the local neurostore.
+#: A test whose cassette (NCBI's answers to the catalog's checks) is recorded once.
 RECORDS = pytest.mark.vcr(record_mode="once")
 
 
@@ -107,17 +103,6 @@ class _ByName:
         return out
 
 
-def _neurostore_plays(vcr):
-    """Each recorded neurostore request's replay count; the catalog's checks of a PMID are
-    recorded in the same cassette."""
-    return [vcr.play_counts[i] for i, r in enumerate(vcr.requests) if r.host == "127.0.0.1"]
-
-
-def _sent(vcr):
-    """The body of each upload the cassette replayed."""
-    return [json.loads(r.body) for r in vcr.requests if r.method == "POST"]
-
-
 def _run(stage, ctx, catalog, ref):
     plan = stage.plan(ctx, [ref], catalog.artifacts([ref.id], stage.name),
                       catalog.artifacts([ref.id], stage.requires))
@@ -134,22 +119,27 @@ def _roles(settings, monkeypatch, classifier):
 
 @pytest.fixture()
 def token(monkeypatch):
-    value = os.environ.get("NEUROSTORE_TOKEN") or REPLAY_TOKEN
-    monkeypatch.setenv("NEUROSTORE_TOKEN", value)
-    return value
+    monkeypatch.setenv("NEUROSTORE_TOKEN", neurostore_mock.TOKEN)
+    return neurostore_mock.TOKEN
 
 
 @pytest.fixture()
-def env(tmp_path, served, token):  # noqa: F811 - the imported fixture
+def env(tmp_path, served, token, request, monkeypatch):  # noqa: F811 - the imported fixture
+    """A test that sends asks for `neurostore`; any other takes no request at all."""
+    sends = "neurostore" in request.fixturenames
+    server = (request.getfixturevalue("neurostore") if sends
+              else neurostore_mock.Neurostore(closed=True))
+    server.install(monkeypatch)
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", ns_pond_root=tmp_path / "pond",
                         prose_model="nu-prose-v2", llm_api_key="x",
                         role_model_table=TABLE_MODEL, role_model_prose=PROSE_MODEL,
-                        neurostore_api_url=LOCAL)
+                        neurostore_api_url=server.url)
     path = tmp_path / "article.xml"
     path.write_text(ARTICLE)
     with Catalog.open(settings.catalog_root) as catalog:
         yield settings, catalog, path
+    server.check()
 
 
 def _prose_article(env, monkeypatch, pmid, neurostore=None, doi=None, *, evidence):
@@ -183,7 +173,7 @@ def test_sync_runs_before_upload_and_upload_reads_what_sync_wrote():
 
 @RECORDS
 def test_sync_writes_the_parse_with_no_upload_and_upload_sends_what_it_wrote(env, monkeypatch,
-                                                                             vcr, evidence):
+                                                                             neurostore, evidence):
     settings, catalog, _ = env
     ctx, ref = _prose_article(env, monkeypatch, "21", "BS21", evidence=evidence)
     sync, upload = build(["sync", "upload"], settings)
@@ -199,19 +189,16 @@ def test_sync_writes_the_parse_with_no_upload_and_upload_sends_what_it_wrote(env
     _, (done,) = _run(upload, ctx, catalog, ref)
     upload.finish()
     assert done.status is Status.OK, done.error
-    (payload,) = _sent(vcr)
-    # the replayed body is the recorded one: its input fingerprints are the recorded run's
-    assert without_input_fingerprints(payload["coordinate_parse"]) == without_input_fingerprints(
-        json.loads(written.read_text()))
-    assert without_input_fingerprints(payload["parsed_paper"]) == without_input_fingerprints(json.loads(
-        (settings.ns_pond_root / "BS21" / "parse" / "parsed_paper.json").read_text()))
+    (payload,) = neurostore.uploads
+    assert payload["coordinate_parse"] == json.loads(written.read_text())
+    assert payload["parsed_paper"] == json.loads(
+        (settings.ns_pond_root / "BS21" / "parse" / "parsed_paper.json").read_text())
     # The text goes with them: the file sync wrote, which the parsed paper's hash names.
     text_path = settings.ns_pond_root / "BS21" / payload["parsed_paper"]["text_path"]
     assert payload["text"].encode() == text_path.read_bytes()
     assert hashlib.sha256(text_path.read_bytes()).hexdigest() == \
         payload["parsed_paper"]["text_sha256"]
-    # The matcher blanks the input fingerprints of the replayed body; the parse written here is
-    # where they are held to the catalog's artifacts.
+    # The input fingerprints of what was sent are the catalog's artifacts'.
     held = {"extraction": catalog.artifacts([ref.id], "extract")[ref.id]["pubget"].fingerprint,
             "metadata": catalog.artifacts([ref.id], "metadata")[ref.id][""].fingerprint,
             "triage": catalog.artifacts([ref.id], "triage")[ref.id][""].fingerprint,
@@ -237,7 +224,7 @@ def test_sync_writes_the_parse_with_no_upload_and_upload_sends_what_it_wrote(env
 @RECORDS
 @pytest.mark.parametrize("fingerprint", ["", "up-legacy"], ids=["unfingerprinted", "legacy"])
 def test_an_upload_the_ingester_did_not_make_is_never_fresh(
-        env, monkeypatch, fingerprint, vcr, evidence):
+        env, monkeypatch, fingerprint, neurostore, evidence):
     """A direct-database upload, a migrated one with no fingerprint among them, did not send
     this parse; the parse goes up through the ingester once."""
     settings, catalog, _ = env
@@ -247,7 +234,7 @@ def test_an_upload_the_ingester_did_not_make_is_never_fresh(
                             summary={"base_study_id": "BS42", "analyses": 1})])
     upload = UploadStage(settings)
     plan, (done,) = _run(upload, ctx, catalog, ref)
-    assert (plan.fresh, done.status, len(_sent(vcr))) == (0, Status.OK, 1)
+    assert (plan.fresh, done.status, len(neurostore.uploads)) == (0, Status.OK, 1)
     plan, outcomes = _run(upload, ctx, catalog, ref)
     assert (plan.fresh, outcomes) == (1, [])
 
@@ -414,8 +401,8 @@ def test_the_parse_holds_each_link_with_what_linkprobe_saw_of_it(env, monkeypatc
 
 
 @RECORDS
-def test_an_article_neurostore_holds_no_base_study_for_is_uploaded_and_given_one(env, monkeypatch,
-                                                                                vcr, evidence):
+def test_an_article_neurostore_holds_no_base_study_for_is_uploaded_and_given_one(
+        env, monkeypatch, neurostore, evidence):
     """The ingester creates the base study from the parse's identifiers and the ParsedPaper's
     bibliography; until then the copy sits outside the tree pondie reads."""
     settings, catalog, _ = env
@@ -453,7 +440,7 @@ def test_an_article_neurostore_holds_no_base_study_for_is_uploaded_and_given_one
     assert again.status is Status.OK and again.summary["base_study_id"] == created
     # An upload's own record is what it sent; the one before it is not carried on.
     assert "last_upload" not in again.summary
-    first_sent, second_sent = _sent(vcr)
+    first_sent, second_sent = neurostore.uploads
     assert first_sent["coordinate_parse"]["header"]["neurostore_base_study_id"] is None
     assert second_sent["coordinate_parse"]["header"]["neurostore_base_study_id"] == created
     assert second_sent["coordinate_parse"]["parse_id"] == first.summary["parse_id"]
@@ -461,7 +448,7 @@ def test_an_article_neurostore_holds_no_base_study_for_is_uploaded_and_given_one
 
 @RECORDS
 def test_an_upload_neurostore_filed_under_a_merged_base_study_teaches_its_alias(
-        env, monkeypatch, vcr, evidence):
+        env, monkeypatch, neurostore, evidence):
     """BS21 was merged into BS84 in neurostore; the ingester followed the merge and says so
     (merged_from). The write committed: the upload is recorded, under BS84, and the article
     is known by BS84 as well as BS21."""
@@ -470,6 +457,7 @@ def test_an_upload_neurostore_filed_under_a_merged_base_study_teaches_its_alias(
     sync, upload = build(["sync", "upload"], settings)
     _run(sync, ctx, catalog, ref)
     sync.finish()
+    neurostore.script(neurostore.summary(base_study_id="BS84", merged_from=["BS21"]))
     _, (done,) = _run(upload, ctx, catalog, ref)
     upload.finish()
 
@@ -478,7 +466,7 @@ def test_an_upload_neurostore_filed_under_a_merged_base_study_teaches_its_alias(
     assert done.summary["ingester"]["summary"]["merged_from"] == ["BS21"]
     assert catalog.resolve(Identifier(neurostore="BS84")).id == ref.id
     assert catalog.resolve(Identifier(neurostore="BS21")).id == ref.id
-    assert len(_sent(vcr)) == 1
+    assert len(neurostore.uploads) == 1
 
 
 def _plan_sync(sync, ctx, catalog, refs):
@@ -910,7 +898,7 @@ def _take_back_space(catalog, ref, reason=NO_TEXT):
 @RECORDS
 @pytest.mark.parametrize("reason", [NO_TEXT, NO_ANALYSES], ids=["no-text", "no-analyses"])
 def test_a_taken_back_article_gets_no_parse_and_is_recorded_once_with_its_reason(
-        env, monkeypatch, reason, vcr, evidence, caplog):
+        env, monkeypatch, reason, neurostore, evidence, caplog):
     """Nothing is deleted from neurostore: it keeps the last upload, and the upload stage
     records the take-back's reason and sends nothing again."""
     settings, catalog, _ = env
@@ -941,7 +929,7 @@ def test_a_taken_back_article_gets_no_parse_and_is_recorded_once_with_its_reason
     # Recorded once; after that the article waits, and nothing is sent.
     plan, outcomes = _run(upload, ctx, catalog, ref)
     assert (plan.blocked, plan.pending, outcomes) == (1, [], [])
-    assert len(_sent(vcr)) == 1
+    assert len(neurostore.uploads) == 1
 
 
 @pytest.mark.vcr
@@ -1075,7 +1063,7 @@ def _icafz5(tmp_path, monkeypatch, catalog, evidence, *, analyses_fresh=False, u
             uploaded=True):
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", ns_pond_root=tmp_path / "pond",
-                        role_model_table=TABLE_MODEL, neurostore_api_url=LOCAL)
+                        role_model_table=TABLE_MODEL, neurostore_api_url=neurostore_mock.URL)
     ref = catalog.register(Identifier(pmid="16139528", neurostore="NTKEuAF4Autf"), evidence)
     catalog.record([Outcome(article_id=ref.id, stage="triage", source="", fingerprint="tr-1005",
                             summary={"source": "ace", "tables": 3, "passed": 2,
@@ -1374,19 +1362,18 @@ def _stops(upload, ctx, catalog, refs, caplog):
         assert len(plan.pending) == 1
 
 
-@pytest.mark.vcr(
-    str(Path(__file__).parents[1] / "cassettes" / "neurostore_ingest"
-        / "test_a_key_the_ingester_refuses_is_the_paper_s_failure[KEY_MISMATCH].yaml"),
-    match_on=["method", "scheme", "host", "port", "path", "query"])
 def test_a_key_the_ingester_refuses_is_recorded_as_the_article_s_failure_with_its_code(
-        env, monkeypatch, evidence):
-    """neurostore's real KEY_MISMATCH refusal (its answer to another parse: this client's
-    own key check would not send one it derives differently) is a permanent failure of
-    that article whose reason names the code; nothing stops."""
+        env, monkeypatch, neurostore, evidence):
+    """neurostore's KEY_MISMATCH refusal (this client's own key check would not send a
+    parse whose keys it derives differently, so neurostore is told to refuse) is a
+    permanent failure of that article whose reason names the code; nothing stops."""
     settings, catalog, _ = env
     ctx, ref = _prose_article(env, monkeypatch, "62", "BS62", evidence=evidence)
     sync, upload = build(["sync", "upload"], settings)
     _run(sync, ctx, catalog, ref)
+    neurostore.script(neurostore.error(
+        422, "Analysis keys must be derived from their name, space and points.",
+        codes=["KEY_MISMATCH"], field_name="coordinate_parse/analyses/0/key"))
     _, (done,) = _run(upload, ctx, catalog, ref)
     assert done.status is Status.PERMANENT
     assert done.error == ("refused: KEY_MISMATCH: Analysis keys must be derived from their "
@@ -1403,25 +1390,17 @@ def _upload_together(upload, ctx, catalog, refs):
     return plan, {o.article_id: o for o in outcomes}
 
 
-def _recorded_body(name):
-    import yaml
-
-    found = yaml.safe_load((CASSETTES / name).read_text())["interactions"]
-    return [json.loads(i["request"]["body"]) for i in found if i["request"]["method"] == "POST"]
-
-
-@pytest.mark.vcr(match_on=["method", "scheme", "host", "port", "path", "query"])
-@pytest.mark.parametrize("first, status, answers", [
-    ("refused", Status.PERMANENT, 2),
+@pytest.mark.vcr
+@pytest.mark.parametrize("first, status, calls", [
+    ("refused", Status.PERMANENT, ["POST", "POST"]),
     # five tries, the health check, and the next paper
-    ("blocked", Status.FAILED, neurostore_ingest.RETRIES + 3),
+    ("blocked", Status.FAILED, ["POST"] * (neurostore_ingest.RETRIES + 1) + ["GET", "POST"]),
 ], ids=["refused", "blocked"])
-def test_a_refused_or_blocked_paper_leaves_the_next_one_to_upload(env, monkeypatch, vcr, first,
-                                                                  status, answers, evidence):
+def test_a_refused_or_blocked_paper_leaves_the_next_one_to_upload(
+        env, monkeypatch, neurostore, first, status, calls, evidence):
     """One paper's failure is that paper's: the stage goes on to the next. Blocked is
-    retried later by backoff; refused is not. The cassettes replay real answers in the
-    order sent, not matched on the body, so the second paper's parse is checked against
-    the request its 200 answered."""
+    retried later by backoff; refused is not. The second paper's 200 answers the parse
+    sync wrote for it."""
     settings, catalog, _ = env
     monkeypatch.setattr(neurostore_ingest.time, "sleep", lambda s: None)
     ctx, failing = _prose_article(env, monkeypatch, "60",
@@ -1431,29 +1410,32 @@ def test_a_refused_or_blocked_paper_leaves_the_next_one_to_upload(env, monkeypat
     sync, upload = build(["sync", "upload"], settings)
     for ref in (failing, sent):
         _run(sync, ctx, catalog, ref)
+    if first == "refused":
+        neurostore.script(neurostore.error(404, "Record doesnotexist1 not found in BaseStudy"))
+    else:
+        neurostore.script(*[neurostore.error(500, "(psycopg2.OperationalError) could not "
+                                                  "connect to server")]
+                          * (neurostore_ingest.RETRIES + 1))
     _, done = _upload_together(upload, ctx, catalog, [failing, sent])
     upload.finish()
     assert (done[failing.id].status, done[failing.id].error.split(":")[0]) == (status, first)
     assert done[sent.id].status is Status.OK, done[sent.id].error
-    played = _neurostore_plays(vcr)
-    assert (sum(played), all(played)) == (answers, True)
-    (answered,) = _recorded_body(
-        "test_sync_writes_the_parse_with_no_upload_and_upload_sends_what_it_wrote.yaml")
+    assert [c.method for c in neurostore.calls] == calls
+    answered = neurostore.uploads[-1]
     written = {name: json.loads(
         (settings.ns_pond_root / "BS21" / "parse" / f"{name}.json").read_text())
         for name in ("coordinate_parse", "parsed_paper")}
     written["text"] = (settings.ns_pond_root / "BS21" / written["parsed_paper"]["text_path"]
                        ).read_bytes().decode()
-    assert without_input_fingerprints(answered) == without_input_fingerprints(written)
+    assert answered == written
     # Neither is tried again in this run: one is fresh, the other waits out its retry.
     plan, again = _upload_together(UploadStage(settings), ctx, catalog, [failing, sent])
     assert (plan.fresh, plan.permanent, again) == (1, 1, {})
 
 
-@pytest.mark.vcr(str(CASSETTES / "test_sync_writes_the_parse_with_no_upload_and_upload_sends_"
-                     "what_it_wrote.yaml"))
+@pytest.mark.vcr
 def test_a_paper_the_client_cannot_read_fails_alone_and_the_next_is_sent(
-        env, monkeypatch, vcr, evidence):
+        env, monkeypatch, neurostore, evidence):
     """An error the client does not turn into an outcome is that paper's failure, retried
     by backoff, and the stage goes on."""
     settings, catalog, _ = env
@@ -1469,7 +1451,7 @@ def test_a_paper_the_client_cannot_read_fails_alone_and_the_next_is_sent(
     upload.finish()
     assert done[broken.id].status is Status.FAILED
     assert done[broken.id].error.startswith("IsADirectoryError: ")
-    assert done[sent.id].status is Status.OK and sum(_neurostore_plays(vcr)) == 1
+    assert done[sent.id].status is Status.OK and len(neurostore.calls) == 1
 
 
 @pytest.mark.vcr
@@ -1488,15 +1470,15 @@ def test_a_parse_with_no_analysis_never_uploaded_is_skipped_once(tmp_path, monke
 
 
 @RECORDS
-def test_a_token_neurostore_refuses_stops_the_upload_and_records_nothing(env, monkeypatch,
-                                                                         caplog, vcr, evidence):
-    """Recorded with NEUROSTORE_TOKEN set to a token the local neurostore does not know."""
+def test_a_token_neurostore_refuses_stops_the_upload_and_records_nothing(
+        env, monkeypatch, caplog, neurostore, evidence):
     settings, catalog, _ = env
     ctx, refs = _two_synced(env, monkeypatch, evidence=evidence)
+    neurostore.script(neurostore.error(401, "Provided token is not valid"))
     upload = UploadStage(settings)
     _stops(upload, ctx, catalog, refs, caplog)
     assert "NeurostoreAuthError" in caplog.text and "with 401" in caplog.text
-    assert len(_sent(vcr)) == 1
+    assert len(neurostore.uploads) == 1
     assert list(settings.ns_pond_root.rglob(neurostore_ingest.ARTIFACT_NAME)) == []
 
 
