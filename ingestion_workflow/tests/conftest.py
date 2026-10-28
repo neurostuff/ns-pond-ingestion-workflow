@@ -14,6 +14,7 @@ from ingestion_workflow.clients.doi_registry import DoiRegistry
 from ingestion_workflow.clients.pubmed import PubMedClient
 from ingestion_workflow.models.ids import Identifier, Identifiers
 from ingestion_workflow.tests import cassette_secrets, upload_body, wiley_tdm
+from ingestion_workflow.tests import neurostore as neurostore_mock
 
 
 @pytest.fixture(scope="session")
@@ -39,8 +40,21 @@ def vcr_config():
             *((name, cassette_secrets.REPLAY_EMAIL) for name in cassette_secrets.EMAIL_QUERY_PARAMETERS),
         ],
         "record_mode": "once",
-        "ignore_hosts": ["localhost"],
+        "ignore_hosts": ["localhost", neurostore_mock.HOST],
     }
+
+
+@pytest.fixture()
+def neurostore(monkeypatch):
+    """neurostore's ingester as its contract has it, at `neurostore_mock.URL`, with
+    NEUROSTORE_TOKEN set to its admin token. An ingester takes it as its `transport`, or
+    gets it from `from_settings`. The test fails on any request or answer the contract
+    does not allow, even one the code under test caught."""
+    monkeypatch.setenv("NEUROSTORE_TOKEN", neurostore_mock.TOKEN)
+    server = neurostore_mock.Neurostore()
+    server.install(monkeypatch)
+    yield server
+    server.check()
 
 
 @pytest.fixture()
@@ -58,9 +72,10 @@ def evidence(pubmed):
     registry.close()
 
 
-#: Loopback is where a test starts its own server; the Hub is where docling's weights come
-#: from, a cache CI fills in its own step and never a cassette.
-IGNORED_HOSTS = ["localhost", "127.0.0.1", "huggingface.co"]
+#: Loopback is where a test starts its own server, and the mock neurostore's host is served
+#: in-process; the Hub is where docling's weights come from, a cache CI fills in its own step
+#: and never a cassette.
+IGNORED_HOSTS = ["localhost", "127.0.0.1", neurostore_mock.HOST, "huggingface.co"]
 
 
 def pytest_collection_modifyitems(items):

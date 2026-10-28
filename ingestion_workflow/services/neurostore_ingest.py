@@ -308,6 +308,7 @@ class NeurostoreIngester:
         dry_run: bool = False,
         dry_run_root: Optional[Path] = None,
         sleep: Optional[Callable[[float], None]] = None,
+        transport: Optional[httpx.BaseTransport] = None,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.url = self.base_url + UPLOAD_PATH
@@ -332,7 +333,7 @@ class NeurostoreIngester:
             )
         if self._token:
             _SCRUB.tokens.append(self._token)
-        self._client = None if dry_run else httpx.Client(timeout=TIMEOUT)
+        self._client = None if dry_run else httpx.Client(timeout=TIMEOUT, transport=transport)
 
     @classmethod
     def from_settings(cls, settings, **kwargs) -> "NeurostoreIngester":
