@@ -1,0 +1,3 @@
+[submodule "ingestion_workflow/tests/neurostore-spec"]
+	path = ingestion_workflow/tests/neurostore-spec
+	url = https://github.com/neurostuff/neurostore-spec.git
