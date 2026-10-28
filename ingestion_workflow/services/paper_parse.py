@@ -624,7 +624,10 @@ def coordinate_parse(
     read, so it is left out with its reason. Two analyses with one key (the same
     normalized name, space and points) are one extracted analysis, read twice: the
     first in parse order (the tables in `per_table`'s order, each table's analyses in
-    the analyses stage's order) is kept and the other is omitted as its repeat. The
+    the analyses stage's order) is kept and the other is omitted as its repeat, unless
+    the first is read from a table without a caption and the other from one with: then
+    the captioned copy takes the first's place (ACE stores its own uncaptioned copy of a
+    table beside the article's). The
     reasons of a table's analyses are also the `reason` of its TableReading; those of
     the text are the parse's `omitted_analyses`.
     """
@@ -634,6 +637,7 @@ def coordinate_parse(
     analyses: List[pp.ParsedAnalysis] = []
     seen: Dict[str, pp.ParsedAnalysis] = {}
     rodent = _rodent_tables(paper)
+    captioned = {t.table_id for t in paper.tables or [] if (t.caption or "").strip()}
     for table_id, collection in per_table.items():
         if table_id in rodent:
             omitted += [
@@ -680,6 +684,13 @@ def coordinate_parse(
             if analysis is None:
                 continue
             first = seen.get(analysis.key)
+            if first is not None and _captioned_over(analysis, first, captioned):
+                # The same table stored twice, once without its caption (ACE's copy):
+                # the captioned copy takes the first's place.
+                omitted.append(_repeat(analysis, first))
+                analyses[next(i for i, a in enumerate(analyses) if a is first)] = analysis
+                seen[analysis.key] = analysis
+                continue
             if first is not None:
                 omitted.append(_repeat(first, analysis))
                 continue
@@ -753,6 +764,15 @@ def _repeat(first: pp.ParsedAnalysis, other: pp.ParsedAnalysis) -> Omitted:
         f"read from {where}{role}",
         _span_pairs(other),
     )
+
+
+def _captioned_over(
+    other: pp.ParsedAnalysis, first: pp.ParsedAnalysis, captioned: Set[str]
+) -> bool:
+    """Whether `other`, repeating `first`, is read from a captioned table and `first` from an
+    uncaptioned one."""
+    return (first.table_id is not None and other.table_id is not None
+            and other.table_id in captioned and first.table_id not in captioned)
 
 
 class MissingRole(ValueError):

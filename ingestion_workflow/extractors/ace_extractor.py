@@ -26,6 +26,7 @@ from ingestion_workflow.extractors.utils import (
     build_failure_extraction,
     coordinate_space_from_guess,
     normalize_minus,
+    table_figures,
 )
 from ingestion_workflow.models import (
     Coordinate,
@@ -199,12 +200,6 @@ _HTML_TAG = re.compile(r"<[^>]+>")
 _HTML_WS = re.compile(r"\s+")
 
 
-#: A table's figures, free of thousands separators. Two renderings of one
-#: table disagree about markup and whitespace but not about its numbers.
-_FP_NUMBER = re.compile(r"-?\d+(?:\.\d+)?")
-_FP_THOUSANDS = re.compile(r"(?<=\d),(?=\d{3}\b)")
-
-
 def _table_fingerprint(html: str) -> str:
     """The figures a table states, in order, for matching one to another.
 
@@ -219,8 +214,10 @@ def _table_fingerprint(html: str) -> str:
     Numbers survive the rewrite. A table with fewer than three is not
     identified this way at all, so captions and layout tables cannot collide.
     """
-    text = _HTML_TAG.sub(" ", normalize_minus(html))
-    numbers = _FP_NUMBER.findall(_FP_THOUSANDS.sub("", text))
+    # A tag becomes a cell boundary, never a space, so two cells' numbers are not
+    # read as one figure with a thousands separator.
+    text = _HTML_TAG.sub(" | ", normalize_minus(html))
+    numbers = table_figures(text)
     if len(numbers) >= 3:
         return "n:" + ",".join(numbers)
     # Nothing numeric to match on; fall back to the visible text, which is

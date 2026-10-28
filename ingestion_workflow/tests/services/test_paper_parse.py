@@ -915,6 +915,40 @@ def test_a_coordinate_printed_in_two_rows_goes_to_its_own_analysis(tmp_path):
     assert omitted == []
 
 
+def test_of_one_table_stored_twice_the_parse_keeps_the_captioned_copy(tmp_path):
+    """PMID 32756878's Table 2, as ACE stored it (`2`, no caption) and as the article's
+    HTML prints it (`html-table-5`, captioned). The same analysis read from both is one
+    analysis; it keeps the captioned table, in the place the first copy held."""
+    from pathlib import Path
+
+    from ingestion_workflow.services.paper_parse import _grid
+
+    pair = Path(__file__).parents[1] / "data" / "ace_duplicate_tables"
+    grids = {"2": _grid(pair / "2.html"), "html-table-5": _grid(pair / "html-table-5.html")}
+    caption = "Significant clusters from group level analyses"
+    paper = SimpleNamespace(
+        header=SimpleNamespace(identifiers=IDENTIFIERS),
+        text_sha256="0" * 64,
+        tables=[_bare_table("2", None, grids["2"].headings),
+                _bare_table("html-table-5", caption, grids["html-table-5"].headings)],
+    )
+    points = [(18, -88, -6), (-6, 4, 62), (-6, 32, -16), (-12, 48, 48)]
+
+    def read(table_id):
+        return _collection([Analysis(name="Tweets > baseline", table_id=table_id,
+                                     coordinates=[Coordinate(x=x, y=y, z=z) for x, y, z in points])])
+
+    parse, omitted = paper_parse.coordinate_parse(
+        paper, "Results\n", grids, {"2": read("2"), "html-table-5": read("html-table-5")},
+        _inputs(readings={"2": "coordinates", "html-table-5": "coordinates"}),
+    )
+    (kept,) = parse.analyses
+    assert kept.table_id == "html-table-5"
+    (repeat,) = omitted
+    assert repeat.table_id == "2"
+    assert "it repeats a kept analysis" in repeat.reason and "table html-table-5" in repeat.reason
+
+
 def test_two_names_on_the_same_cells_are_both_kept_and_only_a_true_duplicate_is_omitted(tmp_path):
     collection = _collection(
         [

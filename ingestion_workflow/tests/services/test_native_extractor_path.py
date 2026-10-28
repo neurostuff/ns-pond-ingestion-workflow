@@ -251,10 +251,10 @@ def test_an_empty_serialisation_is_a_failure_not_an_empty_table():
 
 # -- the same table twice -------------------------------------------------
 
-def _tbl(tmp_path, name, html):
+def _tbl(tmp_path, name, html, caption=None):
     p = tmp_path / name
     p.write_text(html, encoding="utf-8")
-    return SimpleNamespace(table_id=name.split(".")[0], raw_content_path=str(p))
+    return SimpleNamespace(table_id=name.split(".")[0], raw_content_path=str(p), caption=caption)
 
 
 def test_a_table_repeated_under_two_ids_is_extracted_once(tmp_path):
@@ -272,6 +272,23 @@ def test_a_table_repeated_under_two_ids_is_extracted_once(tmp_path):
     drop = svc._redundant([a, b], "slug")
     assert len(drop) == 1
     assert drop < {"2", "html-table-2"}
+
+
+def test_of_one_table_stored_twice_the_captioned_copy_is_extracted(tmp_path):
+    """PMID 32756878's Table 2: ACE's copy prints `37636` and carries no caption, the
+    article's HTML prints `37\u2009636` under "Significant clusters from group level
+    analyses". Both passed triage and both were read."""
+    from pathlib import Path
+
+    from ingestion_workflow.services.create_analyses import CreateAnalysesService
+
+    pair = Path(__file__).parents[1] / "data" / "ace_duplicate_tables"
+    ace = _tbl(tmp_path, "2.html", (pair / "2.html").read_text(encoding="utf-8"))
+    document = _tbl(tmp_path, "html-table-5.html",
+                    (pair / "html-table-5.html").read_text(encoding="utf-8"),
+                    caption="Significant clusters from group level analyses")
+    svc = CreateAnalysesService.__new__(CreateAnalysesService)
+    assert svc._redundant([ace, document], "slug") == {"2"}
 
 
 def test_two_genuinely_different_tables_are_both_kept(tmp_path):

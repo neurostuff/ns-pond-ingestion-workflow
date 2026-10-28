@@ -3,6 +3,8 @@ scan adds the rest. The two must not overlap, and neither may lose a sign."""
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from ingestion_workflow.extractors.ace_extractor import _table_fingerprint
 from ingestion_workflow.extractors.utils import _MINUS_CHARS, normalize_minus
 
@@ -44,6 +46,24 @@ def test_thousands_separators_do_not_split_a_number():
     a = "<table><tr><td>1</td><td>2</td><td>5,658</td></tr></table>"
     b = "<table><tr><td>1</td><td>2</td><td>5658</td></tr></table>"
     assert _table_fingerprint(a) == _table_fingerprint(b)
+
+
+def test_a_thin_space_thousands_separator_does_not_split_a_number():
+    """PMID 32756878's Table 2, as ACE stored it (`37636`) and as the article's HTML prints
+    it (`37\u2009636`): one table, which entered the corpus twice, the HTML copy with the
+    caption and ACE's without."""
+    pair = Path(__file__).parents[1] / "data" / "ace_duplicate_tables"
+    ace = (pair / "2.html").read_text(encoding="utf-8")
+    document = (pair / "html-table-5.html").read_text(encoding="utf-8")
+    assert "37\u2009636" in document and "37636" in ace
+    assert _table_fingerprint(ace) == _table_fingerprint(document)
+
+
+def test_two_cells_are_never_read_as_one_number():
+    """A space between cells is not a thousands separator: 4 and 620 stay two figures."""
+    a = "<table><tr><td>4</td> <td>620</td><td>1</td><td>2</td></tr></table>"
+    b = "<table><tr><td>4620</td><td>1</td><td>2</td></tr></table>"
+    assert _table_fingerprint(a) != _table_fingerprint(b)
 
 
 def test_a_table_with_too_few_numbers_is_not_matched_by_number():

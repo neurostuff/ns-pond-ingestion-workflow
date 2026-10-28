@@ -216,3 +216,25 @@ def normalize_minus(markup: str) -> str:
     if not markup:
         return markup
     return _MINUS_ENTITY.sub("-", markup).translate(_MINUS_TABLE)
+
+
+#: A thousands separator: a comma, or a space of any kind or its entity, between a
+#: digit and a group of exactly three. One table's HTML copy writes `37\u2009636`
+#: where ACE's copy of it writes `37636`.
+_THOUSANDS = re.compile(
+    r"(?<=\d)(?:,|[\s\u00a0\u2009\u202f]|&(?:thinsp|nbsp|#8201|#x2009|#160|#xa0);)"
+    r"(?=\d{3}(?![\d]))",
+    re.IGNORECASE,
+)
+_FIGURE = re.compile(r"-?\d+(?:\.\d+)?")
+
+
+def table_figures(text: str) -> list[str]:
+    """The figures a table states, in order: what one table's renderings agree on.
+
+    Two copies of a table differ in markup, entities and spacing, never in their
+    numbers, so the numbers identify it. `text` keeps its cells apart by more than
+    one space (` | ` in the serialisation), so a space between two cells is never
+    taken for a separator.
+    """
+    return _FIGURE.findall(_THOUSANDS.sub("", text or ""))
