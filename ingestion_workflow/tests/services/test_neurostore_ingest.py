@@ -351,13 +351,13 @@ def test_a_schema_version_neurostore_is_not_pinned_to_stops_the_upload(study, ne
     neurostore.script(neurostore.error(
         422, "The coordinate_parse is not at the schema version this server takes.",
         codes=["SCHEMA_VERSION"], field_name="coordinate_parse/header/schema_version",
-        context={"provided": {"schema_version": "0.10.0", "pinned": "0.9.0"}}))
+        context={"provided": {"schema_version": "0.11.0", "pinned": "0.10.0"}}))
     with _ingester(neurostore) as ingester, pytest.raises(ni.NeurostoreConfigError) as stopped:
         ingester.upload(study)
 
     message = str(stopped.value)
-    assert "coordinate_parse/header/schema_version states 0.10.0" in message
-    assert "neurostore is pinned to 0.9.0" in message
+    assert "coordinate_parse/header/schema_version states 0.11.0" in message
+    assert "neurostore is pinned to 0.10.0" in message
     assert len(neurostore.calls) == 1
     assert not (study / ni.UPLOAD_DIR).exists()
 

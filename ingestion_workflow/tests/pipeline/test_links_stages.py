@@ -290,7 +290,7 @@ def test_osf_down_leaves_its_links_to_a_later_run_and_openneuro_still_answers(
 # -- sync ------------------------------------------------------------------------------
 
 #: The licence nobody stated, as the metadata stage records it.
-ASSUMED = {"license_id": "all-rights-reserved", "determination": "assumed"}
+ASSUMED = {"license_id": "all_rights_reserved", "determination": "assumed"}
 
 
 @pytest.fixture()

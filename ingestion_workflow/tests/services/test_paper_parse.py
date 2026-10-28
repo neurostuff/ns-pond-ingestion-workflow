@@ -29,11 +29,11 @@ from study_schema.models.paper_parse import CopyAccess, CopyRoute, CopyVersion
 
 BASE = "22tHjbNRU8t2"
 #: PMC3407125's JATS `<license>`: PLoS ONE's CC BY.
-CC_BY = pp.License(license_id="cc-by", determination="stated", stated_by="jats",
+CC_BY = pp.License(license_id="cc_by", determination="stated", stated_by="jats",
                    stated_as="http://creativecommons.org/licenses/by/4.0/")
 #: The licence nobody stated. The tests that do not look at licences use it, so the upload
 #: cassettes, which match on the body, hold the bodies they were recorded for.
-UNSTATED = pp.License(license_id="all-rights-reserved", determination="assumed")
+UNSTATED = pp.License(license_id="all_rights_reserved", determination="assumed")
 #: PMC3407125's copy, as a pubget download records it: PLoS ONE's open-access version of record.
 COPY = pp.HeldCopy(route=CopyRoute.pmc, version=CopyVersion.vor, access=CopyAccess.public,
                    license=UNSTATED)
@@ -310,9 +310,9 @@ def test_bibliography_and_meta_analysis_come_from_metadata_and_triage(written):
 
 
 #: The licence nobody stated, all rights reserved, as the metadata stage writes it.
-ASSUMED = {"license_id": "all-rights-reserved", "determination": "assumed"}
+ASSUMED = {"license_id": "all_rights_reserved", "determination": "assumed"}
 #: PMC10518222's TDM manuscript, as PMC's cloud record codes it.
-TDM = pp.License(license_id="all-rights-reserved", determination="stated",
+TDM = pp.License(license_id="all_rights_reserved", determination="stated",
                  stated_by="pmc_cloud", stated_as="TDM")
 
 
@@ -320,7 +320,7 @@ def test_the_text_copy_and_the_paper_carry_the_licences_the_metadata_decided(tmp
     reported = pp.ReportedCopy(
         route="repository", version="am", reported_by="openalex",
         url="https://europepmc.org/articles/pmc3407125?pdf=render",
-        license=pp.License(license_id="cc-by", determination="stated", stated_by="openalex",
+        license=pp.License(license_id="cc_by", determination="stated", stated_by="openalex",
                            stated_as="cc-by"))
     text_copy = COPY.model_copy(update={"license": CC_BY})
     paper, _, _ = _written(tmp_path, text_copy=text_copy, oa_status="gold",
@@ -352,7 +352,7 @@ def test_the_parse_header_names_the_base_study_outside_the_identifiers(written):
      DownloadCopy(route=CopyRoute.preprint_server, version=CopyVersion.submitted,
                   access=CopyAccess.public, preprint_server="biorxiv",
                   url="https://www.biorxiv.org/content/10.1101/2025.05.13.653896v1.full.pdf"),
-     pp.License(license_id="cc-by-nc-nd", determination="stated", stated_by="openalex",
+     pp.License(license_id="cc_by_nc_nd", determination="stated", stated_by="openalex",
                 stated_as="cc-by-nc-nd"),
      {"route": "preprint_server", "version": "submitted", "access": "public",
       "url": "https://www.biorxiv.org/content/10.1101/2025.05.13.653896v1.full.pdf",
@@ -1834,9 +1834,9 @@ def test_an_analysis_whose_points_mix_t_and_z_states_no_statistic():
 def test_the_parse_is_stamped_with_the_version_that_keys_analyses_by_content(written):
     """Stored parses from before content keys carry location keys, so they must re-parse."""
     paper, parse, _ = written
-    assert paper_parse.PAPER_PARSE_VERSION == 12
+    assert paper_parse.PAPER_PARSE_VERSION == 13
     assert {paper["header"]["producer"]["version"], parse["header"]["producer"]["version"]} == {
-        "paper_parse.12"
+        "paper_parse.13"
     }
 
 

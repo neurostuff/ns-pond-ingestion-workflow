@@ -264,7 +264,7 @@ def test_a_licence_change_makes_sync_and_upload_stale_and_nothing_before_them(
 
     assert pending() == set()
     licensed = {**catalog.payload(catalog.artifact(ref.id, "metadata", "")),
-                "license": {"license_id": "cc-by", "determination": "stated"}}
+                "license": {"license_id": "cc_by", "determination": "stated"}}
     catalog.record([Outcome(article_id=ref.id, stage="metadata", source="", fingerprint="me-3",
                             payload=licensed, summary={"digests": metadata_digests(licensed)})])
 
@@ -683,7 +683,7 @@ def test_the_parsed_paper_s_text_copy_is_the_copy_its_text_was_downloaded_as(
     paper = json.loads(
         (settings.ns_pond_root / "BS41" / "parse" / "parsed_paper.json").read_text())
     copy = {k: v for k, v in paper["text_copy"].items() if v is not None}
-    assert copy.pop("license") == {"license_id": "all-rights-reserved", "determination": "assumed",
+    assert copy.pop("license") == {"license_id": "all_rights_reserved", "determination": "assumed",
                                    "stated_by": None, "stated_as": None}
     assert copy == catalog.artifact(ref.id, "download", "pubget").summary["copy"]
     assert copy["version"] == "submitted"
@@ -767,7 +767,7 @@ def _held_by_pubget_and_wiley(env, monkeypatch, pmid, base, read, evidence):
 #: Each held copy's licence, as the metadata stage would decide it: the Wiley copy's
 #: Crossref's version-of-record deposit, the pubget copy's nobody's.
 COPY_LICENSES = {
-    "pubget": {"license_id": "all-rights-reserved", "determination": "assumed"},
+    "pubget": {"license_id": "all_rights_reserved", "determination": "assumed"},
     "wiley": {"license_id": "other", "determination": "stated", "stated_by": "crossref",
               "stated_as": "http://onlinelibrary.wiley.com/termsAndConditions#vor"},
 }

@@ -52,9 +52,9 @@ dependencies = [
   # CopyAccess, the facts each download records about its copy, and paper_parse.Author,
   # each author with ids and affiliations, and ParsedPaper.links with the
   # data_availability SectionKind, and each PaperLink's occurrences (LinkOccurrence,
-  # LinkSource). Pinned to neurostuff/study_schema#55's head until it merges; then to its
-  # merge commit.
-  "study-schema @ git+https://github.com/neurostuff/study_schema.git@9aac53f681f72a9f3a1e9979bd4cd515143ded7c",
+  # LinkSource), and LicenseId spelled as its member names (`cc_by`; paper-parse 0.11.0).
+  # Pinned to neurostuff/study_schema#55's head until it merges; then to its merge commit.
+  "study-schema @ git+https://github.com/neurostuff/study_schema.git@d2759e3f32471fccc148c1bdd0ac29a5f85cf17b",
 ]
 
 [project.optional-dependencies]

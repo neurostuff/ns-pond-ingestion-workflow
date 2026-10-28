@@ -89,8 +89,8 @@ def test_each_held_copy_and_the_paper_get_a_licence(env, evidence):
     assert outcome.status is Status.OK, outcome.error
     assert {k: outcome.summary[k] for k in ("license", "license_determination", "copy_licenses",
                                             "oa_status")} == {
-        "license": "cc-by-nc", "license_determination": "stated",
-        "copy_licenses": {"pmc": "all-rights-reserved"}, "oa_status": "hybrid"}
+        "license": "cc_by_nc", "license_determination": "stated",
+        "copy_licenses": {"pmc": "all_rights_reserved"}, "oa_status": "hybrid"}
     stored = ArticleMetadata.from_dict(catalog.payload(catalog.artifact(ref.id, "metadata", "")))
     assert (stored.copy_licenses["pmc"].stated_by, stored.copy_licenses["pmc"].stated_as) == (
         "pmc_cloud", "TDM")
@@ -151,7 +151,7 @@ def test_an_error_deciding_the_authors_keeps_the_record_and_notes_it(env, eviden
     assert "transient" not in outcome.summary
     assert {"authors", "affiliations", "ror", "corresponding_authors"} <= set(
         outcome.summary["missing"])
-    assert (outcome.summary["authors"], outcome.summary["license"]) == (0, "cc-by-nc")
+    assert (outcome.summary["authors"], outcome.summary["license"]) == (0, "cc_by_nc")
     stored = ArticleMetadata.from_dict(catalog.payload(catalog.artifact(ref.id, "metadata", "")))
     assert stored.title and stored.authors == []
 
@@ -245,7 +245,7 @@ def test_a_licence_nobody_states_is_recorded_as_assumed(env, evidence):
     assert outcome.status is Status.OK, outcome.error
     assert (outcome.summary["license"], outcome.summary["license_determination"],
             outcome.summary["copy_licenses"]) == (
-        "all-rights-reserved", "assumed", {"ace": "all-rights-reserved"})
+        "all_rights_reserved", "assumed", {"ace": "all_rights_reserved"})
 
 
 @pytest.mark.parametrize("summary, retried", [
@@ -292,7 +292,7 @@ def test_a_copy_with_no_record_takes_the_first_held_record_in_the_order_sources_
     assert outcome.status is Status.OK, outcome.error
     stored = ArticleMetadata.from_dict(catalog.payload(catalog.artifact(ref.id, "metadata", "")))
     by = {source: (lic.license_id, lic.stated_by) for source, lic in stored.copy_licenses.items()}
-    assert by == {"pubget": ("other", "jats"), "elsevier": ("all-rights-reserved", "elsevier"),
+    assert by == {"pubget": ("other", "jats"), "elsevier": ("all_rights_reserved", "elsevier"),
                   "ace": ("other", "jats")}
 
 
@@ -335,7 +335,7 @@ def test_crossref_s_failure_is_marked_an_outage_only_when_it_is_one(
     # The record passes, its licences assumed all rights reserved, and the error is noted.
     assert outcome.status is Status.OK, outcome.error
     assert (outcome.summary["license"], outcome.summary["license_determination"]) == (
-        "all-rights-reserved", "assumed")
+        "all_rights_reserved", "assumed")
     assert outcome.summary["errors"]["license"].startswith(
         "the licence of the ace copy is assumed: crossref ")
     assert outcome.summary.get("transient") == transient
@@ -359,7 +359,7 @@ def test_an_embargoed_licence_is_decided_again_when_its_embargo_ends(env, eviden
     assert before.status is Status.OK, before.error
     # CC BY is not in force yet: the paper is all rights reserved, and the artifact says when
     # that changes
-    assert before.summary["license"] == "all-rights-reserved"
+    assert before.summary["license"] == "all_rights_reserved"
     assert before.summary["license_embargo_until"] == "2026-10-20T00:00:00+00:00"
 
     # nothing changes until the embargo ends, then the artifact is stale
@@ -371,6 +371,6 @@ def test_an_embargoed_licence_is_decided_again_when_its_embargo_ends(env, eviden
     _, (after,) = _run(MetadataStage(settings), at(EMBARGO_ENDS), catalog, ref)
 
     assert after.status is Status.OK, after.error
-    assert after.summary["license"] == "cc-by"
+    assert after.summary["license"] == "cc_by"
     assert after.summary["license_embargo_until"] is None
     assert planned(EMBARGO_ENDS + timedelta(days=400)).fresh == 1

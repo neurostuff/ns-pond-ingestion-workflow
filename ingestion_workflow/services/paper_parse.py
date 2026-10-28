@@ -51,7 +51,8 @@ logger = get_logger(__name__)
 #: Bump when the same inputs would give different files.
 #: 11: a "Data availability" heading is a data_availability section, not references.
 #: 12: each link's occurrences, and the reference list they name.
-PAPER_PARSE_VERSION = 12
+#: 13: study_schema paper-parse 0.11.0, whose licence ids are snake_case (`cc_by`).
+PAPER_PARSE_VERSION = 13
 PRODUCER = "ns-pond-ingestion-workflow"
 PARSE_DIR = "parse"
 

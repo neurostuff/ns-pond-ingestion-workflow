@@ -425,7 +425,7 @@ def _download(ref, path):
 
 
 #: All rights reserved, assumed: the licence nobody stated.
-ASSUMED_LICENSE = {"license_id": "all-rights-reserved", "determination": "assumed"}
+ASSUMED_LICENSE = {"license_id": "all_rights_reserved", "determination": "assumed"}
 #: The metadata as the metadata stage decides it for an article nobody states a licence for.
 METADATA = {"title": "T", "abstract": "A", "source": "pubmed", "license": ASSUMED_LICENSE,
             "copy_licenses": {"pubget": ASSUMED_LICENSE}}

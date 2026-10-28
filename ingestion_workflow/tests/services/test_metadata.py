@@ -539,15 +539,15 @@ class TestLicences:
         assert "license" not in service.notes[extracted.slug].errors
         meta = found[extracted.slug]
         assert _license(meta.copy_licenses["pmc"]) == {
-            "license_id": "all-rights-reserved", "determination": "stated",
+            "license_id": "all_rights_reserved", "determination": "stated",
             "stated_by": "pmc_cloud", "stated_as": "TDM"}
         assert _license(meta.license) == {
-            "license_id": "cc-by-nc", "determination": "stated", "stated_by": "crossref",
+            "license_id": "cc_by_nc", "determination": "stated", "stated_by": "crossref",
             "stated_as": "http://creativecommons.org/licenses/by-nc/4.0/"}
         assert meta.oa_status == "hybrid"
         wiley = [c for c in meta.reported_copies if c.route == "publisher"]
         assert [(c.version, c.reported_by, c.license.license_id) for c in wiley] == [
-            ("vor", "openalex", "cc-by-nc")]
+            ("vor", "openalex", "cc_by_nc")]
         # PMC's own copy is the one held, and PubMed's record is no copy
         assert not [c for c in meta.reported_copies if c.route == "pmc"]
         assert not [c for c in meta.reported_copies if "pubmed.ncbi" in c.url]
@@ -577,7 +577,7 @@ class TestLicences:
         meta = _enrich(service, [extracted], {extracted.slug: [pdf]})[extracted.slug]
 
         assert _license(meta.copy_licenses["pdf"]) == {
-            "license_id": "cc-by-nc", "determination": "stated", "stated_by": "openalex",
+            "license_id": "cc_by_nc", "determination": "stated", "stated_by": "openalex",
             "stated_as": "cc-by-nc"}
         assert url not in {c.url for c in meta.reported_copies}
         # PMC's copy, not held now, is reported with the licence OpenAlex lists for it
@@ -614,7 +614,7 @@ class TestLicences:
         service = MetadataService(_licence_settings(tmp_path))
         meta = _enrich(service, [extracted], {extracted.slug: [ace]})[extracted.slug]
 
-        assumed = {"license_id": "all-rights-reserved", "determination": "assumed"}
+        assumed = {"license_id": "all_rights_reserved", "determination": "assumed"}
         assert _licences_decided(service)
         assert (_license(meta.license), _license(meta.copy_licenses["ace"])) == (assumed, assumed)
         # OpenAlex calls it closed, and lists its submitted versions at HAL and Toulouse
@@ -713,10 +713,10 @@ def test_a_manuscript_and_a_copy_of_no_known_version_never_take_the_vor_s_licenc
     meta = _enrich(service, [_content(ALZ)], {ALZ.slug: held})[ALZ.slug]
 
     assert _licences_decided(service)
-    assumed = {"license_id": "all-rights-reserved", "determination": "assumed"}
+    assumed = {"license_id": "all_rights_reserved", "determination": "assumed"}
     assert {k: _license(v) for k, v in meta.copy_licenses.items()} == {
         "pdf": assumed, "europepmc": assumed}
-    assert meta.license.license_id == "cc-by-nc"
+    assert meta.license.license_id == "cc_by_nc"
 
 
 @pytest.mark.vcr(TDM_CASSETTE)
@@ -876,7 +876,7 @@ def test_an_ace_copy_of_an_elsevier_vor_takes_the_elsevier_copy_s_record(tmp_pat
     content = _content(identifier, DownloadSource.ELSEVIER)
     meta = _enrich(service, [content], {identifier.slug: held})[identifier.slug]
 
-    arr = {"license_id": "all-rights-reserved", "determination": "stated",
+    arr = {"license_id": "all_rights_reserved", "determination": "stated",
            "stated_by": "elsevier", "stated_as": "© 2017 Elsevier Ltd. All rights reserved."}
     assert {k: _license(v) for k, v in meta.copy_licenses.items()} == {"elsevier": arr, "ace": arr}
     assert _license(meta.license) == arr
@@ -896,7 +896,7 @@ def test_a_page_s_bare_copyright_line_ranks_after_another_copy_s_record(tmp_path
     content = _content(identifier, DownloadSource.ACE)
     meta = _enrich(service, [content], {identifier.slug: held})[identifier.slug]
 
-    elsevier = {"license_id": "all-rights-reserved", "determination": "stated",
+    elsevier = {"license_id": "all_rights_reserved", "determination": "stated",
                 "stated_by": "elsevier", "stated_as": "© 2017 Elsevier Ltd. All rights reserved."}
     assert _licences_decided(service)
     # tried first, the ACE copy still takes Elsevier's record before its page's line
@@ -923,7 +923,7 @@ def test_a_page_s_footer_does_not_override_crossref_s_licence(tmp_path):
 
     assert _licences_decided(service)
     found = _license(meta.copy_licenses["ace"])
-    assert (found["license_id"], found["stated_by"]) == ("cc-by-nc-sa", "crossref")
+    assert (found["license_id"], found["stated_by"]) == ("cc_by_nc_sa", "crossref")
     assert _license(meta.license) == found
 
 
@@ -940,10 +940,10 @@ def test_a_page_s_licence_mark_is_its_copy_s_own_record(tmp_path):
 
     assert _licences_decided(service)
     assert _license(meta.copy_licenses["ace"]) == {
-        "license_id": "cc-by-nc-nd", "determination": "stated", "stated_by": "publisher_page",
+        "license_id": "cc_by_nc_nd", "determination": "stated", "stated_by": "publisher_page",
         "stated_as": "http://creativecommons.org/licenses/by-nc-nd/4.0/"}
     # the page is the paper's last source
-    assert (meta.license.license_id, meta.license.stated_by) == ("cc-by-nc-nd", "crossref")
+    assert (meta.license.license_id, meta.license.stated_by) == ("cc_by_nc_nd", "crossref")
 
 
 @pytest.mark.vcr()
@@ -960,7 +960,7 @@ def test_a_reported_manuscript_takes_the_licence_the_page_names_for_it(tmp_path)
     meta = _enrich(service, [_content(identifier, DownloadSource.ACE)],
                    {identifier.slug: held})[identifier.slug]
 
-    stated_by_page = {"license_id": "all-rights-reserved", "determination": "stated",
+    stated_by_page = {"license_id": "all_rights_reserved", "determination": "stated",
                       "stated_by": "publisher_page",
                       "stated_as": "Copyright © 2015 Elsevier Ltd. All rights reserved."}
     assert _licences_decided(service)
@@ -969,7 +969,7 @@ def test_a_reported_manuscript_takes_the_licence_the_page_names_for_it(tmp_path)
                    if c.version == "am"]
     assert manuscripts == [(
         "https://ueaeprints.uea.ac.uk/id/eprint/56193/1/MIrish_Manuscript_R2_final.pdf",
-        {"license_id": "cc-by-nc-nd", "determination": "stated", "stated_by": "publisher_page",
+        {"license_id": "cc_by_nc_nd", "determination": "stated", "stated_by": "publisher_page",
          "stated_as": "http://creativecommons.org/licenses/by-nc-nd/4.0/"})]
 
 
@@ -985,7 +985,7 @@ def test_the_page_speaks_for_the_paper_when_no_other_source_does(tmp_path):
     meta = _enrich(service, [_content(identifier, DownloadSource.ACE)],
                    {identifier.slug: held})[identifier.slug]
 
-    stated_by_page = {"license_id": "all-rights-reserved", "determination": "stated",
+    stated_by_page = {"license_id": "all_rights_reserved", "determination": "stated",
                       "stated_by": "publisher_page",
                       "stated_as": "© 2017 Elsevier Ltd. All rights reserved."}
     assert _licences_decided(service)
@@ -1038,9 +1038,9 @@ EARLY_ACCESS = {"open_access": {"oa_status": "hybrid"}, "locations": [{
 def test_a_publisher_s_manuscript_licence_is_not_the_version_of_record_s():
     meta = _decided([EARLY_ACCESS], EARLY_ACCESS)
     assert (meta.license.license_id, meta.license.determination) == (
-        "all-rights-reserved", "assumed")
+        "all_rights_reserved", "assumed")
     assert [(c.route, c.version, c.license.license_id) for c in meta.reported_copies] == [
-        ("publisher", "am", "cc-by-nc")]
+        ("publisher", "am", "cc_by_nc")]
 
 
 @pytest.mark.parametrize("oa_status, expected", [("green", "green"), ("unknown", None)])
@@ -1221,7 +1221,7 @@ def test_a_held_copy_takes_the_licence_semantic_scholar_listed_for_it_as_semanti
     found = _decided_with_held(held).copy_licenses["pdf"]
 
     assert (found.license_id, found.stated_by, found.stated_as) == (
-        "cc-by-nc-sa", "semantic_scholar", "CCBYNCSA")
+        "cc_by_nc_sa", "semantic_scholar", "CCBYNCSA")
 
 
 @pytest.mark.vcr()
@@ -1286,7 +1286,7 @@ def test_an_article_whose_licences_raise_is_kept_with_them_assumed(metadata_serv
 
     assert list(found) == [good.slug, bad.slug]
     assert (found[bad.slug].license.license_id, found[bad.slug].license.determination) == (
-        "all-rights-reserved", "assumed")
+        "all_rights_reserved", "assumed")
     assert metadata_service.notes[bad.slug].errors == {
         "license": "licences: ValueError: cannot read its licences"}
     assert "license" not in metadata_service.notes[good.slug].errors
