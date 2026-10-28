@@ -2,9 +2,10 @@
 
 The text and the source copy are those `references` reads: the extraction triage judges,
 which sync writes. The artifact is keyed by that extraction's source, because an
-occurrence's offsets belong to one text. No network; where `reflist` has the paper's
-Crossref list, its entries' links and dataset DOIs are read too. `linkprobe` asks OSF and
-OpenNeuro about the links that name a project or dataset there, and sync writes
+occurrence's offsets belong to one text. No network; where `references` has read the
+paper's list, its entries' links and dataset DOIs are read too, and an occurrence from the
+list names its entry by the id sync writes in `ParsedPaper.references`. `linkprobe` asks
+OSF and OpenNeuro about the links that name a project or dataset there, and sync writes
 `ParsedPaper.links` from both.
 """
 
@@ -22,13 +23,15 @@ from ..plan import StagePlan, Work
 from ..stage import Context, alone
 
 #: Bump when what is read, or how a link is normalized, changes.
-LINKS_VERSION = 1
+#: 2: the reference list is the references stage's, not Crossref's, and an occurrence names
+#: its entry as `reference_id`; each link's occurrences in text order.
+LINKS_VERSION = 2
 
 
 def read_article(source: str, download: dict, text_path: Optional[str],
                  listed: Optional[List[dict]] = None) -> Tuple[str, Optional[dict]]:
-    """("ok", payload) or (why it failed, None). `listed` is the Crossref list, when
-    `reflist` has one."""
+    """("ok", payload) or (why it failed, None). `listed` is the references stage's list,
+    when it has read one."""
     from ingestion_workflow.services.paper_links import from_markup, probe_target, read_links
 
     if not text_path or not Path(text_path).exists():
@@ -71,8 +74,8 @@ class LinksStage:
     def __init__(self, settings) -> None:
         self.settings = settings
 
-    def fingerprint_for(self, extraction: Artifact, reflist: Optional[Artifact] = None) -> str:
-        listed = reflist.fingerprint if reflist is not None and reflist.status is Status.OK else ""
+    def fingerprint_for(self, extraction: Artifact, references: Optional[Artifact] = None) -> str:
+        listed = references.fingerprint if references is not None and references.ok else ""
         return fingerprint("links", LINKS_VERSION, extraction.source, listed,
                            upstream=extraction.fingerprint)
 
@@ -88,7 +91,7 @@ class LinksStage:
         plan = StagePlan(stage=self.name)
         ids = [ref.id for ref in refs]
         downloads = ctx.catalog.artifacts(ids, "download")
-        reflists = ctx.catalog.artifacts(ids, "reflist")
+        listed = ctx.catalog.artifacts(ids, "references")
         attempts: Dict[str, Dict[str, tuple]] = {}
         for ref in refs:
             judged = judged_extraction(ctx, upstream.get(ref.id, {}), downloads.get(ref.id, {}))
@@ -96,7 +99,7 @@ class LinksStage:
                 plan.blocked += 1
                 continue
             source = judged.source
-            fp = self.fingerprint_for(judged, reflists.get(ref.id, {}).get(""))
+            fp = self.fingerprint_for(judged, listed.get(ref.id, {}).get(source))
             existing = artifacts.get(ref.id, {}).get(source)
             if ctx.is_fresh(existing, fp):
                 plan.fresh += 1
@@ -114,7 +117,7 @@ class LinksStage:
         from .references import read_articles
 
         jobs, ready = [], []
-        reflists = ctx.catalog.artifacts([w.article_id for w in works], "reflist")
+        lists = ctx.catalog.artifacts([w.article_id for w in works], "references")
         for work in works:
             download = ctx.catalog.artifact(work.article_id, "download", work.source)
             download_payload = ctx.payload(download) if download else None
@@ -124,9 +127,9 @@ class LinksStage:
                                       "download or extraction payload missing from blob store",
                                       fingerprint=work.fingerprint)
                 continue
-            reflist = reflists.get(work.article_id, {}).get("")
-            listed = ((ctx.payload(reflist) or {}).get("references")
-                      if reflist is not None and reflist.status is Status.OK else None)
+            references = lists.get(work.article_id, {}).get(work.source)
+            listed = ((ctx.payload(references) or {}).get("references")
+                      if references is not None and references.ok else None)
             text_path = ctx.recorded_path(extraction.get("full_text_path"))
             jobs.append((work.source, download_payload, str(text_path) if text_path else None,
                          listed or None))

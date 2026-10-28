@@ -54,11 +54,14 @@ def _run(stage, ctx, catalog, ref):
     return plan, outcomes
 
 
-def test_references_follow_extract_and_run_only_when_asked(tmp_path):
+def test_references_follow_extract_and_run_by_default(tmp_path):
+    """Sync writes its list as the parsed paper's references; the Crossref list it can
+    fill gaps from is fetched only when asked for."""
     assert STAGE_ORDER.index("extract") < STAGE_ORDER.index("references")
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c")
-    assert "references" in OPT_IN_STAGES
-    assert "references" not in {s.name for s in build(None, settings)}
+    assert "references" not in OPT_IN_STAGES
+    assert "references" in {s.name for s in build(None, settings)}
+    assert "reflist" not in {s.name for s in build(None, settings)}
     assert [s.name for s in build(["references"], settings)] == ["references"]
 
 

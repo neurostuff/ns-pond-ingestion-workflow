@@ -50,7 +50,8 @@ logger = get_logger(__name__)
 
 #: Bump when the same inputs would give different files.
 #: 11: a "Data availability" heading is a data_availability section, not references.
-PAPER_PARSE_VERSION = 11
+#: 12: each link's occurrences, and the reference list they name.
+PAPER_PARSE_VERSION = 12
 PRODUCER = "ns-pond-ingestion-workflow"
 PARSE_DIR = "parse"
 
@@ -100,9 +101,14 @@ class ParseInputs:
     #: The notices stage's corrections of the paper ({kind, pmid, doi}); None while
     #: PubMed has not answered, which neurostore's ingester reads as "not looked up".
     corrections: Optional[Sequence[Mapping[str, Any]]] = None
-    #: Every link of the paper ({url, has_nifti}), from the links and linkprobe stages; None
-    #: while links has not read the text, which neurostore's ingester reads as "not looked".
+    #: Every link of the paper ({url, has_nifti, occurrences}), from the links and linkprobe
+    #: stages; None while links has not read the text, which neurostore's ingester reads as
+    #: "not looked". Its offsets index the text `links_text_sha256` names.
     links: Optional[Sequence[Mapping[str, Any]]] = None
+    links_text_sha256: Optional[str] = None
+    #: The references stage's list, whose ids the links' occurrences name; None while it
+    #: has not read the paper.
+    references: Optional[Sequence[Mapping[str, Any]]] = None
 
 
 @dataclass
@@ -199,6 +205,7 @@ def parsed_paper(root: Path, bundle: ArticleExtractionBundle, inputs: ParseInput
         raise ValueError(
             f"the article holds two DOIs of a version of record: {sorted(set(inputs.dois))}")
     raw = text_file.read_bytes()
+    text_sha256 = hashlib.sha256(raw).hexdigest()
     text = _Text(raw.decode("utf-8", errors="replace"))
 
     from ingestion_workflow.pipeline.stage import publication_types
@@ -237,6 +244,7 @@ def parsed_paper(root: Path, bundle: ArticleExtractionBundle, inputs: ParseInput
                 ("extraction", inputs.fingerprints.get("extract")),
                 ("metadata", inputs.fingerprints.get("metadata")),
                 ("triage", inputs.fingerprints.get("triage")),
+                ("references", inputs.fingerprints.get("references")),
                 ("links", inputs.fingerprints.get("links")),
                 ("linkprobe", inputs.fingerprints.get("linkprobe")),
             ],
@@ -245,18 +253,41 @@ def parsed_paper(root: Path, bundle: ArticleExtractionBundle, inputs: ParseInput
         text_copy=inputs.text_copy,
         reported_copies=list(meta.reported_copies) or None,
         text_path=text_file.relative_to(root).as_posix(),
-        text_sha256=hashlib.sha256(raw).hexdigest(),
+        text_sha256=text_sha256,
         text_length=len(text.text),
         bibliography=_bibliography(meta, title, types, inputs.corrections),
         is_meta_analysis=bool(is_meta),
         is_meta_analysis_basis=_meta_basis(title, types) if is_meta else None,
         sections=sections(text.text),
-        links=None if inputs.links is None else [
-            pp.PaperLink(url=link["url"], has_nifti=link.get("has_nifti"))
-            for link in inputs.links],
+        links=_links(inputs, text_sha256),
+        references=None if inputs.references is None else [
+            pp.Reference(id=r["id"], position=r.get("position"), provider=r.get("provider"),
+                         label=r.get("label"), text=r["text"], doi=r.get("doi"),
+                         pmid=r.get("pmid"), title=r.get("title"), year=r.get("year"))
+            for r in inputs.references],
         tables=tables,
     )
     return paper, text, grids
+
+
+def _links(inputs: ParseInputs, text_sha256: str) -> Optional[List[pp.PaperLink]]:
+    """The paper's links, each with its occurrences. Raises ValueError for links read from
+    another text than the one `text_sha256` names, or naming a reference entry the paper's
+    list does not hold."""
+    if inputs.links is None:
+        return None
+    if inputs.links_text_sha256 != text_sha256:
+        raise ValueError("the links were read from another text than the parsed paper's")
+    ids = {r["id"] for r in inputs.references or []}
+    named = {o["reference_id"] for link in inputs.links for o in link["occurrences"]
+             if o.get("reference_id")}
+    if named - ids:
+        raise ValueError(f"the links name reference entries the paper's list does not hold: "
+                         f"{sorted(named - ids)}")
+    return [pp.PaperLink(url=link["url"], has_nifti=link.get("has_nifti"), occurrences=[
+        pp.LinkOccurrence(found_by=o["found_by"], start_char=o.get("start_char"),
+                          end_char=o.get("end_char"), reference_id=o.get("reference_id"))
+        for o in link["occurrences"]]) for link in inputs.links]
 
 
 def _text_file(root: Path, source: str) -> Optional[Path]:
@@ -344,6 +375,26 @@ def sections(text: str):
             continue
         out.append(pp.Section(kind=_SECTIONS.get(label, "other"), start_char=start, end_char=end))
     return out or None
+
+
+def section_at(spans: Optional[Sequence[pp.Section]], start_char: int) -> Optional[pp.Section]:
+    """The span of `spans` (`ParsedPaper.sections`) holding `start_char`: the section a span
+    of the text, such as a link's occurrence, is in."""
+    return next((s for s in spans or () if s.start_char <= start_char < s.end_char), None)
+
+
+def links_in_section(paper: pp.ParsedPaper, kind: pp.SectionKind) -> List[pp.PaperLink]:
+    """The paper's links given in a `kind` section, each with its occurrences there only:
+    `links_in_section(paper, SectionKind.data_availability)` is what the data-availability
+    statement links to. Empty when no section is `kind`, or the links were not looked for."""
+    out = []
+    for link in paper.links or ():
+        inside = [o for o in link.occurrences if o.start_char is not None
+                  and (s := section_at(paper.sections, o.start_char)) is not None
+                  and s.kind == kind]
+        if inside:
+            out.append(link.model_copy(update={"occurrences": inside}))
+    return out
 
 
 #: A rodent stereotaxic table prints positions from bregma (a skull landmark), from the
@@ -1333,6 +1384,8 @@ __all__ = [
     "article_identifiers",
     "held_copy",
     "coordinate_parse",
+    "links_in_section",
     "parsed_paper",
+    "section_at",
     "write",
 ]

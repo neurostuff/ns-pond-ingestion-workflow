@@ -7,8 +7,9 @@ JATS links to, and the reference list, whose URLs count and whose DOIs count onl
 they are a dataset's (`DATA_DOI_PREFIXES`). A DOI is a link as `https://doi.org/<doi>`.
 
 Each link is kept once, by its normalized url (`normalize_url`, study_schema's
-`PaperLink.url`), with every occurrence: its offsets into the text, its section, how it
-was found, and the words near it that say it holds imaging data (`NIFTI_CONTEXT`).
+`PaperLink.url`), with every occurrence in text order: its offsets into the text, its
+section, how it was found, the entry of the references stage's list it was read from, and
+the words near it that say it holds imaging data (`NIFTI_CONTEXT`).
 """
 
 from __future__ import annotations
@@ -150,8 +151,8 @@ class Occurrence:
     start_char: Optional[int] = None
     end_char: Optional[int] = None
     section: Optional[str] = None
-    #: The reference entry it came from.
-    reference: Optional[str] = None
+    #: The id of the references stage's entry it was read from (`ParsedPaper.references`).
+    reference_id: Optional[str] = None
     context: Tuple[str, ...] = ()
 
     def placed(self) -> bool:
@@ -160,8 +161,8 @@ class Occurrence:
     def to_dict(self) -> dict:
         out = {"found_by": self.found_by, "raw": self.raw, "start_char": self.start_char,
                "end_char": self.end_char, "section": self.section, "context": list(self.context)}
-        if self.reference:
-            out["reference"] = self.reference
+        if self.reference_id:
+            out["reference_id"] = self.reference_id
         return out
 
 
@@ -276,7 +277,7 @@ def _jats(xml_path: Path, text: str, notes: Dict[str, int]) -> List[Occurrence]:
         how = ("reference" if ref is not None
                else "supplement" if name in _JATS_SUPPLEMENTS else "markup")
         found.append((el, Occurrence(url, how, href.strip(),
-                                     reference=ref.get("id") if ref is not None else None)))
+                                     reference_id=ref.get("id") if ref is not None else None)))
     for ref in tree.getroot().iter("ref"):
         for pid in ref.iter("pub-id"):
             if (pid.get("pub-id-type") or "").lower() == "doi":
@@ -284,7 +285,7 @@ def _jats(xml_path: Path, text: str, notes: Dict[str, int]) -> List[Occurrence]:
                 url = doi_url(value)
                 if url:
                     found.append((None, Occurrence(url, "reference", value,
-                                                   reference=ref.get("id"))))
+                                                   reference_id=ref.get("id"))))
     placed = [(el, occ) for el, occ in found if el is not None]
     spans = jats_spans(tree, xml_path, [el for el, _ in placed], text, notes)
     for i, (_, occ) in enumerate(placed):
@@ -307,13 +308,14 @@ def _elsevier(xml_path: Path, text: str, notes: Dict[str, int]) -> List[Occurren
             continue
         ref = next((a for a in el.iterancestors() if a.tag == f"{{{_CE}}}bib-reference"), None)
         found.append((el, Occurrence(url, "markup" if ref is None else "reference", href.strip(),
-                                     reference=ref.get("id") if ref is not None else None)))
+                                     reference_id=ref.get("id") if ref is not None else None)))
     for ref in root.iter(f"{{{_CE}}}bib-reference"):
         for doi in ref.iter(f"{{{_CE}}}doi"):
             value = "".join(doi.itertext()).strip()
             url = doi_url(value)
             if url:
-                found.append((None, Occurrence(url, "reference", value, reference=ref.get("id"))))
+                found.append((None, Occurrence(url, "reference", value,
+                                               reference_id=ref.get("id"))))
     placed = [(el, occ) for el, occ in found if el is not None]
     spans = elsevier_spans(root, [el for el, _ in placed], text, notes)
     for i, (_, occ) in enumerate(placed):
@@ -376,22 +378,18 @@ def from_markup(source: str, download, text: str,
 
 
 def from_reference_list(references: Sequence[dict]) -> List[Occurrence]:
-    """A Crossref list's entries: each one's DOI, and the links its text prints."""
+    """The references stage's entries: each one's DOI, and the links its text prints."""
     out = []
     for entry in references:
         if entry.get("doi") and (url := doi_url(entry["doi"])):
-            out.append(Occurrence(url, "reference", entry["doi"], reference=entry.get("id")))
+            out.append(Occurrence(url, "reference", entry["doi"], reference_id=entry["id"]))
         for url, start, end in from_text(entry.get("text") or ""):
             out.append(Occurrence(url, "reference", entry["text"][start:end],
-                                  reference=entry.get("id")))
+                                  reference_id=entry["id"]))
     return out
 
 
 # -------------------------------------------------------------------- the article
-def _section_at(spans: Sequence[Tuple[int, int, str]], start: int) -> Optional[str]:
-    return next((kind for a, b, kind in spans if a <= start < b), None)
-
-
 def _kept(occ: Occurrence) -> bool:
     """A DOI in the reference list is a citation, not a link, unless a dataset's."""
     in_list = occ.found_by == "reference" or occ.section == "references"
@@ -401,12 +399,20 @@ def _kept(occ: Occurrence) -> bool:
 def read_links(text: str, markup: Optional[List[Occurrence]],
                listed: Optional[Sequence[dict]] = None) -> List[dict]:
     """Every link of the article: [{url, nifti_context, occurrences}], in order of first
-    appearance. `markup` is `from_markup`'s, `listed` the Crossref reference list."""
-    from ingestion_workflow.services.paper_parse import sections
+    appearance, each one's occurrences in text order and those no span holds after them.
 
-    spans = [(s.start_char, s.end_char, getattr(s.kind, "value", s.kind))
-             for s in sections(text) or []]
+    `markup` is `from_markup`'s, `listed` the references stage's list, which sync writes as
+    `ParsedPaper.references`: an occurrence names one of its entries or none, so markup
+    in an entry the list does not hold, or with no list, names none.
+    """
+    from ingestion_workflow.services.paper_parse import section_at, sections
+
+    spans = sections(text)
+    ids = {entry["id"] for entry in listed or []}
     occurrences = list(markup or [])
+    for occ in occurrences:
+        if occ.reference_id not in ids:
+            occ.reference_id = None
     marked = [(o.start_char, o.end_char) for o in occurrences if o.placed()]
     for url, start, end in from_text(text):
         # the markup's href is the link the text prints there; the text may have cut it
@@ -418,13 +424,16 @@ def read_links(text: str, markup: Optional[List[Occurrence]],
     seen = set()
     for occ in occurrences:
         if occ.placed():
-            occ.section = _section_at(spans, occ.start_char)
+            section = section_at(spans, occ.start_char)
+            occ.section = getattr(section.kind, "value", section.kind) if section else None
             occ.context = _context(text, occ.start_char, occ.end_char)
-        key = (occ.url, occ.found_by, occ.start_char, occ.end_char, occ.reference)
+        key = (occ.url, occ.found_by, occ.start_char, occ.end_char, occ.reference_id)
         if key in seen or not _kept(occ):
             continue
         seen.add(key)
         links.setdefault(occ.url, []).append(occ)
+    for found in links.values():
+        found.sort(key=lambda o: (not o.placed(), o.start_char or 0))
     order = sorted(links, key=lambda url: min(
         (o.start_char for o in links[url] if o.placed()), default=len(text) + 1))
     return [{"url": url, "nifti_context": any(o.context for o in links[url]),

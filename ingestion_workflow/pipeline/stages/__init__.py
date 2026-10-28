@@ -37,8 +37,9 @@ from .upload import UploadStage
 #: re-runs nothing upstream.
 #:
 #: `reflist` fetches each paper's Crossref list and `references` reads each
-#: extraction's list and citations, the Crossref list filling its gaps. Nothing
-#: downstream reads them yet, so they run only when asked for by name.
+#: extraction's list and citations, the Crossref list filling its gaps. `reflist` runs
+#: only when asked for by name; `references` runs by default (no network), since sync
+#: writes its list as the parsed paper's references and `links` names its entries.
 #:
 #: `links` reads every http(s) link of the text triage judges, and `linkprobe` asks OSF
 #: and OpenNeuro whether the projects and datasets among them hold NIfTI files. Only sync
@@ -57,7 +58,7 @@ STAGE_ORDER = ("download", "extract", "reflist", "references", "links", "linkpro
 PROSE_STAGES = ("passages", "prose", "resolve")
 
 #: Stages a run without `--stage` leaves out.
-OPT_IN_STAGES = ("reflist", "references")
+OPT_IN_STAGES = ("reflist",)
 
 STAGE_TYPES = {
     "download": DownloadStage,
