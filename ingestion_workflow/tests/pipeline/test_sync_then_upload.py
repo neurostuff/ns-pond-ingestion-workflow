@@ -358,10 +358,16 @@ def test_the_parse_holds_each_link_with_what_linkprobe_saw_of_it(env, monkeypatc
     (sync,) = build(["sync"], settings)
     urls = ["https://openneuro.org/datasets/ds006128", "https://osf.io/4drz6/overview",
             "https://osf.io/w6khb", "https://neurovault.org/collections/9096"]
+    # The links' offsets index the synced text, so they are read from it once it is written.
+    _, (unlinked,) = _run(sync, ctx, catalog, ref)
+    assert unlinked.status is Status.OK, unlinked.error
+    occurrences = [[{"found_by": "text", "start_char": 10 * i, "end_char": 10 * i + 5,
+                     "reference_id": None}] for i in range(len(urls))]
     catalog.record([Outcome(
         article_id=ref.id, stage="links", source="pubget", fingerprint="li-1",
-        payload={"links": [{"url": url, "nifti_context": False, "occurrences": []}
-                           for url in urls]},
+        payload={"text_sha256": _parsed_paper(settings)["text_sha256"],
+                 "links": [{"url": url, "nifti_context": False, "occurrences": found}
+                           for url, found in zip(urls, occurrences)]},
         summary={"links": 4, "probe": urls[:3]})])
 
     def probed(osf_has_nifti):
@@ -382,9 +388,9 @@ def test_the_parse_holds_each_link_with_what_linkprobe_saw_of_it(env, monkeypatc
     assert synced.status is Status.OK, synced.error
     paper = _parsed_paper(settings)
     # has_nifti only where a repository was checked and answered
-    assert paper["links"] == [
-        {"url": urls[0], "has_nifti": True}, {"url": urls[1], "has_nifti": False},
-        {"url": urls[2], "has_nifti": None}, {"url": urls[3], "has_nifti": None}]
+    assert [(link["url"], link["has_nifti"], link["occurrences"]) for link in paper["links"]] == [
+        (urls[0], True, occurrences[0]), (urls[1], False, occurrences[1]),
+        (urls[2], None, occurrences[2]), (urls[3], None, occurrences[3])]
     assert {i["artifact_kind"] for i in paper["header"]["inputs"]} >= {"links", "linkprobe"}
     assert not stale()
 
@@ -392,7 +398,7 @@ def test_the_parse_holds_each_link_with_what_linkprobe_saw_of_it(env, monkeypatc
     probed(True)
     assert stale()
     _run(sync, ctx, catalog, ref)
-    assert _parsed_paper(settings)["links"][1] == {"url": urls[1], "has_nifti": True}
+    assert _parsed_paper(settings)["links"][1]["has_nifti"] is True
 
     # another extraction's links are another text's: the parse's are the synced one's
     catalog.record([Outcome(article_id=ref.id, stage="links", source="ace",
