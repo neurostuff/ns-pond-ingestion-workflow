@@ -62,6 +62,8 @@ test = [
   "pytest-cov>=4.1",
   "pytest-recording>=0.13",
   "pytest-xdist>=3.5",
+  # The mock neurostore checks requests and answers against neurostore's OpenAPI 3.0 spec.
+  "openapi-schema-validator>=0.6",
 ]
 lint = [
   "ruff>=0.6",
