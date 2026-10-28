@@ -13,7 +13,9 @@ should not be fails them.
 from __future__ import annotations
 
 import dataclasses
+import hashlib
 import json
+import logging
 import os
 from pathlib import Path
 
@@ -203,6 +205,11 @@ def test_sync_writes_the_parse_with_no_upload_and_upload_sends_what_it_wrote(env
         json.loads(written.read_text()))
     assert without_input_fingerprints(payload["parsed_paper"]) == without_input_fingerprints(json.loads(
         (settings.ns_pond_root / "BS21" / "parse" / "parsed_paper.json").read_text()))
+    # The text goes with them: the file sync wrote, which the parsed paper's hash names.
+    text_path = settings.ns_pond_root / "BS21" / payload["parsed_paper"]["text_path"]
+    assert payload["text"].encode() == text_path.read_bytes()
+    assert hashlib.sha256(text_path.read_bytes()).hexdigest() == \
+        payload["parsed_paper"]["text_sha256"]
     # The matcher blanks the input fingerprints of the replayed body; the parse written here is
     # where they are held to the catalog's artifacts.
     held = {"extraction": catalog.artifacts([ref.id], "extract")[ref.id]["pubget"].fingerprint,
@@ -374,6 +381,28 @@ def test_an_article_neurostore_holds_no_base_study_for_is_uploaded_and_given_one
     assert first_sent["coordinate_parse"]["header"]["neurostore_base_study_id"] is None
     assert second_sent["coordinate_parse"]["header"]["neurostore_base_study_id"] == created
     assert second_sent["coordinate_parse"]["parse_id"] == first.summary["parse_id"]
+
+
+@RECORDS
+def test_an_upload_neurostore_filed_under_a_merged_base_study_teaches_its_alias(
+        env, monkeypatch, vcr, evidence):
+    """BS21 was merged into BS84 in neurostore; the ingester followed the merge and says so
+    (merged_from). The write committed: the upload is recorded, under BS84, and the article
+    is known by BS84 as well as BS21."""
+    settings, catalog, _ = env
+    ctx, ref = _prose_article(env, monkeypatch, "21", "BS21", evidence=evidence)
+    sync, upload = build(["sync", "upload"], settings)
+    _run(sync, ctx, catalog, ref)
+    sync.finish()
+    _, (done,) = _run(upload, ctx, catalog, ref)
+    upload.finish()
+
+    assert done.status is Status.OK, done.error
+    assert done.summary["base_study_id"] == "BS84"
+    assert done.summary["ingester"]["summary"]["merged_from"] == ["BS21"]
+    assert catalog.resolve(Identifier(neurostore="BS84")).id == ref.id
+    assert catalog.resolve(Identifier(neurostore="BS21")).id == ref.id
+    assert len(_sent(vcr)) == 1
 
 
 def _plan_sync(sync, ctx, catalog, refs):
@@ -805,7 +834,7 @@ def _take_back_space(catalog, ref, reason=NO_TEXT):
 @RECORDS
 @pytest.mark.parametrize("reason", [NO_TEXT, NO_ANALYSES], ids=["no-text", "no-analyses"])
 def test_a_taken_back_article_gets_no_parse_and_is_recorded_once_with_its_reason(
-        env, monkeypatch, reason, vcr, evidence):
+        env, monkeypatch, reason, vcr, evidence, caplog):
     """Nothing is deleted from neurostore: it keeps the last upload, and the upload stage
     records the take-back's reason and sends nothing again."""
     settings, catalog, _ = env
@@ -824,9 +853,14 @@ def test_a_taken_back_article_gets_no_parse_and_is_recorded_once_with_its_reason
     assert Path(back.summary["moved_to"]).exists()
     assert list(settings.ns_pond_root.rglob("coordinate_parse.json")) == []
 
-    _, (back,) = _run(upload, ctx, catalog, ref)
+    caplog.clear()
+    with caplog.at_level(logging.WARNING, logger="ingestion_workflow.pipeline.stages.upload"):
+        _, (back,) = _run(upload, ctx, catalog, ref)
     assert (back.status, back.error, back.fingerprint) == (Status.FAILED, reason, NO_TEXT)
     assert back.summary["reason"] == reason and back.summary["base_study_id"] == "BS29"
+    # Neurostore keeps the upload, so a person is told to look at it.
+    (warned,) = [r.getMessage() for r in caplog.records if "taken back" in r.getMessage()]
+    assert ref.id in warned and "BS29" in warned and reason in warned
     assert back.summary["last_upload"]["analyses"] == 1
     # Recorded once; after that the article waits, and nothing is sent.
     plan, outcomes = _run(upload, ctx, catalog, ref)
@@ -835,7 +869,8 @@ def test_a_taken_back_article_gets_no_parse_and_is_recorded_once_with_its_reason
 
 
 @pytest.mark.vcr
-def test_a_taken_back_article_never_uploaded_has_nothing_to_retract(env, monkeypatch, evidence):
+def test_a_taken_back_article_never_uploaded_has_nothing_to_retract(env, monkeypatch, evidence,
+                                                                    caplog):
     settings, catalog, _ = env
     ctx, ref = _prose_article(env, monkeypatch, "30", evidence=evidence)
     sync, upload = build(["sync", "upload"], settings)
@@ -845,8 +880,10 @@ def test_a_taken_back_article_never_uploaded_has_nothing_to_retract(env, monkeyp
     _take_back_space(catalog, ref)
     _, (back,) = _run(sync, ctx, catalog, ref)
     assert back.error == NO_TEXT and back.summary["removed"] == str(new) and not new.exists()
+    caplog.clear()
     _, (recorded,) = _run(upload, ctx, catalog, ref)
     assert (recorded.error, recorded.fingerprint) == (NO_TEXT, NO_TEXT)
+    assert "taken back" not in caplog.text  # neurostore holds nothing of it to look at
     assert recorded.summary["base_study_id"] is None and "last_upload" not in recorded.summary
     plan, outcomes = _run(upload, ctx, catalog, ref)
     assert (plan.blocked, plan.reasons, outcomes) == (1, {}, [])
@@ -1326,9 +1363,12 @@ def test_a_refused_or_blocked_paper_leaves_the_next_one_to_upload(env, monkeypat
     assert (sum(played), all(played)) == (answers, True)
     (answered,) = _recorded_body(
         "test_sync_writes_the_parse_with_no_upload_and_upload_sends_what_it_wrote.yaml")
-    assert without_input_fingerprints(answered) == without_input_fingerprints(
-        {name: json.loads((settings.ns_pond_root / "BS21" / "parse" / f"{name}.json").read_text())
-         for name in ("coordinate_parse", "parsed_paper")})
+    written = {name: json.loads(
+        (settings.ns_pond_root / "BS21" / "parse" / f"{name}.json").read_text())
+        for name in ("coordinate_parse", "parsed_paper")}
+    written["text"] = (settings.ns_pond_root / "BS21" / written["parsed_paper"]["text_path"]
+                       ).read_bytes().decode()
+    assert without_input_fingerprints(answered) == without_input_fingerprints(written)
     # Neither is tried again in this run: one is fresh, the other waits out its retry.
     plan, again = _upload_together(UploadStage(settings), ctx, catalog, [failing, sent])
     assert (plan.fresh, plan.permanent, again) == (1, 1, {})

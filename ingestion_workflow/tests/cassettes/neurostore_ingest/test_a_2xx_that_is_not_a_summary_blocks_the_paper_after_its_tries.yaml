@@ -1,4 +1,5 @@
 # Composed, not recorded: a 200 whose body is not the ingester's summary, which neurostore does not send.
+# Request bodies composed, not recorded: each is the recorded body with the parsed paper's text added as `text` (neurostuff/neurostore-spec#118). The responses were recorded, or composed, for the bodies without it, against neurostore master, which refuses `text` with a 400. Re-record against a local neurostore that takes the new spec before relying on them.
 interactions:
 - &id001
   request:
@@ -16,7 +17,8 @@ interactions:
       > Faces","n.s."],"text_span":null}],"text_span":null,"coordinate_space_hint":null,"triage":{"passes":true,"score":0.97,"route":"read","located_by":null,"excluded_by_hand":null,"exclusion_reason":null}},{"table_id":"tbl2","label":null,"number":"2","caption":"tbl2
       caption","footer":null,"raw_path":"source/pubget/tables/tbl2.html","column_headings":["Group","n"],"rows":[{"row":0,"cells":["Patients","20"],"text_span":null}],"text_span":null,"coordinate_space_hint":null,"triage":{"passes":false,"score":0.02,"route":"gate","located_by":null,"excluded_by_hand":null,"exclusion_reason":null}},{"table_id":"tbl3","label":null,"number":"3","caption":"tbl3
       caption","footer":null,"raw_path":"source/pubget/tables/tbl3.html","column_headings":["x","y","z"],"rows":[{"row":0,"cells":["1","2","3"],"text_span":null}],"text_span":null,"coordinate_space_hint":null,"triage":{"passes":true,"score":0.8,"route":"gate","located_by":null,"excluded_by_hand":true,"exclusion_reason":"not_coordinates;
-      a design matrix"}}]}}'
+      a design matrix"}}]},"text":"Title\n\nMethods\n\nA seed was placed in the left
+      amygdala (-22, -4, -20), as in our earlier work.\n\nResults\n\nTable 1 ...\n"}'
     headers:
       accept:
       - '*/*'
@@ -25,7 +27,7 @@ interactions:
       connection:
       - keep-alive
       content-length:
-      - '7587'
+      - '7847'
       content-type:
       - application/json
       host:

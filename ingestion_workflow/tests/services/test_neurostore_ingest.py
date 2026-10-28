@@ -25,7 +25,7 @@ import pytest
 from ingestion_workflow.catalog import Status
 from ingestion_workflow.config import Settings
 from ingestion_workflow.services import neurostore_ingest as ni
-from ingestion_workflow.tests.services.test_paper_parse import BASE, _written
+from ingestion_workflow.tests.services.test_paper_parse import BASE, TEXT, _written
 
 #: The private neurostore the cassettes were recorded against.
 LOCAL = "http://127.0.0.1:28084"
@@ -96,7 +96,10 @@ def test_a_parse_and_its_parsed_paper_are_posted_as_sync_wrote_them(study, token
 
     (request,) = vcr.requests
     assert request.headers["Content-Type"] == "application/json"
-    assert json.loads(request.body) == _files(study)
+    sent = json.loads(request.body)
+    assert sent == {**_files(study), "text": TEXT}
+    # The text neurostore stores is the one the parsed paper's text_sha256 names.
+    assert hashlib.sha256(sent["text"].encode()).hexdigest() == sent["parsed_paper"]["text_sha256"]
     assert artifact["status"] == "uploaded"
     assert ni.Result(artifact["status"]).catalog_status is Status.OK
     summary = artifact["summary"]
@@ -285,6 +288,8 @@ def _response(status, body=b"", headers=None):
     (401, {}, b'{"detail": "Provided token is not valid"}', ni.NeurostoreAuthError),
     (404, {}, b'{"detail": "Record x not found in BaseStudy"}', None),
     (422, {}, b'{"errors": [{"code": "KEY_MISMATCH"}]}', None),
+    (422, {}, b'{"errors": [{"code": "TEXT_MISMATCH"}]}', None),
+    (422, {}, b'{"errors": [{"code": "SCHEMA_VERSION"}]}', ni.NeurostoreConfigError),
     (400, {}, b'{"detail": "Additional properties"}', None),
 ])
 def test_which_statuses_mean_every_paper_would_fail(token, status, headers, body, stop):
@@ -313,6 +318,49 @@ def test_a_2xx_that_is_not_this_parse_s_summary_is_not_an_upload(study, token, b
             _response(200, answer if isinstance(answer, bytes) else json.dumps(answer).encode()),
             parse)
     assert summary is None and problem in found and filed_elsewhere is foreign
+
+
+@pytest.mark.parametrize("merged_from, foreign", [
+    ([BASE], False), (["thirdBase001", BASE], False), (["thirdBase001"], True), ([], True)])
+def test_a_summary_of_another_base_study_is_this_upload_only_when_it_followed_a_merge(
+        study, token, merged_from, foreign):
+    parse = _files(study)["coordinate_parse"]
+    answer = {"kind": "parse", "parse_id": parse["parse_id"], "base_study_id": "otherBase001",
+              "merged_from": merged_from}
+    with _ingester() as ingester:
+        summary, problem, filed_elsewhere = ingester._summary(
+            _response(200, json.dumps(answer).encode()), parse)
+    assert filed_elsewhere is foreign
+    assert (summary is None, problem is None) == (foreign, not foreign)
+
+
+@pytest.mark.vcr(record_mode="none")
+def test_an_upload_neurostore_filed_under_the_base_study_a_merge_kept_is_an_upload(study, token):
+    """The header names a base study neurostore merged into another; it followed the merge
+    and says so. The write committed, so it is uploaded, under the base study it names."""
+    with _ingester() as ingester:
+        artifact = ingester.upload(study)
+
+    assert artifact["status"] == "uploaded"
+    assert ni.Result(artifact["status"]).catalog_status is Status.OK
+    summary = artifact["summary"]
+    assert (summary["base_study_id"], summary["merged_from"]) == ("otherBase001", [BASE])
+    assert artifact["last_uploaded"][artifact["endpoint"]]["summary"] == summary
+    assert [a["http_status"] for a in artifact["attempts"]] == [200]
+
+
+@pytest.mark.vcr(record_mode="none")
+def test_a_schema_version_neurostore_is_not_pinned_to_stops_the_upload(study, token, vcr):
+    """Every parse of the run states the same version, so every one would be refused: a
+    refusal recorded per paper would never be sent again once neurostore is repinned."""
+    with _ingester() as ingester, pytest.raises(ni.NeurostoreConfigError) as stopped:
+        ingester.upload(study)
+
+    message = str(stopped.value)
+    assert "coordinate_parse/header/schema_version states 0.10.0" in message
+    assert "neurostore is pinned to 0.9.0" in message
+    assert len(vcr.requests) == 1
+    assert not (study / ni.UPLOAD_DIR).exists()
 
 
 @pytest.mark.vcr(record_mode="none")
@@ -462,8 +510,40 @@ def test_a_dry_run_writes_the_exact_payload_and_sends_nothing(study, monkeypatch
     assert artifact["status"] == "dry_run"
     payload = (root / study.name / ni.PAYLOAD_NAME).read_bytes()
     assert artifact["payload_sha256"] == hashlib.sha256(payload).hexdigest()
-    assert json.loads(payload) == _files(study)
+    assert json.loads(payload) == {**_files(study), "text": TEXT}
     assert not (study / ni.UPLOAD_DIR).exists()
+
+
+def _rewrite_text(study, data):
+    """The fixture paper with `data` as its text file, and both documents hashing it."""
+    paper = _files(study)["parsed_paper"]
+    (study / paper["text_path"]).write_bytes(data)
+    digest = hashlib.sha256(data).hexdigest()
+    for name in ("coordinate_parse", "parsed_paper"):
+        _edit(study, name, lambda d: d.update(text_sha256=digest))
+    return digest
+
+
+def test_the_text_is_sent_as_the_bytes_its_hash_was_taken_of(study, tmp_path):
+    """Read as text, a CRLF would come back LF, and neurostore would refuse the text as
+    not the one text_sha256 names (TEXT_MISMATCH)."""
+    digest = _rewrite_text(study, TEXT.replace("\n", "\r\n").encode())
+    root = tmp_path / "dry"
+    artifact = ni.NeurostoreIngester(LOCAL, dry_run=True, dry_run_root=root).upload(study)
+
+    assert artifact["status"] == "dry_run", artifact.get("error")
+    text = json.loads((root / study.name / ni.PAYLOAD_NAME).read_bytes())["text"]
+    assert "\r\n" in text and hashlib.sha256(text.encode()).hexdigest() == digest
+
+
+def test_a_text_that_is_not_utf8_is_not_sent(study, tmp_path):
+    _rewrite_text(study, TEXT.replace("Title", "Titl\xe9").encode("latin-1"))
+    root = tmp_path / "dry"
+    artifact = ni.NeurostoreIngester(LOCAL, dry_run=True, dry_run_root=root).upload(study)
+
+    assert artifact["status"] == "invalid"
+    assert any("is not UTF-8" in p for p in artifact["error"]["problems"])
+    assert not (root / study.name / ni.PAYLOAD_NAME).exists()
 
 
 def test_the_dry_run_payload_is_the_body_a_real_upload_sends(study, tmp_path):

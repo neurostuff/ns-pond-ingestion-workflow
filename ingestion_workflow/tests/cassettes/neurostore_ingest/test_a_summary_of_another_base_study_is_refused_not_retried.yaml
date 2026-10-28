@@ -1,4 +1,5 @@
 # Composed, not recorded: neurostore's 200 with another base study's id: neurostore never files a parse under one it was not sent.
+# Request bodies composed, not recorded: each is the recorded body with the parsed paper's text added as `text` (neurostuff/neurostore-spec#118). The responses were recorded, or composed, for the bodies without it, against neurostore master, which refuses `text` with a 400. Re-record against a local neurostore that takes the new spec before relying on them.
 interactions:
 - request:
     body: '{"coordinate_parse":{"header":{"artifact_kind":"coordinate_parse","schema_version":"0.10.0","article_id":"art-1","identifiers":{"pmid":"22848644","pmcid":"PMC3407125","doi":"10.1371/journal.pone.0041873","alternative_pmids":null,"alternative_pmcids":null,"alternative_dois":null,"preprint_dois":null,"preprint_pmids":null,"preprint_pmcids":null,"publication_status":"published"},"producer":{"name":"ns-pond-ingestion-workflow","version":"paper_parse.10","stage":"sync","model":null,"prompt_version":null},"inputs":[{"artifact_kind":"parsed_paper","fingerprint":"9c41b321fb51d29ee50c195904b82bad3195b089f23abbb7f2880500ff264104","producer_version":null},{"artifact_kind":"analyses","fingerprint":"fp-space","producer_version":null}],"created_at":null,"neurostore_base_study_id":"22tHjbNRU8t2"},"parse_id":"2c2c9bcbd849105e105dfe4bfc12f9c5b0321aeb33ec00895d5940c911101b2b","text_sha256":"9c41b321fb51d29ee50c195904b82bad3195b089f23abbb7f2880500ff264104","revision_of":null,"analyses":[{"key":"analysis#fc8087881826e87b","cells":[{"row":1,"column_group":0}],"text_spans":null,"origin":"table","table_id":"tbl1","name":"Faces
@@ -15,7 +16,8 @@ interactions:
       > Faces","n.s."],"text_span":null}],"text_span":null,"coordinate_space_hint":null,"triage":{"passes":true,"score":0.97,"route":"read","located_by":null,"excluded_by_hand":null,"exclusion_reason":null}},{"table_id":"tbl2","label":null,"number":"2","caption":"tbl2
       caption","footer":null,"raw_path":"source/pubget/tables/tbl2.html","column_headings":["Group","n"],"rows":[{"row":0,"cells":["Patients","20"],"text_span":null}],"text_span":null,"coordinate_space_hint":null,"triage":{"passes":false,"score":0.02,"route":"gate","located_by":null,"excluded_by_hand":null,"exclusion_reason":null}},{"table_id":"tbl3","label":null,"number":"3","caption":"tbl3
       caption","footer":null,"raw_path":"source/pubget/tables/tbl3.html","column_headings":["x","y","z"],"rows":[{"row":0,"cells":["1","2","3"],"text_span":null}],"text_span":null,"coordinate_space_hint":null,"triage":{"passes":true,"score":0.8,"route":"gate","located_by":null,"excluded_by_hand":true,"exclusion_reason":"not_coordinates;
-      a design matrix"}}]}}'
+      a design matrix"}}]},"text":"Title\n\nMethods\n\nA seed was placed in the left
+      amygdala (-22, -4, -20), as in our earlier work.\n\nResults\n\nTable 1 ...\n"}'
     headers:
       accept:
       - '*/*'
@@ -24,7 +26,7 @@ interactions:
       connection:
       - keep-alive
       content-length:
-      - '7587'
+      - '7847'
       content-type:
       - application/json
       host:
