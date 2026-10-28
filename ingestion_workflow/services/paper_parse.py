@@ -1,6 +1,7 @@
 """Write the parsed paper and the coordinate parse: study_schema's paper-parse contract.
 
-Two files per paper, beside `stage1/analyses.json` until pondie reads them:
+Two files per paper, the coordinate contract; `stage1/analyses.json` beside them is
+deprecated and read by nothing here:
 
     <study>/parse/parsed_paper.json      ParsedPaper: the text every offset points into,
                                          its tables row by row, the bibliography

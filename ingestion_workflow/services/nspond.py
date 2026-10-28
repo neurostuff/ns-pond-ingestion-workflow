@@ -3,6 +3,9 @@
 The shapes here — `stage1/analyses.json`, `pmids.tsv`, `processed/<source>/…` —
 are a contract with pondie, not an internal choice. Lifted unchanged from the
 pre-refactor sync stage.
+
+`stage1/` is deprecated: `parse/coordinate_parse.json` is the coordinate contract, and
+nothing in this repo reads stage1. It is still written until its folders are retired.
 """
 
 from __future__ import annotations
@@ -276,6 +279,9 @@ def write_stage1(
     splits: Optional[Mapping[int, dict]] = None,
 ) -> None:
     """Write the coordinate-table parse in the shape pondie reads it, at `root/stage1/`.
+
+    Deprecated: read `parse/coordinate_parse.json` instead. Written from the same
+    analyses as the parse, after it, until the stage1 folders are retired.
 
     pondie treats `stage1/analyses.json` as an input it never writes, and reads each
     point's xyz from a nested `coordinates` key; this repo stores x/y/z on the point
