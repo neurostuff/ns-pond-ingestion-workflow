@@ -6,6 +6,7 @@ import json
 
 import httpx
 import pytest
+from ingestion_workflow.config import Settings
 from ingestion_workflow.services import neurostore_ingest as ni
 from ingestion_workflow.tests import neurostore as mock
 from ingestion_workflow.tests.services.test_paper_parse import BASE, _written
@@ -106,15 +107,24 @@ def test_a_summary_that_breaks_its_schema_fails_when_sent(body):
     assert server.violations
 
 
-def test_a_violation_a_caller_catches_still_fails_the_check(body):
-    server = mock.Neurostore()
+def test_a_violation_a_caller_catches_still_fails_the_test(body, monkeypatch):
+    """What the `neurostore` fixture does at teardown."""
     body["text"] = ""
-    try:
-        _post(server, body)
-    except mock.ContractViolation:
-        pass  # what the upload stage does with any error but a StopRun
     with pytest.raises(mock.ContractViolation, match="text hashes to"):
-        server.check()
+        with mock.serve(monkeypatch) as server:
+            try:
+                _post(server, body)
+            except mock.ContractViolation:
+                pass  # what the upload stage does with any error but a StopRun
+
+
+def test_an_ingester_built_from_settings_for_its_url_is_served(tmp_path, monkeypatch):
+    _, _, summary = _written(tmp_path)
+    with mock.serve(monkeypatch) as server:
+        settings = Settings(neurostore_api_url=server.url, data_root=tmp_path / "d")
+        with ni.NeurostoreIngester.from_settings(settings) as ingester:
+            assert ingester.upload(summary["dir"].parent)["status"] == "uploaded"
+    assert len(server.uploads) == 1
 
 
 def test_a_closed_server_takes_no_request(body):

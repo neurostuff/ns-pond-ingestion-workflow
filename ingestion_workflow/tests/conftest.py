@@ -49,11 +49,8 @@ def neurostore(monkeypatch):
     NEUROSTORE_TOKEN set to its admin token. An ingester takes it as its `transport`, or
     gets it from `from_settings`. The test fails on any request or answer the contract
     does not allow, even one the code under test caught."""
-    monkeypatch.setenv("NEUROSTORE_TOKEN", neurostore_mock.TOKEN)
-    server = neurostore_mock.Neurostore()
-    server.install(monkeypatch)
-    yield server
-    server.check()
+    with neurostore_mock.serve(monkeypatch) as server:
+        yield server
 
 
 @pytest.fixture()

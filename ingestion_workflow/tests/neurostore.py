@@ -24,16 +24,17 @@ from __future__ import annotations
 import functools
 import hashlib
 import json
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from http import HTTPStatus
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Type
+from typing import Any, Dict, Iterator, List, Optional, Set, Type
 from urllib.parse import urlsplit
 
 import httpx
 import jsonschema
 import yaml
-from ingestion_workflow.services.neurostore_ingest import NeurostoreIngester, api_url
+from ingestion_workflow.services.neurostore_ingest import TOKEN_ENV, NeurostoreIngester, api_url
 from openapi_schema_validator import OAS30Validator, oas30_format_checker
 from referencing import Registry, Resource
 from study_schema.jsonschema import load as load_study_schema
@@ -324,6 +325,18 @@ class Neurostore:
         }
 
 
+@contextmanager
+def serve(monkeypatch, **kwargs: Any) -> Iterator[Neurostore]:
+    """A Neurostore installed for `from_settings`, with the token in the environment;
+    on leaving, ContractViolation if any request or answer broke the contract, even one
+    the code under test caught."""
+    monkeypatch.setenv(TOKEN_ENV, kwargs.get("token", TOKEN))
+    server = Neurostore(**kwargs)
+    server.install(monkeypatch)
+    yield server
+    server.check()
+
+
 def _keys(upload: Dict[str, Any]) -> Set[str]:
     return {a["key"] for a in upload["coordinate_parse"].get("analyses") or []}
 
@@ -335,5 +348,5 @@ def _created_base_study(header: Dict[str, Any]) -> str:
     return "new" + hashlib.sha256(ids.encode()).hexdigest()[:9]
 
 
-__all__ = ["Answer", "Call", "ContractViolation", "HOST", "Neurostore", "TOKEN", "URL",
+__all__ = ["Answer", "Call", "ContractViolation", "HOST", "Neurostore", "TOKEN", "URL", "serve",
            "api_path", "spec"]
