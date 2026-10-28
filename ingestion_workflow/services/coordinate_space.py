@@ -30,9 +30,14 @@ _TOP_LEVEL: List[Tuple[str, str]] = [
     (r"^(?:discussion|conclusions?|limitations?|general\s+discussion|summary)$", "discussion"),
     (r"^(?:abstract|objectives?|background\s+and\s+aims)$", "abstract"),
     (r"^(?:introduction|background)$", "intro"),
+    # "Data availability", "Data and code availability statement", "Availability of data
+    # and materials": where a paper says its data can be had.
+    (r"^(?:(?:data|data\s+and\s+(?:code|materials?|software)|code\s+and\s+data)\s+"
+     r"(?:availability|sharing|accessibility)(?:\s+statements?)?|"
+     r"availability\s+of\s+(?:data|data\s+and\s+(?:code|materials?)))$", "data_availability"),
     (r"^(?:references?|bibliography|literature\s+cited|acknowledge?ments?|funding|"
      r"conflicts?\s+of\s+interest|competing\s+interests?|author\s+contributions?|"
-     r"supplementary\s+(?:material|data|information)|data\s+availability)$", "back"),
+     r"supplementary\s+(?:material|data|information))$", "back"),
 ]
 
 #: Headings that name a Methods subsection. Taken only where they are not

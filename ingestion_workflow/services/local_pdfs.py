@@ -34,7 +34,7 @@ from ingestion_workflow.models import (
     Identifier,
 )
 from ingestion_workflow.services import logging
-from ingestion_workflow.utils.doi import DOI, clean_doi
+from ingestion_workflow.utils.doi import DATA_DOI_PREFIXES, DOI, clean_doi
 
 logger = logging.get_logger(__name__)
 
@@ -45,9 +45,6 @@ PAGES_READ = 2
 # or anywhere before its suffix reached a digit ("10.1073/pnas. 1011455107").
 _DOI_LINE_BREAK = re.compile(r"(10\.\d{4,9}/\S*-)\s*\r?\n\s*")
 _DOI_UNFINISHED = re.compile(r"(10\.\d{4,9}/[^\s\d\"'<>]*[.\-])\s+(?=\S*\d)")
-# Data and preprint-archive DOIs that a methods section prints beside the
-# article's own: Dryad, figshare, Zenodo, OSF.
-_DATA_PREFIXES = ("10.5061/", "10.6084/", "10.5281/", "10.17605/")
 _SUPPLEMENT = re.compile(r"(?i)\bsupp")
 _YEAR = re.compile(r"\b(19[5-9]\d|20\d\d)\b")
 # "145.Ames SL,2014, Title" / "3. Garavan H, Title" / "478. Ding, et al. Title"
@@ -154,7 +151,7 @@ def rank_dois(candidates: Sequence[str]) -> List[str]:
     lowered = [doi.lower() for doi in candidates]
     kept = []
     for doi, low in zip(candidates, lowered):
-        if low.startswith(_DATA_PREFIXES):
+        if low.startswith(DATA_DOI_PREFIXES):
             continue
         if any(low != other and _extends(low, other) for other in lowered):
             continue

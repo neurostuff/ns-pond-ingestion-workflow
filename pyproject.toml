@@ -50,8 +50,10 @@ dependencies = [
   # which resolve compares prose analysis names by, and keys.analysis_key, the
   # content key the parse mints for every analysis, and CopyRoute, CopyVersion and
   # CopyAccess, the facts each download records about its copy, and paper_parse.Author,
-  # each author with ids and affiliations. Pinned to study_schema main.
-  "study-schema @ git+https://github.com/neurostuff/study_schema.git@bc414b3d9fe71a843fcfe8acaa80369cfb6ec060",
+  # each author with ids and affiliations, and ParsedPaper.links with the
+  # data_availability SectionKind. Pinned to neurostuff/study_schema#55's head until it
+  # merges; then to its merge commit.
+  "study-schema @ git+https://github.com/neurostuff/study_schema.git@6435bec5fd80b0d8263e3c43fb9ce56e5cbc7017",
 ]
 
 [project.optional-dependencies]

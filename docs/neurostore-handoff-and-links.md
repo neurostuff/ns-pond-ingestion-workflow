@@ -68,18 +68,29 @@ an ordinary link domain; nothing matches papers against NeuroVault's collections
 
 ### In ns-pond
 
+Built on `feat/paper-links`, against study_schema#55.
+
 - **`links`** requires `extract` and uses no network, like `references`. It reads every
   http(s) link from the source's markup (JATS `ext-link@xlink:href`, Elsevier
   `ce:inter-ref`, publisher HTML `a@href`), from a URL pattern over the text (PDFs, unmarked
-  links), from `ParsedPaper.supplements[].url`, and from the reference list, where a
-  dataset DOI (`10.18112/openneuro.ds…`, `10.17605/OSF.IO/…`) counts as a link. It keeps
+  links), from the supplementary material JATS links to (ns-pond writes no
+  `ParsedPaper.supplements`), and from the reference list, where a dataset DOI
+  (`10.18112/openneuro.ds…`, `10.17605/OSF.IO/…`) counts as a link and another DOI does not.
+  A publisher page's anchor counts when its text prints the link: an anchor of words
+  ("PubMed", "Google Scholar") is the publisher's, not the paper's. It keeps
   where each link appeared (offsets, section, how it was found) and a context flag from the
   words around it (NIfTI, `.nii`, statistical maps, fMRI data); those stay in ns-pond.
-- **`linkprobe`** requires `links` and uses the network for OSF and OpenNeuro links only:
-  OpenNeuro datasets are imaging data, and OSF's API lists a node's files, so a `.nii` or
-  `.nii.gz` settles it. It records `has_nifti` with what it saw and when. No LLM.
+- **`linkprobe`** requires `links` and uses the network for OSF and OpenNeuro links only.
+  OSF's API lists a project's files (providers, folders, components, pages, at most 60
+  requests), so a `.nii` or `.nii.gz` settles it. OpenNeuro also hosts EEG, MEG and iEEG
+  datasets, so a dataset is not imaging by definition: its snapshot's summary names its
+  modalities, and BIDS stores MRI and PET as NIfTI, so `mri` or `pet` among them is
+  `has_nifti`. It records `has_nifti` with what it saw and when; a private or missing
+  project or dataset leaves it unset, with the reason. No LLM.
 - **Order:** `links` → `linkprobe` → `sync`. Sync writes `links: [{url, has_nifti?}]` into
-  the parsed paper, and upload sends it.
+  the parsed paper, and upload sends it. Sync does not wait for `links`: with no links
+  artifact the parsed paper's `links` is absent ("not looked"); once `links` has read the
+  text it is written, `[]` when the paper gives none.
 - study_schema gets `ParsedPaper.links` and a `data_availability` `SectionKind`.
 
 ### In neurostore

@@ -18,7 +18,7 @@ import signal
 from concurrent.futures import ProcessPoolExecutor
 from functools import partial
 from pathlib import Path
-from typing import Dict, Iterator, List, Optional, Sequence, Tuple
+from typing import Callable, Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import DownloadResult
@@ -93,23 +93,35 @@ def _alarm(*_):
     raise _TooSlow
 
 
-def _read_in_worker(job: Tuple[str, dict, Optional[str], Optional[List[dict]]]) -> Tuple[str, Optional[dict]]:
+def _read_in_worker(read: Callable, job: tuple) -> Tuple[str, Optional[dict]]:
     signal.signal(signal.SIGALRM, _alarm)
     signal.alarm(ARTICLE_SECONDS)
     try:
-        return _read_alone(job)
+        return _read_alone(read, job)
     except _TooSlow:
         return "timeout", None
     finally:
         signal.alarm(0)
 
 
-def _read_alone(job) -> Tuple[str, Optional[dict]]:
-    """`read_article`, with an error it raises the article's reason it failed."""
+def _read_alone(read: Callable, job: tuple) -> Tuple[str, Optional[dict]]:
+    """`read(*job)`, with an error it raises the article's reason it failed."""
     try:
-        return read_article(*job)
+        return read(*job)
     except Exception as exc:  # noqa: BLE001 - this article's failure, not the batch's
         return f"unreadable: {error_text(exc)}", None
+
+
+def read_articles(read: Callable, jobs: List[tuple],
+                  workers: int) -> List[Tuple[str, Optional[dict]]]:
+    """`read(*job)` of each job, in order: in a process pool when there are enough, each
+    article given `ARTICLE_SECONDS`. `read` is a module function, so the pool can run it."""
+    if len(jobs) < 8 or workers <= 1:
+        return [_read_alone(read, job) for job in jobs]
+    # fork: nothing here touches CUDA, and spawn would re-import the package per worker
+    context = multiprocessing.get_context("fork")
+    with ProcessPoolExecutor(max_workers=workers, mp_context=context) as pool:
+        return list(pool.map(partial(_read_in_worker, read), jobs, chunksize=4))
 
 
 class ReferencesStage:
@@ -180,13 +192,7 @@ class ReferencesStage:
             listed = (ctx.payload(reflist) or {}).get("references") if reflist and reflist.status is Status.OK else None
             jobs.append((work.source, download_payload, extraction.get("full_text_path"), listed or None))
             ready.append(work)
-        workers = max(1, getattr(self.settings, "max_workers", 1) or 1)
-        if len(jobs) < 8 or workers == 1:
-            results = [_read_alone(job) for job in jobs]
-        else:
-            # fork: nothing here touches CUDA, and spawn would re-import the package per worker
-            with ProcessPoolExecutor(max_workers=workers, mp_context=multiprocessing.get_context("fork")) as pool:
-                results = list(pool.map(_read_in_worker, jobs, chunksize=4))
+        results = read_articles(read_article, jobs, getattr(self.settings, "max_workers", 1) or 1)
         for work, (how, payload) in zip(ready, results):
             yield alone(self.name, work, partial(self._outcome, work, how, payload))
 

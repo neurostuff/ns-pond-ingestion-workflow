@@ -1,0 +1,969 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/guids/4drz6/
+  response:
+    body:
+      string: ''
+    headers:
+      Allow:
+      - GET, HEAD, OPTIONS
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '0'
+      Content-Type:
+      - text/html; charset=utf-8
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:15 GMT
+      Expires:
+      - '-1'
+      Location:
+      - https://api.osf.io/v2/nodes/4drz6/
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      Vary:
+      - Accept, Cookie, origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 302
+      message: Found
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/nodes/4drz6/
+  response:
+    body:
+      string: '{"data":{"id":"4drz6","type":"nodes","attributes":{"title":"Data and
+        Materials for \"Modeling 2D Spatio-Tactile Population Receptive Fields of
+        the Fingertip in Human Primary Somatosensory Cortex\"","description":"Data,
+        custom code, and figures corresponding to the manuscript entitled \"Modeling
+        2D Spatio-Tactile Population Receptive Fields of the Fingertip in Human Primary
+        Somatosensory Cortex\"","category":"project","custom_citation":null,"date_created":"2025-05-13T06:49:51.718017","date_modified":"2026-05-28T16:07:46.477738","registration":false,"preprint":false,"fork":false,"collection":false,"tags":["2D","7T","computational
+        modeling","exploratory research","functional magnetic resonance imaging","human","population
+        receptive field","precision neuroscience","primary somatosensory cortex","prospective
+        motion correction","SI","simulations","spatial","submillimeter resolution","tactile","ultra-high
+        field imaging","validation","vibrotactile stimulation"],"access_requests_enabled":true,"node_license":{"copyright_holders":[""],"year":"2025"},"analytics_key":"","current_user_can_comment":false,"current_user_permissions":["read"],"current_user_is_contributor":false,"current_user_is_contributor_or_group_member":false,"wiki_enabled":true,"public":true,"subjects":[[{"id":"584240da54be81056cecaab0","text":"Life
+        Sciences"}]]},"relationships":{"license":{"links":{"related":{"href":"https://api.osf.io/v2/licenses/563c1cf88c5e4a3877f9e96c/","meta":{}}},"data":{"id":"563c1cf88c5e4a3877f9e96c","type":"licenses"}},"children":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/children/","meta":{}}}},"collected_in":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/collections/","meta":{}}}},"comments":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/comments/?filter%5Btarget%5D=4drz6","meta":{}}}},"contributors":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/contributors/","meta":{}}}},"bibliographic_contributors":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/bibliographic_contributors/","meta":{}}}},"implicit_contributors":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/implicit_contributors/","meta":{}}}},"files":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/files/","meta":{}}}},"settings":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/settings/","meta":{}}},"data":{"id":"4drz6","type":"node-setting"}},"wikis":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/wikis/","meta":{}}}},"forks":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/forks/","meta":{}}}},"node_links":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/node_links/","meta":{}}}},"linked_by_nodes":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/linked_by_nodes/","meta":{}}}},"linked_by_registrations":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/linked_by_registrations/","meta":{}}}},"identifiers":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/identifiers/","meta":{}}}},"affiliated_institutions":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/institutions/","meta":{}},"self":{"href":"https://api.osf.io/v2/nodes/4drz6/relationships/institutions/","meta":{}}}},"draft_registrations":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/draft_registrations/","meta":{}}}},"registrations":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/registrations/","meta":{}}}},"region":{"links":{"related":{"href":"https://api.osf.io/v2/regions/us/","meta":{}}},"data":{"id":"us","type":"regions"}},"root":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"logs":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/logs/","meta":{}}}},"linked_nodes":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/linked_nodes/","meta":{}},"self":{"href":"https://api.osf.io/v2/nodes/4drz6/relationships/linked_nodes/","meta":{}}}},"linked_registrations":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/linked_registrations/","meta":{}},"self":{"href":"https://api.osf.io/v2/nodes/4drz6/relationships/linked_registrations/","meta":{}}}},"view_only_links":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/view_only_links/","meta":{}}}},"citation":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/citation/","meta":{}}},"data":{"id":"4drz6","type":"citation"}},"preprints":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/preprints/","meta":{}}}},"storage":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/storage/","meta":{}}},"data":{"id":"4drz6","type":"node-storage"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/cedar_metadata_records/","meta":{}}}},"subjects_acceptable":{"links":{"related":{"href":"https://api.osf.io/v2/subjects/","meta":{}}}}},"links":{"html":"https://osf.io/4drz6/","self":"https://api.osf.io/v2/nodes/4drz6/","iri":"https://osf.io/4drz6"}},"meta":{"version":"2.0"}}'
+    headers:
+      Allow:
+      - GET, PUT, PATCH, DELETE, HEAD, OPTIONS
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/vnd.api+json; charset=utf-8
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:16 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      - Accept, Cookie, origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/nodes/4drz6/files/?page%5Bsize%5D=100
+  response:
+    body:
+      string: '{"data":[{"id":"4drz6:osfstorage","type":"files","attributes":{"kind":"folder","name":"osfstorage","path":"/","node":"4drz6","provider":"osfstorage"},"relationships":{"files":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/files/osfstorage/","meta":{}}}},"root_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6822eb8fc2257952dd5f2714/","meta":{}}},"data":{"id":"6822eb8fc2257952dd5f2714","type":"files"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}}},"links":{"upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/","new_folder":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/?kind=folder","storage_addons":"https://api.osf.io/v2/addons/?filter%5Bcategories%5D=storage"}}],"links":{"first":null,"last":null,"prev":null,"next":null,"meta":{"total":1,"per_page":100}},"meta":{"version":"2.0"}}'
+    headers:
+      Allow:
+      - GET, HEAD, OPTIONS
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/vnd.api+json; charset=utf-8
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:16 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      - Accept, Cookie, origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/nodes/4drz6/children/?page%5Bsize%5D=100
+  response:
+    body:
+      string: '{"data":[],"links":{"first":null,"last":null,"prev":null,"next":null,"meta":{"total":0,"per_page":100}},"meta":{"version":"2.0"}}'
+    headers:
+      Allow:
+      - GET, POST, HEAD, OPTIONS
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '129'
+      Content-Type:
+      - application/vnd.api+json; charset=utf-8
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:16 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      Vary:
+      - Accept-Encoding
+      - Accept, Cookie, origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/nodes/4drz6/files/osfstorage/?page%5Bsize%5D=100
+  response:
+    body:
+      string: '{"data":[{"id":"68265506cd1098a3f99c4232","type":"files","attributes":{"guid":null,"checkout":null,"name":"zoomprf_main","kind":"folder","path":"/68265506cd1098a3f99c4232/","size":null,"provider":"osfstorage","materialized_path":"/zoomprf_main/","last_touched":null,"date_modified":null,"date_created":null,"extra":{"hashes":{"md5":null,"sha256":null}},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6822eb8fc2257952dd5f2714/","meta":{}}},"data":{"id":"6822eb8fc2257952dd5f2714","type":"files"}},"files":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/files/osfstorage/68265506cd1098a3f99c4232/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/68265506cd1098a3f99c4232/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/68265506cd1098a3f99c4232/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/68265506cd1098a3f99c4232/","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/68265506cd1098a3f99c4232/","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/68265506cd1098a3f99c4232/","new_folder":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/68265506cd1098a3f99c4232/?kind=folder","self":"https://api.osf.io/v2/files/68265506cd1098a3f99c4232/"}},{"id":"682b719133280062a6b06da2","type":"files","attributes":{"guid":"zqu7v","checkout":null,"name":"README.md","kind":"file","path":"/682b719133280062a6b06da2","size":10905,"provider":"osfstorage","materialized_path":"/README.md","last_touched":null,"date_modified":"2026-05-28T16:07:46.145361","date_created":"2025-05-19T17:59:45.353082Z","extra":{"hashes":{"md5":"036868cdd0cae0f429981d0b6ec7e518","sha256":"1ce9d0a2d2be55c835b88b97b60844cafc83ff4a3e8b142153b6ec70eaa3264b"},"downloads":15},"tags":[],"current_user_can_comment":false,"current_version":16,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6822eb8fc2257952dd5f2714/","meta":{}}},"data":{"id":"6822eb8fc2257952dd5f2714","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/682b719133280062a6b06da2/versions/","meta":{}}}},"comments":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/comments/?filter%5Btarget%5D=zqu7v","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/682b719133280062a6b06da2/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/682b719133280062a6b06da2/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682b719133280062a6b06da2","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682b719133280062a6b06da2","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682b719133280062a6b06da2","download":"https://osf.io/download/zqu7v/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2Fzqu7v%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/682b719133280062a6b06da2","self":"https://api.osf.io/v2/files/682b719133280062a6b06da2/","iri":"https://osf.io/zqu7v"}}],"links":{"first":null,"last":null,"prev":null,"next":null,"meta":{"total":2,"per_page":100}},"meta":{"version":"2.0"}}'
+    headers:
+      Allow:
+      - GET, HEAD, OPTIONS
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/vnd.api+json; charset=utf-8
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:17 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      - Accept, Cookie, origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/nodes/4drz6/files/osfstorage/68265506cd1098a3f99c4232/?page%5Bsize%5D=100
+  response:
+    body:
+      string: '{"data":[{"id":"6826553ec43c1430a5eae05b","type":"files","attributes":{"guid":null,"checkout":null,"name":"data","kind":"folder","path":"/6826553ec43c1430a5eae05b/","size":null,"provider":"osfstorage","materialized_path":"/zoomprf_main/data/","last_touched":null,"date_modified":null,"date_created":null,"extra":{"hashes":{"md5":null,"sha256":null}},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/68265506cd1098a3f99c4232/","meta":{}}},"data":{"id":"68265506cd1098a3f99c4232","type":"files"}},"files":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/files/osfstorage/6826553ec43c1430a5eae05b/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826553ec43c1430a5eae05b/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6826553ec43c1430a5eae05b/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6826553ec43c1430a5eae05b/","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6826553ec43c1430a5eae05b/","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6826553ec43c1430a5eae05b/","new_folder":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6826553ec43c1430a5eae05b/?kind=folder","self":"https://api.osf.io/v2/files/6826553ec43c1430a5eae05b/"}},{"id":"6826554e24dbdbf3537a1d8c","type":"files","attributes":{"guid":null,"checkout":null,"name":"figurecombis","kind":"folder","path":"/6826554e24dbdbf3537a1d8c/","size":null,"provider":"osfstorage","materialized_path":"/zoomprf_main/figurecombis/","last_touched":null,"date_modified":null,"date_created":null,"extra":{"hashes":{"md5":null,"sha256":null}},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/68265506cd1098a3f99c4232/","meta":{}}},"data":{"id":"68265506cd1098a3f99c4232","type":"files"}},"files":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/files/osfstorage/6826554e24dbdbf3537a1d8c/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6826554e24dbdbf3537a1d8c/","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6826554e24dbdbf3537a1d8c/","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6826554e24dbdbf3537a1d8c/","new_folder":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6826554e24dbdbf3537a1d8c/?kind=folder","self":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/"}},{"id":"682655679ca36d0622c4c0f2","type":"files","attributes":{"guid":null,"checkout":null,"name":"paths","kind":"folder","path":"/682655679ca36d0622c4c0f2/","size":null,"provider":"osfstorage","materialized_path":"/zoomprf_main/paths/","last_touched":null,"date_modified":null,"date_created":null,"extra":{"hashes":{"md5":null,"sha256":null}},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/68265506cd1098a3f99c4232/","meta":{}}},"data":{"id":"68265506cd1098a3f99c4232","type":"files"}},"files":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/files/osfstorage/682655679ca36d0622c4c0f2/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/682655679ca36d0622c4c0f2/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/682655679ca36d0622c4c0f2/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682655679ca36d0622c4c0f2/","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682655679ca36d0622c4c0f2/","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682655679ca36d0622c4c0f2/","new_folder":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682655679ca36d0622c4c0f2/?kind=folder","self":"https://api.osf.io/v2/files/682655679ca36d0622c4c0f2/"}},{"id":"6826557c8c6f2fe5859c4363","type":"files","attributes":{"guid":null,"checkout":null,"name":"scripts","kind":"folder","path":"/6826557c8c6f2fe5859c4363/","size":null,"provider":"osfstorage","materialized_path":"/zoomprf_main/scripts/","last_touched":null,"date_modified":null,"date_created":null,"extra":{"hashes":{"md5":null,"sha256":null}},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/68265506cd1098a3f99c4232/","meta":{}}},"data":{"id":"68265506cd1098a3f99c4232","type":"files"}},"files":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/files/osfstorage/6826557c8c6f2fe5859c4363/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826557c8c6f2fe5859c4363/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6826557c8c6f2fe5859c4363/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6826557c8c6f2fe5859c4363/","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6826557c8c6f2fe5859c4363/","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6826557c8c6f2fe5859c4363/","new_folder":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6826557c8c6f2fe5859c4363/?kind=folder","self":"https://api.osf.io/v2/files/6826557c8c6f2fe5859c4363/"}},{"id":"682655862931698067eae02b","type":"files","attributes":{"guid":null,"checkout":null,"name":"logs","kind":"folder","path":"/682655862931698067eae02b/","size":null,"provider":"osfstorage","materialized_path":"/zoomprf_main/logs/","last_touched":null,"date_modified":null,"date_created":null,"extra":{"hashes":{"md5":null,"sha256":null}},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/68265506cd1098a3f99c4232/","meta":{}}},"data":{"id":"68265506cd1098a3f99c4232","type":"files"}},"files":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/files/osfstorage/682655862931698067eae02b/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/682655862931698067eae02b/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/682655862931698067eae02b/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682655862931698067eae02b/","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682655862931698067eae02b/","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682655862931698067eae02b/","new_folder":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682655862931698067eae02b/?kind=folder","self":"https://api.osf.io/v2/files/682655862931698067eae02b/"}},{"id":"682655bef5c5bd9fc1c4c191","type":"files","attributes":{"guid":null,"checkout":null,"name":"toolboxes","kind":"folder","path":"/682655bef5c5bd9fc1c4c191/","size":null,"provider":"osfstorage","materialized_path":"/zoomprf_main/toolboxes/","last_touched":null,"date_modified":null,"date_created":null,"extra":{"hashes":{"md5":null,"sha256":null}},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/68265506cd1098a3f99c4232/","meta":{}}},"data":{"id":"68265506cd1098a3f99c4232","type":"files"}},"files":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/files/osfstorage/682655bef5c5bd9fc1c4c191/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/682655bef5c5bd9fc1c4c191/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/682655bef5c5bd9fc1c4c191/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682655bef5c5bd9fc1c4c191/","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682655bef5c5bd9fc1c4c191/","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682655bef5c5bd9fc1c4c191/","new_folder":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682655bef5c5bd9fc1c4c191/?kind=folder","self":"https://api.osf.io/v2/files/682655bef5c5bd9fc1c4c191/"}},{"id":"69642276818bea22eb844782","type":"files","attributes":{"guid":null,"checkout":null,"name":"videos","kind":"folder","path":"/69642276818bea22eb844782/","size":null,"provider":"osfstorage","materialized_path":"/zoomprf_main/videos/","last_touched":null,"date_modified":null,"date_created":null,"extra":{"hashes":{"md5":null,"sha256":null}},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/68265506cd1098a3f99c4232/","meta":{}}},"data":{"id":"68265506cd1098a3f99c4232","type":"files"}},"files":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/files/osfstorage/69642276818bea22eb844782/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/69642276818bea22eb844782/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/69642276818bea22eb844782/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/69642276818bea22eb844782/","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/69642276818bea22eb844782/","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/69642276818bea22eb844782/","new_folder":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/69642276818bea22eb844782/?kind=folder","self":"https://api.osf.io/v2/files/69642276818bea22eb844782/"}}],"links":{"first":null,"last":null,"prev":null,"next":null,"meta":{"total":7,"per_page":100}},"meta":{"version":"2.0"}}'
+    headers:
+      Allow:
+      - GET, HEAD, OPTIONS
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/vnd.api+json; charset=utf-8
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:17 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      - Accept, Cookie, origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/nodes/4drz6/files/osfstorage/6826553ec43c1430a5eae05b/?page%5Bsize%5D=100
+  response:
+    body:
+      string: '{"data":[],"links":{"first":null,"last":null,"prev":null,"next":null,"meta":{"total":0,"per_page":100}},"meta":{"version":"2.0"}}'
+    headers:
+      Allow:
+      - GET, HEAD, OPTIONS
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '129'
+      Content-Type:
+      - application/vnd.api+json; charset=utf-8
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:18 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      Vary:
+      - Accept-Encoding
+      - Accept, Cookie, origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/nodes/4drz6/files/osfstorage/6826554e24dbdbf3537a1d8c/?page%5Bsize%5D=100
+  response:
+    body:
+      string: '{"data":[{"id":"6970d70103794b53a7b5062f","type":"files","attributes":{"guid":null,"checkout":null,"name":"Fig1.pdf","kind":"file","path":"/6970d70103794b53a7b5062f","size":1114769,"provider":"osfstorage","materialized_path":"/zoomprf_main/figurecombis/Fig1.pdf","last_touched":null,"date_modified":"2026-01-21T13:39:13.338909","date_created":"2026-01-21T13:39:13.338909Z","extra":{"hashes":{"md5":"a77b0b3bf8ca91cf764cf35cddc57559","sha256":"df7f3e5733ccd94a55f35dc4c02124d89726f38930628102303651af7e1a8284"},"downloads":0},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/","meta":{}}},"data":{"id":"6826554e24dbdbf3537a1d8c","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d70103794b53a7b5062f/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d70103794b53a7b5062f/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6970d70103794b53a7b5062f/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d70103794b53a7b5062f","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d70103794b53a7b5062f","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d70103794b53a7b5062f","download":"https://osf.io/download/6970d70103794b53a7b5062f/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6970d70103794b53a7b5062f%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6970d70103794b53a7b5062f","self":"https://api.osf.io/v2/files/6970d70103794b53a7b5062f/"}},{"id":"6970d701e1eec57d5f1af873","type":"files","attributes":{"guid":null,"checkout":null,"name":"Fig9.pdf","kind":"file","path":"/6970d701e1eec57d5f1af873","size":869903,"provider":"osfstorage","materialized_path":"/zoomprf_main/figurecombis/Fig9.pdf","last_touched":null,"date_modified":"2026-01-21T13:39:13.351163","date_created":"2026-01-21T13:39:13.351163Z","extra":{"hashes":{"md5":"1a362170f04afd884c739f4d2c79e546","sha256":"5c684f5f61f938d1ba05311b800ef3e5c577aacaa7dc858528cd69c76503ac5f"},"downloads":0},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/","meta":{}}},"data":{"id":"6826554e24dbdbf3537a1d8c","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d701e1eec57d5f1af873/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d701e1eec57d5f1af873/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6970d701e1eec57d5f1af873/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d701e1eec57d5f1af873","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d701e1eec57d5f1af873","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d701e1eec57d5f1af873","download":"https://osf.io/download/6970d701e1eec57d5f1af873/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6970d701e1eec57d5f1af873%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6970d701e1eec57d5f1af873","self":"https://api.osf.io/v2/files/6970d701e1eec57d5f1af873/"}},{"id":"6970d702a46d1ed3d0b5096f","type":"files","attributes":{"guid":null,"checkout":null,"name":"Fig2.pdf","kind":"file","path":"/6970d702a46d1ed3d0b5096f","size":143360,"provider":"osfstorage","materialized_path":"/zoomprf_main/figurecombis/Fig2.pdf","last_touched":null,"date_modified":"2026-01-21T13:39:14.433641","date_created":"2026-01-21T13:39:14.433641Z","extra":{"hashes":{"md5":"1601f9927a0232466df2661d81c01820","sha256":"902d4b8b60229a9f8220937f56d7a7f147431d2a3fb7c2e80d91055dedcdb3f4"},"downloads":0},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/","meta":{}}},"data":{"id":"6826554e24dbdbf3537a1d8c","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d702a46d1ed3d0b5096f/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d702a46d1ed3d0b5096f/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6970d702a46d1ed3d0b5096f/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d702a46d1ed3d0b5096f","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d702a46d1ed3d0b5096f","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d702a46d1ed3d0b5096f","download":"https://osf.io/download/6970d702a46d1ed3d0b5096f/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6970d702a46d1ed3d0b5096f%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6970d702a46d1ed3d0b5096f","self":"https://api.osf.io/v2/files/6970d702a46d1ed3d0b5096f/"}},{"id":"6970d7025a513119791b0000","type":"files","attributes":{"guid":null,"checkout":null,"name":"FigS2.pdf","kind":"file","path":"/6970d7025a513119791b0000","size":389809,"provider":"osfstorage","materialized_path":"/zoomprf_main/figurecombis/FigS2.pdf","last_touched":null,"date_modified":"2026-01-21T13:39:14.379305","date_created":"2026-01-21T13:39:14.379305Z","extra":{"hashes":{"md5":"7980bbf16b0bf9651283500572132099","sha256":"ec016bda90618ccd0ebda8eed3dcd4417349ea59fea4d717ce8a200461c6928b"},"downloads":0},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/","meta":{}}},"data":{"id":"6826554e24dbdbf3537a1d8c","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d7025a513119791b0000/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d7025a513119791b0000/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6970d7025a513119791b0000/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d7025a513119791b0000","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d7025a513119791b0000","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d7025a513119791b0000","download":"https://osf.io/download/6970d7025a513119791b0000/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6970d7025a513119791b0000%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6970d7025a513119791b0000","self":"https://api.osf.io/v2/files/6970d7025a513119791b0000/"}},{"id":"6970d702a46d1ed3d0b50970","type":"files","attributes":{"guid":null,"checkout":null,"name":"Fig6.pdf","kind":"file","path":"/6970d702a46d1ed3d0b50970","size":192224,"provider":"osfstorage","materialized_path":"/zoomprf_main/figurecombis/Fig6.pdf","last_touched":null,"date_modified":"2026-01-21T13:39:14.615083","date_created":"2026-01-21T13:39:14.615083Z","extra":{"hashes":{"md5":"b66191caf923da66155273c6a7df64a4","sha256":"0273cfb470d448715e2aa051fac0904b3f46145fded1e55dd9a332a6ac22744a"},"downloads":0},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/","meta":{}}},"data":{"id":"6826554e24dbdbf3537a1d8c","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d702a46d1ed3d0b50970/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d702a46d1ed3d0b50970/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6970d702a46d1ed3d0b50970/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d702a46d1ed3d0b50970","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d702a46d1ed3d0b50970","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d702a46d1ed3d0b50970","download":"https://osf.io/download/6970d702a46d1ed3d0b50970/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6970d702a46d1ed3d0b50970%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6970d702a46d1ed3d0b50970","self":"https://api.osf.io/v2/files/6970d702a46d1ed3d0b50970/"}},{"id":"6970d702e1eec57d5f1af876","type":"files","attributes":{"guid":null,"checkout":null,"name":"Fig3.pdf","kind":"file","path":"/6970d702e1eec57d5f1af876","size":100418,"provider":"osfstorage","materialized_path":"/zoomprf_main/figurecombis/Fig3.pdf","last_touched":null,"date_modified":"2026-01-21T13:39:14.509879","date_created":"2026-01-21T13:39:14.509879Z","extra":{"hashes":{"md5":"7f7b81c4ba8b3248dca5fadb8b10acbc","sha256":"b7962c597de877ba71ea80ff00e714c589a53a26d2c8cbd43567ea492390ec3a"},"downloads":0},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/","meta":{}}},"data":{"id":"6826554e24dbdbf3537a1d8c","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d702e1eec57d5f1af876/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d702e1eec57d5f1af876/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6970d702e1eec57d5f1af876/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d702e1eec57d5f1af876","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d702e1eec57d5f1af876","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d702e1eec57d5f1af876","download":"https://osf.io/download/6970d702e1eec57d5f1af876/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6970d702e1eec57d5f1af876%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6970d702e1eec57d5f1af876","self":"https://api.osf.io/v2/files/6970d702e1eec57d5f1af876/"}},{"id":"6970d7022c3710bd59b50ce5","type":"files","attributes":{"guid":null,"checkout":null,"name":"Fig8.pdf","kind":"file","path":"/6970d7022c3710bd59b50ce5","size":404697,"provider":"osfstorage","materialized_path":"/zoomprf_main/figurecombis/Fig8.pdf","last_touched":null,"date_modified":"2026-01-21T13:39:14.507996","date_created":"2026-01-21T13:39:14.507996Z","extra":{"hashes":{"md5":"549ba2f0a7430a1c966969fcc2187247","sha256":"40a1361bb24e5c1919a3a209ac0edccf97ad99166323b7779f303f2b60f0b048"},"downloads":0},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/","meta":{}}},"data":{"id":"6826554e24dbdbf3537a1d8c","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d7022c3710bd59b50ce5/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d7022c3710bd59b50ce5/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6970d7022c3710bd59b50ce5/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d7022c3710bd59b50ce5","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d7022c3710bd59b50ce5","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d7022c3710bd59b50ce5","download":"https://osf.io/download/6970d7022c3710bd59b50ce5/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6970d7022c3710bd59b50ce5%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6970d7022c3710bd59b50ce5","self":"https://api.osf.io/v2/files/6970d7022c3710bd59b50ce5/"}},{"id":"6970d7028d502ea1bd99708f","type":"files","attributes":{"guid":null,"checkout":null,"name":"Fig5.pdf","kind":"file","path":"/6970d7028d502ea1bd99708f","size":82483,"provider":"osfstorage","materialized_path":"/zoomprf_main/figurecombis/Fig5.pdf","last_touched":null,"date_modified":"2026-01-21T13:39:14.521968","date_created":"2026-01-21T13:39:14.521968Z","extra":{"hashes":{"md5":"3c3a400022834d775c2ca3eb3d133713","sha256":"7d688b952faccdb0792834105c848af60013e3820a1df5a7fcca7b8bd924f532"},"downloads":0},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/","meta":{}}},"data":{"id":"6826554e24dbdbf3537a1d8c","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d7028d502ea1bd99708f/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d7028d502ea1bd99708f/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6970d7028d502ea1bd99708f/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d7028d502ea1bd99708f","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d7028d502ea1bd99708f","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d7028d502ea1bd99708f","download":"https://osf.io/download/6970d7028d502ea1bd99708f/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6970d7028d502ea1bd99708f%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6970d7028d502ea1bd99708f","self":"https://api.osf.io/v2/files/6970d7028d502ea1bd99708f/"}},{"id":"6970d70203794b53a7b50631","type":"files","attributes":{"guid":null,"checkout":null,"name":"Fig11.pdf","kind":"file","path":"/6970d70203794b53a7b50631","size":77686,"provider":"osfstorage","materialized_path":"/zoomprf_main/figurecombis/Fig11.pdf","last_touched":null,"date_modified":"2026-01-21T13:39:14.559314","date_created":"2026-01-21T13:39:14.559314Z","extra":{"hashes":{"md5":"bfd3b8bd8de226a095711f9d9421d7cc","sha256":"188ef165486d597bbaab0a904a07a38320b269951dfb92065fd3bf30138501ca"},"downloads":0},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/","meta":{}}},"data":{"id":"6826554e24dbdbf3537a1d8c","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d70203794b53a7b50631/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d70203794b53a7b50631/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6970d70203794b53a7b50631/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d70203794b53a7b50631","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d70203794b53a7b50631","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d70203794b53a7b50631","download":"https://osf.io/download/6970d70203794b53a7b50631/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6970d70203794b53a7b50631%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6970d70203794b53a7b50631","self":"https://api.osf.io/v2/files/6970d70203794b53a7b50631/"}},{"id":"6970d703e1eec57d5f1af878","type":"files","attributes":{"guid":null,"checkout":null,"name":"FigS3.pdf","kind":"file","path":"/6970d703e1eec57d5f1af878","size":757577,"provider":"osfstorage","materialized_path":"/zoomprf_main/figurecombis/FigS3.pdf","last_touched":null,"date_modified":"2026-01-21T13:39:15.560463","date_created":"2026-01-21T13:39:15.560463Z","extra":{"hashes":{"md5":"f57ad1edc01db55deccec747b79fd0b9","sha256":"a38204115ecdae811200117779c98b1a817b1f03df1b5ca0d85806bd2d07312f"},"downloads":0},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/","meta":{}}},"data":{"id":"6826554e24dbdbf3537a1d8c","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d703e1eec57d5f1af878/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d703e1eec57d5f1af878/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6970d703e1eec57d5f1af878/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d703e1eec57d5f1af878","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d703e1eec57d5f1af878","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d703e1eec57d5f1af878","download":"https://osf.io/download/6970d703e1eec57d5f1af878/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6970d703e1eec57d5f1af878%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6970d703e1eec57d5f1af878","self":"https://api.osf.io/v2/files/6970d703e1eec57d5f1af878/"}},{"id":"6970d7032c3710bd59b50ce8","type":"files","attributes":{"guid":null,"checkout":null,"name":"FigS4.pdf","kind":"file","path":"/6970d7032c3710bd59b50ce8","size":756650,"provider":"osfstorage","materialized_path":"/zoomprf_main/figurecombis/FigS4.pdf","last_touched":null,"date_modified":"2026-01-21T13:39:15.586554","date_created":"2026-01-21T13:39:15.586554Z","extra":{"hashes":{"md5":"25f307bdbdaa30c443511d944be334f0","sha256":"c018fd8ca28b30667ad7287126b85e3644c7c95c36cf5d8f4b66ebc4ef09a444"},"downloads":0},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/","meta":{}}},"data":{"id":"6826554e24dbdbf3537a1d8c","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d7032c3710bd59b50ce8/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d7032c3710bd59b50ce8/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6970d7032c3710bd59b50ce8/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d7032c3710bd59b50ce8","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d7032c3710bd59b50ce8","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d7032c3710bd59b50ce8","download":"https://osf.io/download/6970d7032c3710bd59b50ce8/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6970d7032c3710bd59b50ce8%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6970d7032c3710bd59b50ce8","self":"https://api.osf.io/v2/files/6970d7032c3710bd59b50ce8/"}},{"id":"6970d70b1416d4f4b01afac5","type":"files","attributes":{"guid":null,"checkout":null,"name":"Fig4.pdf","kind":"file","path":"/6970d70b1416d4f4b01afac5","size":8139958,"provider":"osfstorage","materialized_path":"/zoomprf_main/figurecombis/Fig4.pdf","last_touched":null,"date_modified":"2026-01-21T13:39:23.166825","date_created":"2026-01-21T13:39:23.166825Z","extra":{"hashes":{"md5":"bdbcee53036063030795e129a9a760cd","sha256":"7177217bb1d2ed6d7930b7ffd67adb84b0cf0c998e900164777e500500d65842"},"downloads":0},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/","meta":{}}},"data":{"id":"6826554e24dbdbf3537a1d8c","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d70b1416d4f4b01afac5/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d70b1416d4f4b01afac5/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6970d70b1416d4f4b01afac5/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d70b1416d4f4b01afac5","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d70b1416d4f4b01afac5","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d70b1416d4f4b01afac5","download":"https://osf.io/download/6970d70b1416d4f4b01afac5/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6970d70b1416d4f4b01afac5%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6970d70b1416d4f4b01afac5","self":"https://api.osf.io/v2/files/6970d70b1416d4f4b01afac5/"}},{"id":"6970d70ca46d1ed3d0b50974","type":"files","attributes":{"guid":null,"checkout":null,"name":"FigS9.pdf","kind":"file","path":"/6970d70ca46d1ed3d0b50974","size":920357,"provider":"osfstorage","materialized_path":"/zoomprf_main/figurecombis/FigS9.pdf","last_touched":null,"date_modified":"2026-01-21T13:39:24.447741","date_created":"2026-01-21T13:39:24.447741Z","extra":{"hashes":{"md5":"3b5ac8a28ed10389d9c4bb8ab93e8f0c","sha256":"64dd0804c2e5ac2a1565eca43b933278a7b8ecc1afe0668c0689fc47548733b3"},"downloads":0},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/","meta":{}}},"data":{"id":"6826554e24dbdbf3537a1d8c","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d70ca46d1ed3d0b50974/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d70ca46d1ed3d0b50974/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6970d70ca46d1ed3d0b50974/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d70ca46d1ed3d0b50974","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d70ca46d1ed3d0b50974","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d70ca46d1ed3d0b50974","download":"https://osf.io/download/6970d70ca46d1ed3d0b50974/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6970d70ca46d1ed3d0b50974%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6970d70ca46d1ed3d0b50974","self":"https://api.osf.io/v2/files/6970d70ca46d1ed3d0b50974/"}},{"id":"6970d7183da9a9b21e996c7e","type":"files","attributes":{"guid":null,"checkout":null,"name":"FigS5.pdf","kind":"file","path":"/6970d7183da9a9b21e996c7e","size":14595040,"provider":"osfstorage","materialized_path":"/zoomprf_main/figurecombis/FigS5.pdf","last_touched":null,"date_modified":"2026-01-21T13:39:36.219131","date_created":"2026-01-21T13:39:36.219131Z","extra":{"hashes":{"md5":"4dd6457b30ec1e894ea3dc4c51441fb3","sha256":"6f0692e059a51441930f7f4fc09b87fb00165f1b347d7a6ed16411262f12470d"},"downloads":0},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/","meta":{}}},"data":{"id":"6826554e24dbdbf3537a1d8c","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d7183da9a9b21e996c7e/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d7183da9a9b21e996c7e/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6970d7183da9a9b21e996c7e/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d7183da9a9b21e996c7e","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d7183da9a9b21e996c7e","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d7183da9a9b21e996c7e","download":"https://osf.io/download/6970d7183da9a9b21e996c7e/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6970d7183da9a9b21e996c7e%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6970d7183da9a9b21e996c7e","self":"https://api.osf.io/v2/files/6970d7183da9a9b21e996c7e/"}},{"id":"6970d7191416d4f4b01afae2","type":"files","attributes":{"guid":null,"checkout":null,"name":"FigS8.pdf","kind":"file","path":"/6970d7191416d4f4b01afae2","size":440358,"provider":"osfstorage","materialized_path":"/zoomprf_main/figurecombis/FigS8.pdf","last_touched":null,"date_modified":"2026-01-21T13:39:37.287221","date_created":"2026-01-21T13:39:37.287221Z","extra":{"hashes":{"md5":"b692075b1bb95f0e57fc6b2d511b3b5d","sha256":"293b5046462c9f17e60c76392954f6ca8bddcf23ac0b653eb5c84c269ff6a0d0"},"downloads":0},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/","meta":{}}},"data":{"id":"6826554e24dbdbf3537a1d8c","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d7191416d4f4b01afae2/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d7191416d4f4b01afae2/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6970d7191416d4f4b01afae2/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d7191416d4f4b01afae2","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d7191416d4f4b01afae2","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d7191416d4f4b01afae2","download":"https://osf.io/download/6970d7191416d4f4b01afae2/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6970d7191416d4f4b01afae2%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6970d7191416d4f4b01afae2","self":"https://api.osf.io/v2/files/6970d7191416d4f4b01afae2/"}},{"id":"6970d719b08e2ce92599727b","type":"files","attributes":{"guid":null,"checkout":null,"name":"FigS1.pdf","kind":"file","path":"/6970d719b08e2ce92599727b","size":58506,"provider":"osfstorage","materialized_path":"/zoomprf_main/figurecombis/FigS1.pdf","last_touched":null,"date_modified":"2026-01-21T13:39:37.435768","date_created":"2026-01-21T13:39:37.435768Z","extra":{"hashes":{"md5":"fc0832e2c91f37a4a3b968055967bfa1","sha256":"384068947076544ba6332189b62916d351d0ae25796b2b6e0b196184e7f96054"},"downloads":0},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/","meta":{}}},"data":{"id":"6826554e24dbdbf3537a1d8c","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d719b08e2ce92599727b/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d719b08e2ce92599727b/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6970d719b08e2ce92599727b/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d719b08e2ce92599727b","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d719b08e2ce92599727b","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d719b08e2ce92599727b","download":"https://osf.io/download/6970d719b08e2ce92599727b/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6970d719b08e2ce92599727b%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6970d719b08e2ce92599727b","self":"https://api.osf.io/v2/files/6970d719b08e2ce92599727b/"}},{"id":"6970d71a8d502ea1bd9970bc","type":"files","attributes":{"guid":null,"checkout":null,"name":"FigS7.pdf","kind":"file","path":"/6970d71a8d502ea1bd9970bc","size":1049350,"provider":"osfstorage","materialized_path":"/zoomprf_main/figurecombis/FigS7.pdf","last_touched":null,"date_modified":"2026-01-21T13:39:38.088251","date_created":"2026-01-21T13:39:38.088251Z","extra":{"hashes":{"md5":"34bbf46fdc8382ac6aa2b87f0b56ca4b","sha256":"683ccc8b9f3bd17fb87fea410c8fb3235c79b571271028dd56d362d9eb750bf7"},"downloads":0},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/","meta":{}}},"data":{"id":"6826554e24dbdbf3537a1d8c","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d71a8d502ea1bd9970bc/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d71a8d502ea1bd9970bc/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6970d71a8d502ea1bd9970bc/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d71a8d502ea1bd9970bc","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d71a8d502ea1bd9970bc","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d71a8d502ea1bd9970bc","download":"https://osf.io/download/6970d71a8d502ea1bd9970bc/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6970d71a8d502ea1bd9970bc%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6970d71a8d502ea1bd9970bc","self":"https://api.osf.io/v2/files/6970d71a8d502ea1bd9970bc/"}},{"id":"6970d71aba11befedc997270","type":"files","attributes":{"guid":null,"checkout":null,"name":"Fig7.pdf","kind":"file","path":"/6970d71aba11befedc997270","size":16804110,"provider":"osfstorage","materialized_path":"/zoomprf_main/figurecombis/Fig7.pdf","last_touched":null,"date_modified":"2026-01-21T13:39:38.969282","date_created":"2026-01-21T13:39:38.969282Z","extra":{"hashes":{"md5":"e0532f591bf4cb77da686d48cde7988e","sha256":"528f205bfca073ddd75f984e8791ed0cd43aea65c6278c9bc76d5013b456daa5"},"downloads":0},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/","meta":{}}},"data":{"id":"6826554e24dbdbf3537a1d8c","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d71aba11befedc997270/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d71aba11befedc997270/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6970d71aba11befedc997270/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d71aba11befedc997270","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d71aba11befedc997270","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d71aba11befedc997270","download":"https://osf.io/download/6970d71aba11befedc997270/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6970d71aba11befedc997270%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6970d71aba11befedc997270","self":"https://api.osf.io/v2/files/6970d71aba11befedc997270/"}},{"id":"6970d71de1eec57d5f1af8a2","type":"files","attributes":{"guid":null,"checkout":null,"name":"Fig10.pdf","kind":"file","path":"/6970d71de1eec57d5f1af8a2","size":15199615,"provider":"osfstorage","materialized_path":"/zoomprf_main/figurecombis/Fig10.pdf","last_touched":null,"date_modified":"2026-01-21T13:39:41.721877","date_created":"2026-01-21T13:39:41.721877Z","extra":{"hashes":{"md5":"ed875be8faad1edc825313444d6a5106","sha256":"556d3bc5dfced2f56df75fc45839c4469a9f039117a568ce2b64e5c7d1bdddb9"},"downloads":0},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/","meta":{}}},"data":{"id":"6826554e24dbdbf3537a1d8c","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d71de1eec57d5f1af8a2/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d71de1eec57d5f1af8a2/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6970d71de1eec57d5f1af8a2/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d71de1eec57d5f1af8a2","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d71de1eec57d5f1af8a2","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d71de1eec57d5f1af8a2","download":"https://osf.io/download/6970d71de1eec57d5f1af8a2/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6970d71de1eec57d5f1af8a2%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6970d71de1eec57d5f1af8a2","self":"https://api.osf.io/v2/files/6970d71de1eec57d5f1af8a2/"}},{"id":"6970d71da46d1ed3d0b50989","type":"files","attributes":{"guid":null,"checkout":null,"name":"FigS6.pdf","kind":"file","path":"/6970d71da46d1ed3d0b50989","size":494821,"provider":"osfstorage","materialized_path":"/zoomprf_main/figurecombis/FigS6.pdf","last_touched":null,"date_modified":"2026-01-21T13:39:42.006083","date_created":"2026-01-21T13:39:42.006083Z","extra":{"hashes":{"md5":"8f8742301378c97ce03848791493069a","sha256":"a278bdb9c9f66981ab8a7e109c06796b1ad06c55dc4ccbe340f9422a669c55e2"},"downloads":0},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826554e24dbdbf3537a1d8c/","meta":{}}},"data":{"id":"6826554e24dbdbf3537a1d8c","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d71da46d1ed3d0b50989/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6970d71da46d1ed3d0b50989/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6970d71da46d1ed3d0b50989/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d71da46d1ed3d0b50989","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d71da46d1ed3d0b50989","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6970d71da46d1ed3d0b50989","download":"https://osf.io/download/6970d71da46d1ed3d0b50989/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6970d71da46d1ed3d0b50989%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6970d71da46d1ed3d0b50989","self":"https://api.osf.io/v2/files/6970d71da46d1ed3d0b50989/"}}],"links":{"first":null,"last":null,"prev":null,"next":null,"meta":{"total":20,"per_page":100}},"meta":{"version":"2.0"}}'
+    headers:
+      Allow:
+      - GET, HEAD, OPTIONS
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/vnd.api+json; charset=utf-8
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:19 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      - Accept, Cookie, origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/nodes/4drz6/files/osfstorage/682655679ca36d0622c4c0f2/?page%5Bsize%5D=100
+  response:
+    body:
+      string: '{"data":[],"links":{"first":null,"last":null,"prev":null,"next":null,"meta":{"total":0,"per_page":100}},"meta":{"version":"2.0"}}'
+    headers:
+      Allow:
+      - GET, HEAD, OPTIONS
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '129'
+      Content-Type:
+      - application/vnd.api+json; charset=utf-8
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:19 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      Vary:
+      - Accept-Encoding
+      - Accept, Cookie, origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/nodes/4drz6/files/osfstorage/6826557c8c6f2fe5859c4363/?page%5Bsize%5D=100
+  response:
+    body:
+      string: '{"data":[{"id":"682655ec2ef2894495eadf21","type":"files","attributes":{"guid":null,"checkout":null,"name":"preprocessing","kind":"folder","path":"/682655ec2ef2894495eadf21/","size":null,"provider":"osfstorage","materialized_path":"/zoomprf_main/scripts/preprocessing/","last_touched":null,"date_modified":null,"date_created":null,"extra":{"hashes":{"md5":null,"sha256":null}},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826557c8c6f2fe5859c4363/","meta":{}}},"data":{"id":"6826557c8c6f2fe5859c4363","type":"files"}},"files":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/files/osfstorage/682655ec2ef2894495eadf21/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/682655ec2ef2894495eadf21/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/682655ec2ef2894495eadf21/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682655ec2ef2894495eadf21/","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682655ec2ef2894495eadf21/","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682655ec2ef2894495eadf21/","new_folder":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682655ec2ef2894495eadf21/?kind=folder","self":"https://api.osf.io/v2/files/682655ec2ef2894495eadf21/"}},{"id":"682655fc2ef2894495eadf29","type":"files","attributes":{"guid":null,"checkout":null,"name":"prfmodeling","kind":"folder","path":"/682655fc2ef2894495eadf29/","size":null,"provider":"osfstorage","materialized_path":"/zoomprf_main/scripts/prfmodeling/","last_touched":null,"date_modified":null,"date_created":null,"extra":{"hashes":{"md5":null,"sha256":null}},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826557c8c6f2fe5859c4363/","meta":{}}},"data":{"id":"6826557c8c6f2fe5859c4363","type":"files"}},"files":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/files/osfstorage/682655fc2ef2894495eadf29/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/682655fc2ef2894495eadf29/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/682655fc2ef2894495eadf29/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682655fc2ef2894495eadf29/","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682655fc2ef2894495eadf29/","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682655fc2ef2894495eadf29/","new_folder":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682655fc2ef2894495eadf29/?kind=folder","self":"https://api.osf.io/v2/files/682655fc2ef2894495eadf29/"}}],"links":{"first":null,"last":null,"prev":null,"next":null,"meta":{"total":2,"per_page":100}},"meta":{"version":"2.0"}}'
+    headers:
+      Allow:
+      - GET, HEAD, OPTIONS
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/vnd.api+json; charset=utf-8
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:20 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      - Accept, Cookie, origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/nodes/4drz6/files/osfstorage/682655862931698067eae02b/?page%5Bsize%5D=100
+  response:
+    body:
+      string: '{"data":[],"links":{"first":null,"last":null,"prev":null,"next":null,"meta":{"total":0,"per_page":100}},"meta":{"version":"2.0"}}'
+    headers:
+      Allow:
+      - GET, HEAD, OPTIONS
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '129'
+      Content-Type:
+      - application/vnd.api+json; charset=utf-8
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:20 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      Vary:
+      - Accept-Encoding
+      - Accept, Cookie, origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/nodes/4drz6/files/osfstorage/682655bef5c5bd9fc1c4c191/?page%5Bsize%5D=100
+  response:
+    body:
+      string: '{"data":[{"id":"6826568f93cf7dd9dbce9e09","type":"files","attributes":{"guid":null,"checkout":null,"name":"falkluesebrink","kind":"folder","path":"/6826568f93cf7dd9dbce9e09/","size":null,"provider":"osfstorage","materialized_path":"/zoomprf_main/toolboxes/falkluesebrink/","last_touched":null,"date_modified":null,"date_created":null,"extra":{"hashes":{"md5":null,"sha256":null}},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/682655bef5c5bd9fc1c4c191/","meta":{}}},"data":{"id":"682655bef5c5bd9fc1c4c191","type":"files"}},"files":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/files/osfstorage/6826568f93cf7dd9dbce9e09/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6826568f93cf7dd9dbce9e09/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6826568f93cf7dd9dbce9e09/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6826568f93cf7dd9dbce9e09/","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6826568f93cf7dd9dbce9e09/","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6826568f93cf7dd9dbce9e09/","new_folder":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6826568f93cf7dd9dbce9e09/?kind=folder","self":"https://api.osf.io/v2/files/6826568f93cf7dd9dbce9e09/"}},{"id":"682656af24dbdbf3537a1dd4","type":"files","attributes":{"guid":null,"checkout":null,"name":"samsrf_v9.51","kind":"folder","path":"/682656af24dbdbf3537a1dd4/","size":null,"provider":"osfstorage","materialized_path":"/zoomprf_main/toolboxes/samsrf_v9.51/","last_touched":null,"date_modified":null,"date_created":null,"extra":{"hashes":{"md5":null,"sha256":null}},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/682655bef5c5bd9fc1c4c191/","meta":{}}},"data":{"id":"682655bef5c5bd9fc1c4c191","type":"files"}},"files":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/files/osfstorage/682656af24dbdbf3537a1dd4/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/682656af24dbdbf3537a1dd4/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/682656af24dbdbf3537a1dd4/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682656af24dbdbf3537a1dd4/","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682656af24dbdbf3537a1dd4/","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682656af24dbdbf3537a1dd4/","new_folder":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682656af24dbdbf3537a1dd4/?kind=folder","self":"https://api.osf.io/v2/files/682656af24dbdbf3537a1dd4/"}},{"id":"682656c69ca36d0622c4c123","type":"files","attributes":{"guid":null,"checkout":null,"name":"scientificcolourmaps8","kind":"folder","path":"/682656c69ca36d0622c4c123/","size":null,"provider":"osfstorage","materialized_path":"/zoomprf_main/toolboxes/scientificcolourmaps8/","last_touched":null,"date_modified":null,"date_created":null,"extra":{"hashes":{"md5":null,"sha256":null}},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/682655bef5c5bd9fc1c4c191/","meta":{}}},"data":{"id":"682655bef5c5bd9fc1c4c191","type":"files"}},"files":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/files/osfstorage/682656c69ca36d0622c4c123/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/682656c69ca36d0622c4c123/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/682656c69ca36d0622c4c123/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682656c69ca36d0622c4c123/","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682656c69ca36d0622c4c123/","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682656c69ca36d0622c4c123/","new_folder":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682656c69ca36d0622c4c123/?kind=folder","self":"https://api.osf.io/v2/files/682656c69ca36d0622c4c123/"}},{"id":"682656d8fb3ef8d69e9c4418","type":"files","attributes":{"guid":null,"checkout":null,"name":"spm12","kind":"folder","path":"/682656d8fb3ef8d69e9c4418/","size":null,"provider":"osfstorage","materialized_path":"/zoomprf_main/toolboxes/spm12/","last_touched":null,"date_modified":null,"date_created":null,"extra":{"hashes":{"md5":null,"sha256":null}},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/682655bef5c5bd9fc1c4c191/","meta":{}}},"data":{"id":"682655bef5c5bd9fc1c4c191","type":"files"}},"files":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/files/osfstorage/682656d8fb3ef8d69e9c4418/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/682656d8fb3ef8d69e9c4418/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/682656d8fb3ef8d69e9c4418/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682656d8fb3ef8d69e9c4418/","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682656d8fb3ef8d69e9c4418/","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682656d8fb3ef8d69e9c4418/","new_folder":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682656d8fb3ef8d69e9c4418/?kind=folder","self":"https://api.osf.io/v2/files/682656d8fb3ef8d69e9c4418/"}},{"id":"682656f2aa55fde2cdc4c121","type":"files","attributes":{"guid":null,"checkout":null,"name":"ss_toolbox","kind":"folder","path":"/682656f2aa55fde2cdc4c121/","size":null,"provider":"osfstorage","materialized_path":"/zoomprf_main/toolboxes/ss_toolbox/","last_touched":null,"date_modified":null,"date_created":null,"extra":{"hashes":{"md5":null,"sha256":null}},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/682655bef5c5bd9fc1c4c191/","meta":{}}},"data":{"id":"682655bef5c5bd9fc1c4c191","type":"files"}},"files":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/files/osfstorage/682656f2aa55fde2cdc4c121/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/682656f2aa55fde2cdc4c121/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/682656f2aa55fde2cdc4c121/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682656f2aa55fde2cdc4c121/","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682656f2aa55fde2cdc4c121/","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682656f2aa55fde2cdc4c121/","new_folder":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/682656f2aa55fde2cdc4c121/?kind=folder","self":"https://api.osf.io/v2/files/682656f2aa55fde2cdc4c121/"}}],"links":{"first":null,"last":null,"prev":null,"next":null,"meta":{"total":5,"per_page":100}},"meta":{"version":"2.0"}}'
+    headers:
+      Allow:
+      - GET, HEAD, OPTIONS
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/vnd.api+json; charset=utf-8
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:21 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      - Accept, Cookie, origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/nodes/4drz6/files/osfstorage/69642276818bea22eb844782/?page%5Bsize%5D=100
+  response:
+    body:
+      string: '{"data":[{"id":"696425d2818bea22eb844803","type":"files","attributes":{"guid":"3hjfp","checkout":null,"name":"VideoS1.mp4","kind":"file","path":"/696425d2818bea22eb844803","size":150219508,"provider":"osfstorage","materialized_path":"/zoomprf_main/videos/VideoS1.mp4","last_touched":null,"date_modified":"2026-01-11T22:36:02.234109","date_created":"2026-01-11T22:36:02.234109Z","extra":{"hashes":{"md5":"591b5a54f284f1d5618e1f7bd2739949","sha256":"e768408aee944e6e4847cb63d4a111029391124d1d736d5de5576486fd14e501"},"downloads":3},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/69642276818bea22eb844782/","meta":{}}},"data":{"id":"69642276818bea22eb844782","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/696425d2818bea22eb844803/versions/","meta":{}}}},"comments":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/comments/?filter%5Btarget%5D=3hjfp","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/696425d2818bea22eb844803/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/696425d2818bea22eb844803/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696425d2818bea22eb844803","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696425d2818bea22eb844803","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696425d2818bea22eb844803","download":"https://osf.io/download/3hjfp/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F3hjfp%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/696425d2818bea22eb844803","self":"https://api.osf.io/v2/files/696425d2818bea22eb844803/","iri":"https://osf.io/3hjfp"}},{"id":"69642610f6ccfb0653c9792f","type":"files","attributes":{"guid":null,"checkout":null,"name":"VideoS2.mp4","kind":"file","path":"/69642610f6ccfb0653c9792f","size":109872548,"provider":"osfstorage","materialized_path":"/zoomprf_main/videos/VideoS2.mp4","last_touched":null,"date_modified":"2026-01-11T22:37:04.866522","date_created":"2026-01-11T22:37:04.866522Z","extra":{"hashes":{"md5":"82e51b39bfdb2634d2e0f362b839b18a","sha256":"a9609c9c795e767b606bf646e532035a7ec8bae3b6cae3797b2a1003af0d40b0"},"downloads":1},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/69642276818bea22eb844782/","meta":{}}},"data":{"id":"69642276818bea22eb844782","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/69642610f6ccfb0653c9792f/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/69642610f6ccfb0653c9792f/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/69642610f6ccfb0653c9792f/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/69642610f6ccfb0653c9792f","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/69642610f6ccfb0653c9792f","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/69642610f6ccfb0653c9792f","download":"https://osf.io/download/69642610f6ccfb0653c9792f/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F69642610f6ccfb0653c9792f%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/69642610f6ccfb0653c9792f","self":"https://api.osf.io/v2/files/69642610f6ccfb0653c9792f/"}},{"id":"696426fd222e661a79844695","type":"files","attributes":{"guid":null,"checkout":null,"name":"VideoS3.mp4","kind":"file","path":"/696426fd222e661a79844695","size":123088108,"provider":"osfstorage","materialized_path":"/zoomprf_main/videos/VideoS3.mp4","last_touched":null,"date_modified":"2026-01-11T22:41:01.905175","date_created":"2026-01-11T22:41:01.905175Z","extra":{"hashes":{"md5":"a0f3c3fefecf42827e3bfac939fc9fad","sha256":"663e1b54d5b5120d0a7f19420217ee79112bbe035e1110d49f458d8da32b30ad"},"downloads":1},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/69642276818bea22eb844782/","meta":{}}},"data":{"id":"69642276818bea22eb844782","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/696426fd222e661a79844695/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/696426fd222e661a79844695/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/696426fd222e661a79844695/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696426fd222e661a79844695","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696426fd222e661a79844695","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696426fd222e661a79844695","download":"https://osf.io/download/696426fd222e661a79844695/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F696426fd222e661a79844695%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/696426fd222e661a79844695","self":"https://api.osf.io/v2/files/696426fd222e661a79844695/"}},{"id":"6964270e6d7ed94fef844916","type":"files","attributes":{"guid":null,"checkout":null,"name":"VideoS4.mp4","kind":"file","path":"/6964270e6d7ed94fef844916","size":29868364,"provider":"osfstorage","materialized_path":"/zoomprf_main/videos/VideoS4.mp4","last_touched":null,"date_modified":"2026-01-11T22:41:18.194692","date_created":"2026-01-11T22:41:18.194692Z","extra":{"hashes":{"md5":"71bf49824835952bf561e0d120a5fecf","sha256":"859ac2f2221e5e684c4272fc211f7ac0446a7add3939227d62e6bbdfddd5219b"},"downloads":1},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/69642276818bea22eb844782/","meta":{}}},"data":{"id":"69642276818bea22eb844782","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6964270e6d7ed94fef844916/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6964270e6d7ed94fef844916/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6964270e6d7ed94fef844916/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6964270e6d7ed94fef844916","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6964270e6d7ed94fef844916","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6964270e6d7ed94fef844916","download":"https://osf.io/download/6964270e6d7ed94fef844916/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6964270e6d7ed94fef844916%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6964270e6d7ed94fef844916","self":"https://api.osf.io/v2/files/6964270e6d7ed94fef844916/"}},{"id":"696427836d7ed94fef84492e","type":"files","attributes":{"guid":"u48q3","checkout":null,"name":"VideoS5.mp4","kind":"file","path":"/696427836d7ed94fef84492e","size":28907050,"provider":"osfstorage","materialized_path":"/zoomprf_main/videos/VideoS5.mp4","last_touched":null,"date_modified":"2026-01-11T22:43:15.617059","date_created":"2026-01-11T22:43:15.617059Z","extra":{"hashes":{"md5":"3b799ca1b3da4952ae8f6ad280812d3d","sha256":"92c65e6434ceb849de44000b7791be535f5deba7e33d542fd832b33524a2d43d"},"downloads":1},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/69642276818bea22eb844782/","meta":{}}},"data":{"id":"69642276818bea22eb844782","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/696427836d7ed94fef84492e/versions/","meta":{}}}},"comments":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/comments/?filter%5Btarget%5D=u48q3","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/696427836d7ed94fef84492e/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/696427836d7ed94fef84492e/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696427836d7ed94fef84492e","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696427836d7ed94fef84492e","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696427836d7ed94fef84492e","download":"https://osf.io/download/u48q3/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2Fu48q3%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/696427836d7ed94fef84492e","self":"https://api.osf.io/v2/files/696427836d7ed94fef84492e/","iri":"https://osf.io/u48q3"}},{"id":"696427bb0a81409754aeeee9","type":"files","attributes":{"guid":null,"checkout":null,"name":"VideoS6.mp4","kind":"file","path":"/696427bb0a81409754aeeee9","size":109502474,"provider":"osfstorage","materialized_path":"/zoomprf_main/videos/VideoS6.mp4","last_touched":null,"date_modified":"2026-01-11T22:44:11.790352","date_created":"2026-01-11T22:44:11.790352Z","extra":{"hashes":{"md5":"7d73c10fefbc91b1f38085535dc4078e","sha256":"907263c3ec406568db9233967a926dd56843122c3cb8c84734edaa2e86b31bcd"},"downloads":2},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/69642276818bea22eb844782/","meta":{}}},"data":{"id":"69642276818bea22eb844782","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/696427bb0a81409754aeeee9/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/696427bb0a81409754aeeee9/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/696427bb0a81409754aeeee9/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696427bb0a81409754aeeee9","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696427bb0a81409754aeeee9","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696427bb0a81409754aeeee9","download":"https://osf.io/download/696427bb0a81409754aeeee9/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F696427bb0a81409754aeeee9%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/696427bb0a81409754aeeee9","self":"https://api.osf.io/v2/files/696427bb0a81409754aeeee9/"}},{"id":"696427d96d7ed94fef844954","type":"files","attributes":{"guid":null,"checkout":null,"name":"VideoS7.mp4","kind":"file","path":"/696427d96d7ed94fef844954","size":28856126,"provider":"osfstorage","materialized_path":"/zoomprf_main/videos/VideoS7.mp4","last_touched":null,"date_modified":"2026-01-11T22:44:41.521560","date_created":"2026-01-11T22:44:41.521560Z","extra":{"hashes":{"md5":"6beb4787ce818f816bcc2417359530b4","sha256":"05a6f35520551d611435d1d5c1835e327f8a8f983db765a569a9c8e791bf008f"},"downloads":1},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/69642276818bea22eb844782/","meta":{}}},"data":{"id":"69642276818bea22eb844782","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/696427d96d7ed94fef844954/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/696427d96d7ed94fef844954/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/696427d96d7ed94fef844954/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696427d96d7ed94fef844954","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696427d96d7ed94fef844954","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696427d96d7ed94fef844954","download":"https://osf.io/download/696427d96d7ed94fef844954/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F696427d96d7ed94fef844954%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/696427d96d7ed94fef844954","self":"https://api.osf.io/v2/files/696427d96d7ed94fef844954/"}},{"id":"696427e00a81409754aeeeed","type":"files","attributes":{"guid":null,"checkout":null,"name":"VideoS8.mp4","kind":"file","path":"/696427e00a81409754aeeeed","size":13533343,"provider":"osfstorage","materialized_path":"/zoomprf_main/videos/VideoS8.mp4","last_touched":null,"date_modified":"2026-01-11T22:44:49.058651","date_created":"2026-01-11T22:44:49.058651Z","extra":{"hashes":{"md5":"f0e05abe4c690f150f98260901175abe","sha256":"bd528adc81a62cd7b94620bf2afb13cdb4e3b48928c4d914761b0fdd6aa7c23b"},"downloads":1},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/69642276818bea22eb844782/","meta":{}}},"data":{"id":"69642276818bea22eb844782","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/696427e00a81409754aeeeed/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/696427e00a81409754aeeeed/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/696427e00a81409754aeeeed/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696427e00a81409754aeeeed","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696427e00a81409754aeeeed","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696427e00a81409754aeeeed","download":"https://osf.io/download/696427e00a81409754aeeeed/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F696427e00a81409754aeeeed%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/696427e00a81409754aeeeed","self":"https://api.osf.io/v2/files/696427e00a81409754aeeeed/"}},{"id":"696427f76d7ed94fef84495d","type":"files","attributes":{"guid":"fcejg","checkout":null,"name":"VideoS10.mp4","kind":"file","path":"/696427f76d7ed94fef84495d","size":6381784,"provider":"osfstorage","materialized_path":"/zoomprf_main/videos/VideoS10.mp4","last_touched":null,"date_modified":"2026-01-11T22:45:11.658973","date_created":"2026-01-11T22:45:11.658973Z","extra":{"hashes":{"md5":"0250e2d214674e62457a5ff4e41f4466","sha256":"f2ce2b270771f08178f08dce6a45b2ea748b1e77ff7a5d14bac60f4a95edc0ca"},"downloads":3},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/69642276818bea22eb844782/","meta":{}}},"data":{"id":"69642276818bea22eb844782","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/696427f76d7ed94fef84495d/versions/","meta":{}}}},"comments":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/comments/?filter%5Btarget%5D=fcejg","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/696427f76d7ed94fef84495d/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/696427f76d7ed94fef84495d/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696427f76d7ed94fef84495d","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696427f76d7ed94fef84495d","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696427f76d7ed94fef84495d","download":"https://osf.io/download/fcejg/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2Ffcejg%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/696427f76d7ed94fef84495d","self":"https://api.osf.io/v2/files/696427f76d7ed94fef84495d/","iri":"https://osf.io/fcejg"}},{"id":"696427ff0a81409754aeeef1","type":"files","attributes":{"guid":null,"checkout":null,"name":"VideoS9.mp4","kind":"file","path":"/696427ff0a81409754aeeef1","size":13217201,"provider":"osfstorage","materialized_path":"/zoomprf_main/videos/VideoS9.mp4","last_touched":null,"date_modified":"2026-01-11T22:45:19.805138","date_created":"2026-01-11T22:45:19.805138Z","extra":{"hashes":{"md5":"87b39af9621f008c9116a8cc88baaf99","sha256":"7e2d2d22b079c56d1743bcd72a69ab63eae32e88f66a3dd963722bbb64327103"},"downloads":2},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/69642276818bea22eb844782/","meta":{}}},"data":{"id":"69642276818bea22eb844782","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/696427ff0a81409754aeeef1/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/696427ff0a81409754aeeef1/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/696427ff0a81409754aeeef1/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696427ff0a81409754aeeef1","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696427ff0a81409754aeeef1","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/696427ff0a81409754aeeef1","download":"https://osf.io/download/696427ff0a81409754aeeef1/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F696427ff0a81409754aeeef1%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/696427ff0a81409754aeeef1","self":"https://api.osf.io/v2/files/696427ff0a81409754aeeef1/"}},{"id":"6964281489d6dff8a0aef1f9","type":"files","attributes":{"guid":null,"checkout":null,"name":"VideoS12.mp4","kind":"file","path":"/6964281489d6dff8a0aef1f9","size":141227,"provider":"osfstorage","materialized_path":"/zoomprf_main/videos/VideoS12.mp4","last_touched":null,"date_modified":"2026-01-11T22:45:40.541481","date_created":"2026-01-11T22:45:40.541481Z","extra":{"hashes":{"md5":"3596296bc49742a24789d32b39fb38a7","sha256":"fb269ea4fa58d2d549ebbd54ffe5cd8ee0712ee97c1422d91740b02aba5db1b0"},"downloads":1},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/69642276818bea22eb844782/","meta":{}}},"data":{"id":"69642276818bea22eb844782","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6964281489d6dff8a0aef1f9/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6964281489d6dff8a0aef1f9/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6964281489d6dff8a0aef1f9/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6964281489d6dff8a0aef1f9","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6964281489d6dff8a0aef1f9","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6964281489d6dff8a0aef1f9","download":"https://osf.io/download/6964281489d6dff8a0aef1f9/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6964281489d6dff8a0aef1f9%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6964281489d6dff8a0aef1f9","self":"https://api.osf.io/v2/files/6964281489d6dff8a0aef1f9/"}},{"id":"69642816d27bdac16ac97a01","type":"files","attributes":{"guid":null,"checkout":null,"name":"VideoS11.mp4","kind":"file","path":"/69642816d27bdac16ac97a01","size":5877965,"provider":"osfstorage","materialized_path":"/zoomprf_main/videos/VideoS11.mp4","last_touched":null,"date_modified":"2026-01-11T22:45:42.572026","date_created":"2026-01-11T22:45:42.572026Z","extra":{"hashes":{"md5":"f22daf358638ba7c8c06fa72554c7a15","sha256":"1602747bb0f6400961b7c332c553d86545f490a0031b29dd8c2a888a8ffdee85"},"downloads":1},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/69642276818bea22eb844782/","meta":{}}},"data":{"id":"69642276818bea22eb844782","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/69642816d27bdac16ac97a01/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/69642816d27bdac16ac97a01/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/69642816d27bdac16ac97a01/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/69642816d27bdac16ac97a01","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/69642816d27bdac16ac97a01","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/69642816d27bdac16ac97a01","download":"https://osf.io/download/69642816d27bdac16ac97a01/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F69642816d27bdac16ac97a01%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/69642816d27bdac16ac97a01","self":"https://api.osf.io/v2/files/69642816d27bdac16ac97a01/"}},{"id":"6964283c818bea22eb844855","type":"files","attributes":{"guid":"7e6y4","checkout":null,"name":"VideoS14.mp4","kind":"file","path":"/6964283c818bea22eb844855","size":5468383,"provider":"osfstorage","materialized_path":"/zoomprf_main/videos/VideoS14.mp4","last_touched":null,"date_modified":"2026-01-11T22:46:20.134633","date_created":"2026-01-11T22:46:20.134633Z","extra":{"hashes":{"md5":"cdfaedba08d9738d6d1e94c9ca516824","sha256":"16347acac41dec71a964fab107e253c292e0574a5bcd1da8ebc212edb6ef658c"},"downloads":2},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/69642276818bea22eb844782/","meta":{}}},"data":{"id":"69642276818bea22eb844782","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6964283c818bea22eb844855/versions/","meta":{}}}},"comments":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/comments/?filter%5Btarget%5D=7e6y4","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6964283c818bea22eb844855/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6964283c818bea22eb844855/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6964283c818bea22eb844855","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6964283c818bea22eb844855","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6964283c818bea22eb844855","download":"https://osf.io/download/7e6y4/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F7e6y4%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6964283c818bea22eb844855","self":"https://api.osf.io/v2/files/6964283c818bea22eb844855/","iri":"https://osf.io/7e6y4"}},{"id":"6964283d89d6dff8a0aef228","type":"files","attributes":{"guid":null,"checkout":null,"name":"VideoS13.mp4","kind":"file","path":"/6964283d89d6dff8a0aef228","size":998799,"provider":"osfstorage","materialized_path":"/zoomprf_main/videos/VideoS13.mp4","last_touched":null,"date_modified":"2026-01-11T22:46:21.574049","date_created":"2026-01-11T22:46:21.574049Z","extra":{"hashes":{"md5":"7907c5b86d3c3efc0283fa0a37f987cf","sha256":"7793f3acfc127ee9aaab2bce8179e9d748ade06d7bb54b5165dbcbe017a3042f"},"downloads":1},"tags":[],"current_user_can_comment":false,"current_version":1,"show_as_unviewed":false},"relationships":{"parent_folder":{"links":{"related":{"href":"https://api.osf.io/v2/files/69642276818bea22eb844782/","meta":{}}},"data":{"id":"69642276818bea22eb844782","type":"files"}},"versions":{"links":{"related":{"href":"https://api.osf.io/v2/files/6964283d89d6dff8a0aef228/versions/","meta":{}}}},"node":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{}}},"data":{"id":"4drz6","type":"nodes"}},"target":{"links":{"related":{"href":"https://api.osf.io/v2/nodes/4drz6/","meta":{"type":"nodes"}}},"data":{"type":"nodes","id":"4drz6"}},"cedar_metadata_records":{"links":{"related":{"href":"https://api.osf.io/v2/files/6964283d89d6dff8a0aef228/cedar_metadata_records/","meta":{}}}}},"links":{"info":"https://api.osf.io/v2/files/6964283d89d6dff8a0aef228/","move":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6964283d89d6dff8a0aef228","upload":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6964283d89d6dff8a0aef228","delete":"https://files.osf.io/v1/resources/4drz6/providers/osfstorage/6964283d89d6dff8a0aef228","download":"https://osf.io/download/6964283d89d6dff8a0aef228/","render":"https://mfr.osf.io/render?url=https%3A%2F%2Fosf.io%2Fdownload%2F6964283d89d6dff8a0aef228%2F%3Fdirect%26mode%3Drender","html":"https://osf.io/4drz6/files/osfstorage/6964283d89d6dff8a0aef228","self":"https://api.osf.io/v2/files/6964283d89d6dff8a0aef228/"}}],"links":{"first":null,"last":null,"prev":null,"next":null,"meta":{"total":14,"per_page":100}},"meta":{"version":"2.0"}}'
+    headers:
+      Allow:
+      - GET, HEAD, OPTIONS
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/vnd.api+json; charset=utf-8
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:21 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      - Accept, Cookie, origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/nodes/4drz6/files/osfstorage/682655ec2ef2894495eadf21/?page%5Bsize%5D=100
+  response:
+    body:
+      string: '{"data":[],"links":{"first":null,"last":null,"prev":null,"next":null,"meta":{"total":0,"per_page":100}},"meta":{"version":"2.0"}}'
+    headers:
+      Allow:
+      - GET, HEAD, OPTIONS
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '129'
+      Content-Type:
+      - application/vnd.api+json; charset=utf-8
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:22 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      Vary:
+      - Accept-Encoding
+      - Accept, Cookie, origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/nodes/4drz6/files/osfstorage/682655fc2ef2894495eadf29/?page%5Bsize%5D=100
+  response:
+    body:
+      string: '{"data":[],"links":{"first":null,"last":null,"prev":null,"next":null,"meta":{"total":0,"per_page":100}},"meta":{"version":"2.0"}}'
+    headers:
+      Allow:
+      - GET, HEAD, OPTIONS
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '129'
+      Content-Type:
+      - application/vnd.api+json; charset=utf-8
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:22 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      Vary:
+      - Accept-Encoding
+      - Accept, Cookie, origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/nodes/4drz6/files/osfstorage/6826568f93cf7dd9dbce9e09/?page%5Bsize%5D=100
+  response:
+    body:
+      string: '{"data":[],"links":{"first":null,"last":null,"prev":null,"next":null,"meta":{"total":0,"per_page":100}},"meta":{"version":"2.0"}}'
+    headers:
+      Allow:
+      - GET, HEAD, OPTIONS
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '129'
+      Content-Type:
+      - application/vnd.api+json; charset=utf-8
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:23 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      Vary:
+      - Accept-Encoding
+      - Accept, Cookie, origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/nodes/4drz6/files/osfstorage/682656af24dbdbf3537a1dd4/?page%5Bsize%5D=100
+  response:
+    body:
+      string: '{"data":[],"links":{"first":null,"last":null,"prev":null,"next":null,"meta":{"total":0,"per_page":100}},"meta":{"version":"2.0"}}'
+    headers:
+      Allow:
+      - GET, HEAD, OPTIONS
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '129'
+      Content-Type:
+      - application/vnd.api+json; charset=utf-8
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:23 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      Vary:
+      - Accept-Encoding
+      - Accept, Cookie, origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/nodes/4drz6/files/osfstorage/682656c69ca36d0622c4c123/?page%5Bsize%5D=100
+  response:
+    body:
+      string: '{"data":[],"links":{"first":null,"last":null,"prev":null,"next":null,"meta":{"total":0,"per_page":100}},"meta":{"version":"2.0"}}'
+    headers:
+      Allow:
+      - GET, HEAD, OPTIONS
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '129'
+      Content-Type:
+      - application/vnd.api+json; charset=utf-8
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:24 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      Vary:
+      - Accept-Encoding
+      - Accept, Cookie, origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/nodes/4drz6/files/osfstorage/682656d8fb3ef8d69e9c4418/?page%5Bsize%5D=100
+  response:
+    body:
+      string: '{"data":[],"links":{"first":null,"last":null,"prev":null,"next":null,"meta":{"total":0,"per_page":100}},"meta":{"version":"2.0"}}'
+    headers:
+      Allow:
+      - GET, HEAD, OPTIONS
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '129'
+      Content-Type:
+      - application/vnd.api+json; charset=utf-8
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:24 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      Vary:
+      - Accept-Encoding
+      - Accept, Cookie, origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/nodes/4drz6/files/osfstorage/682656f2aa55fde2cdc4c121/?page%5Bsize%5D=100
+  response:
+    body:
+      string: '{"data":[],"links":{"first":null,"last":null,"prev":null,"next":null,"meta":{"total":0,"per_page":100}},"meta":{"version":"2.0"}}'
+    headers:
+      Allow:
+      - GET, HEAD, OPTIONS
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '129'
+      Content-Type:
+      - application/vnd.api+json; charset=utf-8
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:25 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      Vary:
+      - Accept-Encoding
+      - Accept, Cookie, origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 200
+      message: OK
+version: 1

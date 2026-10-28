@@ -1,0 +1,538 @@
+OPEN ACCESS
+
+EDITED BY Carolyn Yoon,
+
+University of Michigan, United States
+
+REVIEWED BY Elizaveta Solomonova, McGill University, Canada SunYoung Kim, New York University, United States.
+
+*CORRESPONDENCE
+
+Stefania R. Ashby
+
+stefania_ashby@byu.edu
+
+RECEIVED 07 July 2025 REVISED 18 December 2025 ACCEPTED 22 December 2025 PUBLISHED 19 January 2026
+
+CITATION
+
+McClellan MC, Kirwan CB and Ashby SR (2026) Neural mechanisms of cognitive conflict: processing COVID-19 vaccine misinformation. Front. Neurosci. 19:1661523.
+
+doi: 10.3389/fnins.2025.1661523
+
+COPYRIGHT
+
+© 2026 McClellan, Kirwan and Ashby. This is an open-access article distributed under the terms of the Creative Commons Attribution License (CC BY). The use, distribution or reproduction in other forums is permitted, provided the original author(s) and the copyright owner(s) are credited and that the original publication in this journal is cited, in accordance with accepted academic practice. No use, distribution or reproduction is permitted which does not comply with these terms.
+
+Neural mechanisms of cognitive conflict: processing COVID-19 vaccine misinformation
+
+Morgan Chase McClellan 1 , C. Brock Kirwan 2 and Stefania R. Ashby 1,3 *
+
+1 Center for Neuroscience, Brigham Young University, Provo, UT, United States, 2 MindCORE, University of Pennsylvania, Philadelphia, PA, United States, 3 Department of Psychology, Brigham Young University, Provo, UT, United States
+
+Introduction: The rapid spread of misinformation during the COVID-19 pandemic has raised important questions about how individuals evaluate false information, particularly when it conflicts with strongly held prior attitudes. Understanding the neural mechanisms underlying the processing of vaccine-related misinformation may clarify why such beliefs persist despite corrective information.
+
+Methods: Using functional magnetic resonance imaging (fMRI), we examined neural responses to COVID-19 vaccine misinformation and factual information in vaccine-receptive participants (N = 29). During scanning, participants were presented with a series of vaccine-related statements-both accurate and false-and indicated their level of agreement. Analyses focused on the influence of prior beliefs and attitude congruence on neural activation.
+
+Results: Contrary to our hypotheses, exposure to attitude-incongruent misinformation did not elicit significant activation in emotional processing regions such as the amygdala or precuneus. However, when participants made attitude-incongruent responses-endorsing misinformation or rejecting accurate information-we observed increased activation in the left dorsolateral prefrontal cortex (DLPFC), dorsomedial prefrontal cortex (DMPFC), intraparietal sulcus (IPS), and middle frontal gyrus (MFG), regions associated with decisionmaking, moral reasoning, memory integration, and cognitive control.
+
+Discussion: These findings suggest that conflicts between incoming information and prior attitudes engage effortful, higher-order cognitive systems rather than affective processing. Resolving such conflicts appears to rely on decision-making and control mechanisms that manage uncertainty and cognitive dissonance. Due to recruitment limitations, the present study focused exclusively on vaccine-receptive individuals. Future research should investigate whether vaccine-resistant individuals exhibit similar or distinct neural patterns, which may provide further insight into the persistence of misinformation in the context of negative prior attitudes.
+
+KEYWORDS
+
+decision-making, functional MRI (fMRI), misinformation, prior attitudes, semantic memory, vaccine hesitancy
+
+Introduction
+
+In 2020, the SARS-CoV-2 virus, which caused coronavirus disease 2019 (COVID-19), precipitated a global health crisis that had profound societal impacts (Ghebreyesus, 2020). Though the impact of the virus rocked health care systems and lead to the deaths of many (Kadri et al., 2021; Cronin and Evans, 2021) the virus was not the only damaging thing that spread extensively during the crisis. The rapid spread of misinformation regarding the virus's origins, public health measures, and COVID-19 vaccines also made waves across the internet (Gabarron et al., 2021). This "infodemic," characterized by an increase in false or misleading information during a disease outbreak (World Health Organization, n.d.; World Health Organization, 2020), had far-reaching consequences that contributed to a decline in public trust in health authorities, increased risk-taking behaviors, and led to widespread vaccine hesitancy (Loomba et al., 2021).
+
+The COVID-19 pandemic also spurred a renewed interest in understanding the psychological effects of exposure to misinformation. According to the American Psychological Association, misinformation is defined as incorrect information that is not necessarily intended to deceive (American Psychological Association, n.d.) but can lead to the formation of false beliefs (Bode and Vraga, 2015). Importantly, past work indicates that exposure to misinformation can cause psychological harm by inducing emotional distress-including fear, cynicism, and doubt (Sharov, 2020; Ahmad and Murad, 2020; Mejia et al., 2020)-which may exacerbate emotional responses to conflicting views. Critically, misinformation has been shown to damage the trust individuals have in experts and professional organizations (Tran et al., 2020; Loomba et al., 2021) and the confusion generated by misinformation can undermine informed decision-making (Tran et al., 2020; Bridgman et al., 2020; Zhou et al., 2021) resulting in challenging life experiences being more difficult to navigate.
+
+Reduced trust in experts and professional organizations has also been identified as a key factor influencing vaccine-related attitudes. Prior work has shown that trust in institutions like governmental health agencies and scientific organizations is a strong predictor of COVID-19 vaccine acceptance (Auchynnikava et al., 2025; Grygarova et al., 2025; Jennings et al., 2023; Krastev et al., 2023) and may contribute more to reducing vaccine hesitancy than interpersonal trust (Auchynnikava et al., 2025). Media preference also plays an important role: individuals who consume traditional forms of news media tend to be less vaccine hesitant than those who rely on online media sources (Jennings et al., 2023). Together, these findings demonstrate that the impact of misinformation cannot be understood in isolation from the epistemic context in which individuals form their beliefs. Trust in institutions provides the foundation for regarding certain sources as reliable, while media ecosystems shape the likelihood of encountering, endorsing, or rejecting misinformation.
+
+Among online media ecosystems, social media platforms are especially important to consider as they have emerged as key sources of information for many. In fact, recent estimates from 2024 indicate that one-third of Americans regularly get their news from platforms like Facebook and YouTube (for recent polling data, see Pew Research Center, 2024a; Pew Research Center, 2024b). Though there is some debate in the literature as to the actual level of exposure to misinformation on social media (for discussion, see Budak et al., 2024), several studies have indicated that social media is fertile ground for misinformation to proliferate. For example, work by Vosoughi et al. (2018) showed that false information is 70% more likely to be reshared on social media than correct information. Additionally, Ceylan et al. (2023) found that the majority of false information shared in their study was shared by the most habitual social media consumers (Ceylan et al., 2023). Together these findings indicate that for some individuals the reward-based mechanism built into social media to obtain likes and other interactions (for review, see Metzler and Garcia, 2024) may accelerate sharing of false news on these platforms.
+
+This is further compounded by social media algorithms that curate content aligned with users' prior beliefs (Bode and Vraga, 2015). The monetization of social media engagement creates a situation where algorithms are incentivized to prioritize engagement with material over accuracy which often results in amplification of sensational or misleading content (i.e., "click-bait") to maximize revenue (for review, see Brady et al., 2023). Thus, social media feeds frequently reinforce users' prior biases and decreases the likelihood of encountering corrective information (Cinelli et al., 2021; Del Vicario et al., 2016), laying the perfect foundation for misinformation to take root in memory and influence decision-making. This can have dire consequences, as individuals may make decisions based on misinformation that range from benign misconceptions, such as adding black pepper to food to treat a COVID-19 infection (World Health Organization, 2022), to dangerous errors of judgment, like gargling with a diluted bleach solution or inhaling cleaner fumes to treat a COVID-19 infection (Gharpure et al., 2020; Pennycook et al., 2020).
+
+Though the harms of widespread misinformation propagated on social media are well-known, removing all misinformation from access is neither practical nor possible. Therefore, recent work has shifted towards better understanding the cognitive mechanisms underlying misinformation processing and effective correction strategies (for examples, see Zhang et al., 2022; Efstratiou and De Cristofaro, 2022; Kim and Lim, 2022; Lewandowsky et al., 2012). A growing body of research has shown that once misinformation is learned, it can be challenging to correct, often continuing to influence decision-making even after individuals are presented with correct information (Johnson and Seifert, 1994; Lewandowsky et al., 2012; Susmann and Wegener, 2021). This persistence in memory for the originally learned misinformation may be due to independent storage of misinformation and corrections in memory, leading to difficulties in retrieval, or due to problems with integrating new incoming information with previously learned information during encoding (Lewandowsky et al., 2012; Gordon et al., 2017; Gordon et al., 2019).
+
+Though there is work examining the cognitive mechanisms supporting memory for misinformation and associated corrections, there remains a notable gap in understanding the neural mechanisms that underpin these processes, particularly in the context of prior beliefs. However, it is important to note the distinction between beliefs and attitudes. While related, these constructs reflect different psychological processes: beliefs concern the truth-value of specific propositions (Albarracin and Pitliya, 2022), whereas attitudes reflect an overall evaluative stance on a topic (Ajzen, 2012). Thus, attitudes do not always align perfectly with our item-level beliefs, and in the context of COVID-19 vaccines, individuals may endorse or reject bits of information even when their overall attitudes are clearly vaccinereceptive or vaccine-resistant.
+
+A handful of neuroimaging studies have identified specific brain regions that are activated in response to misinformation, such as the right posterior cingulate cortex, the precuneus, and the amygdala (Gordon et al., 2017; Gordon et al., 2019; Moore et al., 2021). However, to date, results from these studies show little consensus on the neural mechanisms involved in misinformation processing and to our knowledge no studies have investigated how these neural processes are influenced by an individual's pre-existing attitudes. Given the gaps in our understanding, further investigation of these regions is necessary to provide more insight into the neural mechanisms that contribute to the persistence of misinformation in memory.
+
+In particular, the amygdala and precuneus are two regions that have remained underexplored but may play a synergistic role in supporting the stickiness of misinformation in memory. The amygdala is well known as a key region for emotional processing (Ball et al., 2009; Patin and Pause, 2015; Said et al., 2009; for review, see Phelps and LeDoux, 2005), but has also been shown to respond robustly to novel and personally significant information (Blackford et al., 2011; Peck et al., 2013; Wang et al., 2018). Given that misinformation often elicits strong feelings (Martel et al., 2020; Luhring et al., 2024)-and this may be especially true when encountering misinformation that conflicts with firmly held attitudes-the amygdala may work to enhance misinformation in memory in these situations (Marsh and Stanley, 2020; Kaplan et al., 2016) by capturing attention and enhancing connections with the hippocampus (McGaugh, 2015).
+
+Once thought of as strictly a visual processing region, the precuneus has been increasingly shown to be involved in episodic memory tasks (Krause et al., 1999; Elman et al., 2013; Foudil and Macaluso, 2024). Recently, it has been proposed that the precuneus may be an important member of two subnetworks of the default mode network (DMN): one that is implicated in supporting episodic memory and another that is engaged during theory of mind or selfreferential thinking (for review, see Dadario and Sughrue, 2023). In the context of exposure to misinformation, the precuneus may be a region that is uniquely positioned to support the evaluation of new incoming information in the context of prior memories and pre-existing attitudes. Importantly, the precuneus shares bidirectional structural connections with a variety of other regions implicated in memory and decision-making including the prefrontal cortex, anterior cingulate cortex, and the striatum (for review, see Cavanna and Trimble, 2006). Thus, it may be a region that serves as a mediator working to integrate information from other neural structures-like the amygdala and hippocampus-to support decision-making in light of misinformation.
+
+The purpose of the present study was to investigate the neural mechanisms involved in processing misinformation and factual information regarding COVID-19 vaccines, with a particular focus on how pre-existing attitudes shape these processes. To that end, we exposed groups of COVID-19 vaccine-receptive and vaccine-resistant individuals to COVID-19 vaccine misinformation and factual information while undergoing functional magnetic resonance imaging (fMRI). We hypothesized that regions such as the amygdala and precuneus would exhibit heightened activity when individuals encountered information that contradicted their overall vaccine attitudes, indicating difficulty with integrating new information with previously held attitudes. Furthermore, we predicted that differential neural activation would be influenced by the degree of agreement with both types of information.
+
+Method
+
+Public health context during data collection
+
+Data collection for this project was done from the second half of 2022 through approximately June of 2023. By spring of 2023, the United States was estimated to have had over 100,000,000 cumulative cases of COVID-19 (Johns Hopkins, 2023). However, during this time, many were predicting the nearing end of the pandemic (Martín Sánchez et al., 2023), with the Director-General of the World Health Organization (WHO) reporting a hopeful end to COVID-19 as a global health emergency, though still a threat (World Health Organization, 2023a). From 2022 to the end of 2023, the CDC reported a 73.3% decrease in death from COVID-19, likely further suggesting to many people that the end of the COVID-19 pandemic was in sight or reached (Murphy et al., 2024). By the end of 2023, global COVID-19 vaccination rates were estimated to be 67%, with 32% having at least one dose of the booster (World Health Organization, 2023b). In the United States, 82% of the population was estimated to have at least one dose (World Health Organization, 2023b). At Brigham Young University, where these data were collected, COVID-19 vaccination rates were at ceiling due to university vaccination mandates.
+
+Participants
+
+Forty-three healthy participants were recruited from Brigham Young University via the university SONA research system and from the surrounding community via fliers. Participants received compensation for their participation with their choice of either $20 cash, a ¼-scale 3D-printed model of their structural brain scan, or course credit. Experimental procedures were approved by the university Institutional Review Board and all participants provided written informed consent. Participants were first safety screened for MRI eligibility and verified to be right-handed, fluent in English, and healthy with no history of psychological or neurological conditions or traumatic brain injuries. Four participants were excluded from analyses: one for failing to respond to all conditions in the experiment, one for excessive motion due to talking during the scan, and two due to technical difficulties with MRI data collection resulting in poor data quality. The remaining sample of 39 participants are reported in our analyses.
+
+Due to our interest in how vaccine attitudes may interact with how misinformation is processed in the brain; we also assessed our participants for COVID-19 vaccine hesitancy by asking them whether they were for or against receiving the COVID-19 vaccine (see Appendix for survey questions administered). Using their selfreported vaccine hesitancy, not vaccination status, we classified 10 individuals in our sample as COVID-19 vaccine resistant (7 female, 3 male; ages 18-25 years; Mage = 20.90, SDage = 2.38; Medu = 13.40, SDedu = 2.67; 20% received COVID-19 vaccines) and the remaining 29 individuals in our sample as COVID-19 vaccine receptive (14 female, 15 male; age 18-27 years; Mage = 21.72, SDage = 2.17; Medu = 12.55, SDedu = 1.30; 96% received COVID-19 vaccines). These groupings were determined based on our participants responses to questions about agreement with COVID-19 vaccination, with those who responded strongly agree or moderately agree being grouped as vaccine receptive and those who responded strongly disagree or moderately disagree being grouped as vaccine resistant, rather than their actual vaccination status as vaccination was mandated by the university from which we recruited our participants.
+
+Due to lower participation rates of vaccine-resistant individuals in our study, we were unable to include group as a factor in our statistical analyses of the neural data as our statistical software was unable to accommodate a strongly unbalanced design (see Preprocessing and neuroimaging data analysis). Accordingly, neural analyses reported here are focused on the vaccine-receptive group only; however, pilot behavioral data we collected from the vaccineresistant group are presented for transparency. Prior research using fMRI to compare brain activation associated with reading misinformation and corrected information (Gordon et al., 2017) indicated a mean difference in parameter estimate of approximately 23.8 (SD = 28.5; estimated from their Figure 1). We used these estimates to determine our sample size using planned one-sample and paired t-tests in G*Power (Faul et al., 2009; Faul et al., 2007). Power analysis indicated that for between-group comparisons we would require at least 21 participants per group.
+
+Stimuli
+
+Stimuli were statements containing either COVID-19 misinformation or COVID-19 facts. Between the fall of 2021 and the spring of 2022, we collected statements from various websites including the Centers for Disease Control (CDC), the Mayo Clinic, NewsGuard Tech, and social media outlets. The research team also generated misinformation statements by crafting statements that directly opposed correct information pulled from reliable sources. In total, we compiled 310 statements (155 categorized as misinformation) as potential stimuli for this study. To select our final pool of statements to be used in the current study and ensure we included statements that would be applicable to both vaccine-receptive and vaccine-resistant participants, we conducted a preliminary pilot study with an independent sample of 44 participants (31 female, 13 male; ages 18-45). In the stimuli pilot study, vaccine-receptive and vaccineresistant participants rated their level of agreement with various statements. We retained factual statements that were both endorsed by vaccine-receptive participants and rejected by vaccine-resistant participants. Similarly, we retained misinformation statements that were both endorsed by vaccine-resistant participants and rejected by vaccine-receptive participants. Though we did not have a way to verify that participants made truthful ratings rather than socially deisrable ratings, we feel confident that this approach allowed us to narrow down our stimulus pool to statements that would be most relevant for both vaccine-receptive and vaccine-resistant individuals. Using this approach, we reduced our set of statements down to 30 factual and 30 misinformation statements for a total of 60 statements participants viewed while undergoing fMRI in the current study (see Table 1 for example statements, and the OSF link in our open practices statement for a complete list of stimuli).
+
+Statements used in the present study ranged from a length of six to 51 words. To verify that the stimuli in our two conditions were equated for word length we conducted an independent samples t-test comparing word lengths between factual statements (Mlength = 18.27, SDlength = 10.79) and misinformation statements (Mlength = 21.30, SDlength = 11.77). There was no significant difference in statement lengths between conditions (t(58) = 1.041, p = 0.302, d = 0.27, two-tailed) providing reassurance that any differential effects observed between conditions cannot be merely attributed to differences in processing time needed to read stimuli.
+
+Procedure
+
+Participants viewed 60 statements regarding COVID-19 vaccination while undergoing fMRI. Participants were unaware that they would be viewing both factual information and misinformation regarding COVID-19 vaccines during the study. On each trial, participants were instructed to read the presented statement and respond with their level of agreement for each statement on a 1-4 Likert scale (1 = Strongly Agree, 2 = Moderately Agree, 3 = Moderately Disagree, 4 = Strongly Disagree). Given the polarizing nature of COVID-19 vaccination, we removed a neutral response option to minimize the possibility that participants would choose it to avoid revealing their actual views. In order to have an
+
+FIGURE 1
+
+Mean reaction time data for all conditions by group. (a) Significant information type (factual vs. misinformation) × endorsement response (agree vs. disagree) interaction for the vaccine-receptive group is denoted by the tensor symbol. Significant interaction was driven by slower reaction times when participants disagreed with factual information compared to when they disagreed with misinformation. (b) No significant effects were observed in the vaccine-resistant group. *p < 0.05.
+
+TABLE 1 A sample of the statements regarding COVID-19 vaccines that were used as stimuli in the current study.
+
+| Example statements                                            | Type           |
+|---------------------------------------------------------------|----------------|
+| 1. The COVID-19 vaccines are unsafe because drug              | Misinformation |
+|  companies created them quickly.                              |                |
+| 2. COVID-19 vaccines were developed using science that has    | Factual        |
+|  been around for decades.                                     |                |
+| 3. Getting sick with COVID-19 is the safest and most          | Misinformation |
+|  dependable way to build an immunity to COVID-19,             |                |
+|  better than getting a vaccine.                               |                |
+| 4. Getting a COVID-19 vaccination is a safer and more         | Factual        |
+|  dependable way to build immunity to COVID-19 than            |                |
+|  getting sick with COVID-19.                                  |                |
+| 5. COVID-19 vaccines are not safe for children and will not   | Misinformation |
+|  protect them or keep them from spreading it at school.       |                |
+| 6. A COVID-19 vaccine can prevent your child from getting     | Factual        |
+|  COVID-19 and spreading it at home and in school.             |                |
+| 7. I already had COVID-19, and I recovered, so I do not       | Misinformation |
+|  need to get a COVID-19 vaccine when it is available.         |                |
+| 8. Unvaccinated people who already had COVID-19 are           | Factual        |
+|  more than twice as likely as fully vaccinated people to get  |                |
+|  reinfected with COVID-19.                                    |                |
+| 9. The Pfizer/BioNTech and Moderna vaccines both contain      | Misinformation |
+|  preservatives.                                               |                |
+| 10. All COVID-19 vaccines are manufactured with as few        | Factual        |
+|  ingredients as possible.                                     |                |
+
+A total of 60 statements (30 misinformation and 30 factual) were shown to participants. A selection of 10 are shown here.
+
+adequate number of trials in our conditions of interest for analyses, we binned statements rated as a 1 or 2 into a general "Agree" category and statements rated as a 3 or a 4 into a general "Disagree" category. Statements were presented on the screen using PsychoPy software (Peirce et al., 2019) and remained onscreen until the participant responded with their level of agreement. Maximum presentation time was restricted to 10,000 ms for each statement after which an inter-stimulus-interval fixation cross (500-1,500 ms, jittered) appeared on the screen between statement trials. Statements were encountered in three blocks of 20 trials with the order of stimuli randomized within and across blocks. Following MRI scanning, all participants were debriefed about their exposure to misinformation and received a take-home packet containing all the statements they read during the study along with each statement's classification as either factual or misinformation and relevant sources.
+
+fMRI data acquisition
+
+Imaging data were collected using a 3 T Siemens Vida scanner at the Brigham Young University MRI Research Facility using a 64-channel head coil. Foam padding was placed around the head to minimize head motion. The scanning session started with a localizer SCOUT sequence followed by a standard high-resolution T1-weighted MPRAGE anatomical image [TR = 2,300 ms; TE = 2.32 ms; flip angle = 8°; matrix size = 256 × 256; 192 contiguous slices; FOV = 240 mm; slice thickness = 0.9 mm; voxel size = 0.9 × 0.9 × 0.9 mm] and a GRE-field mapping sequence to assist with preprocessing [TR = 6,490 ms; TE = 16 ms; flip angle = 120°; matrix size = 64 × 64; FOV = 206 mm]. The scanning session concluded with three functional runs of the misinformation task using a standard echo-planar imaging (EPI) sequence [TR = 2000 ms; TE = 30 ms; flip angle = 66°; matrix size = 94 × 94; 78 contiguous slices; FOV = 192 mm; voxel size = 2.0 × 2.0 × 2.0 mm; SMS factor = 3; number volumes = 211].
+
+Preprocessing and neuroimaging data analysis
+
+Raw dicom images were converted to NIfTI format using dcm2niix (Li et al., 2016). Functional, behavioral, and anatomical data were organized in the Brain Imaging Data Structure (BIDS) format for public dissemination on OpenNeuro (doi: 10.18112/openneuro. ds007115.v1.0.0), and structural scans were defaced for public data sharing using in-house scripts to ensure anonymity of the participants. Functional images were analyzed using AFNI (Cox, 1996) and FSL (Smith et al., 2004). Preprocessing began with correcting for signal fallout using the fieldmap data (epi_b0_correct.py) and motion correction estimation using the EPI volume with the lowest outlier values as base (3dVolReg). Next, we calculated the coregistration of EPI and anatomical scans (align_epi_anat.py) and spatial normalization to a lab-specific template in MNI space (auto_warp.py). Motion correction, coregistration, and normalization transformations were concatenated and applied in one step (3dNwarpApply) to reduce blurring that occurs with separate transformations (Muncy et al., 2017). Quality assurance checks were performed to detect motion outliers that needed to be scrubbed, and functional data were scaled to a mean of 100 and smoothed using a 5 mm FWHM Gaussian kernel.
+
+Trials from four conditions of interest (factual-agree, factualdisagree, misinformation-agree, misinformation-disagree) were modeled using a general linear model (GLM) which also included nuisance regressors representing the six, standard motion regressors for rotational and translational motion. Events from the conditions of interest were modeled with durations matched to reaction times for each trial (Mduration = 7.3 s) convolved with the hemodynamic response function as implemented in AFNI's 3dDeconvolve program using the response model option -dmUBLOCK resulting in beta weight estimations for each condition of interest in each functional run. Residuals from the single subject regression analysis were used to estimate the smoothness of the functional data. These smoothness estimates were then entered into a Monte Carlo simulation to determine spatial extent thresholds for multiple comparisons correction of the group analyses (Cox et al., 2017). All tests were corrected for multiple comparisons using a voxel-wise threshold of p < 0.001 and a spatial extent threshold of 55 voxels, nearest-neighbors level 2 (overall p < 0.05).
+
+Though we did attempt to examine neural activation for participants who identified as vaccine-resistant, our analysis did not yield any results due to being severely underpowered (i.e., only 10 subjects with usable data in this group). Furthermore, because of the large imbalance in participants between groups we also could not statistically compare neural activity between our vaccine-resistant and vaccine-receptive groups. Due to the difficulty in recruiting enough vaccine-resistant participants to yield meaningful results, we report results from the vaccine-receptive group only. To examine neural responses to information type (factual vs. misinformation) and endorsement response (agree vs. disagree) in vaccine-receptive participants we conducted a 2 × 2 repeated measures ANOVA with both included as within-subjects factors. Follow-up pairwise comparisons were performed as appropriate when the omnibus ANOVA indicated a significant main effect or interaction.
+
+Results
+
+Agreement ratings for factual information and misinformation
+
+We first verified that individuals' self-identification as either vaccine-receptive or vaccine-resistant matched their responses to the factual information and misinformation presented within our study regarding COVID-19 vaccines. Indeed, we found this to be the case. Vaccine-receptive participants agreed with factual COVID-19 vaccine information and disagreed with misinformation (Table 2). As can be seen from trial counts in Table 2, both groups had very low response rates in the "strongly agree/disagree" bins when the information was inconsistent with prior attitudes. Consequently, for all subsequent analyses we collapsed across strongly/moderately levels, making the agreement responses dichotomous. Although there did appear to be increased variability in responses within the vaccine-resistant group (i.e., much larger standard deviations), this is most likely due to the significantly smaller sample size of this group (N = 10) relative to the vaccine-receptive group (N = 29). Together, these findings indicate that participants predominately agreed or disagreed with factual information and misinformation in a manner that reflected their selfreported COVID-19 vaccine hesitancy.
+
+Response times for factual information and misinformation
+
+Next, as an exploratory analysis we examined whether mean response times varied as a function of information type (factual vs. misinformation) and endorsement response (agree vs. disagree). We first conducted a 2 × 2 repeated measures ANOVA with factors for information type (factual, misinformation) and endorsement response (agree, disagree) using all usable participants, both vaccinereceptive and vaccine-resistant. There were no significant main effects
+
+TABLE 2 Mean (SD) trial counts across each level of agreement.
+
+| Group             | Information type   | Strongly agree   | Moderately agree   | Moderately    | Strongly    |
+|                   |                    |                  |                    |  disagree     |  disagree   |
+|-------------------|--------------------|------------------|--------------------|---------------|-------------|
+| Vaccine-compliant | Correct            | 15.0 (6.5)       | 10.6 (5.5)         | 3.3 (2.4)     | 0.8 (1.0)   |
+|                   | Misinformation     | 0.5 (0.7)        | 3.0 (2.2)          | 10.4 (6.9)    | 15.7 (7.8)  |
+| Vaccine-hesitant  | Correct            | 0.8 (1.3)        | 6.9 (6.0)          | 11.4 (5.7)    | 10.2 (7.1)  |
+|                   | Misinformation     | 11.2 (7.6)       | 11.0 (5.1)         | 5.8 (6.5)     | 1.6 (1.6)   |
+
+There were very low response rates for attitude-incongruent statements. Consequently, analyses presented here collapsed across "strongly" and "moderately" levels. There were 30 trials per stimulus condition (60 total).
+
+of information type (F(1, 37) = 0.29, p = 0.59, η 2 p= 0.008) or endorsement response (F(1, 37) = 0.09, p = 0.77, η 2 p= 0.002), and no significant interaction (F(1, 37) = 3.07, p = 0.09, η 2 p= 0.08) in the overall sample. When considering reaction time data within the vaccine-resistant and vaccine-receptive groups individually there were no significant main effects in either group or a significant interaction within the vaccine-resistant group (Figure 1b). However we did observe a significant interaction between information type and endorsement response within the vaccine-receptive participants (F(1, 27) = 5.74, p = 0.024, η 2 p= 0.175; see Figure 1a) driven by slower reaction times when vaccine-receptive participants disagreed with factual information compared to when they disagreed with misinformation (t(28) = 1.93, p = 0.03, d = 0.36, one-tailed). Together these results indicate that in the overall sample, participants took about the same amount of time to respond to all statements regardless of whether that information was factual or misinformation and regardless of whether they agreed or disagreed with the information. However, vaccine-receptive participants were slower to respond when disagreeing with factual information than when disagreeing with misinformation.
+
+Neural mechanisms of misinformation processing in the vaccine-receptive group
+
+To look for differences in neural activity as a function of information type (factual vs. misinformation) and endorsement response (agree vs. disagree) within the vaccine-receptive group, we conducted a whole-brain 2 × 2 repeated measures ANOVA. We observed no significant main effects of information type or endorsement response in the brain. However, we did find a significant interaction between information type and endorsement response (F(1, 27) = 5.80, p < 0.001, η 2 p= 0.643) in four regions (see Table 3): left intraparietal sulcus (IPS), left dorsolateral prefrontal cortex (DLPFC), left dorsomedial prefrontal cortex (DMPFC), and left middle frontal gyrus (MFG).
+
+To further characterize the significant interaction in each region we performed follow-up pairwise t-tests. Because vaccine hesitancy reflects an overall attitudinal stance rather than endorsement of each specific claim, congruency in the present study is defined based on attitude alignment rather than item-specific beliefs. Overall, we found a pattern of increased activation when participants made attitude-inconsistent judgments, or judgments that conflicted with their pre-existing attitudes regarding COVID-19 vaccines (i.e., endorsing misinformation and rejecting factual information), and decreased activation when participants made attitude-consistent Significant results here survived corrections for multiple comparisons using a voxel-wise threshold of p < 0.001 and a spatial extent threshold of 55 voxels, nearest-neighbors level 2.
+
+TABLE 3 Information type (misinformation vs. factual) × endorsement response (agree vs. disagree) interaction for the vaccine-receptive group.
+
+| Region                                 | Hemisphere   |   Cluster size | Peak coordinate - X   | Peak coordinate - Y   |   Peak coordinate - Z |
+|----------------------------------------|--------------|----------------|-----------------------|-----------------------|-----------------------|
+| Intraparietal sulcus (IPS)             | L            |            248 | -38                   | -56                   |                    50 |
+| Dorsolateral prefrontal cortex (DLPFC) | L            |             91 | -54                   | 22                    |                    33 |
+| Dorsomedial prefrontal cortex (DMPFC)  | L            |             69 | -4                    | 32                    |                    54 |
+| Middle frontal gyrus (MFG)             | L            |             62 | -24                   | 8                     |                    68 |
+
+judgments, or judgments that were in line with their pre-existing attitudes regarding COVID-19 vaccines (i.e., endorsing factual information and rejecting misinformation). Indeed, we found that neural activation in the left IPS (Figure 2a) was significantly greater when participants disagreed with factual information than when they agreed with factual information (Mdiff = 0.23, SDdiff = 0.28; t(28) = 4.51, p < 0.001, d = 0.84, two-tailed) and significantly greater when participants disagreed with factual information than when they disagreed with misinformation (Mdiff = 0.20, SDdiff = 0.25; t(28) = 4.24, p < 0.001, d = 0.79, two-tailed). Left IPS activity was also greater when participants agreed with misinformation than when they agreed with factual information (Mdiff = 0.21, SDdiff = 0.28; t(27) = 3.99, p < 0.001, d = 0.75, two-tailed) and greater when participants agreed with misinformation than when they disagreed with misinformation (Mdiff = 0.18, SDdiff = 0.31; t(27) = 2.95, p = 0.007, d = 0.56, two-tailed). Similarly significant findings were found for the same relationships within the left DLPFC (Figure 2b) and left DMPFC (Figure 2c).
+
+Additionally, within the left MFG (Figure 2d) we found the same significant relationships as the other regions (all t's > 2.67, all p's < 0.012) but we also found greater neural activity in this region when participants disagreed with misinformation than when they agreed with factual information (Mdiff = 0.05, SDdiff = 0.11; t(28) = 2.34, p = 0.027, d = 0.44, two-tailed). Thus, in addition to responding to attitude-inconsistent judgments like the other three regions, the MFG also responded when participants correctly rejected misinformation.
+
+Next, we examined whether the preceding effect (i.e., greater activation for attitude-inconsistent judgments and decreased activation for attitude-consistent judgments) generalized to the vaccine-hesitant group. We examined fMRI activation within the same clusters for an interaction between stimulus type and behavioral response with the hypothesis that the activation pattern would be inverted relative to the vaccine-accepting group. In other words, we expected increased activation when endorsing factual information and rejecting misinformation and decreased activation when endorsing misinformation and rejecting factual information. The interaction was not significant in any cluster (all p's > 0.05), although the numerical difference was in the predicted direction in the left DLPFC, left IPS, and left MFG (see Supplementary Table S1).
+
+Finally, we performed ROI analyses for the bilateral amygdala and precuneus. ROIs were defined from the labels "precuneus" and "amygdala" in the Mindboggle-101 dataset (Klein and Tourville, 2012) warped to our study template using Joint Label Fusion (Wang et al., 2013). Mean betas were extracted from each ROI for every participant and task condition. There were no significant main effects of stimulus type or behavioral response and no interaction for either ROI.
+
+Discussion
+
+We sought to explore the neural mechanisms underlying the processing of COVID-19 vaccine information, focusing on how pre-existing attitudes about vaccine efficacy and safety interact with the processing of COVID-19 vaccine misinformation. In vaccinereceptive individuals, we found that brain regions associated with executive functioning, decision-making, emotion regulation, and working memory showed increased activation when participants made attitude-inconsistent judgments, such as endorsing misinformation or rejecting factual information. This pattern of neural activity was found exclusively in the left hemisphere and involved key decision-making mechanisms in the prefrontal and parietal cortices.
+
+Prefrontal engagement during conflicting attitude judgments
+
+The dorsolateral prefrontal cortex (DLPFC) and dorsomedial prefrontal cortex (DMPFC) are regions crucial for decision-making and executive function (Wang et al., 2021; Krain et al., 2006) and recently have been implicated as part of a network of regions responsible for belief processing under uncertainty (Gerchen et al., 2024). The DLPFC, important for integrating new information with existing knowledge (D'Esposito et al., 1999; Christoff et al., 2001; Gold and Shadlen, 2007; Zheng et al., 2024) and working memory processes (Cohen et al., 1997; Fang et al., 2016; Blumenfeld and Ranganath, 2006), may have supported vaccine-receptive participants in retrieving prior beliefs and weighing them against new information for potential integration into long-term memory.
+
+It is also possible that the DLPFC activity observed in our study reflected moral decision-making processes as prior work has indicated that DLPFC activity tracks moral judgments. For example, Buckholtz et al. (2008) found increased activation in the right DLPFC while subjects made responsibility judgments in the context of observing simulated criminal activity during fMRI. Similarly, Pretus et al. (2019) found that an individual's self-reported willingness to fight and potentially die for a moral cause is mediated by activation in the DLPFC. Thus, in the current study the DLPFC may have helped participants with integrating new incoming information with existing knowledge as well as evaluating the moral implications of that information in light of pre-existing attitudes.
+
+The DMPFC, which plays a role in social judgment (Wittmann et al., 2025; for review, see Gangopadhyay et al., 2021), may support this function by suppressing irrelevant information (Mahmoodi et al., 2023) and regulating emotional responses (Berboth and Morawtz,
+
+2021). In our task, DMPFC activation may reflect managing initial negative reactions to attitude-incongruent information. This region is also implicated in both the encoding and retrieval of emotional memories (Kensinger and Ford, 2021), suggesting it may facilitate the integration of conflicting emotional content with existing memory traces. Thus, DMPFC engagement may have contributed to mitigating affective interference, allowing participants to override pre-existing attitudes and commit attitude-inconsistent judgments in our task.
+
+Together, the DLPFC and DMPFC may function synergistically, with the DLPFC supporting the comparison of new information against pre-existing attitudes and the DMPFC flagging attitudeinconsistent information for further scrutiny. The increased activity we saw in the DMPFC during these kinds of judgments suggests that it may help downregulate the negative emotions that are most likely associated with conflicting information, potentially allowing participants to momentarily override pre-existing attitudes and make judgments that were incongruent with their pre-existing attitudes. Another possibility, however, is that prefrontal engagement reflected not only incongruence between personal attitudes and the presented statements, but also cognitive conflict between participants' personal attitudes and what they perceived as the expectations of the research setting. Vaccine hesitancy has been a highly polarizing issue, shaped in part by social pressures, and it is possible that being in a university setting-where vaccination was both mandated and publicly encouraged-created an added layer of perceived social desirability. Consistent with this interpretation, a meta-analysis by Wu et al. (2016) demonstrated the prefrontal cortex is engaged when personal judgments conflict with group opinions and is also predictive of social conformity to reduce cognitive dissonance. Thus, part of the neural activity we observed in prefrontal regions may reflect participants reconciling their own attitudes with what they deemed to be the institutionally "correct" or socially desirable stance.
+
+Our neural findings may not only reflect a resolution of cognitive conflict but could also be shaped by the degree of certainty participants felt about their endorsement of the presented information. Although participants reported their level of agreement with each statementpotentially a proxy for measuring certainty or confidence-we did not obtain enough responses in each agreement bin to analyze them as distinct conditions (see Supplementary Figure 1). As a result, we collapsed responses into broader "agree" and "disagree" categories, limiting our ability to assess the degree of certainty in participant's judgments. Still, it remains possible that the DLPFC and DMPFC activation patterns reflect variations in certainty. For example, Gerchen et al. (2024) found increased activation in the DLPFC when participants indicated high certainty in their responses and increased activation in the DMPFC when participants indicated low certainty in their responses. Future work should further explore the idea that DLPFC and DMPFC work synergistically to manage confidence when incoming information conflicts with pre-existing attitudes during decision-making.
+
+Attention and response inhibition in uncertain decision-making
+
+Similarly, we observed the same pattern of increased activation during attitude-inconsistent judgments in the left intraparietal sulcus (IPS) and left middle frontal gyrus (MFG). While the IPS is often associated with perceptual-motor coordination (for review, see Culham and Kanwisher, 2001), it is also implicated in voluntary attention (Kincade et al., 2005; Corbetta and Shulman, 2002) and decision-making under uncertainty (Vickery and Jiang, 2009). Thus, in this context, the involvement of the IPS may reflect heightened attentional demands as participants attempted to navigate attitudeincongruent misinformation that potentially provoked uncertainty.
+
+The MFG has historically been active during tasks involving response inhibition where participants are inhibiting a prepotent response (Collette et al., 2001; Collette et al., 2005; for review, see Ridderinkhof et al., 2004) and when participants are actively attempting to suppress a memory (Anderson et al., 2004; Anderson and Hanslmayr, 2014; Benoit and Anderson, 2012). Additional work has also shown that the left MFG is more active when individuals are less confident in their judgments during decision-making tasks (Risius et al., 2013). Consistent with the existing literature, we observed increased MFG activation when vaccine-receptive participants made attitude-inconsistent judgments suggesting participants may have been attempting to suspend their pre-existing attitudes but were also experiencing uncertainty in their responses when they made judgments that were in conflict with their pre-existing attitudes.
+
+Uniquely, we also found greater activation in the MFG when vaccine-receptive participants correctly rejected misinformation compared to when they endorsed factual information. Recent work has demonstrated that temporary lesions in the MFG lead to more rational decision-making but only when participants anticipate negative social consequences (Martin-Luengo et al., 2023). Similarly, a study of the continued influence effect of misinformation found that enhanced activity in the left MFG while learning a retraction (i.e., a correction of previously learned misinformation) predicted more accurate responding at retrieval (Gordon et al., 2017). Thus, our result may be consistent with the idea that this region is sensitive to the social pressure and the cognitive dissonance our vaccine-receptive participants may have felt when encountering attitude-incongruent information. Together, our findings and the broader literature suggest that the MFG not only reflects low confidence during attitudeinconsistent judgments but also evaluates social consequences and internal dissonance when processing information that conflicts with what has previously been learned.
+
+On the absence of activation differences in key emotion-processing regions
+
+We hypothesized that emotion-processing regions such as the precuneus and amygdala would support decision-making in our task. However, we did not observe activation differences in either region. Prior work has shown the precuneus is engaged when processing retractions of misinformation (Gordon et al., 2017) and in response to emotional valence and information source (Moore et al., 2021). These disparities likely stem from differences in study design. First, our study lacked a retraction condition and did not manipulate information source-which may serve as a reference point during agreement judgments. Our study also did not vary the emotional valence of the information. Although COVID-19 vaccine content is generally emotionally charged, as public discourse and debate regarding the vaccines has been heated, our stimuli may not have elicited strong emotional engagement, potentially limiting precuneus involvement.
+
+More curious was the lack of amygdala activation in the current study. We hypothesized that the information presented in our study would elicit strong emotions and the amygdala would track those emotions. Indeed, past work indicates that misinformation evokes strong emotions ultimately leading to the information being more memorable, believed, or shared (for example, see Luhring et al., 2024). However, work by Edelson et al. (2014) noted that the amygdala engages more robustly during original exposure to misinformation as opposed to during recall. Thus, in the current task it is possible that the misinformation presented throughout was not a first exposure for most of our participants. We selected misinformation from multiple sources and given the high media coverage and social media discussion of COVID-19 vaccines over the years it is possible that we were not measuring neural activity in response to first exposure to misinformation. Thus, future studies should look at the impact of previous exposure to misinformation and the neural mechanisms at play.
+
+Limitations
+
+The primary limitation of our study was the low participation rate of COVID-19 vaccine resistant volunteers. While the exact cause of this challenge is unclear, we suspect that hesitancy toward science and research participation among this population may have contributed. Sampling was further constrained by the fact that students at our university were required to be vaccinated against COVID-19, which likely biased the available pool of participants or led to individuals who were vaccine-resistant feeling social conformity pressures to align their opinions on vaccination during recruitment with those of the institution where the study was conducted. As a result, we were unable to explore the neural mechanisms within the vaccine-resistant group or test for potential between-group differences. Recruitment difficulties also contributed to variability during pilot testing of our stimuli and to an uneven distribution of agreement and disagreement responses during the fMRI task, which may in turn have influenced the neural activation patterns observed. Additionally, we did not collect information about participants' previous or planned healthcare occupations, which could have been another source of variability in attitudes toward COVID-19 vaccination.
+
+Future directions: exploring the neural mechanisms of COVID-19 vaccine resistance
+
+Despite the challenge of recruiting a vaccine-resistant sample, studying this population remains a critical next step. Increasing efforts to engage vaccine-resistant individuals would allow future research to identify similarities and differences in the cognitive and neural underpinnings of attitude processing across a broader population, offering key insights into the persistence of vaccine misinformation in memory. Additionally, future work should further disentangle knowledge and opinion in their studies-for example, including an "I do not understand" option on agreement scales-could help future researchers distinguish between disagreement with a statement and uncertainty about its meaning, offering a clearer picture of whether judgments reflect genuine attitudes or difficulties in comprehension.
+
+In the current study, we asked participants to report their COVID-19 vaccine attitudes before neural data was collected, which may have inadvertently made these attitudes more salient. It is possible that just simply asking participants to reflect on their vaccinereceptivity prior to collecting the neural data could have influenced how they subsequently processed vaccine-related information. Future work should consider examining misinformation processing both when attitudes are not made salient and when they are explicitly activated. Comparing neural responses under these conditions would clarify whether the influence of pre-existing attitudes operates automatically or depends on conscious awareness giving us more insight into how the brain evaluates misinformation in real-world contexts.
+
+Beyond sampling and study design considerations, it will also be important to examine the broader epistemic context in which misinformation is encountered. Prior studies have shown that trust in institutions and media preferences are central predictors of vaccine hesitancy (Auchynnikava et al., 2025; Grygarova et al., 2025; Jennings et al., 2023; Krastev et al., 2023). In the present study, participants were presented with vaccine-related statements without source attribution, and we did not manipulate or measure source credibility directly. Our operationalization of "factual information" was based on consensus among established scientific and public health authorities, while "misinformation" was drawn from false or misleading claims circulating publicly. This approach allowed us to focus on the cognitive and neural processes involved in evaluating content, independent of source. However, individuals do not form attitudes in a vacuum. Given the strong role of institutional trust and media exposure in shaping COVID-19 vaccine attitudes, future research should directly examine how these factors interact with pre-existing attitudes and neural responses to misinformation. Integrating measures with neuroimaging methods could extend the present findings and clarify how real-world contexts interact with the cognitive and neural processing of misinformation.
+
+Data availability statement
+
+The raw data supporting the conclusions of this article will be made available by the authors, without undue reservation. Supplementary information as well as data and materials for all experiments are freely available in the Neural Mechanisms of Cognitive Conflict repository on the Open Science Framework (https://osf. io/4b9v8/) and on OpenNeuro.org (doi: 10.18112/openneuro.ds007115. v1.0.0). None of the experiments discussed in the current report were preregistered.
+
+Ethics statement
+
+The studies involving humans were approved by Human Research Protection Program at Brigham Young University. The studies were conducted in accordance with the local legislation and institutional requirements. The participants provided their written informed consent to participate in this study.
+
+References
+
+Ahmad, A. R., and Murad, H. R. (2020). The impact of social media on panic during the COVID-19 pandemic in Iraqi Kurdistan: online questionnaire study. J. Med. Internet Res. 22:e19556. doi: 10.2196/19556
+
+Ajzen, I. (2012). Martin Fishbein's legacy: the reasoned action approach. Ann. Am. Acad. Polit. Soc. Sci. 640, 11-27. doi: 10.1177/0002716211423363
+
+Albarracin, M., and Pitliya, R. J. (2022). The nature of beliefs and believing. Front. Psychol. 13, 1-5. doi: 10.3389/fpsyg.2022.981925
+
+American Psychological Association (n.d.). Misinformation and disinformation. Available online at: https://www.apa.org/topics/journalism-facts/misinformation-disinformation (Accessed December 17, 2025).
+
+Author contributions
+
+MM: Writing - review & editing, Writing - original draft. CK: Writing - review & editing. SA: Writing - review & editing, Writing - original draft.
+
+Funding
+
+The author(s) declared that financial support was not received for this work and/or its publication.
+
+Conflict of interest
+
+The author(s) declared that this work was conducted in the absence of any commercial or financial relationships that could be construed as a potential conflict of interest.
+
+Generative AI statement
+
+The author(s) declared that Generative AI was used in the creation of this manuscript. Generative AI was used to solely assist in language editing and stylistic refinement of the manuscript. Its use was strictly limited to suggesting refinements in phrasing, structure, and clarity based on text originally drafted by the authors.
+
+Any alternative text (alt text) provided alongside figures in this article has been generated by Frontiers with the support of artificial intelligence and reasonable efforts have been made to ensure accuracy, including review by the authors wherever possible. If you identify any issues, please contact us.
+
+Publisher's note
+
+All claims expressed in this article are solely those of the authors and do not necessarily represent those of their affiliated organizations, or those of the publisher, the editors and the reviewers. Any product that may be evaluated in this article, or claim that may be made by its manufacturer, is not guaranteed or endorsed by the publisher.
+
+Supplementary material
+
+The Supplementary material for this article can be found online at: https://www.frontiersin.org/articles/10.3389/fnins.2025.1661523/ full#supplementary-material
+
+Anderson, M. C., and Hanslmayr, S. (2014). Neural mechanisms of motivated forgetting. Trends Cogn. Sci. 18, 279-292. doi: 10.1016/j.tics.2014.03.002
+
+Anderson, M. C., Ochsner, K. N., Kuhl, B., Cooper, J., Robertson, E., Gabrieli, S. W., et al. (2004). Neural systems underlying the suppression of unwanted memories. Science 303, 232-235. doi: 10.1126/science.1089504
+
+Auchynnikava, A., Habibov, N., Lyu, Y., and Fan, L. (2025). On different roles of interpersonal and institutional trust and trust in scientists in shaping COVID-19 vaccine hesitancy. Discover Public Health 22:113. doi: 10.1186/s12982-025-00501-0
+
+Ball, T., Derix, J., Wentlandt, J., Wieckhorst, B., Speck, O., Schulze-Bonhage, A., et al. (2009). Anatomical specificity of functional amygdala imaging of responses to stimuli with positive and negative emotional valence. J. Neurosci. Methods 180, 57-70. doi: 10.1016/j.jneumeth.2009.02.022
+
+Benoit, R. G., and Anderson, M. C. (2012). Opposing mechanisms support the voluntary forgetting of unwanted memories. Neuron 76, 450-460. doi: 10.1016/j. neuron.2012.07.025
+
+Berboth, S., and Morawtz, C. (2021). Amygdala-prefrontal connectivity during emotion regulation: a meta-analysis of psychophysiological interactions. Neuropschologia 153:107767. doi: 10.1016/j.neuropsychologia.2021
+
+Blackford, J. U., Avery, S. N., Cowan, R. L., Shelton, R. C., and Zald, D. H. (2011). Sustained amygdala response to both novel and newly familiar faces characterizes inhibited temperament. Soc. Cogn. Affect. Neurosci. 6, 621-629. doi: 10.1093/scan/nsq073
+
+Blumenfeld, R. S., and Ranganath, C. (2006). Dorsolateral prefrontal cortex promotes long-term memory formation through its role in working memory organization. J. Neurosci. 26, 916-925. doi: 10.1523/JNEUROSCI.2353-05.2006
+
+Bode, L., and Vraga, E. K. (2015). In related news, that was wrong: the correction of misinformation through related stories functionality in social media. J. Commun. 65:619. doi: 10.1111/jcom.12166
+
+Brady, W. J., Jackson, J. C., Linstrom, B., and Crockett, M. J. (2023). Algorithmmediated social learning in online social networks. Trends Cogn. Sci. 27, 947-960. doi: 10.1016/j.tics.2023.06.008
+
+Bridgman, A., Merkley, E., Loewen, P. J., Owen, T., Ruths, D., Teichmann, L., et al. (2020). The causes and consequences of COVID-19 misperceptions: understanding the role of news and social media. The Harvard Kennedy School Misinformation Rev. 1, 1-18. doi: 10.37016/mr-2020-028
+
+Buckholtz, J. W., Asplund, C. L., Dux, P. E., Zald, D. H., Gore, J. C., Jones, O. D., et al. (2008). The neural correlates of third-party punishment. Neuron 60, 930-940. doi: 10.1016/j.neuron.2008.10.016
+
+Budak, C., Nyhan, B., Rothschild, D. M., Thorson, E., and Watts, D. J. (2024). Misunderstanding the harms of online misinformation. Nature 630, 45-53. doi: 10.1038/ s41586-024-07417-w
+
+Cavanna, A. E., and Trimble, M. R. (2006). The precuneus: a review of its functional anatomy and behavioural correlates. Brain 129, 564-583. doi: 10.1093/brain/awl004
+
+Ceylan, G., Anderson, I. A., and Wood, W. (2023). Sharing of misinformation is habitual, not just lazy or biased. Proc. Natl. Acad. Sci. 120:e2216614120. doi: 10.1073/ pnas.2216614120
+
+Christoff, K., Prabhakaran, V., Dorfman, J., Zhao, Z., Kroger, J. K., Holyoak, K. J., et al. (2001). Rostrolateral prefrontal cortex involvement in relational integration during reasoning. NeuroImage 14, 1136-1149. doi: 10.1006/nimg.2001.0922
+
+Cinelli, M., de Francisci Morales Gianmarco, Galeazzi, A., Quattrociocchi, W., and Starnini, M. (2021). The echo chamber effect on social media. Proc. Natl. Acad. Sci. USA 118:e2023301118. doi: 10.1073/pnas.2023301118
+
+Cohen, J. D., Perlstein, W. M., Braver, T. S., Nystrom, L. E., Noll, D. C., Jonides, J., et al. (1997). Temporal dynamics of brain activation during a working memory task. Nature 386, 604-608. doi: 10.1038/386604a0
+
+Collette, F., Van der Linden, M., Delfiore, G., Degueldre, C., Luxen, A., and Salmon, E. (2001). The functional anatomy of inhibition processes investigated with the Hayling task. NeuroImage 14, 258-267. doi: 10.1006/nimg.2001.0846
+
+Collette, F., Van der Linden, M., Laureys, S., Delfiore, G., Degueldre, C., Luxen, A., et al. (2005). Exploring the unity and diversity of the neural substrates of executive functioning. Hum. Brain Mapp. 25, 409-423. doi: 10.1002/hbm.20118
+
+Corbetta, M., and Shulman, G. L. (2002). Control of goal-directed and stimulusdriven attention in the brain. Nat. Rev. Neurosci. 3, 201-215. doi: 10.1038/ nrn755
+
+Cox, R. W. (1996). AFNI: software for analysis and visualization of functional magnetic resonance neuroimages. Comput. Biomed. Res. 29, 162-173. doi: 10.1006/ cbmr.1996.0014
+
+Cox, R. W., Chen, G., Glen, D. R., Reynolds, R. C., and Taylor, P. A. (2017). FMRI clustering in AFNI: false-positive rates redux. Brain Connect. 7, 152-171. doi: 10.1089/ brain.2016.0475
+
+Cronin, C. J., and Evans, W. N. (2021). Total shutdowns, targeted restrictions, or individual responsibility: how to promote social distancing in the COVID-19 era? J. Health Econ. 79:102497. doi: 10.1016/j.jhealeco.2021.102497
+
+Culham, J. D., and Kanwisher, N. G. (2001). Neuroimaging of cognitive functions in human parietal cortex. Curr. Opin. Biol. 11, 157-163. doi: 10.1016/ S0959-4388(00)00191-4
+
+Dadario, N. B., and Sughrue, M. E. (2023). The functional role of the precuneus. Brain 146, 3598-3607. doi: 10.1093/brain/awad181
+
+Del Vicario, M., Vivaldo, G., Bessi, A., Zollo, F., Scala, A., Caldarelli, G., et al. (2016). Echo chambers: emotional contagion and group polarization on Facebook. Sci. Rep. 6. doi: 10.1038/srep37825
+
+D'Esposito, M., Postle, B. R., Ballard, D., and Lease, J. (1999). Maintenance versus manipulation of information held in working memory: an event-related fMRI study. Brain Cogn. 41, 66-86. doi: 10.1006/brcg.1999.1096
+
+Edelson, M. G., Dudai, Y., Dolan, R. J., and Sharot, T. (2014). Brain substrates of recovery from misleading influence. J. Neurosci. 34, 7744-7753. doi: 10.1523/ JNEUROSCI.4720-13.2014
+
+Efstratiou, A., and De Cristofaro, E. 2022. Adherence to misinformation on social media through socio-cognitive and group-based processes. Proc. ACM Hum. Comput. Interact., 6:488. doi: 10.1145/3555589
+
+Elman, J. A., Cohn-Sheehy, B. I., and Shimamura, A. P. (2013). Dissociable parietal regions facilitate successful retrieval of recently learned and personally familiar information. Neuropsychologia 51, 573-583. doi: 10.1016/j.neuropsychologia.2012.12.013
+
+Fang, X., Zhang, Y., Zhou, Y., Cheng, L., Li, J., Wang, Y., et al. (2016). Resting-state coupling between core regions within the central-executive and salience networks contributes to working memory performance. Front. Behav. Neurosci. 10:Article 27. doi: 10.3389/fnbeh.2016.00027
+
+Faul, F., Erdfelder, E., Buchner, A., and Lang, A. G. (2009). Statistical power analyses using G* power 3.1: tests for correlation and regression analyses. Behav. Res. Methods 41, 1149-1160. doi: 10.3758/BRM.41.4.1149
+
+Faul, F., Erdfelder, E., Lang, A. G., and Buchner, A. (2007). G* power 3: a flexible statistical power analysis program for the social, behavioral, and biomedical sciences. Behav. Res. Methods 39, 175-191. doi: 10.3758/BF03193146
+
+Foudil, S. A., and Macaluso, E. (2024). The influence of the precuneus on the medial temporal cortex determines the subjective quality of memory during the retrieval of naturalistic episodes. Sci. Rep. 14:7943. doi: 10.1038/s41598-024-58298-y
+
+Gabarron, E., Oyeyemi, S. O., and Wynn, R. (2021). COVID-19-related misinformation on social media: a systematic review. Bull. World Health Organ. 99, 455-463A. doi: 10.2471/BLT.20.276782
+
+Gangopadhyay, P., Chawla, M., Dal Monte, O., and Chang, S. W. C. (2021). Prefrontalamygdala circuits in social decision-making. Nat. Neurosci. 24, 5-18. doi: 10.1038/ s41593-020-00738-9
+
+Gerchen, M. F., Glock, C., Weiss, F., and Kirsch, P. (2024). The truth is in there: belief processes in the human brain. Psychophysiology 61:e14561. doi: 10.1111/psyp.14561
+
+Gharpure, R., Hunter, C. M., Schnall, A. H., Barrett, C. E., Kirby, A. E., Kunz, J., et al. (2020). Knowledge and practices regarding safe household cleaning and disinfection for the COVID-19 prevention - United States, may 2020. Morb. Mortal. Wkly Rep. 69, 705-709. doi: 10.15585/mmwr.mm6923e2
+
+Ghebreyesus, T. 2020. WHO Director-General's opening remarks at the media briefing on COVID-19-11 March 2020. [Media Briefing]. Available online at: https://www.who. int/director-general/speeches/detail/who-director-general-s-opening-remarks-at-themedia-briefing-on-covid-19---11-march-2020 (Accessed December 17, 2025).
+
+Gold, J. I., and Shadlen, M. N. (2007). The neural basis of decision making. Annu. Rev. Neurosci. 30, 535-574. doi: 10.1146/annurev.neuro.29.051605.113038
+
+Gordon, A., Brooks, J. C. W., Quadflieg, S., Ecker, U. K. H., and Lewandowsky, S. (2017). Exploring the neural substrates of misinformation processing. Neuropsychologia 106, 216-224. doi: 10.1016/j.neuropsychologia.2017.10.003
+
+Gordon, A., Quadflieg, S., Brooks, J. C. W., Ecker, U. K. H., and Lewandowsky, S. (2019). Keeping track of 'alternative facts': the neural correlates of processing misinformation corrections. NeuroImage 193, 46-56. doi: 10.1016/j. neuroimage.2019.03.014
+
+Grygarova, E., Kozeny, J., Tisanska, L., Havlik, M., and Horacek, J. (2025). Trust in official information as a key predictor of COVID-19 vaccine acceptance: evidence from a Czech longitudinal survey study. BMC Public Health 25:770. doi: 10.1186/s12889-025-21988-x
+
+Jennings, W., Valgarosson, V., McKay, L., Stoker, G., Mello, E., and Baniamin, H. M. (2023). Trust and vaccine hesitancy during the COVID-19 pandemic: a cross-national analysis. Vaccine: X 14:100299. doi: 10.1016/j.jvacx.2023.100299
+
+Johns Hopkins. (2023). Coronavirus Resource Center. Cumulative Cases. Available online at: https://coronavirus.jhu.edu/data/cumulative-cases (Accessed December 17, 2025).
+
+Johnson, H. M., and Seifert, C. M. (1994). Sources of the continued influence effect: when misinformation in memory affects later inferences. J. Exp. Psychol. Learn. Mem. Cogn. 20:1420. doi: 10.1037/0278-7393.20.6.1420
+
+Kadri, S. S., Sun, J., Lawandi, A., Strich, J. R., Busch, L. M., Keller, M., et al. (2021). Association between caseload surge and COVID-19 survival in 558 U.S. hospitals, march to august 20202. Ann. Intern. Med. 174, 1240-1251. doi: 10.7326/M21-1213
+
+Kaplan, R. L., Van Damme, I., Levine, L. J., and Loftus, E. F. (2016). Emotion and false memory. Emot. Rev. 8, 8-13. doi: 10.1177/1754073915601228
+
+Kensinger, E. A., and Ford, J. H. (2021). Guiding the emotion in emotional memories: the role of the dorsomedial prefrontal cortex. Curr. Dir. Psychol. Sci. 30, 111-119. doi: 10.1177/0963721421990081
+
+Kim, Y., and Lim, H. (2022). Debunking misinformation in times of crisis: exploring misinformation correction strategies for effective internal crisis communication. J. Contingencies Crisis Manage. 31, 406-420. doi: 10.1111/1468-5973.12447
+
+Kincade, J. M., Abrams, R. A., Astafiev, S. V., Shulman, G. L., and Corbetta, M. (2005). An event-related functional magnetic resonance imaging study of voluntary and stimulus-driven orienting of attention. J. Neurosci. 25, 4593-4604. doi: 10.1523/ JNEUROSCI.0236-05.2005
+
+Klein, A., and Tourville, J. (2012). 101 labeled brain images and a consistent human cortical labeling protocol. Front. Neurosci. 6:171. doi: 10.3389/fnins.2012.00171
+
+Krain, A. L., Wilson, A. M., Arbuckle, R., Castellanos, F. X., and Milham, M. P. (2006). Distinct neural mechanisms of risk and ambiguity: a meta-analysis of decision-making. NeuroImage 32, 477-484. doi: 10.1016/j.neuroimage.2006.02.047
+
+Krastev, S., Krajden, O., Vang, Z. M., Juarez, F. P., Solomonova, E., Goldenberg, M. J., et al. (2023). Institutional trust is a distinct construct related to vaccine hesitancy and refusal. BMC Public Health 23:2481. doi: 10.1186/s12889-023-17345-5
+
+Krause, B. J., Schmidt, D., Mottaghy, F. M., Taylor, J., Halsband, U., Herzog, H., et al. (1999). Episodic retrieval activates the precuneus irrespective of the imagery content of word pair associates: a PET study. Brain 122, 255-263. doi: 10.1093/brain/122.2.255
+
+Lewandowsky, S., Ecker, U. K. H., Seifert, C. M., Schwarz, N., and Cook, J. (2012). Misinformation and its correction. Psychol. Sci. Public Interest 13, 106-131. doi: 10.1177/1529100612451018
+
+Li, X., Morgan, P. S., Ashburner, J., Smith, J., and Rorden, C. (2016). The first step for neuroimaging data analysis: DICOM to NIfTI conversion. J. Neurosci. Methods 264, 47-56. doi: 10.1016/j.jneumeth.2016.03.001
+
+Loomba, S., De Figueiredo, A., Piatek, S. J., De Graaf, K., and Larson, H. J. (2021). Measuring the impact of COVID-19 vaccine misinformation on vaccination intent in the UK and USA. Nat. Hum. Behav. 5, 337-348. doi: 10.1038/s41562-021-01056-1
+
+Luhring, J., Shetty, A., Koschmieder, C., Garcia, D., Waldherr, A., and Metzler, H. (2024). Emotions in misinformation studies: distinguishing affective state from emotional response and misinformation recognition from acceptance. Cognit. Res. Princ. Implic. 9, 1-14. doi: 10.1186/s41235-024-00607-0
+
+Mahmoodi, A., Nili, H., Harbison, C., Hamilton, S., Trudel, N., Bang, D., et al. (2023). Causal role of a neural system for separating and selecting multidimensional social cognitive information. Neuron 111, 1152-1164.e6. doi: 10.1016/j.neuron.2022.12.030
+
+Marsh, E. J., and Stanley, M. L. (2020). "False attitudes: byproducts of an adaptive knowledge base?" in The psychology of fake news. eds. R. Greifeneder, M. Jaffe, E. Newman and N. Schwarz (London: Routledge), 131-146.
+
+Martel, C., Pennycook, G., and Rand, D. G. (2020). Reliance on emotion promotes belief in fake news. Cognit. Res.: Princ. Implic. 5:47. doi: 10.1186/s41235-020-00252-3
+
+Martín Sánchez, F. J., Martínez-Sellés, M., Molero García, J. M., Moreno Guillén, S., Rodríguez-Artalejo, F. J., Ruiz-Galiana, J., et al. (2023). Insights for COVID-19 in 2023. Rev. Esp. de Quimioterapia 36, 114-124. doi: 10.37201/req/122.2022
+
+Martin-Luengo, B., Vorobiova, A. N., Feurra, M., Myachykov, A., and Shtyrov, Y. (2023). Transcranial magnetic stimulation of the left middle frontal gyrus modulates the information people communicate in different social contexts. Sci. Rep. 13:9995. doi: 10.1038/s41598-023-36192-3
+
+McGaugh, J. L. (2015). Consolidating memories. Annu. Rev. Psychol. 66, 1-24. doi: 10.1146/annurev-psych-010814-014954
+
+Mejia, C. R., Rodriguez-Alarcon, J. F., Garay-Rios, L., Enriquez-Anco, M. G., Moreno, A., Huaytan-Rojas, K., et al. (2020). Perception of exaggeration or fear propagated by the media among the Peruvian population during the COVID-19 pandemic. Cuban J. Biomed. Res. 39:e698E.
+
+Metzler, H., and Garcia, D. (2024). Social drivers and algorithmic mechanisms on digital media. Perspect. Psychol. Sci. 19, 735-748. doi: 10.1177/17456916231185057
+
+Moore, A., Hong, S., and Cram, L. (2021). Trust in information, political identity and the brain: an interdisciplinary fMRI study. Philos. Trans. R. Soc. Lond. Ser. B Biol. Sci. 376:20200140. doi: 10.1098/rstb.2020.0140
+
+Muncy, N. M., Hedges-Muncy, A. M., and Kirwan, C. B. (2017). Discrete pre-processing step effects in registration-based pipelines, a preliminary volumetric study on T1-weighted images. PLoS One 12:e0186071. doi: 10.1371/journal.pone.0186071
+
+Murphy, S. L., Kochanek, K. D., Xu, J. Q., and Arias, E. (2024). Mortality in the United States, 2023. NCHS Data Brief, no 521. Hyattsville, MD: National Center for Health Statistics.
+
+Patin, A., and Pause, B. M. (2015). Human amygdala activations during nasal chemoreception. Neuropsychologia 78, 171-194. doi: 10.1016/j.neuropsychologia.2015.10.009
+
+Peck, C. J., Lau, B., and Salzman, C. D. (2013). The primate amygdala combines information about space and value. Nat. Neurosci. 16, 340-348. doi: 10.1038/nn.3328
+
+Peirce, J., Gray, J. R., Simpson, S., MacAskill, M., Hochenberger, R., Sogo, H., et al. (2019). PsychoPy2: experiments in behavior made easy. Behav. Res. Methods 51, 195-203. doi: 10.3758/s13428-018-01193-y
+
+Pennycook, G., Mcphetres, J., Zhang, Y., Lu, J. G., and Rand, D. G. (2020). Fighting COVID-19 misinformation on social media: experimental evidence for a scalable accuracy-nudge intervention. Psychol. Sci. 31, 770-780. doi: 10.1177/0956797620939054
+
+Pew Research Center. (2024a). News Platform Fact Sheet [Fact Sheet]. Available online at: https://www.pewresearch.org/journalism/fact-sheet/news-platform-fact-sheet/ (Accessed December 17, 2025).
+
+Pew Research Center. (2024b). Social Media and News Fact Sheet [Fact Sheet]. Available online at: https://www.pewresearch.org/journalism/fact-sheet/social-mediaand-news-fact-sheet/ (Accessed December 17, 2025).
+
+Phelps, E. A., and LeDoux, J. E. (2005). Contributions of the amygdala to emotion processing: from animal models to human behavior. Neuron 48, 175-187. doi: 10.1016/j. neuron.2005.09.025
+
+Pretus, C., Hamid, N., Sheikh, H., Gomez, A., Ginges, J., Tobena, A., et al. (2019). Ventromedial and dorsolateral prefrontal interactions underlie will to fight and die for a cause. Soc. Cogn. Affect. Neurosci. 14, 569-577. doi: 10.1093/scan/nsz034
+
+Ridderinkhof, K. R., van den Wildenberg, W. P., Segalowitz, S. J., and Carter, C. S. (2004). Neurocognitive mechanisms of cognitive control: the role of prefrontal cortex in action selection, response inhibition, performance monitoring, and reward-based learning. Brain Cogn. 56, 129-140. doi: 10.1016/j.bandc.2004.09.016
+
+Risius, U. M., Staniloiu, A., Piefke, M., Maderwald, S., Schulte, F. P., Brand, M., et al. (2013). Retrieval, monitoring, and control processes: a 7 tesla fMRI approach to memory accuracy. Front. Behav. Neurosci. 7:Article 24. doi: 10.3389/fnbeh.2013.00024
+
+Said, C. P., Baron, S. G., and Todorov, A. (2009). Nonlinear amygdala response to face trustworthiness: contributions of high and low spatial frequency information. J. Cogn. Neurosci. 21, 519-528. doi: 10.1162/jocn.2009.21041
+
+Sharov, K. S. (2020). Adaptation to SARS-CoV-2 under stress: role of distorted information. Eur. J. Clin. Investig. 50:e13294. doi: 10.1111/eci.13294
+
+Smith, S. M., Jenkinson, M., Woolrich, M. W., Beckmann, C. F., Behrens, T. E. J., Johansen-Berg, H., et al. (2004). Advances in functional and structural MR image analysis and implementation as FSL. NeuroImage 23, S208-S219. doi: 10.1016/j. neuroimage.2004.07.051
+
+Susmann, M. W., and Wegener, D. T. (2021). The role of discomfort in the continued influence effect of misinformation. Mem. Cogn. 50, 435-448. doi: 10.3758/ s13421-021-01232-8
+
+Tran, T., Valecha, R., Rad, P., and Rao, H. R. (2020). Misinformation harms: a tale of two humanitarian crises. IEEE Trans. Prof. Commun. 63, 386-399. doi: 10.1109/ TPC.2020.3029685
+
+Vickery, T. J., and Jiang, Y. V. (2009). Inferior parietal lobule supports decision making under uncertainty in humans. Cereb. Cortex 19, 916-925. doi: 10.1093/cercor/bhn140
+
+Vosoughi, S., Roy, D., and Aral, S. (2018). The spread of true and false news online. Science 359, 1146-1151. doi: 10.1126/science.aap9559
+
+Wang, L., Gillis-Smith, S., Peng, Y., Zhang, J., Chen, X., Salzman, C. D., et al. (2018). The coding of valence and identity in the mammalian taste system. Nature 558, 127-131. doi: 10.1038/s41586-018-0165-4
+
+Wang, H., Suh, J. W., Das, S. R., Pluta, J., Craige, C., and Yushkevich, P. A. (2013). Multi-atlas segmentation with joint label fusion. IEEE Trans. Pattern Anal. Mach. Intell. 35, 611-623. doi: 10.1109/TPAMI.2012.143
+
+Wang, Q., Wang, Y., Wang, P., Peng, M., Zhang, M., Zhu, Y., et al. (2021). Neural representations of the amount and the delay time of reward in intertemporal decision making. Hum. Brain Mapp. 42, 3450-3469. doi: 10.1002/hbm.25445
+
+Wittmann, M. K., Lin, Y., Pan, D., Braun, M. N., Dickson, C., Spiering, L., et al. (2025). Basis functions for complex social decisions in dorsomedial frontal cortex. Nature 641, 707-717. doi: 10.1038/s41586-025-08705-9
+
+World Health Organization (2020). Working together to tackle the "infodemic". [News Release]. Available online at: https://www.who.int/europe/news/item/29-06-2020working-together-to-tackle-the-infodemic- (Accessed December 17, 2025).
+
+World Health Organization. (2022). Coronavirus disease (COVID-19) advice for the public: Mythbusters. Available online at: https://www.who.int/emergencies/diseases/ novel-coronavirus-2019/advice-for-public/myth-busters (Accessed December 17, 2025).
+
+World Health Organization. (2023a). WHO Director-General's opening remarks at the media briefing -5 May 2023 [Media Briefing].Available online at: https://www.who. int/news-room/speeches/item/who-director-general-s-opening-remarks-at-the-mediabriefing---5-may-2023 (Accessed December 17, 2025).
+
+World Health Organization (2023b) WHO Coronavirus (COVID-19) dashboard > More resources [Dashboard]. Available online at: https://data.who.int/dashboards/ covid19/more-resources (Accessed December 17, 2025).
+
+World Health Organization n.d. Infodemic https://www.who.int/health-topics/ infodemic#tab=tab_1
+
+Wu, H., Luo, Y., and Feng, C. (2016). Neural signatures of social conformity: a coordinatebased activation likelihood estimation meta-analysis of functional brain imaging studies. Neurosci. Biobehav. Rev. 71, 101-111. doi: 10.1016/j.neubiorev.2016.08.038
+
+Zhang, Y., Guo, B., Ding, Y., Liu, J., Qiu, C., Liu, S., et al. (2022). Investigation of the determinants for misinformation correction effectiveness on social media during COVID-19 pandemic. Inf. Process. Manag. 59:102935. doi: 10.1016/j. ipm.2022.102935
+
+Zheng, W., Zhang, Q., Zhao, Z., Zhang, P., Zhao, L., Wang, X., et al. (2024). Aberrant dynamic functional connectivity of thalamocortical circuitry in major depressive disorder. J. Zhejiang Univ. Sci. B 25, 857-877. doi: 10.1631/jzus.B2300401
+
+Zhou, C., Ziu, H., Wang, Y., and Yu, X. (2021). Characterizing the dissemination of misinformation on social media in health emergencies: an empirical study based on COVID-19. Inf. Process. Manag. 58:102554. doi: 10.1016/j.imp.2021.102554
+
+Appendix
+
+Survey assessing COVID-19 vaccine attitudes
+
+What is your attitude toward vaccines?
+
+- [ ] □ Strongly Agree with getting vaccinated.
+
+- [ ] □ Moderately Agree with getting vaccinated.
+
+- [ ] □ Moderately Disagree with getting vaccinated.
+
+- [ ] □ Strongly Disagree with getting vaccinated.
+
+What is your attitude toward getting the COVID-19 vaccines?
+
+- [ ] □ Strongly Agree with getting the COVID-19 vaccine.
+
+- [ ] □ Moderately Agree with getting the COVID-19 vaccine.
+
+- [ ] □ Moderately Disagree with getting the COVID-19 vaccine.
+
+- [ ] □ Strongly Disagree with getting the COVID-19 vaccine.
+
+Have you been vaccinated for COVID-19?
+
+- [ ] □ Yes
+
+- [ ] □ No
+
+[If Yes] How has your attitude toward the COVID-19 vaccine changed since you received the vaccine?
+
+- [ ] □ Strongly Agree with getting the COVID-19 vaccine.
+
+- [ ] □ Moderately Agree with getting the COVID-19 vaccine.
+
+- [ ] □ No change
+
+- [ ] □ Moderately Disagree with getting the COVID-19 vaccine.
+
+- [ ] □ Strongly Disagree with getting the COVID-19 vaccine.
+
+[If Yes] How many doses have you received? Please fill out this information using your vaccine card.
+
+- [ ] □ 1
+
+- [ ] □ 2
+
+- [ ] □ 3+
+
+[If Yes] Which vaccines, did you receive? Please fill out this information using your vaccine card (This question allowed for multiple answers).
+
+- [ ] □ Pfizer
+
+- [ ] □ Moderna
+
+- [ ] □ Johnson and Johnson
+
+- [ ] □ Other
+
+[If Other] Since "Other" was selected, please specify what vaccine you received.
