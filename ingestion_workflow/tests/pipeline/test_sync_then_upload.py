@@ -337,6 +337,82 @@ def test_triage_judged_again_re_syncs_the_parse_that_holds_its_verdicts(
     assert plan() == (0, 1)
 
 
+def _parsed_paper(settings):
+    return json.loads((settings.ns_pond_root / "BS21" / "parse" / "parsed_paper.json").read_text())
+
+
+@RECORDS
+def test_the_parse_holds_no_links_until_links_reads_the_text_then_every_one_it_found(
+        env, monkeypatch, evidence):
+    """No links artifact: `links` is absent, which neurostore reads as "not looked", so sync
+    does not wait for one. Once links has read the text it is written, empty or not."""
+    settings, catalog, _ = env
+    ctx, ref = _prose_article(env, monkeypatch, "21", "BS21", evidence=evidence)
+    sync, links = build(["sync", "links"], settings)[::-1]
+    _, (synced,) = _run(sync, ctx, catalog, ref)
+    assert synced.status is Status.OK, synced.error
+    assert _parsed_paper(settings)["links"] is None
+
+    # the article prints no link: links has looked and found none
+    _, (read,) = _run(links, ctx, catalog, ref)
+    assert (read.status, read.payload["links"]) == (Status.OK, [])
+    plan, (synced,) = _run(sync, ctx, catalog, ref)
+    assert synced.status is Status.OK, synced.error
+    paper = _parsed_paper(settings)
+    assert paper["links"] == []
+    assert ("links", read.fingerprint) in {
+        (i["artifact_kind"], i["fingerprint"]) for i in paper["header"]["inputs"]}
+
+
+@RECORDS
+def test_the_parse_holds_each_link_with_what_linkprobe_saw_of_it(env, monkeypatch, evidence):
+    settings, catalog, _ = env
+    ctx, ref = _prose_article(env, monkeypatch, "21", "BS21", evidence=evidence)
+    (sync,) = build(["sync"], settings)
+    urls = ["https://openneuro.org/datasets/ds006128", "https://osf.io/4drz6/overview",
+            "https://osf.io/w6khb", "https://neurovault.org/collections/9096"]
+    catalog.record([Outcome(
+        article_id=ref.id, stage="links", source="pubget", fingerprint="li-1",
+        payload={"links": [{"url": url, "nifti_context": False, "occurrences": []}
+                           for url in urls]},
+        summary={"links": 4, "probe": urls[:3]})])
+
+    def probed(osf_has_nifti):
+        catalog.record([Outcome(
+            article_id=ref.id, stage="linkprobe", source="", fingerprint="lp-1",
+            payload={"probes": [
+                {"url": urls[0], "has_nifti": True},
+                {"url": urls[1], "has_nifti": osf_has_nifti},
+                {"url": urls[2], "has_nifti": None, "reason": "private on OSF (401: ...)"}]},
+            summary={"probed": 3})])
+
+    def stale():
+        return bool(sync.plan(ctx, [ref], catalog.artifacts([ref.id], "sync"),
+                              catalog.artifacts([ref.id], "space")).pending)
+
+    probed(False)
+    _, (synced,) = _run(sync, ctx, catalog, ref)
+    assert synced.status is Status.OK, synced.error
+    paper = _parsed_paper(settings)
+    # has_nifti only where a repository was checked and answered
+    assert paper["links"] == [
+        {"url": urls[0], "has_nifti": True}, {"url": urls[1], "has_nifti": False},
+        {"url": urls[2], "has_nifti": None}, {"url": urls[3], "has_nifti": None}]
+    assert {i["artifact_kind"] for i in paper["header"]["inputs"]} >= {"links", "linkprobe"}
+    assert not stale()
+
+    # asked again, OSF now lists a NIfTI file: the probe keeps its fingerprint
+    probed(True)
+    assert stale()
+    _run(sync, ctx, catalog, ref)
+    assert _parsed_paper(settings)["links"][1] == {"url": urls[1], "has_nifti": True}
+
+    # another extraction's links are another text's: the parse's are the synced one's
+    catalog.record([Outcome(article_id=ref.id, stage="links", source="ace",
+                            fingerprint="li-ace", payload={"links": []}, summary={"probe": []})])
+    assert not stale()
+
+
 @RECORDS
 def test_an_article_neurostore_holds_no_base_study_for_is_uploaded_and_given_one(env, monkeypatch,
                                                                                 vcr, evidence):

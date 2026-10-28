@@ -1834,9 +1834,9 @@ def test_an_analysis_whose_points_mix_t_and_z_states_no_statistic():
 def test_the_parse_is_stamped_with_the_version_that_keys_analyses_by_content(written):
     """Stored parses from before content keys carry location keys, so they must re-parse."""
     paper, parse, _ = written
-    assert paper_parse.PAPER_PARSE_VERSION == 10
+    assert paper_parse.PAPER_PARSE_VERSION == 11
     assert {paper["header"]["producer"]["version"], parse["header"]["producer"]["version"]} == {
-        "paper_parse.10"
+        "paper_parse.11"
     }
 
 

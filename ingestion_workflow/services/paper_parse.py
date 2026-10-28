@@ -49,7 +49,8 @@ from ingestion_workflow.utils.preprints import server_of_filed_preprint_doi
 logger = get_logger(__name__)
 
 #: Bump when the same inputs would give different files.
-PAPER_PARSE_VERSION = 10
+#: 11: a "Data availability" heading is a data_availability section, not references.
+PAPER_PARSE_VERSION = 11
 PRODUCER = "ns-pond-ingestion-workflow"
 PARSE_DIR = "parse"
 
@@ -61,6 +62,7 @@ _SECTIONS = {
     "abstract": "abstract",
     "intro": "introduction",
     "back": "references",
+    "data_availability": "data_availability",
 }
 _MEASURES = {"voxels": "voxels", "voxel": "voxels", "mm3": "mm3", "cm3": "cm3"}
 #: How far a model's copy of a number may sit from the cell it copied.
@@ -98,6 +100,9 @@ class ParseInputs:
     #: The notices stage's corrections of the paper ({kind, pmid, doi}); None while
     #: PubMed has not answered, which neurostore's ingester reads as "not looked up".
     corrections: Optional[Sequence[Mapping[str, Any]]] = None
+    #: Every link of the paper ({url, has_nifti}), from the links and linkprobe stages; None
+    #: while links has not read the text, which neurostore's ingester reads as "not looked".
+    links: Optional[Sequence[Mapping[str, Any]]] = None
 
 
 @dataclass
@@ -232,6 +237,8 @@ def parsed_paper(root: Path, bundle: ArticleExtractionBundle, inputs: ParseInput
                 ("extraction", inputs.fingerprints.get("extract")),
                 ("metadata", inputs.fingerprints.get("metadata")),
                 ("triage", inputs.fingerprints.get("triage")),
+                ("links", inputs.fingerprints.get("links")),
+                ("linkprobe", inputs.fingerprints.get("linkprobe")),
             ],
         ),
         source=source,
@@ -243,7 +250,10 @@ def parsed_paper(root: Path, bundle: ArticleExtractionBundle, inputs: ParseInput
         bibliography=_bibliography(meta, title, types, inputs.corrections),
         is_meta_analysis=bool(is_meta),
         is_meta_analysis_basis=_meta_basis(title, types) if is_meta else None,
-        sections=_sections(text.text),
+        sections=sections(text.text),
+        links=None if inputs.links is None else [
+            pp.PaperLink(url=link["url"], has_nifti=link.get("has_nifti"))
+            for link in inputs.links],
         tables=tables,
     )
     return paper, text, grids
@@ -326,7 +336,8 @@ def _meta_basis(title: str, types: Sequence[str]) -> Optional[str]:
     return "publication_type" if by_type else ("title" if by_title else None)
 
 
-def _sections(text: str):
+def sections(text: str):
+    """The text's sections as study_schema Sections; None when no heading names one."""
     out = []
     for start, end, label in sectionize(text):
         if label == "unknown":

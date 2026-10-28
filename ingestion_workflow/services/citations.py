@@ -335,6 +335,21 @@ def read_jats(xml_path: Path, text: str) -> ReadResult:
     return ReadResult(refs, citations, notes)
 
 
+def jats_spans(tree, xml_path: Path, elements, text: str,
+               notes: Dict[str, int]) -> Dict[int, Tuple[int, int]]:
+    """{i: (start, end)} in `text` of each of `elements` of a JATS `tree`, by its index.
+
+    Each element is wrapped in sentinels and the article's text rebuilt, as `read_jats`
+    places a citation; `tree` keeps the sentinels. An element whose text the stored text
+    does not hold has no entry."""
+    from ingestion_workflow.extractors.pubget_extractor import article_text
+
+    for i, el in enumerate(elements):
+        _wrap(el, i)
+    rebuilt, spans = _strip(article_text(tree, xml_path.parent))
+    return _place(rebuilt, spans, text, notes)
+
+
 # -------------------------------------------------------------------- Elsevier
 def _q(tag: str, ns: str = _CE) -> str:
     return f"{{{ns}}}{tag}"
@@ -391,6 +406,18 @@ def read_elsevier(xml_path: Path, text: str) -> ReadResult:
     rebuilt, spans = _strip(marked)
     spans = _place(rebuilt, spans, text, notes, words=True)
     return ReadResult(refs, _citations(text, links, spans, "xref", notes), notes)
+
+
+def elsevier_spans(root, elements, text: str,
+                   notes: Dict[str, int]) -> Dict[int, Tuple[int, int]]:
+    """`jats_spans` for an Elsevier article's parsed `root`, rebuilt as `read_elsevier` does."""
+    from ingestion_workflow.extractors.elsevier_extractor import article_text_and_captions
+
+    for i, el in enumerate(elements):
+        _wrap(el, i)
+    payload = etree.tostring(root, encoding="utf-8", xml_declaration=True)
+    rebuilt, spans = _strip(article_text_and_captions(payload)[0])
+    return _place(rebuilt, spans, text, notes, words=True)
 
 
 # ------------------------------------------------------------------------ HTML
@@ -581,7 +608,8 @@ def read_html(html_path: Path, text: str) -> ReadResult:
 
 
 # -------------------------------------------------------------------- dispatch
-def _main_file(source: str, download):
+def main_file(source: str, download):
+    """The download's file a source's markup is read from; None for a source with none (a PDF)."""
     if source in JATS_SOURCES:
         from ingestion_workflow.extractors.pubget_extractor import _select_article_file
 
@@ -607,7 +635,7 @@ def read(source: str, download, text: str) -> Optional[ReadResult]:
     `download` is that source's DownloadResult and `text` the text its extraction kept.
     None when the source marks nothing (a PDF) or its main file is missing.
     """
-    f = _main_file(source, download)
+    f = main_file(source, download)
     if f is None or not Path(f.file_path).exists():
         return None
     path = Path(f.file_path)

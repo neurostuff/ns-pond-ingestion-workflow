@@ -40,6 +40,19 @@ class Pacer:
             self._last = time.monotonic()
 
 
+def wait_retry_after(longest: float, backoff: float) -> Callable:
+    """A tenacity wait: the provider's Retry-After when it sends one, at most `longest`
+    seconds, else an exponential backoff to `backoff` seconds."""
+    def wait(retry_state) -> float:
+        response = getattr(retry_state.outcome.exception(), "response", None)
+        after = response.headers.get("Retry-After", "") if response is not None else ""
+        if after.strip().isdigit():
+            return min(float(after), longest)
+        return wait_exponential(multiplier=1, max=backoff)(retry_state)
+
+    return wait
+
+
 def retry_transient(attempts: int, max_wait: float, *, wait: Optional[Callable] = None,
                     retry_on: Callable[[BaseException], bool] = transient):
     """Ask again, up to `attempts` times in all, after `retry_on` failures; the last failure is

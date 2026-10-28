@@ -11,6 +11,9 @@ DOI = re.compile(r"10\.\d{4,9}/[^\s\"'<>]+")
 #: The resolver address in front of a DOI printed as a URL.
 RESOLVER = re.compile(r"(?i)https?://[^/\s]+/(?=10\.\d{4,9}/)")
 _TRAILING = ".,;:"
+#: The prefixes of the DOIs data repositories mint: Dryad, figshare, Zenodo, OSF and
+#: OpenNeuro. Such a DOI is a dataset's, never an article's.
+DATA_DOI_PREFIXES = ("10.5061/", "10.6084/", "10.5281/", "10.17605/", "10.18112/")
 #: DOIs are equal ignoring the case of A-Z, and of no other letter: DOI
 #: Handbook 4.3.4, so `10.26321/Á...` and `10.26321/á...` are two DOIs.
 _ASCII_LOWER = str.maketrans(string.ascii_uppercase, string.ascii_lowercase)

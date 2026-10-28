@@ -16,8 +16,9 @@ PLACEHOLDERS = {
     "wiley-tdm-client-token": wiley_tdm.REPLAY_TOKEN,
     **cassette_secrets.ECHOED_KEY_HEADERS,
 }
-# Not credentials: CORS lists of header names, rate-limit counters, a search cursor.
-NOT_CREDENTIALS = ("access-control-", "x-ratelimit")
+# Not credentials: CORS lists of header names, rate-limit counters, a 401's challenge
+# naming the scheme it wants (OSF's), a search cursor.
+NOT_CREDENTIALS = ("access-control-", "x-ratelimit", "www-authenticate")
 CURSOR_PARAMETERS = {"token"}
 
 

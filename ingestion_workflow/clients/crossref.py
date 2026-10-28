@@ -11,13 +11,12 @@ from urllib.parse import quote
 
 import requests
 from study_schema.models.paper_parse import MetadataSource
-from tenacity import wait_exponential
 
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.models.metadata import ArticleMetadata
 from ingestion_workflow.models.notices import PartialAnswer
 from ingestion_workflow.utils.doi import normalize_doi
-from ingestion_workflow.utils.http import Pacer, retry_transient
+from ingestion_workflow.utils.http import Pacer, retry_transient, wait_retry_after
 from ingestion_workflow.utils.isolation import error_text, parsed_each
 
 #: The polite pool's single-record limit. Sending an email puts a client in it; there is no key.
@@ -62,13 +61,8 @@ def packed(key: str, values: Sequence[str], spare: int = 0) -> Iterator[List[str
         yield run
 
 
-def _wait(retry_state) -> float:
-    """Crossref's Retry-After when it sends one, else an exponential backoff."""
-    response = getattr(retry_state.outcome.exception(), "response", None)
-    after = response.headers.get("Retry-After", "") if response is not None else ""
-    if after.strip().isdigit():
-        return min(float(after), _MAX_RETRY_AFTER)
-    return wait_exponential(multiplier=1, max=16)(retry_state)
+#: Crossref's Retry-After when it sends one, else an exponential backoff.
+_wait = wait_retry_after(_MAX_RETRY_AFTER, 16)
 
 
 @dataclass(frozen=True)

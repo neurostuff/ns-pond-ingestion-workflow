@@ -1,0 +1,355 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow;
+        mailto:replay@example.com)
+    method: GET
+    uri: https://api.crossref.org/works/10.1162/IMAG.a.1210?mailto=replay%40example.com
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work","message-version":"1.0.0","message":{"indexed":{"date-parts":[[2026,10,13]],"date-time":"2026-10-13T17:36:11Z","timestamp":1791912971623,"version":"4.3.4"},"reference-count":97,"publisher":"MIT
+        Press","license":[{"start":{"date-parts":[[2026,3,30]],"date-time":"2026-03-30T00:00:00Z","timestamp":1774828800000},"content-version":"vor","delay-in-days":88,"URL":"https:\/\/creativecommons.org\/licenses\/by\/4.0\/"}],"funder":[{"name":"European
+        Structure and Investment Fund","award":["ZS\/2020\/05\/141591"],"award-info":[{"award-number":["ZS\/2020\/05\/141591"]}]},{"name":"European
+        Research Council under the European Union\u2019s\n                                Horizon
+        2020 research and innovation programme","award":["949609"],"award-info":[{"award-number":["949609"]}]},{"DOI":"10.13039\/501100001659","name":"Deutsche
+        Forschungsgemeinschaft","doi-asserted-by":"publisher","award":["MA, 9235\/3-1,
+        501214112"],"award-info":[{"award-number":["MA, 9235\/3-1, 501214112"]}],"id":[{"id":"10.13039\/501100001659","id-type":"DOI","asserted-by":"publisher"}]},{"DOI":"10.13039\/501100001659","name":"Deutsche
+        Forschungsgemeinschaft","doi-asserted-by":"publisher","award":["KU 3711\/4-1,
+        528318902"],"award-info":[{"award-number":["KU 3711\/4-1, 528318902"]}],"id":[{"id":"10.13039\/501100001659","id-type":"DOI","asserted-by":"publisher"}]}],"content-domain":{"domain":["direct.mit.edu"],"crossmark-restriction":true},"short-container-title":[],"published-print":{"date-parts":[[2026,5,26]]},"abstract":"<jats:title>Abstract<\/jats:title>\n                  <jats:p>Tactile
+        fingertip sensations are critical for everyday life. Accordingly, tactile
+        fingertip maps have been extensively studied in human primary somatosensory
+        cortex. However, the fine-grained functional architecture of these maps remains
+        largely unknown. To uncover this architecture, we sought to estimate 2D spatio-tactile
+        population receptive fields (pRFs) of the tip of the index finger in human
+        Brodmann area 3b (BA3b). Using functional magnetic resonance imaging at 7T
+        and submillimeter resolution along with prospective motion correction, we
+        recorded brain responses while participants sensed a row of vibrotactile pins
+        sweeping along cardinal axes over a portion of the fingertip. To estimate
+        pRF position and size, we initially fit a 2D Gaussian pRF model to the data,
+        which, however, produced largely implausible pRF estimates. Simulations indicated
+        that this likely occurred because the size of pRFs in BA3b surpasses the portion
+        of the fingertip we stimulated, resulting in an incomplete mapping of pRFs.
+        To address this issue, we constrained the fitting procedure and refined the
+        2D Gaussian pRF model by keeping pRF size constant. Our results for pRF position
+        then revealed that the ulnar-to-radial axis spanning the fingertip maps onto
+        a superior-to-inferior axis in BA3b. Both the putatively large pRF size (relative
+        to the mapping area) and the pRF position gradient we uncover here appear
+        compatible with receptive field properties quantified in monkeys. Our study
+        provides the first comprehensive investigation into the fine-grained functional
+        architecture of human fingertip maps and brings us one step closer to a thorough
+        understanding thereof.<\/jats:p>","DOI":"10.1162\/imag.a.1210","type":"journal-article","created":{"date-parts":[[2026,3,30]],"date-time":"2026-03-30T20:02:00Z","timestamp":1774900920000},"update-policy":"https:\/\/doi.org\/10.1162\/mitpressjournals.corrections.policy","source":"Crossref","is-referenced-by-count":5,"title":["Modeling
+        2D spatio-tactile population receptive fields of the\n                    fingertip
+        in human primary somatosensory cortex"],"prefix":"10.1162","volume":"4","author":[{"given":"Susanne","family":"Stoll","sequence":"first","affiliation":[{"name":"Hertie
+        Institute for Clinical Brain Research, Tuebingen, Germany"},{"name":"Institute
+        for Cognitive Neurology and Dementia Research, Otto-von-Guericke University
+        Magdeburg, Germany"},{"name":"German Center for Neurodegenerative Diseases,
+        Magdeburg, Germany"},{"name":"Max Planck Institute for Biological Cybernetics,
+        Tuebingen, Germany"},{"name":"German Center for Neurodegenerative Diseases,
+        Tuebingen, Germany"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Falk","family":"Luesebrink","sequence":"additional","affiliation":[{"name":"German
+        Center for Neurodegenerative Diseases, Magdeburg, Germany"},{"name":"Biomedical
+        Magnetic Resonance, Otto-von-Guericke-University Magdeburg, Germany"},{"name":"Nuclear
+        Magnetic Resonance Methods & Development Group, Max Planck Institute for Human
+        Cognitive and Brain Sciences, Leipzig, Germany"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"D.
+        Samuel","family":"Schwarzkopf","sequence":"additional","affiliation":[{"name":"School
+        of Optometry and Vision Science, The University of Auckland, New Zealand"},{"name":"Experimental
+        Psychology, University College London, United Kingdom"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Hendrik","family":"Mattern","sequence":"additional","affiliation":[{"name":"German
+        Center for Neurodegenerative Diseases, Magdeburg, Germany"},{"name":"Biomedical
+        Magnetic Resonance, Otto-von-Guericke-University Magdeburg, Germany"},{"name":"Center
+        for Behavioral Brain Sciences, Magdeburg, Germany"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Peng","family":"Liu","sequence":"additional","affiliation":[{"name":"Hertie
+        Institute for Clinical Brain Research, Tuebingen, Germany"},{"name":"Institute
+        for Cognitive Neurology and Dementia Research, Otto-von-Guericke University
+        Magdeburg, Germany"},{"name":"German Center for Neurodegenerative Diseases,
+        Magdeburg, Germany"},{"name":"German Center for Neurodegenerative Diseases,
+        Tuebingen, Germany"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Johanna","family":"Noelle","sequence":"additional","affiliation":[{"name":"Institute
+        for Cognitive Neurology and Dementia Research, Otto-von-Guericke University
+        Magdeburg, Germany"},{"name":"German Center for Neurodegenerative Diseases,
+        Magdeburg, Germany"}],"role":[{"vocabulary":"crossref","role":"author"}]},{"given":"Esther","family":"Kuehn","sequence":"additional","affiliation":[{"name":"Hertie
+        Institute for Clinical Brain Research, Tuebingen, Germany"},{"name":"Institute
+        for Cognitive Neurology and Dementia Research, Otto-von-Guericke University
+        Magdeburg, Germany"},{"name":"German Center for Neurodegenerative Diseases,
+        Magdeburg, Germany"},{"name":"German Center for Neurodegenerative Diseases,
+        Tuebingen, Germany"},{"name":"Center for Behavioral Brain Sciences, Magdeburg,
+        Germany"}],"role":[{"vocabulary":"crossref","role":"author"}]}],"member":"281","published-online":{"date-parts":[[2026,5,26]]},"reference":[{"key":"2026052615555245600_IMAG.a.1210-b1","doi-asserted-by":"crossref","first-page":"96","DOI":"10.3389\/fnhum.2015.00096","article-title":"Comparing
+        different stimulus configurations for population\n                        receptive
+        field mapping in human fMRI","volume":"9","author":"Alvarez","year":"2015","journal-title":"Frontiers
+        in\n                        Human Neuroscience"},{"key":"2026052615555245600_IMAG.a.1210-b2","doi-asserted-by":"crossref","first-page":"816","DOI":"10.1007\/s10548-023-01000-8","article-title":"Two-dimensional
+        population receptive\n                        field mapping of human primary
+        somatosensory cortex","volume":"36","author":"Asghar","year":"2023","journal-title":"Brain
+        Topography"},{"key":"2026052615555245600_IMAG.a.1210-b3","doi-asserted-by":"crossref","first-page":"839","DOI":"10.1016\/j.neuroimage.2005.02.018","article-title":"Unified
+        segmentation","volume":"26","author":"Ashburner","year":"2005","journal-title":"NeuroImage"},{"key":"2026052615555245600_IMAG.a.1210-b4","doi-asserted-by":"crossref","first-page":"116434","DOI":"10.1016\/j.neuroimage.2019.116434","article-title":"Impact
+        of prospective motion correction,\n                        distortion correction
+        methods and large vein bias on the spatial accuracy of\n                        cortical
+        laminar fMRI at 9.4 Tesla","volume":"208","author":"Bause","year":"2020","journal-title":"NeuroImage"},{"key":"2026052615555245600_IMAG.a.1210-b5","doi-asserted-by":"crossref","first-page":"23","DOI":"10.1167\/18.13.23","article-title":"The
+        Human Connectome Project 7 Tesla\n                        Retinotopy Dataset:
+        Description and population receptive field\n                        analysis","volume":"18","author":"Benson","year":"2018","journal-title":"Journal
+        of Vision"},{"key":"2026052615555245600_IMAG.a.1210-b6","doi-asserted-by":"crossref","first-page":"987","DOI":"10.1093\/cercor\/13.9.987","article-title":"Evidence
+        for a rostral-to-caudal\n                        somatotopic organization
+        in human primary somatosensory cortex with\n                        mirror-reversal
+        in areas 3b and 1","volume":"13","author":"Blankenburg","year":"2003","journal-title":"Cerebral\n                        Cortex"},{"key":"2026052615555245600_IMAG.a.1210-b7","doi-asserted-by":"crossref","first-page":"10720","DOI":"10.1038\/s41467-024-54336-5","article-title":"The
+        neural link between stimulus\n                        duration and spatial
+        location in the human visual hierarchy","volume":"15","author":"Centanino","year":"2024","journal-title":"Nature
+        Communications"},{"key":"2026052615555245600_IMAG.a.1210-b8","doi-asserted-by":"crossref","first-page":"e3714","DOI":"10.1097\/MD.0000000000003714","article-title":"Inter-and
+        intradigit somatotopic map of\n                        high-frequency vibration
+        stimulations in human primary somatosensory\n                        cortex","volume":"95","author":"Choi","year":"2016","journal-title":"Medicine"},{"key":"2026052615555245600_IMAG.a.1210-b9","doi-asserted-by":"crossref","first-page":"179","DOI":"10.1006\/nimg.1998.0395","article-title":"Cortical
+        surface-based analysis: I. Segmentation and surface\n                        reconstruction","volume":"9","author":"Dale","year":"1999","journal-title":"NeuroImage"},{"key":"2026052615555245600_IMAG.a.1210-b10","doi-asserted-by":"crossref","first-page":"347","DOI":"10.1109\/TOH.2020.3029768","article-title":"Rendering
+        spatiotemporal haptic effects\n                        via the physics of
+        waves in the skin","volume":"14","author":"Dandu","year":"2021","journal-title":"IEEE\n                        Transactions
+        on Haptics"},{"key":"2026052615555245600_IMAG.a.1210-b11","doi-asserted-by":"crossref","first-page":"968","DOI":"10.1016\/j.neuroimage.2006.01.021","article-title":"An
+        automated labeling system for subdividing the human\n                        cerebral
+        cortex on MRI scans into gyral based regions of\n                        interest","volume":"31","author":"Desikan","year":"2006","journal-title":"NeuroImage"},{"key":"2026052615555245600_IMAG.a.1210-b12","doi-asserted-by":"crossref","first-page":"2626","DOI":"10.1523\/JNEUROSCI.18-07-02626.1998","article-title":"Structure
+        of receptive fields in area 3b of primary\n                        somatosensory
+        cortex in the alert monkey","volume":"18","author":"DiCarlo","year":"1998","journal-title":"The\n                        Journal
+        of Neuroscience"},{"key":"2026052615555245600_IMAG.a.1210-b13","doi-asserted-by":"crossref","first-page":"357","DOI":"10.1146\/annurev-vision-091517-033948","article-title":"How
+        visual cortical organization is\n                        altered by ophthalmologic
+        and neurologic disorders","volume":"4","author":"Dumoulin","year":"2018","journal-title":"Annual
+        Review of Vision Science"},{"key":"2026052615555245600_IMAG.a.1210-b14","doi-asserted-by":"crossref","first-page":"647","DOI":"10.1016\/j.neuroimage.2007.09.034","article-title":"Population
+        receptive field estimates in human visual\n                        cortex","volume":"39","author":"Dumoulin","year":"2008","journal-title":"NeuroImage"},{"key":"2026052615555245600_IMAG.a.1210-b15","doi-asserted-by":"crossref","first-page":"1195","DOI":"10.1016\/j.neuroimage.2011.09.059","article-title":"The
+        development and use of phase-encoded functional MRI\n                        designs","volume":"62","author":"Engel","year":"2012","journal-title":"NeuroImage"},{"key":"2026052615555245600_IMAG.a.1210-b16","doi-asserted-by":"crossref","first-page":"525","DOI":"10.1038\/369525a0","article-title":"FMRI
+        of human visual cortex","volume":"369","author":"Engel","year":"1994","journal-title":"Nature"},{"key":"2026052615555245600_IMAG.a.1210-b17","doi-asserted-by":"crossref","first-page":"774","DOI":"10.1016\/j.neuroimage.2012.01.021","article-title":"FreSurfer","volume":"62","author":"Fischl","year":"2012","journal-title":"NeuroImage"},{"key":"2026052615555245600_IMAG.a.1210-b18","doi-asserted-by":"crossref","first-page":"1973","DOI":"10.1093\/cercor\/bhm225","article-title":"Cortical
+        folding patterns and predicting\n                        cytoarchitecture","volume":"18","author":"Fischl","year":"2008","journal-title":"Cerebral
+        Cortex"},{"key":"2026052615555245600_IMAG.a.1210-b19","doi-asserted-by":"crossref","first-page":"195","DOI":"10.1006\/nimg.1998.0396","article-title":"Cortical
+        surface-based analysis: II: Inflation, flattening,\n                        and
+        a surface-based coordinate system","volume":"9","author":"Fischl","year":"1999","journal-title":"NeuroImage"},{"key":"2026052615555245600_IMAG.a.1210-b20","doi-asserted-by":"crossref","first-page":"427","DOI":"10.1016\/j.neuroimage.2016.06.048","article-title":"Systematic
+        variation of population receptive field properties\n                        across
+        cortical depth in human visual cortex","volume":"139","author":"Fracasso","year":"2016","journal-title":"NeuroImage"},{"key":"2026052615555245600_IMAG.a.1210-b21","doi-asserted-by":"crossref","first-page":"791.e7","DOI":"10.1016\/j.neuron.2017.07.011","article-title":"Precision
+        functional mapping of individual human\n                        brains","volume":"95","author":"Gordon","year":"2017","journal-title":"Neuron"},{"key":"2026052615555245600_IMAG.a.1210-b22","doi-asserted-by":"crossref","first-page":"160044","DOI":"10.1038\/sdata.2016.44","article-title":"The
+        brain imaging data structure, a format for organizing and\n                        describing
+        outputs of neuroimaging experiments","volume":"3","author":"Gorgolewski","year":"2016","journal-title":"Scientific
+        Data"},{"key":"2026052615555245600_IMAG.a.1210-b23","doi-asserted-by":"crossref","first-page":"1283","DOI":"10.1007\/s00221-014-3844-x","article-title":"Detecting
+        subtle fingertip sensory and motor dysfunction in\n                        adults
+        with type II diabetes","volume":"232","author":"Gorniak","year":"2014","journal-title":"Experimental
+        Brain\n                        Research"},{"key":"2026052615555245600_IMAG.a.1210-b24","doi-asserted-by":"crossref","first-page":"63","DOI":"10.1016\/j.neuroimage.2009.06.060","article-title":"Accurate
+        and robust brain image\n                        alignment using boundary-based
+        registration","volume":"48","author":"Greve","year":"2009","journal-title":"NeuroImage"},{"key":"2026052615555245600_IMAG.a.1210-b25","doi-asserted-by":"crossref","first-page":"119474","DOI":"10.1016\/j.neuroimage.2022.119474","article-title":"SynthStrip:
+        Skull-stripping for any\n                        brain image","volume":"260","author":"Hoopes","year":"2022","journal-title":"NeuroImage"},{"key":"2026052615555245600_IMAG.a.1210-b26","doi-asserted-by":"crossref","first-page":"e0116320","DOI":"10.1371\/journal.pone.0116320","article-title":"Distortion
+        correction in EPI using an\n                        extended PSF method with
+        a reversed phase gradient approach","volume":"10","author":"In","year":"2015","journal-title":"PLoS
+        ONE"},{"key":"2026052615555245600_IMAG.a.1210-b27","doi-asserted-by":"crossref","first-page":"183","DOI":"10.1007\/s10334-011-0275-6","article-title":"Highly
+        accelerated PSF-mapping for EPI\n                        distortion correction
+        with improved fidelity","volume":"25","author":"In","year":"2012","journal-title":"Magnetic
+        Resonance Materials in Physics, Biology and\n                        Medicine"},{"key":"2026052615555245600_IMAG.a.1210-b28","doi-asserted-by":"crossref","first-page":"866848","DOI":"10.3389\/fnana.2022.866848","article-title":"Somatotopic
+        mapping of the fingers in\n                        the somatosensory cortex
+        using functional magnetic resonance imaging: A\n                        review
+        of literature","volume":"16","author":"Janko","year":"2022","journal-title":"Frontiers
+        in\n                        Neuroanatomy"},{"key":"2026052615555245600_IMAG.a.1210-b29","doi-asserted-by":"crossref","first-page":"537","DOI":"10.1002\/0471214426.pas0113","article-title":"Neural
+        basis of haptic\n                        perception","volume-title":"Stevens\u2019
+        handbook of experimental psychology: Sensation and\n                        perception","author":"Johnson","year":"2002","edition":"3rd"},{"key":"2026052615555245600_IMAG.a.1210-b30","first-page":"e8291","article-title":"Fingertip
+        injuries and amputations: A\n                        review of the literature","volume":"12","author":"Kawaiah","year":"2020","journal-title":"Cureus"},{"key":"2026052615555245600_IMAG.a.1210-b31","doi-asserted-by":"crossref","first-page":"481","DOI":"10.1152\/jn.00105.2013","article-title":"Compressive
+        spatial summation in human visual\n                        cortex","volume":"110","author":"Kay","year":"2013","journal-title":"Journal
+        of Neurophysiology"},{"key":"2026052615555245600_IMAG.a.1210-b32","doi-asserted-by":"crossref","first-page":"555","DOI":"10.1016\/j.neuron.2015.03.020","article-title":"Multimodal
+        interactions between proprioceptive and cutaneous\n                        signals
+        in primary somatosensory cortex","volume":"86","author":"Kim","year":"2015","journal-title":"Neuron"},{"key":"2026052615555245600_IMAG.a.1210-b33","doi-asserted-by":"crossref","first-page":"e67304","DOI":"10.7554\/eLife.67304","article-title":"Population
+        receptive fields in nonhuman primates from\n                        whole-brain
+        fMRI and large-scale neurophysiology in visual\n                        cortex","volume":"10","author":"Klink","year":"2021","journal-title":"eLife"},{"key":"2026052615555245600_IMAG.a.1210-b34","doi-asserted-by":"crossref","first-page":"1297","DOI":"10.1002\/hbm.20936","article-title":"Layer-specific
+        BOLD activation in human V1","volume":"31","author":"Koopmans","year":"2010","journal-title":"Human
+        Brain Mapping"},{"key":"2026052615555245600_IMAG.a.1210-b35","doi-asserted-by":"crossref","first-page":"535","DOI":"10.1038\/nn.2303","article-title":"Circular
+        analysis in systems neuroscience: The dangers of\n                        double
+        dipping","volume":"12","author":"Kriegeskorte","year":"2009","journal-title":"Nature
+        Neuroscience"},{"key":"2026052615555245600_IMAG.a.1210-b36","doi-asserted-by":"crossref","first-page":"1295","DOI":"10.1523\/JNEUROSCI.0491-17.2017","article-title":"Visually-driven
+        maps in area 3b","volume":"38","author":"Kuehn","year":"2018","journal-title":"The\n                        Journal
+        of Neuroscience"},{"key":"2026052615555245600_IMAG.a.1210-b37","doi-asserted-by":"crossref","first-page":"112","DOI":"10.1137\/S1052623496303470","article-title":"Convergence
+        properties of the Nelder\u2013Mead simplex\n                        method
+        in low dimensions","volume":"9","author":"Lagarias","year":"1998","journal-title":"SIAM
+        Journal on\n                        Optimization"},{"key":"2026052615555245600_IMAG.a.1210-b38","doi-asserted-by":"crossref","first-page":"195","DOI":"10.1093\/cercor\/bhac061","article-title":"Somatosensory
+        cortex of macaque monkeys\n                        is designed for opposable
+        thumb","volume":"33","author":"Lazar","year":"2022","journal-title":"Cerebral\n                        Cortex"},{"key":"2026052615555245600_IMAG.a.1210-b39","doi-asserted-by":"crossref","first-page":"e1007924","DOI":"10.1371\/journal.pcbi.1007924","article-title":"A
+        validation framework for neuroimaging software: The case of\n                        population
+        receptive fields","volume":"16","author":"Lerma-Usabiaga","year":"2020","journal-title":"PLoS
+        Computational\n                        Biology"},{"key":"2026052615555245600_IMAG.a.1210-b40","doi-asserted-by":"crossref","first-page":"2420","DOI":"10.1523\/JNEUROSCI.3052-20.2021","article-title":"Population
+        receptive field shapes in early visual cortex are\n                        nearly
+        circular","volume":"41","author":"Lerma-Usabiaga","year":"2021","journal-title":"Journal
+        of Neuroscience"},{"key":"2026052615555245600_IMAG.a.1210-b41","doi-asserted-by":"crossref","first-page":"e60090","DOI":"10.7554\/eLife.60090","article-title":"The
+        organizational principles of\n                        de-differentiated topographic
+        maps in somatosensory cortex","volume":"10","author":"Liu","year":"2021","journal-title":"eLife"},{"key":"2026052615555245600_IMAG.a.1210-b42","doi-asserted-by":"crossref","first-page":"1978","DOI":"10.1038\/s41593-025-02013-1","article-title":"Layer-specific
+        changes in sensory cortex\n                        across the lifespan in
+        mice and humans","volume":"28","author":"Liu","year":"2025","journal-title":"Nature\n                        Neuroscience"},{"key":"2026052615555245600_IMAG.a.1210-b43","doi-asserted-by":"crossref","first-page":"4","DOI":"10.1016\/j.neuroimage.2017.05.031","article-title":"Reprint
+        of \u2018noise contributions to the fMRI signal: An\n                        overview\u2019","volume":"154","author":"Liu","year":"2017","journal-title":"NeuroImage"},{"key":"2026052615555245600_IMAG.a.1210-b44","doi-asserted-by":"crossref","first-page":"3963","DOI":"10.1523\/JNEUROSCI.23-10-03963.2003","article-title":"The
+        underpinnings of the BOLD functional magnetic resonance\n                        imaging
+        signal","volume":"23","author":"Logothetis","year":"2003","journal-title":"The
+        Journal of\n                    Neuroscience"},{"key":"2026052615555245600_IMAG.a.1210-b45","doi-asserted-by":"crossref","first-page":"138","DOI":"10.1038\/s41597-021-00923-w","article-title":"Comprehensive
+        ultrahigh resolution whole\n                        brain in vivo MRI dataset
+        as a human phantom","volume":"8","author":"L\u00fcsebrink","year":"2021","journal-title":"Scientific
+        Data"},{"key":"2026052615555245600_IMAG.a.1210-b46","doi-asserted-by":"crossref","first-page":"170032","DOI":"10.1038\/sdata.2017.32","article-title":"T1-weighted
+        in vivo human whole brain\n                        MRI dataset with an ultrahigh
+        isotropic resolution of 250\n                                    \u03bcm","volume":"4","author":"L\u00fcsebrink","year":"2017","journal-title":"Scientific
+        Data"},{"key":"2026052615555245600_IMAG.a.1210-b47","unstructured":"Lynch,
+        P.\n                                J.\n           (2006).\n                        Brain
+        human lateral view.\n                        Wikimedia. https:\/\/commons.wikimedia.org\/wiki\/File:Brain_human_lateral_view.svg"},{"key":"2026052615555245600_IMAG.a.1210-b48","doi-asserted-by":"crossref","first-page":"6188","DOI":"10.1038\/s41598-017-06293-x","article-title":"Distinct
+        contributions by frontal and parietal cortices\n                        support
+        working memory","volume":"7","author":"Mackey","year":"2017","journal-title":"Scientific
+        Reports"},{"key":"2026052615555245600_IMAG.a.1210-b49","doi-asserted-by":"crossref","first-page":"e22974","DOI":"10.7554\/eLife.22974","article-title":"Visual
+        field map clusters in human frontoparietal\n                        cortex","volume":"6","author":"Mackey","year":"2017","journal-title":"eLife"},{"key":"2026052615555245600_IMAG.a.1210-b50","doi-asserted-by":"crossref","first-page":"e48088","DOI":"10.1371\/journal.pone.0048088","article-title":"Measurement
+        and correction of\n                        microscopic head motion during
+        magnetic resonance imaging of the\n                        brain","volume":"7","author":"Maclaren","year":"2012","journal-title":"PLoS
+        ONE"},{"key":"2026052615555245600_IMAG.a.1210-b51","doi-asserted-by":"crossref","first-page":"e31203","DOI":"10.1371\/journal.pone.0031203","article-title":"The
+        effect of surface wave propagation on neural responses to\n                        vibration
+        in primate glabrous skin","volume":"7","author":"Manfredi","year":"2012","journal-title":"PLoS\n                        ONE"},{"key":"2026052615555245600_IMAG.a.1210-b52","doi-asserted-by":"crossref","first-page":"41","DOI":"10.1002\/cne.901810104","article-title":"Double
+        representation of the body\n                        surface within cytoarchitectonic
+        area 3b and 1 in \u201cSI\u201d in the\n                        owl monkey
+        (Aotus trivirgatus)","volume":"181","author":"Merzenich","year":"1978","journal-title":"Journal
+        of\n                        Comparative Neurology"},{"key":"2026052615555245600_IMAG.a.1210-b53","doi-asserted-by":"crossref","first-page":"281","DOI":"10.1002\/cne.902580208","article-title":"Variability
+        in hand surface\n                        representations in areas 3b and 1
+        in adult owl and squirrel\n                        monkeys","volume":"258","author":"Merzenich","year":"1987","journal-title":"Journal
+        of Comparative Neurology"},{"key":"2026052615555245600_IMAG.a.1210-b54","doi-asserted-by":"crossref","first-page":"152","DOI":"10.1002\/mrm.1910150117","article-title":"Three-dimensional
+        magnetization-prepared rapid gradient-echo\n                        imaging
+        (3D MP RAGE)","volume":"15","author":"Mugler","year":"1990","journal-title":"Magnetic
+        Resonance in\n                        Medicine"},{"key":"2026052615555245600_IMAG.a.1210-b55","doi-asserted-by":"crossref","first-page":"400","DOI":"10.1016\/j.neuroimage.2010.07.073","article-title":"Encoding
+        and decoding in fMRI","volume":"56","author":"Naselaris","year":"2011","journal-title":"NeuroImage"},{"key":"2026052615555245600_IMAG.a.1210-b56","doi-asserted-by":"crossref","first-page":"308","DOI":"10.1093\/comjnl\/7.4.308","article-title":"A
+        simplex method for function\n                        minimization","volume":"7","author":"Nelder","year":"1965","journal-title":"The
+        Computer Journal"},{"key":"2026052615555245600_IMAG.a.1210-b57","doi-asserted-by":"crossref","first-page":"611","DOI":"10.1002\/cne.901920402","article-title":"Representations
+        of the body surface in postcentral parietal\n                        cortex
+        of Macaca fascicularis","volume":"192","author":"Nelson","year":"1980","journal-title":"Journal
+        of\n                        Comparative Neurology"},{"key":"2026052615555245600_IMAG.a.1210-b58","doi-asserted-by":"crossref","first-page":"64","DOI":"10.1016\/j.clineuro.2004.08.003","article-title":"Clinical
+        features of 1039 patients with\n                        neurophysiological
+        diagnosis of carpal tunnel syndrome","volume":"107","author":"Nora","year":"2004","journal-title":"Clinical
+        Neurology and Neurosurgery"},{"key":"2026052615555245600_IMAG.a.1210-b59","doi-asserted-by":"crossref","first-page":"462","DOI":"10.1016\/j.neuroimage.2004.06.024","article-title":"Distributed
+        digit somatotopy in primary\n                        somatosensory cortex","volume":"23","author":"Overduin","year":"2004","journal-title":"NeuroImage"},{"key":"2026052615555245600_IMAG.a.1210-b60","doi-asserted-by":"crossref","first-page":"e1505","DOI":"10.1371\/journal.pone.0001505","article-title":"Symmetric
+        sensorimotor\n                        somatotopy","volume":"3","author":"Overduin","year":"2008","journal-title":"PLoS
+        ONE"},{"key":"2026052615555245600_IMAG.a.1210-b61","doi-asserted-by":"crossref","first-page":"1","DOI":"10.3389\/fnins.2014.00001","article-title":"Misconceptions
+        in the use of the general linear model applied\n                        to
+        functional MRI: A tutorial for junior neuro-imagers","volume":"8","author":"Pernet","year":"2014","journal-title":"Frontiers
+        in Neuroscience"},{"key":"2026052615555245600_IMAG.a.1210-b62","doi-asserted-by":"crossref","first-page":"1334","DOI":"10.1016\/j.neuroimage.2010.05.005","article-title":"Laminar
+        analysis of 7T BOLD using an imposed spatial\n                        activation
+        pattern in human V1","volume":"52","author":"Polimeni","year":"2010","journal-title":"NeuroImage"},{"key":"2026052615555245600_IMAG.a.1210-b63","doi-asserted-by":"crossref","first-page":"296","DOI":"10.1016\/j.neuroimage.2017.04.053","article-title":"Analysis
+        strategies for high-resolution\n                        UHF-fMRI data","volume":"168","author":"Polimeni","year":"2018","journal-title":"NeuroImage"},{"key":"2026052615555245600_IMAG.a.1210-b64","doi-asserted-by":"crossref","first-page":"e77599","DOI":"10.7554\/eLife.77599","article-title":"Improving
+        the accuracy of single-trial fMRI response\n                        estimates
+        using GLMsingle","volume":"11","author":"Prince","year":"2022","journal-title":"eLife"},{"key":"2026052615555245600_IMAG.a.1210-b65","doi-asserted-by":"crossref","first-page":"116465","DOI":"10.1016\/j.neuroimage.2019.116465","article-title":"Bayesian
+        population receptive field\n                        modeling in human somatosensory
+        cortex","volume":"208","author":"Puckett","year":"2020","journal-title":"NeuroImage"},{"key":"2026052615555245600_IMAG.a.1210-b66","doi-asserted-by":"crossref","first-page":"397","DOI":"10.1007\/978-1-0716-3068-6_18","article-title":"Imaging
+        somatosensory cortex: Human functional magnetic\n                        resonance
+        imaging (fMRI)","volume-title":"Somatosensory research methods","author":"Puckett","year":"2023"},{"key":"2026052615555245600_IMAG.a.1210-b67","doi-asserted-by":"crossref","first-page":"15815","DOI":"10.1523\/JNEUROSCI.2501-12.2012","article-title":"Within-digit
+        functional parcellation of\n                        Brodmann areas of the
+        human primary somatosensory cortex using functional\n                        magnetic
+        resonance imaging at 7 Tesla","volume":"32","author":"Sanchez-Panchuelo","year":"2012","journal-title":"The
+        Journal\n                        of Neuroscience"},{"key":"2026052615555245600_IMAG.a.1210-b68","doi-asserted-by":"crossref","first-page":"221","DOI":"10.1016\/j.neuroimage.2013.03.044","article-title":"Regional
+        structural differences across\n                        functionally parcellated
+        Brodmann areas of human primary somatosensory\n                        cortex","volume":"93","author":"S\u00e1nchez-Panchuelo","year":"2014","journal-title":"NeuroImage"},{"key":"2026052615555245600_IMAG.a.1210-b69","doi-asserted-by":"crossref","first-page":"235","DOI":"10.3389\/fnhum.2018.00235","article-title":"Somatotopy
+        in the human somatosensory\n                        system","volume":"12","author":"Sanchez-Panchuelo","year":"2018","journal-title":"Frontiers
+        in Human Neuroscience"},{"key":"2026052615555245600_IMAG.a.1210-b70","doi-asserted-by":"crossref","first-page":"2544","DOI":"10.1152\/jn.01017.2009","article-title":"Mapping
+        human somatosensory cortex in\n                        individual subjects
+        with 7T functional MRI","volume":"103","author":"Sanchez-Panchuelo","year":"2010","journal-title":"Journal\n                        of
+        Neurophysiology"},{"key":"2026052615555245600_IMAG.a.1210-b71","doi-asserted-by":"crossref","first-page":"337","DOI":"10.1016\/j.neuroimage.2018.06.062","article-title":"Detailed
+        somatotopy in primary motor and somatosensory cortex\n                        revealed
+        by Gaussian population receptive fields","volume":"179","author":"Schellekens","year":"2018","journal-title":"NeuroImage"},{"key":"2026052615555245600_IMAG.a.1210-b72","doi-asserted-by":"crossref","first-page":"2099","DOI":"10.1007\/s00429-021-02309-5","article-title":"A
+        touch of hierarchy: Population\n                        receptive fields reveal
+        fingertip integration in Brodmann areas in human\n                        primary
+        somatosensory cortex","volume":"226","author":"Schellekens","year":"2021","journal-title":"Brain
+        Structure and\n                        Function"},{"key":"2026052615555245600_IMAG.a.1210-b73","doi-asserted-by":"crossref","first-page":"658","DOI":"10.3389\/fnhum.2014.00658","article-title":"Individual
+        fMRI maps of all phalanges\n                        and digit bases of all
+        fingers in human primary somatosensory\n                        cortex","volume":"8","author":"Schweisfurth","year":"2014","journal-title":"Frontiers
+        in Human Neuroscience"},{"key":"2026052615555245600_IMAG.a.1210-b74","doi-asserted-by":"crossref","first-page":"2155","DOI":"10.1111\/ejn.12978","article-title":"Individual
+        left-hand and right-hand\n                        intra-digit representations
+        in human primary somatosensory\n                        cortex","volume":"42","author":"Schweisfurth","year":"2015","journal-title":"European
+        Journal of Neuroscience"},{"key":"2026052615555245600_IMAG.a.1210-b75","doi-asserted-by":"crossref","first-page":"e114054","DOI":"10.1371\/journal.pone.0114054","article-title":"Evaluating
+        population receptive field\n                        estimation frameworks
+        in terms of robustness and\n                        reproducibility","volume":"9","author":"Senden","year":"2014","journal-title":"PLoS
+        ONE"},{"key":"2026052615555245600_IMAG.a.1210-b76","doi-asserted-by":"crossref","first-page":"787737","DOI":"10.3389\/fnsys.2022.787737","article-title":"Topological
+        maps and brain computations\n                        from low to high","volume":"16","author":"Sereno","year":"2022","journal-title":"Frontiers
+        in Systems\n                        Neuroscience"},{"key":"2026052615555245600_IMAG.a.1210-b77","doi-asserted-by":"crossref","first-page":"1195","DOI":"10.1016\/S0896-6273(02)01061-9","article-title":"Sustained
+        negative BOLD, blood flow and\n                        oxygen consumption
+        response and its coupling to the positive response in the\n                        human
+        brain","volume":"36","author":"Shmuel","year":"2002","journal-title":"Neuron"},{"key":"2026052615555245600_IMAG.a.1210-b78","doi-asserted-by":"crossref","first-page":"320","DOI":"10.1109\/TOH.2013.1","article-title":"Mechanical
+        and psychophysical studies of\n                        surface wave propagation
+        during vibrotactile stimulation","volume":"6","author":"Sofia","year":"2013","journal-title":"IEEE
+        Transactions on Haptics"},{"key":"2026052615555245600_IMAG.a.1210-b79","doi-asserted-by":"crossref","first-page":"116926","DOI":"10.1016\/j.neuroimage.2020.116926","article-title":"Topographic
+        signatures of global object perception in human\n                        visual
+        cortex","volume":"220","author":"Stoll","year":"2020","journal-title":"NeuroImage"},{"key":"2026052615555245600_IMAG.a.1210-b80","doi-asserted-by":"crossref","first-page":"119557","DOI":"10.1016\/j.neuroimage.2022.119557","article-title":"Pitfalls
+        in post hoc analyses of population receptive field\n                        data","volume":"263","author":"Stoll","year":"2022","journal-title":"NeuroImage"},{"key":"2026052615555245600_IMAG.a.1210-b81","doi-asserted-by":"crossref","unstructured":"Stoll,\n                                S.,\n                                Luesebrink,\n                                F.,\n                                Schwarzkopf,
+        D.\n                                S.,\n                                Mattern,\n                                H.,\n                                Liu,\n                            P.,\n                                Noelle,\n                                J.,
+        &\n                                Kuehn,\n                            E.\n                        (2026a).
+        Code for \u201cModeling 2D\n                        spatio-tactile population
+        receptive fields of the fingertip in human primary\n                        somatosensory
+        cortex\u201d. GitHub. https:\/\/github.com\/Kriaese\/manuscript-zoomprf","DOI":"10.1162\/IMAG.a.1210"},{"key":"2026052615555245600_IMAG.a.1210-b82","doi-asserted-by":"crossref","unstructured":"Stoll,\n                                S.,\n                                Luesebrink,\n                                F.,\n                                Schwarzkopf,
+        D.\n                                S.,\n                                Mattern,\n                                H.,\n                                Liu,\n                            P.,\n                                Noelle,\n                                J.,
+        &\n                                Kuehn,\n                            E.\n                        (2026b).
+        Data and materials for \u201cModeling\n                        2D spatio-tactile
+        population receptive fields of the fingertip in human\n                        primary
+        somatosensory cortex\u201d. Open Science\n                        Framework.
+        https:\/\/doi.org\/10.17605\/OSF.IO\/4DRZ6","DOI":"10.1162\/IMAG.a.1210"},{"key":"2026052615555245600_IMAG.a.1210-b83","article-title":"Data
+        for \u201cModeling 2D\n                        spatio-tactile population receptive
+        fields of the fingertip in human primary\n                        somatosensory
+        cortex","author":"Stoll","year":"2026","journal-title":"OpenNeuro"},{"key":"2026052615555245600_IMAG.a.1210-b84","doi-asserted-by":"crossref","first-page":"e0133921","DOI":"10.1371\/journal.pone.0133921","article-title":"Highest
+        resolution in vivo human brain\n                        MRI using prospective
+        motion correction","volume":"10","author":"Stucht","year":"2015","journal-title":"PLoS\n                        ONE"},{"key":"2026052615555245600_IMAG.a.1210-b85","doi-asserted-by":"crossref","first-page":"295","DOI":"10.1152\/jn.1980.44.2.295","article-title":"Magnification,
+        receptive-field area, and\n                        \u201chypercolumn\u201d
+        size in areas 3b and 1 of somatosensory cortex\n                        in
+        owl monkeys","volume":"44","author":"Sur","year":"1980","journal-title":"Journal
+        of Neurophysiology"},{"key":"2026052615555245600_IMAG.a.1210-b86","doi-asserted-by":"crossref","first-page":"962","DOI":"10.1093\/cercor\/bhx024","article-title":"Positive
+        and negative somatotopic BOLD\n                        responses in contralateral
+        versus ipsilateral Penfield\n                        homunculus","volume":"27","author":"Tal","year":"2017","journal-title":"Cerebral
+        Cortex"},{"key":"2026052615555245600_IMAG.a.1210-b87","unstructured":"The
+        FIL Methods Group.\n                        (2021). SPM12 manual. https:\/\/www.fil.ion.ucl.ac.uk\/spm\/"},{"key":"2026052615555245600_IMAG.a.1210-b88","doi-asserted-by":"crossref","first-page":"112176","DOI":"10.1016\/j.celrep.2023.112176","article-title":"Multi-finger
+        receptive field properties\n                        in primary somatosensory
+        cortex: A revised account of the spatiotemporal\n                        integration
+        functions of area 3b","volume":"42","author":"Trzcinski","year":"2023","journal-title":"Cell\n                        Reports"},{"key":"2026052615555245600_IMAG.a.1210-b89","article-title":"Biomechanical
+        filtering supports tactile\n                        encoding efficiency in
+        the human hand","author":"Tummala","year":"2024","journal-title":"bioRxiv"},{"key":"2026052615555245600_IMAG.a.1210-b90","doi-asserted-by":"crossref","first-page":"4427","DOI":"10.1093\/cercor\/bhab097","article-title":"Population
+        receptive field\n                        characteristics in the between- and
+        within-digit dimensions of the\n                        undominant hand in
+        the primary somatosensory cortex","volume":"31","author":"Wang","year":"2021","journal-title":"Cerebral
+        Cortex"},{"key":"2026052615555245600_IMAG.a.1210-b91","doi-asserted-by":"crossref","first-page":"e101953","DOI":"10.1371\/journal.pone.0101953","article-title":"A
+        review of fMRI simulation\n                        studies","volume":"9","author":"Welvaert","year":"2014","journal-title":"PLoS
+        ONE"},{"key":"2026052615555245600_IMAG.a.1210-b92","doi-asserted-by":"crossref","first-page":"141","DOI":"10.1093\/brain\/120.1.141","article-title":"Localization
+        of the motor hand area to a\n                        knob on the precentral
+        gyrus. A new landmark","volume":"120","author":"Yousry","year":"1997","journal-title":"Brain"},{"key":"2026052615555245600_IMAG.a.1210-b93","doi-asserted-by":"crossref","first-page":"1156","DOI":"10.1002\/mrm.20261","article-title":"Point
+        spread function mapping with\n                        parallel imaging techniques
+        and high acceleration factors: Fast, robust, and\n                        flexible
+        method for echo-planar imaging distortion\n                        correction","volume":"52","author":"Zaitsev","year":"2004","journal-title":"Magnetic
+        Resonance in Medicine"},{"key":"2026052615555245600_IMAG.a.1210-b94","doi-asserted-by":"crossref","first-page":"887","DOI":"10.1002\/jmri.24850","article-title":"Motion
+        artifacts in MRI: A complex\n                        problem with many partial
+        solutions","volume":"42","author":"Zaitsev","year":"2015","journal-title":"Journal
+        of\n                        Magnetic Resonance Imaging"},{"issue":"Part A","key":"2026052615555245600_IMAG.a.1210-b95","doi-asserted-by":"crossref","first-page":"173","DOI":"10.1016\/j.neuroimage.2017.09.008","article-title":"Bayesian
+        population receptive field\n                        modelling","volume":"180","author":"Zeidman","year":"2018","journal-title":"NeuroImage"},{"key":"2026052615555245600_IMAG.a.1210-b96","doi-asserted-by":"crossref","first-page":"e1008153","DOI":"10.1371\/journal.pcbi.1008153","article-title":"Understanding
+        multivariate brain\n                        activity: Evaluating the effect
+        of voxelwise noise correlations on\n                        population codes
+        in functional magnetic resonance imaging","volume":"16","author":"Zhang","year":"2020","journal-title":"PLoS
+        Computational Biology"},{"key":"2026052615555245600_IMAG.a.1210-b97","doi-asserted-by":"crossref","first-page":"10","DOI":"10.1167\/12.3.10","article-title":"Modeling
+        center-surround configurations in population\n                        receptive
+        fields using fMRI","volume":"12","author":"Zuiderbaan","year":"2012","journal-title":"Journal
+        of\n                        Vision"}],"container-title":["Imaging Neuroscience"],"original-title":[],"language":"en","link":[{"URL":"https:\/\/direct.mit.edu\/imag\/article-pdf\/doi\/10.1162\/IMAG.a.1210\/2590384\/imag.a.1210.pdf","content-type":"application\/pdf","content-version":"vor","intended-application":"syndication"},{"URL":"https:\/\/direct.mit.edu\/imag\/article-pdf\/doi\/10.1162\/IMAG.a.1210\/2590384\/imag.a.1210.pdf","content-type":"unspecified","content-version":"vor","intended-application":"similarity-checking"}],"deposited":{"date-parts":[[2026,5,26]],"date-time":"2026-05-26T19:56:12Z","timestamp":1779825372000},"score":1,"resource":{"primary":{"URL":"https:\/\/direct.mit.edu\/imag\/article\/doi\/10.1162\/IMAG.a.1210\/136083\/Modeling-2D-spatio-tactile-population-receptive"}},"subtitle":[],"short-title":[],"issued":{"date-parts":[[2026]]},"references-count":97,"URL":"https:\/\/doi.org\/10.1162\/imag.a.1210","relation":{},"ISSN":["2837-6056"],"issn-type":[{"value":"2837-6056","type":"electronic"}],"subject":[],"published-other":{"date-parts":[[2026]]},"published":{"date-parts":[[2026]]},"article-number":"IMAG.a.1210"}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '9856'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 28 Oct 2026 02:20:03 GMT
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      content-encoding:
+      - gzip
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      vary:
+      - Accept-Encoding
+      x-api-pool:
+      - polite-single
+      x-concurrency-limit:
+      - '3'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '10'
+    status:
+      code: 200
+      message: OK
+version: 1
