@@ -34,7 +34,8 @@ logger = logging.getLogger(__name__)
 #: 3: parse/parsed_paper.json and parse/coordinate_parse.json beside stage1.
 #: 4: the sign split follows study_schema.statistics and is declared, not named.
 #: 5: the parsed paper's links, from the links and linkprobe stages.
-SYNC_VERSION = 5
+#: 6: each link's occurrences, and the references stage's list they name.
+SYNC_VERSION = 6
 
 #: Why an article neurostore holds no base study for waits for sync: the ingester finds
 #: or creates one by doi, pmid or pmcid, and the article has none of them.
@@ -189,7 +190,8 @@ class SyncStage:
                         metadata: Optional[Artifact] = None,
                         triage: Optional[Artifact] = None,
                         links: Optional[Artifact] = None,
-                        linkprobe: Optional[Artifact] = None) -> str:
+                        linkprobe: Optional[Artifact] = None,
+                        references: Optional[Artifact] = None) -> str:
         # The base study is in the parse's header, and the notices are the parsed paper's
         # corrections. A person's exclusions change what is written, so marking a table
         # re-syncs and upload then sends the parse without it. The parse carries the
@@ -199,7 +201,9 @@ class SyncStage:
         # verdict, score and route, so triage's fingerprint goes in. Its links are those of
         # the synced text (`synced_links`), and each one's has_nifti what linkprobe saw: a
         # probe asked again keeps its fingerprint, so its content goes in, as metadata's.
+        # The reference list is the synced text's, which the links' occurrences name.
         links, linkprobe = synced_links(links, linkprobe)
+        references = references if references is not None and references.ok else None
         marked = excl.digest(excluded or {})
         return fingerprint(
             "sync", SYNC_VERSION, paper_parse.PAPER_PARSE_VERSION,
@@ -210,6 +214,7 @@ class SyncStage:
             triage.fingerprint if triage is not None and triage.ok else None,
             links.fingerprint if links is not None else None,
             linkprobe.blob if linkprobe is not None else None,
+            references.fingerprint if references is not None else None,
             upstream=upstream.fingerprint,
         )
 
@@ -260,6 +265,7 @@ class SyncStage:
         triaged = ctx.catalog.artifacts(ids, "triage")
         linked = ctx.catalog.artifacts(ids, "links")
         probed = ctx.catalog.artifacts(ids, "linkprobe")
+        listed = ctx.catalog.artifacts(ids, "references")
         bases = known_base_study_ids(ctx, refs)
         for ref in refs:
             spaced = upstream.get(ref.id, {}).get("")
@@ -294,11 +300,12 @@ class SyncStage:
             triage = triaged.get(ref.id, {}).get("")
             synced = _synced_extraction(ctx, extracted.get(ref.id, {}),
                                         downloads.get(ref.id, {}), triage)
+            source = synced.source if synced is not None else None
             fp = self.fingerprint_for(
                 spaced, base_study_id, excluded.get(ref.id), notices,
                 metadata.get(ref.id, {}).get(""), triage,
-                linked.get(ref.id, {}).get(synced.source) if synced is not None else None,
-                probed.get(ref.id, {}).get(""))
+                linked.get(ref.id, {}).get(source), probed.get(ref.id, {}).get(""),
+                listed.get(ref.id, {}).get(source))
             if ctx.is_fresh(existing, fp):
                 plan.fresh += 1
                 continue
@@ -321,6 +328,7 @@ class SyncStage:
         noticed = ctx.catalog.artifacts(ids, "notices")
         linked = ctx.catalog.artifacts(ids, "links")
         probed = ctx.catalog.artifacts(ids, "linkprobe")
+        listed = ctx.catalog.artifacts(ids, "references")
 
         excluded = ctx.catalog.exclusions(ids)
         bases = self.base_study_ids(ctx, works)
@@ -376,7 +384,7 @@ class SyncStage:
                     ("extract", extractions), ("metadata", metadata), ("space", analyses),
                     ("triage", triaged), ("analyses", read), ("prose", prose),
                     ("resolve", resolved), ("passages", passages), ("notices", noticed),
-                    ("links", linked), ("linkprobe", probed))},
+                    ("links", linked), ("linkprobe", probed), ("references", listed))},
                 bundle.article_data.source.value,
             )
             if base_study_id:
@@ -583,8 +591,10 @@ def _parse_inputs(
     passages = payload("passages")
     resolved = ok("resolve")
     links, probe = synced_links(found["links"].get(source), found["linkprobe"].get(""))
+    listed = ok("references", source)
     picked = {"extract": ok("extract", source), "metadata": ok("metadata"), "space": ok("space"),
-              "triage": ok("triage"), "links": links, "linkprobe": probe}
+              "triage": ok("triage"), "links": links, "linkprobe": probe, "references": listed}
+    read = ctx.payload(links) if links is not None else None
     return paper_parse.ParseInputs(
         article_id=work.article_id,
         text_copy=text_copy,
@@ -602,17 +612,20 @@ def _parse_inputs(
         if resolved is not None else (),
         fingerprints={k: a.fingerprint for k, a in picked.items() if a and a.fingerprint},
         corrections=(payload("notices") or {}).get("corrections") if ok("notices") else None,
-        links=_paper_links(ctx.payload(links) if links is not None else None,
-                           ctx.payload(probe) if probe is not None else None),
+        links=_paper_links(read, ctx.payload(probe) if probe is not None else None),
+        links_text_sha256=read["text_sha256"] if read is not None else None,
+        references=(ctx.payload(listed) or {}).get("references") if listed is not None else None,
     )
 
 
 def _paper_links(links: Optional[dict], probes: Optional[dict]) -> Optional[List[dict]]:
-    """[{url, has_nifti}] of each link `links` found, has_nifti as linkprobe answered it."""
+    """[{url, has_nifti, occurrences}] of each link `links` found, has_nifti as linkprobe
+    answered it."""
     if links is None:
         return None
     nifti = {p["url"]: p.get("has_nifti") for p in (probes or {}).get("probes") or []}
-    return [{"url": link["url"], "has_nifti": nifti.get(link["url"])} for link in links["links"]]
+    return [{"url": link["url"], "has_nifti": nifti.get(link["url"]),
+             "occurrences": link["occurrences"]} for link in links["links"]]
 
 
 def _synced_extraction(

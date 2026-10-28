@@ -77,9 +77,11 @@ Built on `feat/paper-links`, against study_schema#55.
   `ParsedPaper.supplements`), and from the reference list, where a dataset DOI
   (`10.18112/openneuro.ds…`, `10.17605/OSF.IO/…`) counts as a link and another DOI does not.
   A publisher page's anchor counts when its text prints the link: an anchor of words
-  ("PubMed", "Google Scholar") is the publisher's, not the paper's. It keeps
-  where each link appeared (offsets, section, how it was found) and a context flag from the
-  words around it (NIfTI, `.nii`, statistical maps, fMRI data); those stay in ns-pond.
+  ("PubMed", "Google Scholar") is the publisher's, not the paper's. The reference list is
+  the one `references` reads (which runs by default, before `links`), so an occurrence from
+  it names its entry by the id sync writes. It keeps where each link appeared (offsets, how
+  it was found, the reference entry) and, in ns-pond only, its section and a context flag
+  from the words around it (NIfTI, `.nii`, statistical maps, fMRI data).
 - **`linkprobe`** requires `links` and uses the network for OSF and OpenNeuro links only.
   OSF's API lists a project's files (providers, folders, components, pages, at most 60
   requests), so a `.nii` or `.nii.gz` settles it. OpenNeuro also hosts EEG, MEG and iEEG
@@ -87,11 +89,15 @@ Built on `feat/paper-links`, against study_schema#55.
   modalities, and BIDS stores MRI and PET as NIfTI, so `mri` or `pet` among them is
   `has_nifti`. It records `has_nifti` with what it saw and when; a private or missing
   project or dataset leaves it unset, with the reason. No LLM.
-- **Order:** `links` → `linkprobe` → `sync`. Sync writes `links: [{url, has_nifti?}]` into
-  the parsed paper, and upload sends it. Sync does not wait for `links`: with no links
+- **Order:** `references` → `links` → `linkprobe` → `sync`. Sync writes
+  `links: [{url, has_nifti?, occurrences: [{found_by, start_char?, end_char?,
+  reference_id?}]}]`, each link's occurrences in text order, and `references` (the
+  references stage's list) into the parsed paper, and upload sends it. An occurrence's
+  section is the `ParsedPaper.sections` span holding it (`paper_parse.links_in_section`). Sync does not wait for `links`: with no links
   artifact the parsed paper's `links` is absent ("not looked"); once `links` has read the
   text it is written, `[]` when the paper gives none.
-- study_schema gets `ParsedPaper.links` and a `data_availability` `SectionKind`.
+- study_schema gets `ParsedPaper.links`, each `PaperLink` with its `occurrences`, and a
+  `data_availability` `SectionKind`.
 
 ### In neurostore
 

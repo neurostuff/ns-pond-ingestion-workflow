@@ -7,6 +7,11 @@
 - `data/links/pdf_PMC12862833/text.txt`: the PDF extractor's text (docling) of Ashby et al.
   2025, Frontiers in Neuroscience 10.3389/fnins.2025.1661523 (CC BY 4.0), whose OSF link
   and OpenNeuro DOI are broken across lines.
+- `data/links/elsevier_PMC12084501/content.xml`: Elsevier's full-text XML of Bierlich et al.
+  2025, NeuroImage: Clinical 10.1016/j.nicl.2025.103793 (CC BY 4.0, its
+  `openaccessUserLicense`), fetched through ns-pond's Elsevier client. Its OSF project is a
+  `ce:inter-ref` in the Methods and again in its "Data availability" section, and its
+  reference list prints an OSF DOI no `ce:inter-ref` marks.
 - `data/sample_outputs/6dYthnbocsU4`: ACE's text of NeuroImage 10.1016/j.neuroimage.2021.117808,
   which glued a section number to the OSF link before it.
 - `data/test_html/Nature neuroscience/33106677.html`: a Nature Neuroscience page.
@@ -19,8 +24,10 @@ from pathlib import Path
 
 import pytest
 from ingestion_workflow.clients.crossref import CrossrefClient
+from ingestion_workflow.extractors.elsevier_extractor import article_text_and_captions
 from ingestion_workflow.extractors.pubget_extractor import article_text
 from ingestion_workflow.services import paper_links as L
+from ingestion_workflow.services.citations import read_elsevier, read_jats
 from ingestion_workflow.services.coordinate_space import sectionize
 from ingestion_workflow.services.reference_lists import from_crossref
 from ingestion_workflow.tests import cassette_secrets
@@ -28,6 +35,7 @@ from lxml import etree
 
 DATA = Path(__file__).parents[1] / "data"
 JATS = DATA / "links" / "europepmc_PMC13214571" / "article.xml"
+ELSEVIER = DATA / "links" / "elsevier_PMC12084501" / "content.xml"
 PDF_TEXT = DATA / "links" / "pdf_PMC12862833" / "text.txt"
 ACE_TEXT = DATA / "sample_outputs" / "6dYthnbocsU4" / "processed" / "ace" / "text.txt"
 NATURE_PAGE = DATA / "test_html" / "Nature neuroscience" / "33106677.html"
@@ -35,10 +43,20 @@ NATURE_PAGE = DATA / "test_html" / "Nature neuroscience" / "33106677.html"
 
 @pytest.fixture(scope="module")
 def jats():
-    """(xml path, the text pubget's extractor makes of it, the links read from both)."""
+    """(the text pubget's extractor makes of the XML, the links read from both and from
+    the reference list the references stage reads)."""
     text = article_text(etree.parse(str(JATS)), JATS.parent)
-    notes = {}
-    links = L.read_links(text, L._jats(JATS, text, notes))
+    links = L.read_links(text, L._jats(JATS, text, {}), read_jats(JATS, text).references)
+    return text, {link["url"]: link for link in links}
+
+
+@pytest.fixture(scope="module")
+def elsevier():
+    """(the text Elsevier's extraction keeps, the links read from it, the XML and the
+    references stage's list)."""
+    text = article_text_and_captions(ELSEVIER.read_bytes())[0]
+    listed = read_elsevier(ELSEVIER, text).references
+    links = L.read_links(text, L._elsevier(ELSEVIER, text, {}), listed)
     return text, {link["url"]: link for link in links}
 
 
@@ -158,13 +176,28 @@ def test_the_reference_list_gives_its_urls_and_its_dataset_dois(jats):
 
     # <ext-link ext-link-type="doi" xlink:href="10.17605/OSF.IO/4DRZ6"/> in reference b82
     (osf,) = links["https://doi.org/10.17605/osf.io/4drz6"]["occurrences"]
-    assert (osf["found_by"], osf["reference"]) == ("reference", "IMAG.a.1210-b82")
+    assert (osf["found_by"], osf["reference_id"]) == ("reference", "IMAG.a.1210-b82")
+    assert osf["start_char"] is None  # pubget's text holds no reference list
     assert _found(links, "https://openneuro.org/datasets/ds006128/versions/1.0.9") == [
         ("reference", None)]
     # a cited article's DOI is a citation, not a link
     cited = [url for url in links if L.is_doi_link(url) and not L.is_data_doi_link(url)]
     assert cited == ["https://doi.org/10.1162/imag.a.1210"]  # the paper's own supplement link
     assert all(o["found_by"] == "markup" for o in links[cited[0]]["occurrences"])
+
+
+def test_a_link_s_occurrences_are_in_text_order_and_its_unplaced_entry_last(jats):
+    """The GitHub repository is an ext-link twice in the data statement, and an ext-link in
+    reference b81 between them in the XML, which pubget's text does not print."""
+    text, links = jats
+
+    occurrences = links["https://github.com/Kriaese/manuscript-zoomprf"]["occurrences"]
+    assert [(o["found_by"], o.get("reference_id"), o["section"]) for o in occurrences] == [
+        ("markup", None, "data_availability"), ("markup", None, "data_availability"),
+        ("reference", "IMAG.a.1210-b81", None)]
+    first, second, _ = occurrences
+    assert first["start_char"] < second["start_char"]
+    assert [text[o["start_char"]:o["end_char"]] for o in (first, second)] == ["GitHub"] * 2
 
 
 def test_a_link_the_text_also_prints_is_the_markup_s(jats):
@@ -185,47 +218,50 @@ def test_a_page_s_anchors_that_print_a_link_are_links_and_its_furniture_is_not()
                    for host in ("ncbi.nlm.nih.gov", "scholar.google", "idp.nature", "twitter.com"))
 
 
-ELSEVIER = b"""<?xml version="1.0" encoding="UTF-8"?>
-<full-text-retrieval-response xmlns="http://www.elsevier.com/xml/svapi/article/dtd" xmlns:ce="http://www.elsevier.com/xml/common/dtd" xmlns:sb="http://www.elsevier.com/xml/common/struct-bib/dtd" xmlns:ja="http://www.elsevier.com/xml/ja/dtd" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:prism="http://prismstandard.org/namespaces/basic/2.0/" xmlns:xocs="http://www.elsevier.com/xml/xocs/dtd" xmlns:xlink="http://www.w3.org/1999/xlink">
-<coredata><dc:title>A test article</dc:title><prism:doi>10.1016/j.test.2020.1</prism:doi></coredata>
-<originalText><xocs:doc><xocs:serial-item><ja:article>
-<ja:head><ce:title>A test article</ce:title></ja:head>
-<ja:body><ce:sections><ce:section id="s1"><ce:section-title>Methods</ce:section-title>
-<ce:para>Images were analysed in SPM12 (<ce:inter-ref xlink:href="http://www.fil.ion.ucl.ac.uk/spm/">www.fil.ion.ucl.ac.uk/spm</ce:inter-ref>).</ce:para>
-</ce:section>
-<ce:section id="s2"><ce:section-title>Data availability</ce:section-title>
-<ce:para>Unthresholded statistical maps are on <ce:inter-ref xlink:href="https://neurovault.org/collections/9096/">NeuroVault</ce:inter-ref>.</ce:para>
-</ce:section></ce:sections></ja:body>
-<ja:tail><ce:bibliography><ce:bibliography-sec>
-<ce:bib-reference id="bib1"><ce:label>Smith, 2001</ce:label><sb:reference><sb:host><sb:issue><sb:series><sb:title><sb:maintitle>J Neurosci</sb:maintitle></sb:title></sb:series><sb:date>2001</sb:date></sb:issue><ce:doi>10.1523/x.2001</ce:doi></sb:host></sb:reference></ce:bib-reference>
-<ce:bib-reference id="bib2"><ce:label>Data, 2021</ce:label><sb:reference><sb:host><sb:e-host><ce:inter-ref xlink:href="https://osf.io/w6khb/">https://osf.io/w6khb/</ce:inter-ref></sb:e-host><ce:doi>10.17605/OSF.IO/W6KHB</ce:doi></sb:host></sb:reference></ce:bib-reference>
-</ce:bibliography-sec></ce:bibliography></ja:tail>
-</ja:article></xocs:serial-item></xocs:doc></originalText></full-text-retrieval-response>"""
+def test_elsevier_inter_refs_are_links_placed_in_the_text_in_text_order(elsevier):
+    text, links = elsevier
+
+    osf = links["https://osf.io/cw7n4"]
+    assert _found(links, "https://osf.io/cw7n4") == [("markup", "methods"),
+                                                     ("markup", "data_availability")]
+    assert [text[o["start_char"]:o["end_char"]] for o in osf["occurrences"]] == [
+        "https://osf.io/cw7n4"] * 2
+    # "Statistical maps of the fMRI analyses ... are provided" follows the second
+    assert [o["context"] for o in osf["occurrences"]] == [[], ["statistical maps"]]
+    assert osf["nifti_context"] is True
+    # the inter-ref in reference b0070, which Elsevier's text does not print: its href,
+    # with its own scheme
+    assert [(o["found_by"], o["reference_id"], o["start_char"])
+            for o in links["http://ncbi.nlm.nih.gov/pubmed/9931269"]["occurrences"]] == [
+        ("reference", "b0070", None)]
+    # a cited article's DOI (`ce:doi` of an `sb:reference`) is a citation, not a link
+    assert not [url for url in links if L.is_doi_link(url) and not L.is_data_doi_link(url)]
 
 
-def test_elsevier_inter_refs_are_links_placed_in_the_text(tmp_path):
-    """No real Elsevier article is held here (its API needs a key); the markup is the shape
-    `test_citations` reads, with Elsevier's `ce:inter-ref` and `ce:doi`."""
-    from elsevier_coordinate_extraction.extract.text import (
-        extract_text_from_article,
-        format_article_text,
-    )
+def test_a_dataset_doi_the_reference_list_alone_prints_names_its_entry(elsevier):
+    """`<ce:other-ref><ce:textref>M.A. Goss-Sampson ... https://doi.org/10.17605/OSF.IO/CKNXM.`
+    in entry b0150: no markup marks it and the text does not print it."""
+    _, links = elsevier
 
-    path = tmp_path / "content.xml"
-    path.write_bytes(ELSEVIER)
-    text = format_article_text(extract_text_from_article(ELSEVIER, True, True))
-    links = {link["url"]: link for link in L.read_links(text, L._elsevier(path, text, {}))}
+    assert links["https://doi.org/10.17605/osf.io/cknxm"]["occurrences"] == [
+        {"found_by": "reference", "raw": "https://doi.org/10.17605/OSF.IO/CKNXM",
+         "start_char": None, "end_char": None, "section": None, "context": [],
+         "reference_id": "b0150"}]
 
-    (vault,) = links["https://neurovault.org/collections/9096"]["occurrences"]
-    assert text[vault["start_char"]:vault["end_char"]] == "NeuroVault"
-    assert (vault["found_by"], vault["section"]) == ("markup", "data_availability")
-    assert vault["context"] == ["unthresholded", "statistical maps"]
-    assert links["https://neurovault.org/collections/9096"]["nifti_context"] is True
-    # the href's own scheme is kept: http
-    assert _found(links, "http://fil.ion.ucl.ac.uk/spm") == [("markup", "methods")]
-    assert _found(links, "https://osf.io/w6khb") == [("reference", None)]
-    assert _found(links, "https://doi.org/10.17605/osf.io/w6khb") == [("reference", None)]
-    assert "https://doi.org/10.1523/x.2001" not in links
+
+def test_markup_in_an_entry_names_it_only_beside_the_list_that_holds_it():
+    text = article_text_and_captions(ELSEVIER.read_bytes())[0]
+    pubmed = "http://ncbi.nlm.nih.gov/pubmed/9931269"
+
+    def named(listed):
+        links = {link["url"]: link
+                 for link in L.read_links(text, L._elsevier(ELSEVIER, text, {}), listed)}
+        return [o.get("reference_id") for o in links[pubmed]["occurrences"]]
+
+    assert named(None) == [None]
+    assert named([{"id": "b0071", "text": "another entry"}]) == [None]
+    assert named([{"id": "b0070", "text": "Dale, A. M. (1999). NeuroImage, 9(2), 195-207."}]) \
+        == ["b0070"]
 
 
 # -- the reference list Crossref holds -------------------------------------------------
@@ -237,7 +273,7 @@ def test_crossref_s_list_gives_the_links_its_entries_print():
     DOI on its two dataset entries, and printed their links in the entries' text."""
     message = CrossrefClient(cassette_secrets.REPLAY_EMAIL).work("10.1162/IMAG.a.1210")
     occurrences = L.from_reference_list(from_crossref(message))
-    found = {(o.url, o.reference) for o in occurrences}
+    found = {(o.url, o.reference_id) for o in occurrences}
 
     assert ("https://doi.org/10.17605/osf.io/4drz6", "cr82") in found
     assert ("https://github.com/Kriaese/manuscript-zoomprf", "cr81") in found

@@ -51,9 +51,10 @@ dependencies = [
   # content key the parse mints for every analysis, and CopyRoute, CopyVersion and
   # CopyAccess, the facts each download records about its copy, and paper_parse.Author,
   # each author with ids and affiliations, and ParsedPaper.links with the
-  # data_availability SectionKind. Pinned to neurostuff/study_schema#55's head until it
-  # merges; then to its merge commit.
-  "study-schema @ git+https://github.com/neurostuff/study_schema.git@6435bec5fd80b0d8263e3c43fb9ce56e5cbc7017",
+  # data_availability SectionKind, and each PaperLink's occurrences (LinkOccurrence,
+  # LinkSource). Pinned to neurostuff/study_schema#55's head until it merges; then to its
+  # merge commit.
+  "study-schema @ git+https://github.com/neurostuff/study_schema.git@9aac53f681f72a9f3a1e9979bd4cd515143ded7c",
 ]
 
 [project.optional-dependencies]
