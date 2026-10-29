@@ -676,6 +676,110 @@ def test_a_request_that_cannot_be_sent_stops_without_the_httpx_error(study, toke
     assert not (study / ni.UPLOAD_DIR).exists()
 
 
+@pytest.fixture()
+def client(neurostore, monkeypatch):
+    """The test's Auth0 client in the environment in place of the token."""
+    monkeypatch.delenv(ni.TOKEN_ENV)
+    monkeypatch.setenv(ni.CLIENT_ID_ENV, mock.CLIENT_ID)
+    monkeypatch.setenv(ni.CLIENT_SECRET_ENV, mock.CLIENT_SECRET)
+    return neurostore
+
+
+def _client_ingester(server, clock=None):
+    return _ingester(server, auth0=(mock.AUTH0_URL, mock.AUDIENCE),
+                     clock=(lambda: clock[0]) if clock is not None else None)
+
+
+def test_a_client_s_credentials_are_traded_for_the_token_it_uploads_with(study, client):
+    with _client_ingester(client) as ingester:
+        assert ingester.upload(study)["status"] == "uploaded"
+    assert client.granted == 1 and client.token != mock.TOKEN
+
+
+def test_the_token_in_the_environment_wins_over_a_client(study, client, monkeypatch):
+    monkeypatch.setenv(ni.TOKEN_ENV, mock.TOKEN)
+    with _client_ingester(client) as ingester:
+        assert ingester.upload(study)["status"] == "uploaded"
+    assert client.granted == 0
+
+
+def test_a_token_about_to_expire_is_asked_for_again_before_an_upload(study, client):
+    clock = [0.0]
+    client.expires_in = 3600
+    with _client_ingester(client, clock) as ingester:
+        ingester.upload(study)
+        clock[0] = 3600 - ni.REFRESH_MARGIN - 1
+        ingester.upload(study)
+        assert client.granted == 1
+        clock[0] = 3600 - ni.REFRESH_MARGIN
+        assert ingester.upload(study)["status"] == "uploaded"
+    assert client.granted == 2
+
+
+def test_a_refused_client_token_is_asked_for_once_more_then_stops(study, client):
+    refused = client.error(401, "token expired")
+    client.script(refused)
+    with _client_ingester(client) as ingester:
+        artifact = ingester.upload(study)
+    assert artifact["status"] == "uploaded" and client.granted == 2
+    assert [a.get("token_refused") for a in artifact["attempts"]] == [True, None]
+
+    client.script(client.error(401, "token expired"), client.error(401, "token expired"))
+    with _client_ingester(client) as ingester, \
+            pytest.raises(ni.NeurostoreAuthError, match=f"{mock.CLIENT_ID}@clients") as stopped:
+        ingester.upload(study)
+    assert mock.CLIENT_SECRET not in str(stopped.value) and client.token not in str(stopped.value)
+
+
+def test_a_client_without_neurostore_s_admin_role_stops_the_upload(study, client):
+    client.script(client.error(403, "Only an admin can upload study_schema artifacts."))
+    with _client_ingester(client) as ingester, \
+            pytest.raises(ni.NeurostoreAuthError, match="admin role"):
+        ingester.upload(study)
+    assert client.granted == 1
+
+
+def test_a_client_auth0_refuses_stops_before_anything_is_uploaded(study, client, monkeypatch):
+    monkeypatch.setenv(ni.CLIENT_SECRET_ENV, "wrong-secret")
+    with pytest.raises(ni.NeurostoreAuthError, match="no token") as stopped:
+        _client_ingester(client)
+    assert "wrong-secret" not in str(stopped.value)
+    assert not client.calls and not client.uploads
+
+
+@pytest.mark.parametrize("status", [429, 503])
+def test_an_auth0_that_does_not_answer_is_down(client, status):
+    client.auth0_script.append((status, {"error": "busy"}))
+    with pytest.raises(ni.NeurostoreUnavailable, match=str(status)):
+        _client_ingester(client)
+
+
+def test_each_deployment_s_tenant_and_audience_and_the_settings_that_override_them(
+        client, tmp_path):
+    staging = Settings(neurostore_api_url="https://staging.neurostore.xyz/")
+    assert ni.auth0(staging) == ("https://neurosynth-staging.us.auth0.com",
+                                 "https://staging.synth.neurostore.xyz/api/")
+    assert ni.auth0(Settings(neurostore_api_url="https://neurostore.org")) == (
+        "https://neurosynth.us.auth0.com", "https://neurostore.org/api/")
+    mine = Settings(neurostore_api_url=mock.URL, neurostore_auth0_url=mock.AUTH0_URL + "/",
+                    neurostore_auth0_audience=mock.AUDIENCE, data_root=tmp_path)
+    assert ni.auth0(mine) == (mock.AUTH0_URL, mock.AUDIENCE)
+    with ni.NeurostoreIngester.from_settings(mine) as ingester:
+        assert ingester._token == client.token
+    with pytest.raises(ni.NeurostoreConfigError, match="no Auth0 tenant"):
+        ni.NeurostoreIngester.from_settings(Settings(neurostore_api_url=mock.URL))
+
+
+def test_the_client_s_secret_and_token_are_scrubbed_from_logs_until_closed(client):
+    ingester = _client_ingester(client)
+    record = logging.LogRecord("httpx", logging.INFO, __file__, 1,
+                               f"{mock.CLIENT_SECRET} {client.token}", (), None)
+    ni._SCRUB.filter(record)
+    assert record.getMessage() == f"{ni.REDACTED} {ni.REDACTED}"
+    ingester.close()
+    assert mock.CLIENT_SECRET not in ni._SCRUB.tokens and client.token not in ni._SCRUB.tokens
+
+
 def test_any_authorization_value_is_scrubbed_not_only_the_token():
     # The exact token is not always what an error prints: a pasted token's repr
     # carries escapes, and a proxy may echo some other credential.

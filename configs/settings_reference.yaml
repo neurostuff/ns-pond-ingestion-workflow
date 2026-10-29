@@ -96,3 +96,5 @@ upload_db_user: "postgres"  # User for the neurostore database `ingest add --fro
 upload_db_password: "example"  # Password for the neurostore database `ingest add --from-neurostore` reads
 upload_connect_timeout: 30  # Connection timeout (seconds) for the neurostore database `ingest add --from-neurostore` reads
 neurostore_api_url: null  # Base URL of the neurostore the upload stage posts coordinate parses to (<url>/api/study-schema-uploads/), without /api: https://staging.neurostore.xyz or https://neurostore.org. Unset, upload sends nothing
+neurostore_auth0_url: null  # Auth0 tenant upload asks for a token with NEUROSTORE_CLIENT_ID and NEUROSTORE_CLIENT_SECRET when NEUROSTORE_TOKEN is unset. Unset, the tenant neurostore_api_url's deployment uses (neurosynth-staging for staging, neurosynth for neurostore.org)
+neurostore_auth0_audience: null  # Audience of that token: the Auth0 API neurostore checks tokens against, not the URL uploads go to. Unset, the deployment's own (https://staging.synth.neurostore.xyz/api/ for staging)

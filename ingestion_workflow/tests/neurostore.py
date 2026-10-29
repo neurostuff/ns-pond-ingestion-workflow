@@ -46,6 +46,12 @@ HOST = "neurostore.test"
 URL = f"http://{HOST}"
 #: The test's admin token; a placeholder, never a real one.
 TOKEN = "mock-token-5f2c9e"
+#: The Auth0 tenant that trades the test's client for a token, and what it takes.
+AUTH0_HOST = "auth0.test"
+AUTH0_URL = f"http://{AUTH0_HOST}"
+AUDIENCE = "http://neurostore.test/api/"
+CLIENT_ID = "mock-client-a71b"
+CLIENT_SECRET = "mock-secret-9d04e2"
 #: What every ErrorResponse states as its time.
 TIMESTAMP = "2026-10-27T00:00:00Z"
 _URI = "urn:neurostore-spec"
@@ -162,6 +168,11 @@ class Neurostore:
         #: How the route answers a GET, the ingester's health check: neurostore serves the
         #: route and takes only POST there.
         self.health: Answer = self.error(405, "Method Not Allowed")
+        #: Seconds each token Auth0 gives lasts, and how many it has given.
+        self.expires_in = 86400
+        self.granted = 0
+        #: Auth0's next answers, (status, body), before it grants.
+        self.auth0_script: List[Any] = []
         self.transport = httpx.MockTransport(self._handle)
 
     # -- scripting -------------------------------------------------------------------------
@@ -246,6 +257,8 @@ class Neurostore:
 
     def _handle(self, request: httpx.Request) -> httpx.Response:
         content = request.read()
+        if request.url.host == AUTH0_HOST:
+            return self._grant(request, content)
         self.calls.append(Call(request.method, request.url.path,
                                request.headers.get("Content-Type"), content))
         if self.closed:
@@ -261,6 +274,23 @@ class Neurostore:
         self.uploads.append(body)
         answer = self._script.pop(0) if self._script else self.summary()
         return self._send(answer, request, body)
+
+    def _grant(self, request: httpx.Request, content: bytes) -> httpx.Response:
+        """Auth0's client-credentials grant: a new token for the test's client, which
+        uploads must then carry; a 401 for any other client or audience."""
+        if (request.method, request.url.path) != ("POST", "/oauth/token"):
+            self._violate([f"{request.method} {request.url.path} is not Auth0's token route"])
+        if self.auth0_script:
+            status, body = self.auth0_script.pop(0)
+            return httpx.Response(status, json=body)
+        if json.loads(content) != {"grant_type": "client_credentials", "client_id": CLIENT_ID,
+                                   "client_secret": CLIENT_SECRET, "audience": AUDIENCE}:
+            return httpx.Response(401, json={"error": "access_denied",
+                                             "error_description": "Unauthorized"})
+        self.granted += 1
+        self.token = f"{TOKEN}-{self.granted}"
+        return httpx.Response(200, json={"access_token": self.token, "token_type": "Bearer",
+                                         "expires_in": self.expires_in})
 
     def _check_upload(self, request: httpx.Request, content: bytes) -> Dict[str, Any]:
         problems = []
@@ -348,5 +378,5 @@ def _created_base_study(header: Dict[str, Any]) -> str:
     return "new" + hashlib.sha256(ids.encode()).hexdigest()[:9]
 
 
-__all__ = ["Answer", "Call", "ContractViolation", "HOST", "Neurostore", "TOKEN", "URL", "serve",
-           "api_path", "spec"]
+__all__ = ["AUDIENCE", "AUTH0_URL", "Answer", "CLIENT_ID", "CLIENT_SECRET", "Call",
+           "ContractViolation", "HOST", "Neurostore", "TOKEN", "URL", "serve", "api_path", "spec"]
