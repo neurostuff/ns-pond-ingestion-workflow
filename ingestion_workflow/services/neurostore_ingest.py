@@ -310,7 +310,8 @@ class _Scrub(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         message = record.getMessage()
         clean = scrub(message, None)
-        for token in self.tokens:
+        # Longest first: one that begins another would leave the other's tail behind.
+        for token in sorted(set(self.tokens), key=len, reverse=True):
             clean = scrub(clean, token)
         if clean != message:
             record.msg, record.args = clean, ()

@@ -793,6 +793,14 @@ def test_the_client_s_secret_and_token_are_scrubbed_from_logs_until_closed(neuro
     assert token not in ni._SCRUB.tokens
 
 
+def test_a_secret_that_begins_another_leaves_no_tail_of_it(monkeypatch):
+    """Tokens a tenant numbers can begin one another: `-1` begins `-10`."""
+    monkeypatch.setattr(ni._SCRUB, "tokens", ["tok-1", "tok-10"])
+    record = logging.LogRecord("httpx", logging.INFO, __file__, 1, "tok-10 and tok-1", (), None)
+    ni._SCRUB.filter(record)
+    assert record.getMessage() == f"{ni.REDACTED} and {ni.REDACTED}"
+
+
 def test_any_authorization_value_is_scrubbed_not_only_the_token():
     # The exact token is not always what an error prints: a pasted token's repr
     # carries escapes, and a proxy may echo some other credential.
