@@ -13,7 +13,7 @@ each plan expects now.
 from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
-from typing import Any, Dict, Mapping, NamedTuple, Optional, Sequence, Set, Tuple
+from typing import Any, Dict, List, Mapping, NamedTuple, Optional, Sequence, Set, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Catalog, Status
 
@@ -145,6 +145,12 @@ def _read_from(artifact: Artifact) -> Optional[str]:
     return None
 
 
+#: Why an artifact would run again once the fingerprints are stored (`StageCounts`).
+EMPTY_RERUN = "no fingerprint, and its blob is gone"
+LOST = "reused now, and would not be after"
+UNASKED = "made from a rewritten artifact, and no plan asks about it"
+
+
 @dataclass
 class StageCounts:
     """One stage's artifacts, by what storing the fingerprints does to them."""
@@ -179,6 +185,9 @@ class Refingerprint:
     stages: Dict[str, StageCounts] = field(default_factory=dict)
     #: The plans with the rewrites made: why each stage blocked what it did.
     plan: RunReport = field(default_factory=RunReport)
+    #: By stage, each artifact `rerun` counts, (article_id, source, why), so an operator
+    #: can run the stage for exactly those.
+    running_again: Dict[str, List[Tuple[str, str, str]]] = field(default_factory=dict)
 
     def rerun(self) -> Dict[str, int]:
         """By stage, the artifacts that would run again once this is stored."""
@@ -205,10 +214,18 @@ def refingerprint(ctx: Context, stages: Sequence[Stage], refs: Sequence[ArticleR
             found.carried += 1
         else:
             found.filled += 1
-    for _, stage, _ in after.empty_asked - rewrites.keys():
-        counts.setdefault(stage, StageCounts()).empty_rerun += 1
-    for _, stage, _ in fresh_before - after.still_fresh - rewrites.keys():
-        counts.setdefault(stage, StageCounts()).lost += 1
+    running_again: Dict[str, List[Tuple[str, str, str]]] = {}
+
+    def again(key: Key, why: str) -> None:
+        article_id, stage, source = key
+        running_again.setdefault(stage, []).append((article_id, source, why))
+
+    for key in sorted(after.empty_asked - rewrites.keys()):
+        counts.setdefault(key[1], StageCounts()).empty_rerun += 1
+        again(key, EMPTY_RERUN)
+    for key in sorted(fresh_before - after.still_fresh - rewrites.keys()):
+        counts.setdefault(key[1], StageCounts()).lost += 1
+        again(key, LOST)
     made: Dict[str, Set[str]] = {}
     for article_id, stage, _ in rewrites:
         made.setdefault(stage, set()).add(article_id)
@@ -233,7 +250,8 @@ def refingerprint(ctx: Context, stages: Sequence[Stage], refs: Sequence[ArticleR
                         found.unreachable += 1
                     else:
                         found.unasked += 1
+                        again(key, UNASKED)
     for stage, n in empty.items():
         found = counts.setdefault(stage, StageCounts())
         found.empty_unplanned = n - found.filled - found.empty_rerun
-    return Refingerprint(rewrites, counts, plan)
+    return Refingerprint(rewrites, counts, plan, running_again)

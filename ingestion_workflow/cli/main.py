@@ -975,6 +975,10 @@ def repair_identity(
                    "was made from them, through upload")
 
 
+#: How many of a stage's artifacts that would run again the repair names.
+RUNNING_AGAIN_SHOWN = 50
+
+
 def _render_refingerprint(found) -> str:
     lines = ["fingerprints:",
              f"  {'stage':<11}{'filled':>10}{'carried':>10}"
@@ -995,6 +999,13 @@ def _render_refingerprint(found) -> str:
         if n is not None and n.failed_read:
             lines.append(f"  {stage}: {n.failed_read:,} read from an extraction that has since "
                          "failed: no plan asks about them, so they are left as they are")
+    for stage in STAGE_ORDER:
+        listed = found.running_again.get(stage, [])
+        for article_id, source, why in listed[:RUNNING_AGAIN_SHOWN]:
+            lines.append(f"  would run again: {stage} {article_id}"
+                         f"{' ' + source if source else ''} ({why})")
+        if len(listed) > RUNNING_AGAIN_SHOWN:
+            lines.append(f"  would run again: {stage}: {len(listed) - RUNNING_AGAIN_SHOWN:,} more")
     return "\n".join(lines)
 
 
