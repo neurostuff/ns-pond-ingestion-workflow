@@ -20,14 +20,23 @@ blocked       never ran here because its input did not pass; the reason names
 pending       its input passed and nothing is recorded here yet; the reason says
               when the input holds nothing for this stage to read
 not_attempted its input passed and this stage has never run on the catalog
+rerun         recorded, and the stage's plan would make it again: why, its
+              freshness test says (no fingerprint, its inputs changed, ...)
+held          its input passed, but the stage's plan does not take it yet, and says
+              why (no text hash, its model not served, ...)
+spent         failed, and its plan will not try it again on its own: its tries are
+              used up, or no source is left; `--refresh <stage>` redoes it
 stale         an ok artifact exists although its input did not pass, so it was
               made from an input that has since gone or under an older stage graph
 unaccounted   an attempt is recorded but no outcome, or a status the catalog does
               not define
 
-Only small summary fields are read, through `json_extract`, and no blob is
-opened. Rows are streamed in article order, so memory does not grow with the
-catalog.
+Given the pipeline's settings, each stage's own `plan()` decides, as `ingest run
+--dry-run` does, whether the stage takes the article, whether its record is fresh,
+and whether a failure is tried again: the report keeps no second copy of those rules.
+The records say what happened and why, from small summary fields read through
+`json_extract`. Articles are streamed in id order and planned 500 at a time, so
+memory does not grow with the catalog.
 """
 
 from __future__ import annotations
@@ -46,9 +55,25 @@ from types import SimpleNamespace
 from typing import Any, Callable, Dict, Iterator, List, Optional, Sequence, Tuple
 from urllib.parse import parse_qs, urlparse
 
-from ingestion_workflow.catalog import Catalog
-from ingestion_workflow.catalog.blobs import BlobStore
-from ingestion_workflow.pipeline.stage import NO_ANALYSES, NO_TEXT, TAKE_BACK_REASONS
+from ingestion_workflow.catalog import ArticleRef, Artifact, Catalog
+from ingestion_workflow.catalog.store import BACKING_OFF, STATUS_RANK
+from ingestion_workflow.pipeline import plan as planning
+from ingestion_workflow.pipeline.scheduler import BATCH_SIZE, plan_batch
+from ingestion_workflow.pipeline.stage import (
+    CHANGED,
+    FRESH,
+    INPUT_BACK,
+    NO_ANALYSES,
+    NO_FINGERPRINT,
+    NO_TEXT,
+    NOT_OK,
+    PAYLOAD_GONE,
+    REFRESHING,
+    REMADE,
+    TAKE_BACK_REASONS,
+    TRANSIENT_DUE,
+    Context,
+)
 from ingestion_workflow.pipeline.stages.extract import READ_FROM_BAD_PAGE, SYMBOLS_AS_DIGITS
 from ingestion_workflow.pipeline.stages.sync import (
     NO_IDENTIFIER,
@@ -68,15 +93,22 @@ PENDING = "pending"
 NOT_ATTEMPTED = "not_attempted"
 STALE = "stale"
 UNACCOUNTED = "unaccounted"
+RERUN = "rerun"
+HELD = "held"
+SPENT = "spent"
 
-STATES = (PASSED, FILTERED, FAILED, PERMANENT, TAKEN_BACK, REFUSED, BLOCKED, PENDING,
-          NOT_ATTEMPTED, STALE, UNACCOUNTED)
+STATES = (PASSED, FILTERED, FAILED, SPENT, PERMANENT, TAKEN_BACK, REFUSED, BLOCKED, PENDING,
+          NOT_ATTEMPTED, RERUN, HELD, STALE, UNACCOUNTED)
 
 #: What each state means, in plain words, for the page.
 MEANINGS = {
     PASSED: "done, and handed on to the next stage",
     FILTERED: "done, but it holds nothing the next stage reads",
     FAILED: "failed; the pipeline will try again",
+    SPENT: "failed, and the pipeline will not try again on its own: no tries or no source "
+           "left; `--refresh <stage>` redoes it",
+    RERUN: "made before, and the pipeline will make it again",
+    HELD: "its input passed, but the stage does not take it yet",
     PERMANENT: "failed in a way the pipeline does not retry",
     TAKEN_BACK: "what was made from its text was withdrawn: no extraction found any text, "
                 "or a re-read found no analyses",
@@ -90,8 +122,8 @@ MEANINGS = {
 
 #: Of the articles a stage on the upload path takes in, those it leaves out and
 #: those still waiting; the rest passed. The flow diagram sums these.
-EXCLUDED = (FILTERED, FAILED, PERMANENT, TAKEN_BACK, REFUSED, UNACCOUNTED)
-WAITING = (PENDING, NOT_ATTEMPTED)
+EXCLUDED = (FILTERED, FAILED, SPENT, PERMANENT, TAKEN_BACK, REFUSED, UNACCOUNTED)
+WAITING = (PENDING, NOT_ATTEMPTED, RERUN, HELD)
 
 #: The reason upload holds an article back on (`GATED` in the upload stage):
 #: "<this>: <stage> <state>; ...; the parse holds N analyses, the last upload M
@@ -152,20 +184,8 @@ GLOSSARY: Tuple[Tuple[str, str], ...] = (
 )
 
 #: A stage that runs per source keeps one artifact per source; the article's
-#: state is the best any source reached, as `Catalog.status_counts` counts it.
-_RANK = {"ok": 0, "failed": 1, "permanent": 2, "skipped": 3}
-
-#: Triage waits for metadata to have been attempted, not to have succeeded
-#: (`TriageStage.plan`): plenty of articles have no metadata to find.
-_INPUT_ON_ATTEMPT = {"triage"}
-#: States of an input that has not been attempted, which such a stage waits on.
-_NOT_TRIED = (BLOCKED, PENDING, NOT_ATTEMPTED, STALE, UNACCOUNTED)
-
-#: Stages that refuse text made from a downloaded page that is not the article,
-#: and the stage whose artifact names that text's source (`read_from_bad_page`
-#: in the prose and sync plans). Resolve checks it too, but on the prose's
-#: source, which is the passages' source prose already refused on.
-_READS_TEXT = {"prose": "passages", "sync": "prose"}
+#: state is the best any source reached (`STATUS_RANK`, as `Catalog.status_counts`).
+_RANK = {status: rank for rank, status in enumerate(STATUS_RANK)}
 
 #: Inputs a stage's fingerprint reads besides its declared parent
 #: (`fingerprint_for` in each stage), for the trace's "built from".
@@ -287,7 +307,12 @@ class StageNode:
 
 def stage_graph(prose: bool) -> List[StageNode]:
     """The stages in order, each with the input it waits for, as the stages declare it."""
-    from ingestion_workflow.pipeline.stages import PROSE_STAGES, STAGE_ORDER, STAGE_TYPES, upstream_of
+    from ingestion_workflow.pipeline.stages import (
+        PROSE_STAGES,
+        STAGE_ORDER,
+        STAGE_TYPES,
+        upstream_of,
+    )
 
     settings = SimpleNamespace(prose_model="on" if prose else None)
     names = [n for n in STAGE_ORDER if prose or n not in PROSE_STAGES]
@@ -415,40 +440,137 @@ def _origin(stage: str, placed: Placed) -> Placed:
     return Placed(BLOCKED, why, placed.raw)
 
 
+@dataclass(frozen=True)
+class Verdict:
+    """What a stage's own plan decided for one article (`plan_verdicts`)."""
+
+    #: `StagePlan.by_article`'s verdict; None when the stage could not plan.
+    plan: Optional[str]
+    #: The plan's reason for blocking it, or why the stage could not plan.
+    reason: Optional[str] = None
+    #: What the plan's freshness and retry tests answered of the article's records.
+    answers: Tuple[str, ...] = ()
+
+
+class _Watching(Context):
+    """A run's context that notes what its freshness and retry tests answer of the
+    records of the stage being planned, per article."""
+
+    def __init__(self, base: Context) -> None:
+        super().__init__(base.settings, base.catalog, refresh=sorted(base.refresh),
+                         max_attempts=base.max_attempts, retry_after=base.retry_after,
+                         now=base.now)
+        self.stage: Optional[str] = None
+        self.answers: Dict[str, List[str]] = defaultdict(list)
+
+    def freshness(self, artifact: Optional[Artifact], expected: str) -> str:
+        found = super().freshness(artifact, expected)
+        if artifact is not None and artifact.stage == self.stage and found != NOT_OK:
+            self.answers[artifact.article_id].append(found)
+        return found
+
+    def attempt_state(self, artifact: Optional[Artifact], attempts: int,
+                      last_attempt: Optional[str], stage: str, source: str = "") -> str:
+        found = super().attempt_state(artifact, attempts, last_attempt, stage, source)
+        if artifact is not None and stage == self.stage:
+            self.answers[artifact.article_id].append(found)
+        return found
+
+
+def plan_verdicts(ctx: Context, stages: Sequence[Any],
+                  refs: Sequence[ArticleRef]) -> Dict[str, Dict[str, Verdict]]:
+    """article_id -> stage -> what that stage's plan decides for it, planned as
+    `ingest run --dry-run` plans, read-only."""
+    watching = _Watching(ctx)
+    out: Dict[str, Dict[str, Verdict]] = defaultdict(dict)
+    for stage in stages:
+        watching.stage, watching.answers = stage.name, defaultdict(list)
+        try:
+            plan = plan_batch(watching, stage, list(refs))
+        except Exception as exc:  # noqa: BLE001 - one stage that cannot plan hides no other
+            why = _cannot_plan(exc)
+            for ref in refs:
+                out[ref.id][stage.name] = Verdict(None, why)
+            continue
+        for article_id, (verdict, reason) in plan.by_article().items():
+            out[article_id][stage.name] = Verdict(
+                verdict, reason, tuple(dict.fromkeys(watching.answers.get(article_id, ()))))
+    return out
+
+
+def _cannot_plan(exc: Exception) -> str:
+    """Why a stage's plan could not run, in words: the setting it asked for, if it named one."""
+    named = re.search(r"\bneeds ([a-z_]+)", str(exc))
+    if named:
+        return f"not known: this stage needs {named.group(1)} in the config to plan"
+    return f"not known: this stage cannot plan with these settings ({type(exc).__name__})"
+
+
+#: What the plan's freshness test answers that says why a record is made again.
+_REMADE_WHY = (NO_FINGERPRINT, CHANGED, PAYLOAD_GONE, TRANSIENT_DUE, REFRESHING, INPUT_BACK)
+
+
+def _overlay(placed: Placed, verdict: Verdict) -> Placed:
+    """An article's recorded state at a stage the plan takes, with what the plan will
+    do to it: a record it makes again waits; a failure it will not retry is spent."""
+    if verdict.plan == planning.PENDING:
+        if placed.state in (FAILED, UNACCOUNTED):
+            return placed  # due a retry, or a bug either way
+        why = next((a for a in verdict.answers if a in _REMADE_WHY), REMADE)
+        return Placed(RERUN, why, placed.raw)
+    if placed.state == FAILED and BACKING_OFF not in verdict.answers:
+        return Placed(SPENT, placed.reason, placed.raw)
+    return placed
+
+
 def place_article(graph: Sequence[StageNode], rows: Sequence[_Row], *, ran: set,
-                  attempted: set) -> Dict[str, Placed]:
+                  attempted: set,
+                  verdicts: Optional[Dict[str, Verdict]] = None) -> Dict[str, Placed]:
     """Every stage's state for one article. `attempted` holds the stages with an
-    attempt but no artifact; `ran` the stages with any artifact in the catalog."""
+    attempt but no artifact; `ran` the stages with any artifact in the catalog;
+    `verdicts`, each stage's plan for the article (`plan_verdicts`). Without them, or
+    for a stage that could not plan, a stage takes the article when its input passed,
+    and nothing is said of what a run would do: the records alone."""
     by_stage: Dict[str, List[_Row]] = defaultdict(list)
     for row in rows:
         by_stage[row.stage].append(row)
-    bad = _bad_page_sources(rows)
     # An extraction set aside for what its file is names why the article has no text.
     set_aside = any(_truthy(r.set_aside) for r in by_stage.get("extract", ()))
     out: Dict[str, Placed] = {}
     for node in graph:
         own = by_stage.get(node.name)
-        if node.upstream is None:
-            entered = True
+        before = out[node.upstream] if node.upstream else None
+        verdict = verdicts.get(node.name) if verdicts is not None else None
+        if verdicts is not None and verdict is None:
+            out[node.name] = Placed(UNACCOUNTED, "the stage's plan did not place it",
+                                    recorded=bool(own))
+            continue
+        if verdict is not None and verdict.plan is None:
+            verdict = None  # this stage could not plan: its records alone
+        if verdict is not None:
+            entered = verdict.plan != planning.BLOCKED
         else:
-            before = out[node.upstream]
-            entered = before.state == PASSED or (
-                node.name in _INPUT_ON_ATTEMPT and before.state not in _NOT_TRIED)
-            reads = _READS_TEXT.get(node.name)
-            if entered and reads and _from_bad_page(by_stage.get(reads), bad):
-                # The stage blocks it and leaves any record it made before as it is.
-                out[node.name] = Placed(REFUSED, f"{reads} {READ_FROM_BAD_PAGE}",
+            # A record made again later still passed: the records alone take it.
+            entered = before is None or before.state in (PASSED, RERUN)
+        if not entered:
+            if verdict is not None and (before is None or before.state in (PASSED, RERUN)):
+                # The input passed, and the plan holds the article for a reason of its own.
+                why = verdict.reason or "the stage does not take it yet"
+                out[node.name] = Placed(REFUSED if READ_FROM_BAD_PAGE in why else HELD, why,
                                         recorded=bool(own))
-                continue
-        if own:
-            out[node.name] = _recorded(node, own, before if not entered else None)
-        elif not entered:
-            out[node.name] = _origin(node.upstream, before)
-        elif node.name == "resolve" and not _resolve_has_input(by_stage):
-            # ResolveStage.plan skips these without recording anything.
-            out[node.name] = Placed(FILTERED, "neither the tables nor the prose hold an analysis")
+            elif own:
+                out[node.name] = _recorded(node, own, before)
+            else:
+                out[node.name] = _origin(node.upstream, before)
+        elif own:
+            placed = _own_state(node, own)
+            out[node.name] = _overlay(placed, verdict) if verdict is not None else placed
+            out[node.name].recorded = True
         elif node.name in attempted:
             out[node.name] = Placed(UNACCOUNTED, "an attempt is recorded but no outcome")
+        elif verdict is not None and verdict.plan == planning.SKIPPED:
+            out[node.name] = Placed(FILTERED,
+                                    verdict.reason or f"{node.name} has nothing to do for it")
         elif node.name not in ran:
             out[node.name] = Placed(NOT_ATTEMPTED, "this stage has never run on the catalog")
         else:
@@ -458,12 +580,9 @@ def place_article(graph: Sequence[StageNode], rows: Sequence[_Row], *, ran: set,
     return out
 
 
-def _recorded(node: StageNode, own: List[_Row], before: Optional[Placed]) -> Placed:
-    """The state of an article with an artifact here; `before` is set when its input
-    did not pass."""
-    if before is None:
-        placed = _own_state(node, own)
-    elif all(r.status != "ok" and r.error in TAKE_BACK_REASONS for r in own):
+def _recorded(node: StageNode, own: List[_Row], before: Placed) -> Placed:
+    """The state of an article with an artifact at a stage that does not take it."""
+    if all(r.status != "ok" and r.error in TAKE_BACK_REASONS for r in own):
         # The record a stage leaves when its input was taken back: the
         # article dropped out upstream, so it counts as blocked from there.
         placed = _origin(node.upstream, before)
@@ -486,22 +605,7 @@ def _recorded(node: StageNode, own: List[_Row], before: Optional[Placed]) -> Pla
     return placed
 
 
-def _bad_page_sources(rows: Sequence[_Row]) -> Dict[str, str]:
-    """Each source whose download or extraction failed as a page that is not the article."""
-    return {r.source: r.bad_page for r in rows
-            if r.stage in ("download", "extract") and r.status != "ok" and r.bad_page}
-
-
-def _from_bad_page(rows: Optional[List[_Row]], bad: Dict[str, str]) -> bool:
-    """Whether the artifact a stage reads was made from a source's bad page."""
-    return bool(rows) and (rows[0].text_source or "") in bad
-
-
 def _pending_reason(node: StageNode, by_stage: Dict[str, List[_Row]]) -> str:
-    if node.name == "passages" and not any(
-            r.status == "ok" and _truthy(r.hashed) for r in by_stage.get("extract", [])):
-        # PassagesStage.plan reads the text hash extract records, and blocks without it.
-        return "waits for `ingest refresh-text`: its extraction records no text hash"
     key = _EMPTY_INPUT.get(node.name)
     given = [r for r in by_stage.get(node.upstream or "", []) if r.status == "ok"]
     if key and given and getattr(given[0], key) in (0, "0"):
@@ -511,13 +615,6 @@ def _pending_reason(node: StageNode, by_stage: Dict[str, List[_Row]]) -> str:
             return f"input ready, nothing to read ({key} = 0); tables wait behind it"
         return f"input ready, nothing to read ({key} = 0)"
     return "input ready, not run yet"
-
-
-def _resolve_has_input(by_stage: Dict[str, List[_Row]]) -> bool:
-    prose = [r for r in by_stage.get("prose", []) if r.status == "ok"]
-    tables = [r for r in by_stage.get("analyses", []) if r.status == "ok"]
-    read = prose and (_truthy(prose[0].coordinates) or _truthy(prose[0].analyses))
-    return bool(read or (tables and _truthy(tables[0].tables)))
 
 
 def _dimensions(rows: Sequence[_Row]) -> Tuple[str, str, str]:
@@ -636,6 +733,10 @@ class Funnel:
     noted: Dict[str, Dict[str, List[int]]] = field(default_factory=dict)
     seconds: float = 0.0
     samples: int = 0
+    #: Whether each stage's own plan placed the articles (`Planner`), or the records alone.
+    planned: bool = False
+    #: stage -> why its plan could not run, for the articles it then placed by records.
+    unplanned: Dict[str, str] = field(default_factory=dict)
 
     def stage_totals(self) -> Dict[str, Dict[str, int]]:
         out: Dict[str, Dict[str, int]] = {n.name: {s: 0 for s in STATES} for n in self.graph}
@@ -660,14 +761,17 @@ class Funnel:
                                 f"but {held:,} have one")
         if self.stranded:
             problems.append(f"{self.stranded:,} artifacts belong to no live article")
+        problems.extend(f"{stage}: placed by its records alone, as its plan could not run: {why}"
+                        for stage, why in sorted(self.unplanned.items()))
         return problems
 
 
 def flow_stages(graph: Sequence[StageNode]) -> List[str]:
-    """Every stage that gates articles, in run order: the registry's default stages."""
-    from ingestion_workflow.pipeline.stages import OPT_IN_STAGES
+    """Every stage that gates articles, in run order: all but those no stage waits for
+    (a stage's `gates`)."""
+    from ingestion_workflow.pipeline.stages import STAGE_TYPES
 
-    return [node.name for node in graph if node.name not in OPT_IN_STAGES]
+    return [node.name for node in graph if getattr(STAGE_TYPES[node.name], "gates", True)]
 
 
 def _grouped(pairs: Dict[Tuple[str, str], int], states: Sequence[str]) -> List[list]:
@@ -697,18 +801,10 @@ def page_model(funnel: Funnel) -> Dict[str, Any]:
         count = totals[stage]
         came = funnel.total - count[BLOCKED] - count[STALE]
         excluded, waiting = _grouped(by[stage], EXCLUDED), _grouped(by[stage], WAITING)
-        up = upstream[stage]
-        if up is None:
-            given = funnel.total
-        elif stage in _INPUT_ON_ATTEMPT:
-            given = funnel.total - sum(totals[up][s] for s in _NOT_TRIED)
-        else:
-            given = totals[up][PASSED]
         steps.append({
-            "stage": stage, "input": up, "in": came, "passed": count[PASSED],
+            "stage": stage, "input": upstream[stage], "in": came, "passed": count[PASSED],
             "excluded": excluded, "waiting": waiting, "stale": _grouped(by[stage], (STALE,)),
             "adds_up": came == count[PASSED] + sum(g[2] for g in excluded + waiting),
-            "follows": came == given,
         })
     return {"total": funnel.total, "totals": totals, "flow": steps,
             "reasons": {node.name: _grouped(by[node.name], STATES) for node in funnel.graph}}
@@ -765,11 +861,49 @@ def _add(table: Dict[tuple, list], key: tuple, article_id: str, raw: str, sample
         cell[1].append((article_id, raw))
 
 
-def build_funnel(conn: sqlite3.Connection, *, prose: Optional[bool] = None, samples: int = 5,
+class Planner:
+    """Each stage's own plan, as `ingest run --dry-run` makes it under `settings`, over
+    the catalog at `root` opened read-only."""
+
+    def __init__(self, root: Path | str, settings, graph: Sequence[StageNode]) -> None:
+        from ingestion_workflow.pipeline.stages import build
+
+        self._conn = open_readonly(root)
+        self._conn.row_factory = sqlite3.Row
+        self.catalog = Catalog(self._conn, Path(root).resolve())
+        self.ctx = Context.from_settings(settings, self.catalog)
+        #: (stage, or why it cannot be built under these settings), in graph order.
+        self.stages: List[Tuple[str, Any]] = []
+        for node in graph:
+            try:
+                self.stages.append((node.name, build([node.name], settings)[0]))
+            except ValueError as exc:
+                self.stages.append((node.name, _cannot_plan(exc)))
+
+    def verdicts(self, article_ids: Sequence[str]) -> Dict[str, Dict[str, Verdict]]:
+        """article_id -> stage -> what that stage's plan decides for it."""
+        found = self.catalog.identifiers(list(article_ids))
+        refs = [ArticleRef(id=a, identifier=found[a]) for a in article_ids]
+        out = plan_verdicts(self.ctx, [s for _, s in self.stages if not isinstance(s, str)],
+                            refs)
+        for name, stage in self.stages:
+            if isinstance(stage, str):
+                for ref in refs:
+                    out[ref.id][name] = Verdict(None, stage)
+        return out
+
+    def close(self) -> None:
+        self._conn.close()
+
+
+def build_funnel(conn: sqlite3.Connection, *, planner: Optional[Planner] = None,
+                 prose: Optional[bool] = None, samples: int = 5,
                  collect: Optional[Callable[[str, tuple], bool]] = None,
                  ) -> Funnel:
     """Count every article's state at every stage.
 
+    With a `planner`, each stage's own plan decides whether it takes each article and
+    what a run would do with it (`place_article`); without, the records alone.
     `prose` defaults to whether the catalog holds any prose-stage artifact.
     `collect(kind, key)` picks articles to list in full, beyond the `samples`
     kept per cell: kind "stage" with a `Funnel.cells` key, or "source" with a
@@ -780,7 +914,7 @@ def build_funnel(conn: sqlite3.Connection, *, prose: Optional[bool] = None, samp
     if prose is None:
         prose = bool(ran & {"passages", "prose", "resolve"})
     graph = stage_graph(prose)
-    funnel = Funnel(graph=graph, samples=samples)
+    funnel = Funnel(graph=graph, samples=samples, planned=planner is not None)
     names = {node.name for node in graph}
     funnel.expected = {stage: n for stage, n in conn.execute(_RECORDED_SQL) if stage in names}
     funnel.noted = noted(conn)
@@ -788,8 +922,38 @@ def build_funnel(conn: sqlite3.Connection, *, prose: Optional[bool] = None, samp
     for article_id, stage in conn.execute(_ATTEMPTED_SQL):
         attempted[article_id].add(stage)
 
+    def place(batch: List[Tuple[str, str, List[_Row]]]) -> None:
+        verdicts = planner.verdicts([a for a, _, _ in batch]) if planner is not None else {}
+        for by_stage in verdicts.values():
+            for stage, verdict in by_stage.items():
+                if verdict.plan is None:
+                    funnel.unplanned.setdefault(stage, verdict.reason or "")
+        for article_id, day, rows in batch:
+            funnel.total += 1
+            downloaded, judged, tried = _dimensions(rows)
+            placed = place_article(graph, rows, ran=ran,
+                                   attempted=attempted.get(article_id, set()),
+                                   verdicts=verdicts.get(article_id, {}) if planner else None)
+            for stage, where in placed.items():
+                key = (stage, where.state, where.reason, downloaded, judged, day, tried)
+                _add(funnel.cells, key, article_id, where.raw, samples)
+                if where.recorded:
+                    funnel.recorded[stage] += 1
+                if collect and collect("stage", key):
+                    funnel.collected.append((article_id, stage, where.state, where.reason))
+            for row in rows:
+                if row.stage in ("download", "extract"):
+                    status = TAKEN_BACK if row.error == NO_TEXT else row.status
+                    reason = _row_reason(row)
+                    key = (row.stage, row.source, status, reason, downloaded, judged, day, tried)
+                    _add(funnel.sources, key, article_id, scrub(row.error or "", 300), samples)
+                    if collect and collect("source", key):
+                        funnel.collected.append(
+                            (article_id, f"{row.stage}:{row.source}", status, reason))
+
     groups = _artifact_groups(conn)
     pending_group = next(groups, None)
+    batch: List[Tuple[str, str, List[_Row]]] = []
     for article_id, day in _articles(conn):
         while pending_group is not None and pending_group[0] < article_id:
             funnel.stranded += len(pending_group[1])
@@ -798,25 +962,11 @@ def build_funnel(conn: sqlite3.Connection, *, prose: Optional[bool] = None, samp
         if pending_group is not None and pending_group[0] == article_id:
             rows = pending_group[1]
             pending_group = next(groups, None)
-        funnel.total += 1
-        downloaded, judged, tried = _dimensions(rows)
-        placed = place_article(graph, rows, ran=ran, attempted=attempted.get(article_id, set()))
-        for stage, where in placed.items():
-            key = (stage, where.state, where.reason, downloaded, judged, day, tried)
-            _add(funnel.cells, key, article_id, where.raw, samples)
-            if where.recorded:
-                funnel.recorded[stage] += 1
-            if collect and collect("stage", key):
-                funnel.collected.append((article_id, stage, where.state, where.reason))
-        for row in rows:
-            if row.stage in ("download", "extract"):
-                status = TAKEN_BACK if row.error == NO_TEXT else row.status
-                reason = _row_reason(row)
-                key = (row.stage, row.source, status, reason, downloaded, judged, day, tried)
-                _add(funnel.sources, key, article_id, scrub(row.error or "", 300), samples)
-                if collect and collect("source", key):
-                    funnel.collected.append(
-                        (article_id, f"{row.stage}:{row.source}", status, reason))
+        batch.append((article_id, day, rows))
+        if len(batch) >= BATCH_SIZE:  # planned together, as a run plans them
+            place(batch)
+            batch = []
+    place(batch)
     while pending_group is not None:
         funnel.stranded += len(pending_group[1])
         pending_group = next(groups, None)
@@ -865,8 +1015,6 @@ def _encode(funnel: Funnel, catalog: str) -> dict:
         "model": page_model(funnel),
         "noted": funnel.noted,
         "flow_stages": flow_stages(funnel.graph),
-        "on_attempt": sorted(_INPUT_ON_ATTEMPT),
-        "not_tried": _NOT_TRIED,
         "side_inputs": _SIDE_INPUTS,
         "meanings": MEANINGS,
         "glossary": GLOSSARY,
@@ -874,6 +1022,7 @@ def _encode(funnel: Funnel, catalog: str) -> dict:
         "waiting": WAITING,
         "trunk": trunk(funnel.graph),
         "problems": funnel.reconcile(),
+        "planned": funnel.planned,
         "stranded": funnel.stranded,
         "strings": {kind: list(table) for kind, table in tables.items()},
         "cells": cells,
@@ -890,13 +1039,30 @@ def render_html(funnel: Funnel, catalog: str) -> str:
     return _PAGE.replace("__DATA__", data.replace("</", "<\\/"))
 
 
-def write_report(catalog_root: Path | str, out: Path | str, *, samples: int = 20,
-                 prose: Optional[bool] = None) -> Funnel:
+def funnel_of(catalog_root: Path | str, settings=None, *, prose: Optional[bool] = None,
+              samples: int = 20, collect: Optional[Callable[[str, tuple], bool]] = None,
+              ) -> Funnel:
+    """The funnel of the catalog at `catalog_root`, opened read-only. With the pipeline's
+    `settings`, each stage's own plan places the articles, and the stage graph is the one
+    those settings run (`prose_model`)."""
+    if settings is not None and prose is None:
+        prose = bool(getattr(settings, "prose_model", None))
     conn = open_readonly(catalog_root)
+    planner = None
     try:
-        funnel = build_funnel(conn, prose=prose, samples=samples)
+        if settings is not None:
+            planner = Planner(catalog_root, settings, stage_graph(prose))
+        return build_funnel(conn, planner=planner, prose=prose, samples=samples,
+                            collect=collect)
     finally:
         conn.close()
+        if planner is not None:
+            planner.close()
+
+
+def write_report(catalog_root: Path | str, out: Path | str, *, samples: int = 20,
+                 prose: Optional[bool] = None, settings=None) -> Funnel:
+    funnel = funnel_of(catalog_root, settings, prose=prose, samples=samples)
     Path(out).write_text(render_html(funnel, str(catalog_root)), encoding="utf-8")
     return funnel
 
@@ -906,8 +1072,8 @@ def matching_ids(catalog_root: Path | str, *, stage: str, states: Sequence[str] 
                  sources: Sequence[str] = (), tried: Sequence[str] = (),
                  judged: Sequence[str] = (), day_from: Optional[str] = None,
                  day_to: Optional[str] = None, prose: Optional[bool] = None,
-                 by_source: Optional[str] = None,
-                 group: Optional[str] = None) -> List[Tuple[str, str, str, str]]:
+                 by_source: Optional[str] = None, group: Optional[str] = None,
+                 settings=None) -> List[Tuple[str, str, str, str]]:
     """Every article in one bucket, chosen as the page chooses it:
     (article_id, stage, state, reason).
 
@@ -937,27 +1103,7 @@ def matching_ids(catalog_root: Path | str, *, stage: str, states: Sequence[str] 
                 and (group is None or reason_group(rea) == group)
                 and article_ok(dl, txt, day, tr))
 
-    conn = open_readonly(catalog_root)
-    try:
-        return build_funnel(conn, prose=prose, samples=0, collect=wanted).collected
-    finally:
-        conn.close()
-
-
-class _NoPayloads(BlobStore):
-    def get(self, digest: Optional[str]) -> Optional[Any]:
-        raise PermissionError("the trace reads catalog metadata only, never a payload")
-
-
-class _MetadataCatalog(Catalog):
-    """The catalog over a read-only connection, refusing to open a payload."""
-
-    def __init__(self, connection: sqlite3.Connection, root: Path) -> None:
-        super().__init__(connection, root)
-        self.blobs = _NoPayloads(self.root / "blobs")
-
-    def payload(self, artifact):
-        return self.blobs.get(artifact.blob if artifact else None)
+    return funnel_of(catalog_root, settings, prose=prose, samples=0, collect=wanted).collected
 
 
 def _versions(stage: str) -> Dict[str, Any]:
@@ -969,118 +1115,20 @@ def _versions(stage: str) -> Dict[str, Any]:
             if k.isupper() and k.endswith("VERSION") and isinstance(v, (str, int))}
 
 
-def _brief(artifact) -> Optional[Dict[str, str]]:
-    if artifact is None:
-        return None
-    return {"stage": artifact.stage, "source": artifact.source,
-            "fingerprint": artifact.fingerprint, "written": artifact.updated_at}
-
-
-def _read_plan(plan, existing: Dict[str, Any]) -> Dict[str, Any]:
-    """What one article's plan says about freshness, per source where it can tell."""
-    sources: Dict[str, Dict[str, Any]] = {}
-    for work in plan.pending:
-        old = existing.get(work.source)
-        if old is None:
-            why = "due: no record yet, so the stage would run now"
-        elif old.status.value != "ok":
-            why = "due: the stage would try again"
-        elif old.fingerprint != work.fingerprint:
-            why = (f"stale: built from fingerprint {old.fingerprint[:12] or '(none)'}; "
-                   f"its inputs or version now give {work.fingerprint[:12]}, so it would rebuild")
-        else:
-            why = "stale: a refresh was asked for, or its stored payload is gone"
-        sources[work.source] = {"freshness": why, "would_read": _brief(work.upstream)}
-    said = []
-    if plan.fresh:
-        said.append("fresh: its fingerprint matches what the stage would build from its "
-                    "inputs and code now")
-    if plan.blocked:
-        said.append("blocked: " + ("; ".join(plan.reasons) or "its input is not ready"))
-    if plan.skipped:
-        said.append("skipped: the plan has nothing for it to do")
-    if plan.permanent:
-        said.append("not retried: a permanent failure, or out of attempts")
-    if plan.pending:
-        said.append(f"would run for {len(plan.pending)} source(s)")
-    return {"plan": "; ".join(said), "sources": sources}
-
-
-#: What the trace says when a stage's plan needs a payload to judge freshness.
-NEEDS_PAYLOAD = "not known without reading the payload: the trace never reads payloads"
-
-
-def _cannot_plan(exc: Exception) -> str:
-    """Why a stage's plan could not run, in words: the setting it asked for, if it named one."""
-    named = re.search(r"\bneeds ([a-z_]+)", str(exc))
-    if named:
-        return f"not known: this stage needs {named.group(1)} in the config to plan"
-    return "not known: this stage cannot plan with these settings"
-
-
-def _passages_from_rows(catalog: Catalog, article_id: str) -> Optional[Dict[str, Any]]:
-    """Passages' freshness from the catalog rows alone: its fingerprint is the
-    extraction it read and that extraction's recorded text hash
-    (`PassagesStage.fingerprint_for`); only finding the text file needs the payload."""
-    from ingestion_workflow.pipeline.stages.passages import PassagesStage
-
-    existing = catalog.artifacts([article_id], "passages").get(article_id, {}).get("")
-    if existing is None or not existing.ok:
-        return None
-    read = catalog.artifacts([article_id], "extract").get(article_id, {}).get(
-        existing.summary.get("source") or "")
-    if read is None or not read.ok:
-        return None
-    sha = read.summary.get("text_sha256")
-    if not sha:
-        return {"plan": "waits for `ingest refresh-text`: its extraction records no text hash"}
-    now = PassagesStage.fingerprint_for(read, sha)
-    if existing.fingerprint == now:
-        return {"plan": "fresh: its fingerprint matches the extraction it read and that "
-                        "text's recorded hash (the text file is not opened)"}
-    return {"plan": f"stale: built from fingerprint {existing.fingerprint[:12] or '(none)'}; "
-                    f"its extraction and text hash now give {now[:12]}, so it would rebuild"}
-
-
-#: Stages whose plan opens a payload, but whose freshness the rows alone tell.
-_METADATA_FRESHNESS = {"passages": _passages_from_rows}
-
-
-def _plan_one(catalog_root: Path | str, article_id: str, names: Sequence[str],
-              settings) -> Dict[str, Dict[str, Any]]:
-    """Each stage's own `plan()` for one article, run against the catalog read-only.
-
-    This is the scheduler's freshness test itself, so it cannot drift from it."""
-    from ingestion_workflow.pipeline.scheduler import _plan_batch
-    from ingestion_workflow.pipeline.stage import Context
-    from ingestion_workflow.pipeline.stages import build
-
-    conn = open_readonly(catalog_root)
-    conn.row_factory = sqlite3.Row
-    out: Dict[str, Dict[str, Any]] = {}
-    try:
-        catalog = _MetadataCatalog(conn, Path(catalog_root).resolve())
-        ctx = Context(settings, catalog)
-        ref = catalog.ref(article_id)
-        runs = {stage.name: stage for stage in build(None, settings)}
-        for name in names:
-            stage = runs.get(name)
-            if stage is None:
-                out[name] = {"plan": "not planned: these settings do not run this stage"}
-                continue
-            try:
-                plan = _plan_batch(ctx, stage, [ref])
-                existing = catalog.artifacts([article_id], name).get(article_id, {})
-                out[name] = _read_plan(plan, existing)
-            except PermissionError:
-                from_rows = _METADATA_FRESHNESS.get(name)
-                found = from_rows(catalog, article_id) if from_rows else None
-                out[name] = found or {"plan": NEEDS_PAYLOAD}
-            except Exception as exc:  # one stage that cannot plan must not hide the rest
-                out[name] = {"plan": _cannot_plan(exc)}
-    finally:
-        conn.close()
-    return out
+def _said(verdict: Optional[Verdict]) -> str:
+    """What a stage's plan decides for the article, in words."""
+    if verdict is None:
+        return ""
+    if verdict.plan is None:
+        return verdict.reason or ""
+    words = {planning.FRESH: "fresh: nothing to do",
+             planning.PENDING: "would run now",
+             planning.BLOCKED: "does not take it",
+             planning.SKIPPED: "nothing to do for it",
+             planning.PERMANENT: "not tried again now"}[verdict.plan]
+    why = [verdict.reason] if verdict.reason else []
+    why += [a for a in verdict.answers if a != FRESH]
+    return words + (f": {'; '.join(why)}" if why else "")
 
 
 def trace_article(catalog_root: Path | str, article_id: str, *, settings=None,
@@ -1088,8 +1136,8 @@ def trace_article(catalog_root: Path | str, article_id: str, *, settings=None,
     """How one article got where it is: per stage its state (the same placement the
     funnel counts), and every artifact's path, status, reason, summary, when it was
     written, its fingerprint and attempts, and what it was built from. With the
-    pipeline's `settings`, each stage's plan says whether it is fresh. Reads catalog
-    rows only, never a payload."""
+    pipeline's `settings`, each stage's own plan places it and says what a run would
+    do, as the funnel's `Planner` does."""
     conn = open_readonly(catalog_root)
     try:
         found = conn.execute("SELECT created_at, merged_into FROM articles WHERE id = ?",
@@ -1107,7 +1155,14 @@ def trace_article(catalog_root: Path | str, article_id: str, *, settings=None,
             _ROW_COLUMNS + " WHERE a.article_id = ?", (article_id,))]
         attempted = {r[1] for r in conn.execute(_ATTEMPTED_SQL + " AND t.article_id = ?",
                                                 (article_id,))}
-        placed = place_article(graph, rows, ran=ran, attempted=attempted)
+        verdicts = None
+        if settings is not None:
+            planner = Planner(catalog_root, settings, graph)
+            try:
+                verdicts = planner.verdicts([article_id])[article_id]
+            finally:
+                planner.close()
+        placed = place_article(graph, rows, ran=ran, attempted=attempted, verdicts=verdicts)
         by_key = {(r.stage, r.source): r for r in rows}
         records: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
         for stage, source, status, fp, blob, summary, error, written in conn.execute(
@@ -1132,18 +1187,12 @@ def trace_article(catalog_root: Path | str, article_id: str, *, settings=None,
             tries[(stage, source)] = {"attempts": n, "failed": failed, "last": last}
     finally:
         conn.close()
-    names = [node.name for node in graph]
-    plans = _plan_one(catalog_root, article_id, names, settings) if settings is not None else {}
     stages = []
     for node in graph:
         where = placed[node.name]
         mine = records.get(node.name, [])
-        plan = plans.get(node.name, {})
         for rec in mine:
             rec.update(tries.get((node.name, rec["source"]), {"attempts": 0}))
-            if plan:
-                rec["freshness"] = plan.get("sources", {}).get(rec["source"], {}).get(
-                    "freshness") or plan.get("plan", "")
         inputs = [node.upstream] if node.upstream else []
         inputs += [i for i in _SIDE_INPUTS.get(node.name, ()) if i not in inputs]
         upstream = [(i, u) for i in inputs for u in records.get(i, [])]
@@ -1157,8 +1206,8 @@ def trace_article(catalog_root: Path | str, article_id: str, *, settings=None,
                             "newer": bool(mine) and u["written"] > max(r["written"] for r in mine)}
                            for i, u in upstream],
             "version": _versions(node.name),
-            "plan": plan.get("plan", "") if plan else (
-                "" if settings is not None else "pass the pipeline's --config to check freshness"),
+            "plan": _said(verdicts.get(node.name)) if verdicts is not None
+            else "pass the pipeline's --config to see what a run would do",
         })
     return {"article_id": article_id, "registered": found[0], "stages": stages,
             "attempts_without_outcome": sorted(attempted)}
@@ -1168,11 +1217,7 @@ def serve(catalog_root: Path | str, *, host: str = "127.0.0.1", port: int = 8765
           samples: int = 20, prose: Optional[bool] = None, settings=None) -> ThreadingHTTPServer:
     """The page, plus each article's trace on click, served from this machine. The
     caller runs `serve_forever()`."""
-    conn = open_readonly(catalog_root)
-    try:
-        funnel = build_funnel(conn, prose=prose, samples=samples)
-    finally:
-        conn.close()
+    funnel = funnel_of(catalog_root, settings, prose=prose, samples=samples)
     page = render_html(funnel, str(catalog_root)).encode("utf-8")
     graph_prose = any(n.name == "prose" for n in funnel.graph)
 
@@ -1285,10 +1330,10 @@ span.click{cursor:pointer;text-decoration:underline dotted}
 "use strict";
 const D=typeof FUNNEL_DATA!=="undefined"?FUNNEL_DATA:JSON.parse(document.getElementById("data").textContent);
 const S=D.strings, STATES=S.state, STAGES=D.stages.map(s=>s.name), GROUP=D.groups;
-const COLOR={passed:"#2e9d57",filtered:"#8a9bb3",failed:"#d0453a",permanent:"#8c1d18",taken_back:"#8a5cc7",refused:"#b5482a",blocked:"#c9ced8",pending:"#e6c229",not_attempted:"#f2e6a6",stale:"#a0703c",unaccounted:"#e3249b",ok:"#2e9d57",skipped:"#8a9bb3"};
+const COLOR={passed:"#2e9d57",filtered:"#8a9bb3",failed:"#d0453a",permanent:"#8c1d18",taken_back:"#8a5cc7",refused:"#b5482a",blocked:"#c9ced8",pending:"#e6c229",not_attempted:"#f2e6a6",stale:"#a0703c",unaccounted:"#e3249b",rerun:"#d9a05b",held:"#c8b06a",spent:"#6e2a24",ok:"#2e9d57",skipped:"#8a9bb3"};
 // Text in each state's colour, dark enough for 4.5:1 on the page's light panels.
-const INK={passed:"#1b6e34",filtered:"#4f5b6e",failed:"#a1261b",permanent:"#7a1914",taken_back:"#6a3fa3",refused:"#9a3412",blocked:"#4f5b6e",pending:"#6b5300",not_attempted:"#5e4f00",stale:"#7a4a1c",unaccounted:"#a3155f",ok:"#1b6e34",skipped:"#4f5b6e"};
-const DROPS=["filtered","failed","permanent","taken_back","refused","pending","not_attempted","unaccounted"];
+const INK={passed:"#1b6e34",filtered:"#4f5b6e",failed:"#a1261b",permanent:"#7a1914",taken_back:"#6a3fa3",refused:"#9a3412",blocked:"#4f5b6e",pending:"#6b5300",not_attempted:"#5e4f00",stale:"#7a4a1c",unaccounted:"#a3155f",rerun:"#7d5317",held:"#5e4f00",spent:"#5a1f1a",ok:"#1b6e34",skipped:"#4f5b6e"};
+const DROPS=["filtered","failed","spent","permanent","taken_back","refused","pending","not_attempted","rerun","held","unaccounted"];
 const fmt=n=>n.toLocaleString("en-US");
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const F={dl:new Set(),tried:new Set(),text:new Set(),from:"",to:"",state:new Set(),reason:""};
@@ -1331,8 +1376,7 @@ function model(cs){
   cs.forEach(c=>{const st=S.stage[c[0]],k=c[1]+"|"+c[2];by[st][k]=(by[st][k]||0)+c[6];totals[st][STATES[c[1]]]+=c[6]});
   const total=STATES.reduce((a,x)=>a+totals[STAGES[0]][x],0);
   const flow=D.flow_stages.map(st=>{const t=totals[st],u=up[st],came=total-t.blocked-t.stale,excluded=grouped(by[st],D.excluded),waiting=grouped(by[st],D.waiting);
-    const given=u==null?total:D.on_attempt.includes(st)?total-D.not_tried.reduce((a,x)=>a+totals[u][x],0):totals[u].passed;
-    return {stage:st,input:u,in:came,passed:t.passed,excluded,waiting,stale:grouped(by[st],["stale"]),adds_up:came===t.passed+sumOf(excluded)+sumOf(waiting),follows:came===given}});
+    return {stage:st,input:u,in:came,passed:t.passed,excluded,waiting,stale:grouped(by[st],["stale"]),adds_up:came===t.passed+sumOf(excluded)+sumOf(waiting)}});
   const reasons={};STAGES.forEach(s=>reasons[s]=grouped(by[s],STATES));
   return {total,totals,flow,reasons}}
 function M(){return filtered()?model(cells()):D.model}
@@ -1372,11 +1416,10 @@ function flowView(m){
   const feeds={};D.stages.forEach(s=>{if(s.upstream)(feeds[s.upstream]=feeds[s.upstream]||[]).push(s.name)});
   Object.entries(D.side_inputs).forEach(([st,ins])=>ins.forEach(i=>(feeds[i]=feeds[i]||[]).includes(st)||feeds[i].push(st)));
   let h=filtered()?`<div class="muted">Filtered: recounted in this browser for the selected articles. Without a filter the page shows the numbers <code>ingest report funnel</code> counted.</div>`:`<div class="ok">✓ These are the numbers <code>ingest report funnel</code> counted and prints.</div>`;
-  m.flow.forEach((x,i)=>{const ex=sumOf(x.excluded),wt=sumOf(x.waiting),st=sumOf(x.stale),gate=D.on_attempt.includes(x.stage)?"attempted":"passed";
-    h+=`<div class="step"><div class="box main" data-stage="${esc(x.stage)}" role="button" tabindex="0"><div><b>${esc(x.stage)}</b> <span class="muted">${x.input?"input: "+esc(x.input)+" "+gate:"every live article"}</span></div><div class="big">${fmt(x.in)} in</div>`+
+  m.flow.forEach((x,i)=>{const ex=sumOf(x.excluded),wt=sumOf(x.waiting),st=sumOf(x.stale);
+    h+=`<div class="step"><div class="box main" data-stage="${esc(x.stage)}" role="button" tabindex="0"><div><b>${esc(x.stage)}</b> <span class="muted">${x.input?"input: "+esc(x.input)+(D.planned?", taken as its plan takes it":", taken when it passed"):"every live article"}</span></div><div class="big">${fmt(x.in)} in</div>`+
       `<div><span class="click" data-passed="${esc(x.stage)}">${fmt(x.passed)} passed</span> &middot; ${fmt(ex)} left out &middot; ${fmt(wt)} waiting</div>`+
       `<div class="${x.adds_up?"ok":"bad"}">in = passed + left out + waiting: ${fmt(x.in)} = ${fmt(x.passed)} + ${fmt(ex)} + ${fmt(wt)} ${x.adds_up?"✓":"✗"}</div>`+
-      (x.input?`<div class="${x.follows?"ok":"bad"}">in = ${esc(x.input)} ${gate} ${x.follows?"✓":"✗"}</div>`:"")+
       (feeds[x.stage]?`<div class="muted">feeds ${feeds[x.stage].map(esc).join(", ")}</div>`:"")+`</div>`+
       `<div class="box excl"><b>Left out: ${fmt(ex)}</b><ul>${folded(x.stage,x.excluded)}</ul>${wt?`<b>Waiting: ${fmt(wt)}</b><ul>${folded(x.stage,x.waiting)}</ul>`:""}`+
       (st?`<b>Records outside the flow: ${fmt(st)} stale</b><ul>${folded(x.stage,x.stale)}</ul>`:"")+`</div></div>`;
@@ -1392,7 +1435,7 @@ function stageTable(m){
   let h=`<tr><th>stage</th><th>input</th><th>entered</th>${show.map(s=>`<th style="color:${INK[s]}">${s}</th>`).join("")}<th>sum</th><th>share of entered</th></tr>`;
   D.stages.forEach(st=>{const r=t[st.name],sum=STATES.reduce((a,s)=>a+r[s],0),inn=all-r.blocked-r.stale;
     const bar=inn?`<div class="bar">${STATES.filter(s=>!["blocked","stale"].includes(s)).map(s=>`<span title="${s} ${fmt(r[s])}" style="width:${100*r[s]/inn}%;background:${COLOR[s]}"></span>`).join("")}</div>`:"";
-    h+=`<tr><td class="click" data-reasons="${st.name}"><b>${st.name}</b>${D.trunk.includes(st.name)?"":' <span class="muted">(side)</span>'}</td><td class="muted">${st.upstream||"&mdash;"}${D.on_attempt.includes(st.name)?" (attempted)":""}</td><td>${fmt(inn)}</td>`+
+    h+=`<tr><td class="click" data-reasons="${st.name}"><b>${st.name}</b>${D.trunk.includes(st.name)?"":' <span class="muted">(side)</span>'}</td><td class="muted">${st.upstream||"&mdash;"}</td><td>${fmt(inn)}</td>`+
       show.map(s=>`<td class="click${s==="unaccounted"&&r[s]?" bad":""}" data-stage="${st.name}" data-state="${s}" style="${!F.state.size||F.state.has(s)?"":"opacity:.3"}">${r[s]?fmt(r[s]):""}</td>`).join("")+
       `<td class="${sum===all?"ok":"bad"}" title="${sum===all?"reconciles":"does not add up"}">${fmt(sum)} ${sum===all?"✓":"✗"}</td><td>${bar}</td></tr>`});
   const el=document.getElementById("stages");el.innerHTML=h;
@@ -1486,7 +1529,7 @@ document.getElementById("tab-flow").onclick=()=>{document.getElementById("view-f
 document.getElementById("tab-sankey").onclick=()=>{document.getElementById("view-flow").style.display="none";document.getElementById("view-sankey").style.display="";document.getElementById("tab-sankey").className="on";document.getElementById("tab-flow").className=""};
 document.getElementById("meta").innerHTML=`${fmt(D.total)} live articles in <code>${esc(D.catalog)}</code>; built ${D.generated} in ${D.seconds}s; stage graph ${D.prose?"with":"without"} the prose stages.`;
 document.getElementById("filter-help").innerHTML=`<b>Filters.</b> These select articles, so every stage still adds up: <b>Downloaded from</b> keeps articles with an ok download from any ticked source (an article whose every download failed has source <i>none</i>, so ticking a source hides its download failures); <b>Download tried at</b> keeps articles with any download recorded from a ticked source, failed or not (use it for losses at download by source); <b>Judged text source</b> is the source whose text triage, or else passages, read; <b>Registered</b> is the day the article entered the catalog. These narrow the tables and the drill-down only: <b>State</b>, and <b>Reason contains</b> (a case-insensitive substring; a clicked reason matches exactly). The source table always lists every source tried; its numbers follow the article filters.`;
-document.getElementById("problems").innerHTML=D.problems.length?`<div class="warn">Does not reconcile:</div><ul>${D.problems.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>`:`<div class="muted">Reconciles: every stage accounts for every article, and every article with a record at a stage was placed from that record.</div>`;
+document.getElementById("problems").innerHTML=(D.planned?"":`<div class="warn">Records only: no stage was planned, so nothing here says what a run would do.</div>`)+(D.problems.length?`<div class="warn">Does not reconcile:</div><ul>${D.problems.map(p=>`<li>${esc(p)}</li>`).join("")}</ul>`:`<div class="muted">Reconciles: every stage accounts for every article, and every article with a record at a stage was placed from that record.</div>`);
 filters();render();
 // A link can open one article's trace: <page>#trace=<article id>.
 if(location.hash.startsWith("#trace="))trace(decodeURIComponent(location.hash.slice(7)));

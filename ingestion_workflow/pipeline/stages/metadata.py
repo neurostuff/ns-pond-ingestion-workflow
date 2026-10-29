@@ -125,17 +125,17 @@ class MetadataStage:
             fp = self.inputs_of(ctx, ref, downloads.get(ref.id, {}), upstream.get(ref.id, {}),
                                 existing)
             if ctx.is_fresh(existing, fp) and not _embargo_lifted(existing, ctx.now):
-                plan.fresh += 1
+                plan.add_fresh(ref)
                 continue
             extractions = [a for a in upstream.get(ref.id, {}).values() if a.status is Status.OK]
             if not extractions and ref.id in with_passages:
                 if read_from_bad_page(with_passages[ref.id], downloads.get(ref.id, {}),
                                       upstream.get(ref.id, {})):
-                    plan.block(f"passages {READ_FROM_BAD_PAGE}")  # left as they are
+                    plan.block(ref, f"passages {READ_FROM_BAD_PAGE}")  # left as they are
                     continue
                 extractions = [with_passages[ref.id]]
             if not extractions:
-                plan.blocked += 1
+                plan.block(ref)
                 continue
             count, last = attempts.get(ref.id, (0, None))
             if existing is not None and (existing.summary or {}).get("unanswered"):
@@ -144,7 +144,7 @@ class MetadataStage:
                 # its tries.
                 count = 0
             if not ctx.should_attempt(existing, count, last, self.name):
-                plan.permanent += 1
+                plan.add_permanent(ref)
                 continue
             plan.pending.append(
                 Work(ref=ref, source="", fingerprint=fp, upstream=extractions[0])

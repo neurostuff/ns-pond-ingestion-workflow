@@ -261,7 +261,7 @@ class ExtractStage:
                 if artifact.status is Status.OK
             })
             if not downloads:
-                plan.blocked += 1
+                plan.block(ref)
                 continue
 
             existing = artifacts.get(ref.id, {})
@@ -286,9 +286,9 @@ class ExtractStage:
 
             if chosen is None:
                 if is_fresh:
-                    plan.fresh += 1
+                    plan.add_fresh(ref)
                 else:
-                    plan.permanent += 1
+                    plan.add_permanent(ref)
                 continue
 
             source, download = chosen

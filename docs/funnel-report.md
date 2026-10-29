@@ -2,17 +2,21 @@
 
 `ingest report funnel` writes one HTML page showing where every article in the
 catalog stands at every stage, from download to sync, and why the ones that
-stopped did. It only reads the catalog (opened read-only) and never opens a blob.
+stopped did, and what a run would do next. It only reads the catalog (opened
+read-only). Each stage's own `plan()`, the one `ingest run --dry-run` makes, decides
+whether the stage takes an article, whether its record is fresh, and whether a
+failure is tried again; the report keeps no second copy of those rules. So pass the
+config the runs use: other settings plan other work.
 
 ```bash
-ingest report funnel --catalog /path/to/catalog --out funnel.html
-# or, with the catalog from a config file
 ingest report funnel -c configs/beast.yaml --out funnel.html
+# another catalog, planned with that config's settings
+ingest report funnel -c configs/beast.yaml --catalog /path/to/catalog --out funnel.html
 ```
 
 The page is self-contained: the counts are embedded as JSON and the code is
-inline, so it opens offline from disk. On the beast catalog (679k articles,
-3.1M artifacts) it takes about a minute and a half and writes a 1.4 MB file.
+inline, so it opens offline from disk. Planning every stage costs what a dry run of
+every stage does: see the PR for the timing on the beast catalog.
 The command also prints the flow below as text.
 
 To click through to each article's full trace, serve the page instead (it
@@ -26,15 +30,15 @@ ingest report trace 222lv3326a2c -c configs/beast.yaml   # one article, as JSON
 ## The flow
 
 The main view runs top to bottom, one box per stage that gates articles, in the
-order the pipeline runs them (the stage registry's default stages: download,
-extract, passages, metadata, notices, triage, analyses, prose, resolve, roles,
-space, sync, upload). **In** is every article whose input passed; for triage,
-whose metadata was attempted. Each of them then passed, was left out, or is
+order the pipeline runs them: every stage but those no stage waits for (a stage's
+`gates = False`: reflist, references, links, linkprobe, notices). **In** is every
+article the stage's plan takes. Each of them then passed, was left out, or is
 waiting. The box beside lists what was left out and what waits, by state and
 reason, with what each means in plain words. Records made under an older stage
 graph sit apart, as "records outside the flow", and are clickable like the rest.
-Every box shows the check `in = passed + left out + waiting`, and that its *in*
-equals what its input passed (or attempted).
+Every box shows the check `in = passed + left out + waiting`. A stage whose plan
+could not run under the config (a setting missing) is placed by its records alone,
+taking what its input passed, and the page lists it under "does not reconcile".
 
 A reason joined from several sources (`HTTP 403 forbidden + not open access +
 source returned no article`) is listed under its primary part, with the
@@ -62,11 +66,8 @@ written, its fingerprint, its attempts, the records it was built from (its
 parent and the other inputs its fingerprint reads), whether those were
 rewritten after it, the stage's current code version constants (a record's own
 version is folded into its fingerprint), and, with the pipeline's config,
-whether each record is fresh, as that stage's own plan judges it. The trace
-reads catalog rows only, never a payload: where a plan needs one, passages'
-freshness is worked out from the rows (the extraction it read and that text's
-recorded hash), and any other says it is not known without the payload. A
-stage that cannot plan says which setting it needs. A failed record shows its reason in
+what that stage's own plan would do with it and why (the same `Planner` the page
+counts with). A stage that cannot plan says which setting it needs. A failed record shows its reason in
 words (an error no category matches reads "the stage raised an error"); its raw
 error, cut to 500 characters with anything token-like removed, sits under a
 collapsed "technical detail". In `ingest report trace`'s JSON these are each
@@ -81,11 +82,14 @@ the number of live articles; a row that does not is marked with a cross.
 |---|---|
 | passed | ok, and the next stage takes it as input |
 | filtered | recorded, but nothing for the next stage (no coordinate tables, triage passed no table, ...) |
-| failed / permanent | a failure the scheduler retries / does not retry, with its reason |
+| failed / permanent | a failure the plan tries again (now, or once `retry_after` has passed) / a failure recorded as permanent, with its reason |
+| spent | a failure the plan will not try again on its own: its tries are used up, or no source is left; `--refresh <stage>` redoes it |
+| rerun | recorded, and the plan would make it again; the reason is its freshness test's answer (no fingerprint, its inputs or code changed, its payload gone, a provider error due again, a refresh asked for) |
+| held | its input passed, but the plan does not take it yet, and says why (no text hash, a model not served, no neurostore_api_url, ...) |
 | taken_back | what was made from the article's text was withdrawn: every extraction found no text, or the tables and the prose were read again and hold no analysis |
 | refused | its input passed, but the stage will not read it: the text came from a downloaded page that is not the article |
 | blocked | its input did not pass; the reason names the stage where it dropped out and why. A failed or empty record left from an earlier run counts here, with its own status and reason added (`leftover skipped: ...`) |
-| pending | its input passed and nothing is recorded here yet; `nothing to read (passages = 0)` marks an input with nothing in it, and `tables wait behind it` an article whose tables reach resolve only after this step |
+| pending | the plan takes it and nothing is recorded here yet; `nothing to read (passages = 0)` marks an input with nothing in it, and `tables wait behind it` an article whose tables reach resolve only after this step |
 | not_attempted | its input passed and the stage has never run on this catalog |
 | stale | an ok artifact exists although its input did not pass: made from an input since lost, or under an older stage graph |
 | unaccounted | an attempt is recorded with no outcome, or an unknown status; treat as a bug |

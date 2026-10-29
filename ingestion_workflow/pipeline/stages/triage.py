@@ -174,21 +174,21 @@ class TriageStage:
             found = extractions.get(ref.id, {})
             extraction = judged_extraction(ctx, found, downloads.get(ref.id, {}))
             if meta is None or extraction is None:
-                plan.blocked += 1
+                plan.block(ref)
                 continue
             self.gate_id()  # a missing gate fails the plan before anything else is judged
             read = self.metadata_fingerprint(meta)
             if read is None:
-                plan.block(NO_DIGESTS)
+                plan.block(ref, NO_DIGESTS)
                 continue
             fp = self.fingerprint_for(read, extraction)
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
-                plan.fresh += 1
+                plan.add_fresh(ref)
                 continue
             count, last = attempts.get(ref.id, (0, None))
             if not ctx.should_attempt(existing, count, last, self.name):
-                plan.permanent += 1
+                plan.add_permanent(ref)
                 continue
             plan.pending.append(
                 Work(ref=ref, source="", fingerprint=fp, upstream=extraction))

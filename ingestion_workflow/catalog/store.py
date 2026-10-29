@@ -1503,16 +1503,12 @@ class Catalog:
         exclusive.
         """
         out: Dict[str, Dict[str, int]] = {}
+        best = " ".join(f"WHEN MAX(status = '{s}') THEN '{s}'" for s in STATUS_RANK[:-1])
         for row in self._conn.execute(
-            """
+            f"""
             SELECT stage, state, COUNT(*) AS n FROM (
                 SELECT stage, article_id,
-                    CASE
-                        WHEN MAX(status = 'ok') THEN 'ok'
-                        WHEN MAX(status = 'failed') THEN 'failed'
-                        WHEN MAX(status = 'permanent') THEN 'permanent'
-                        ELSE 'skipped'
-                    END AS state
+                    CASE {best} ELSE '{STATUS_RANK[-1]}' END AS state
                 FROM artifacts GROUP BY stage, article_id
             ) GROUP BY stage, state
             """
@@ -1683,6 +1679,44 @@ def _chunks(items: Sequence[str], size: int) -> Iterator[Sequence[str]]:
         yield items[start : start + size]
 
 
+#: The statuses, best first: an article with several artifacts at a stage (one per
+#: source) stands at the best any of them reached.
+STATUS_RANK = ("ok", "failed", "permanent", "skipped")
+
+#: Where a failed artifact stands with its retries (`retry_state`).
+RETRY_DUE = "retry due"
+BACKING_OFF = "waiting out retry_after"
+RETRIES_SPENT = "every try allowed has failed"
+NOT_FAILED = "not a failure"
+
+
+def retry_state(
+    artifact: Optional[Artifact],
+    attempts: int,
+    last_attempt: Optional[str],
+    *,
+    max_attempts: int,
+    backoff: timedelta,
+    now: Optional[datetime] = None,
+) -> str:
+    """Where a failed artifact stands with its retries: RETRY_DUE when it has earned
+    another try now."""
+    if artifact is None:
+        return RETRY_DUE
+    if artifact.status is not Status.FAILED:
+        return NOT_FAILED
+    if attempts >= max_attempts:
+        return RETRIES_SPENT
+    if last_attempt is None:
+        return RETRY_DUE
+    try:
+        when = datetime.fromisoformat(last_attempt)
+    except ValueError:
+        return RETRY_DUE
+    now = now if now is not None else datetime.now(timezone.utc)
+    return RETRY_DUE if now - when >= backoff else BACKING_OFF
+
+
 def is_retryable(
     artifact: Optional[Artifact],
     attempts: int,
@@ -1692,16 +1726,5 @@ def is_retryable(
     backoff: timedelta,
 ) -> bool:
     """Whether a failed artifact has earned another try."""
-    if artifact is None:
-        return True
-    if artifact.status is not Status.FAILED:
-        return False
-    if attempts >= max_attempts:
-        return False
-    if last_attempt is None:
-        return True
-    try:
-        when = datetime.fromisoformat(last_attempt)
-    except ValueError:
-        return True
-    return datetime.now(timezone.utc) - when >= backoff
+    return retry_state(artifact, attempts, last_attempt, max_attempts=max_attempts,
+                       backoff=backoff) == RETRY_DUE

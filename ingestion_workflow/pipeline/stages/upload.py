@@ -99,8 +99,8 @@ class UploadStage:
     ) -> StagePlan:
         plan = StagePlan(stage=self.name)
         if not self.settings.neurostore_api_url:
-            for _ in refs:
-                plan.block(NO_API_URL)
+            for ref in refs:
+                plan.block(ref, NO_API_URL)
             return plan
         attempts = ctx.catalog.attempt_counts([ref.id for ref in refs], self.name, "")
         candidates = []
@@ -114,18 +114,18 @@ class UploadStage:
             # Only this stage's own record can be fresh: a direct-database upload's, a
             # migrated one with no fingerprint among them, never sent this parse.
             if _sent_by_ingester(existing) and ctx.is_fresh(existing, fp):
-                plan.fresh += 1
+                plan.add_fresh(ref)
                 continue
             # Only a failure on these same inputs uses up a retry: a parse sync wrote
             # again is tried again, and a held-back upload is not a failed try.
             if existing is not None and existing.fingerprint == fp \
                     and not (existing.error or "").startswith(GATED):
                 if existing.status is Status.SKIPPED:
-                    plan.skipped += 1
+                    plan.add_skipped(ref)
                     continue
                 count, last = attempts.get(ref.id, (0, None))
                 if not ctx.should_attempt(existing, count, last, self.name):
-                    plan.permanent += 1
+                    plan.add_permanent(ref)
                     continue
             candidates.append((ref, synced, existing, fp))
         held = self.held_back(ctx, [c[0] for c in candidates],
@@ -134,7 +134,7 @@ class UploadStage:
             gate = held.get(ref.id)
             if gate and gate.get("reason") and not self.dry_run and existing is not None \
                     and existing.fingerprint == fp and existing.error == gate["reason"]:
-                plan.block(GATED)  # recorded already, with this reason
+                plan.block(ref, GATED)  # recorded already, with this reason
                 continue
             plan.pending.append(Work(ref=ref, source="", fingerprint=fp, upstream=synced))
         return plan

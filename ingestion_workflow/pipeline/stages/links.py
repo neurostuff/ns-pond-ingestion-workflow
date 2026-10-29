@@ -70,6 +70,8 @@ def judged_links(ctx: Context, refs: Sequence[ArticleRef],
 class LinksStage:
     name = "links"
     requires = "extract"
+    #: No stage waits for it: sync writes the links it finds, when there are any.
+    gates = False
 
     def __init__(self, settings) -> None:
         self.settings = settings
@@ -96,19 +98,19 @@ class LinksStage:
         for ref in refs:
             judged = judged_extraction(ctx, upstream.get(ref.id, {}), downloads.get(ref.id, {}))
             if judged is None:
-                plan.blocked += 1
+                plan.block(ref)
                 continue
             source = judged.source
             fp = self.fingerprint_for(judged, listed.get(ref.id, {}).get(source))
             existing = artifacts.get(ref.id, {}).get(source)
             if ctx.is_fresh(existing, fp):
-                plan.fresh += 1
+                plan.add_fresh(ref)
                 continue
             if source not in attempts:
                 attempts[source] = ctx.catalog.attempt_counts(ids, self.name, source)
             count, last = attempts[source].get(ref.id, (0, None))
             if not ctx.should_attempt(existing, count, last, self.name, source):
-                plan.permanent += 1
+                plan.add_permanent(ref)
                 continue
             plan.pending.append(Work(ref=ref, source=source, fingerprint=fp, upstream=judged))
         return plan

@@ -9,7 +9,6 @@ from __future__ import annotations
 import json
 import logging
 from contextlib import contextmanager
-from datetime import timedelta
 from enum import Enum
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Sequence
@@ -118,13 +117,7 @@ def _report_refusals(catalog: Catalog) -> None:
 
 
 def _context(settings: Settings, catalog: Catalog, refresh: List[str]) -> Context:
-    return Context(
-        settings,
-        catalog,
-        refresh=refresh or (),
-        max_attempts=settings.max_attempts,
-        retry_after=timedelta(hours=settings.retry_after_hours),
-    )
+    return Context.from_settings(settings, catalog, refresh)
 
 
 def _parse_identifier(token: str) -> Identifier:
@@ -1184,8 +1177,13 @@ report_app = typer.Typer(help="Reports read from the catalog. They never write t
 app.add_typer(report_app, name="report")
 
 
-def _catalog_root(catalog: Optional[Path], config: Optional[Path]) -> Path:
-    return catalog if catalog is not None else _settings(config).catalog_root
+def _report_settings(catalog: Optional[Path], config: Optional[Path]):
+    """(catalog root, settings) a report reads with: the run's config, so each stage's
+    plan places the articles as `ingest run --dry-run` would; --catalog points it at
+    another catalog."""
+    settings = load_settings(config, overrides={"catalog_root": catalog} if catalog else None,
+                             create_directories=False)
+    return settings.catalog_root, settings
 
 
 @report_app.command("funnel")
@@ -1197,10 +1195,12 @@ def report_funnel(
     catalog: Optional[Path] = CatalogOption,
     config: Optional[Path] = ConfigOption,
 ) -> None:
-    """Write one self-contained HTML page: every article's state at every stage."""
+    """Write one self-contained HTML page: every article's state at every stage, each
+    stage's own plan saying what a run would do. Plan with the config the runs use."""
     from ingestion_workflow.services.funnel_report import write_report
 
-    funnel = write_report(_catalog_root(catalog, config), out, samples=samples, prose=prose)
+    root, settings = _report_settings(catalog, config)
+    funnel = write_report(root, out, samples=samples, prose=prose, settings=settings)
     typer.echo(f"{funnel.total:,} articles in {funnel.seconds:.1f}s -> {out} "
                f"({out.stat().st_size / 1e6:.1f} MB)")
     _echo_flow(funnel)
@@ -1213,7 +1213,7 @@ def _echo_flow(funnel) -> None:
         left = sum(group[2] for group in step["excluded"])
         waiting = sum(group[2] for group in step["waiting"])
         top = max(step["excluded"] + step["waiting"], key=lambda group: group[2], default=None)
-        check = "ok" if step["adds_up"] and step["follows"] else "DOES NOT ADD UP"
+        check = "ok" if step["adds_up"] else "DOES NOT ADD UP"
         typer.echo(f"  {step['stage']:>9}  in {step['in']:>9,}  passed {step['passed']:>9,}  "
                    f"left out {left:>9,}  waiting {waiting:>9,}  {check}"
                    + (f"  top: {top[2]:,} {top[0]}: {top[1]}" if top else ""))
@@ -1225,11 +1225,6 @@ def _echo_flow(funnel) -> None:
         typer.echo(f"  does not reconcile: {problem}")
 
 
-def _pipeline_settings(config: Optional[Path]):
-    """The pipeline's settings when a config is named; the trace needs them to plan."""
-    return load_settings(config) if config is not None else None
-
-
 @report_app.command("trace")
 def report_trace(
     article_id: str = typer.Argument(..., help="Article id, as the page lists it."),
@@ -1237,13 +1232,13 @@ def report_trace(
     catalog: Optional[Path] = CatalogOption,
     config: Optional[Path] = ConfigOption,
 ) -> None:
-    """Print how one article got where it is, as JSON: per stage its state, and each
-    record's path, status, reason, when it was written, its fingerprint and inputs.
-    With --config, each stage's own plan says whether the record is fresh."""
+    """Print how one article got where it is, as JSON: per stage its state, what its
+    plan would do, and each record's path, status, reason, when it was written, its
+    fingerprint and inputs."""
     from ingestion_workflow.services.funnel_report import trace_article
 
-    found = trace_article(_catalog_root(catalog, config), article_id,
-                          settings=_pipeline_settings(config), prose=prose)
+    root, settings = _report_settings(catalog, config)
+    found = trace_article(root, article_id, settings=settings, prose=prose)
     typer.echo(json.dumps(found, indent=1))
 
 
@@ -1259,8 +1254,8 @@ def report_serve(
     """Serve the funnel page with a full trace for each article clicked (read-only)."""
     from ingestion_workflow.services.funnel_report import serve
 
-    server = serve(_catalog_root(catalog, config), port=port, samples=samples, prose=prose,
-                   settings=_pipeline_settings(config))
+    root, settings = _report_settings(catalog, config)
+    server = serve(root, port=port, samples=samples, prose=prose, settings=settings)
     _echo_flow(server.funnel)
     typer.echo(f"serving on http://127.0.0.1:{server.server_address[1]}/ (Ctrl-C to stop)")
     try:
@@ -1311,7 +1306,8 @@ def report_funnel_ids(
             raise typer.BadParameter(f"state must be one of {', '.join(allowed)}")
     if by_source and stage not in ("download", "extract"):
         raise typer.BadParameter("--by-source lists download or extract rows only")
-    for row in matching_ids(_catalog_root(catalog, config), stage=stage, states=state or (),
+    root, settings = _report_settings(catalog, config)
+    for row in matching_ids(root, settings=settings, stage=stage, states=state or (),
                             reason=reason, exact_reason=exact_reason,
                             sources=source or (), tried=tried or (), judged=judged or (),
                             day_from=day_from, day_to=day_to, prose=prose,

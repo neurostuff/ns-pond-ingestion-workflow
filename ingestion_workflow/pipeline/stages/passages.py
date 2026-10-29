@@ -245,26 +245,26 @@ class PassagesStage:
                 if not holds_no_text(upstream.get(ref.id, {})):
                     # passages made from an earlier text stay: a failed or missing extraction
                     # says nothing about the article
-                    plan.block("no extraction text: an extraction failed, has not run, "
+                    plan.block(ref, "no extraction text: an extraction failed, has not run, "
                                "or its text is gone")
                 elif needs_taking_back(existing):
                     # passages of a text that is no longer the article's: taken back, so status
                     # shows the article blocked and prose stops reading them
                     plan.pending.append(Work(ref=ref, source="", fingerprint=NO_TEXT, upstream=None))
                 else:
-                    plan.block("no extraction text: every extractor found none")
+                    plan.block(ref, "no extraction text: every extractor found none")
                 continue
             if sha is None:
                 unhashed += 1
-                plan.block("no extraction text hash: run `ingest refresh-text`")
+                plan.block(ref, "no extraction text hash: run `ingest refresh-text`")
                 continue
             fp = self.fingerprint_for(extraction, sha)
             if ctx.is_fresh(existing, fp):
-                plan.fresh += 1
+                plan.add_fresh(ref)
                 continue
             count, last = attempts.get(ref.id, (0, None))
             if not ctx.should_attempt(existing, count, last, self.name):
-                plan.permanent += 1
+                plan.add_permanent(ref)
                 continue
             work = Work(ref=ref, source="", fingerprint=fp, upstream=extraction)
             plan.pending.append(work)

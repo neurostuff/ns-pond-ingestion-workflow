@@ -138,24 +138,24 @@ class AnalysesStage:
         for ref in refs:
             triaged = upstream.get(ref.id, {}).get("")
             if triaged is None or triaged.status is not Status.OK:
-                plan.blocked += 1
+                plan.block(ref)
                 continue
             if "passed_tables" not in (triaged.summary or {}):
-                plan.block(NO_VERDICT)
+                plan.block(ref, NO_VERDICT)
                 continue
             read = metadata_fingerprint(metadata.get(ref.id, {}).get(""), METADATA_READ)
             if read is None:
-                plan.block(NO_DIGESTS)
+                plan.block(ref, NO_DIGESTS)
                 continue
             extraction = self._extraction_for(extractions.get(ref.id, {}), triaged)
             fp = self.fingerprint_for(triaged, extraction, read)
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
-                plan.fresh += 1
+                plan.add_fresh(ref)
                 continue
             count, last = attempts.get(ref.id, (0, None))
             if not ctx.should_attempt(existing, count, last, self.name):
-                plan.permanent += 1
+                plan.add_permanent(ref)
                 continue
             plan.pending.append(Work(ref=ref, source="", fingerprint=fp, upstream=triaged))
         return plan

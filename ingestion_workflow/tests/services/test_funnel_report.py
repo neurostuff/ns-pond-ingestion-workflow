@@ -15,10 +15,12 @@ import ingestion_workflow.cli.main as cli
 import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.catalog.blobs import BlobStore
-from ingestion_workflow.config import Settings
+from ingestion_workflow.catalog.store import BACKING_OFF, RETRIES_SPENT
+from ingestion_workflow.config import Settings, load_settings
 from ingestion_workflow.models.ids import Identifier
-from ingestion_workflow.pipeline.stage import NO_ANALYSES, NO_TEXT
-from ingestion_workflow.pipeline.stages import OPT_IN_STAGES, STAGE_ORDER
+from ingestion_workflow.pipeline import plan as planning
+from ingestion_workflow.pipeline.stage import CHANGED, NO_ANALYSES, NO_FINGERPRINT, NO_TEXT
+from ingestion_workflow.pipeline.stages import STAGE_ORDER, STAGE_TYPES
 from ingestion_workflow.pipeline.stages.extract import READ_FROM_BAD_PAGE
 from ingestion_workflow.services.funnel_report import (
     _PAGE,
@@ -26,21 +28,29 @@ from ingestion_workflow.services.funnel_report import (
     FAILED,
     FILTERED,
     GLOSSARY,
+    HELD,
     NOT_ATTEMPTED,
     PASSED,
     PENDING,
     PERMANENT,
     REFUSED,
+    RERUN,
+    SPENT,
     STALE,
     STATES,
     TAKEN_BACK,
     UNACCOUNTED,
+    Verdict,
+    _Row,
     build_funnel,
     categorize,
     filter_funnel,
     flow,
+    flow_stages,
+    funnel_of,
     open_readonly,
     page_model,
+    place_article,
     reason_group,
     render_html,
     serve,
@@ -182,8 +192,6 @@ def test_blocked_articles_name_where_they_dropped_out(funnel):
     assert _where(funnel, ids["B"], "upload")[:2] == (BLOCKED, "download failed: not open access")
     assert _where(funnel, ids["C"], "sync")[:2] == (
         BLOCKED, "extract failed: file or payload missing")
-    assert _where(funnel, ids["D"], "resolve")[:2] == (
-        FILTERED, "neither the tables nor the prose hold an analysis")
     assert _where(funnel, ids["D"], "roles")[0] == BLOCKED
 
 
@@ -241,7 +249,7 @@ def test_cli_writes_the_page_and_lists_a_bucket(catalog, tmp_path):
     result = runner.invoke(cli.app, ["report", "funnel", "--catalog", str(root),
                                      "--out", str(out)])
     assert result.exit_code == 0, result.output
-    assert "10 articles" in result.output and "prose: 1 unaccounted" in result.output
+    assert "10 articles" in result.output and "DOES NOT ADD UP" not in result.output
     assert out.read_text().count('<script id="data"') == 1
     result = runner.invoke(cli.app, ["report", "funnel-ids", "--catalog", str(root),
                                      "--stage", "upload", "--state", "blocked",
@@ -338,16 +346,60 @@ def wide(wider):
         conn.close()
 
 
+def _run_settings(tmp_path, root):
+    """A run's settings for the catalog at `root` that every stage there can plan with:
+    prose on, a coordinate gate, and sources that need no node."""
+    from nspond_tables.classify.model import Gate, RoutedGate
+
+    gate = tmp_path / "gate.json"
+    RoutedGate(candidates=Gate(names=[]), residual=Gate(names=[])).save(gate)
+    return Settings(catalog_root=root, data_root=tmp_path / "d", cache_root=tmp_path / "c",
+                    prose_model="prose-model", coordinate_gate_path=gate,
+                    download_sources=["pubget", "elsevier", "pdf"])
+
+
+def _cli_settings(root):
+    """The settings `ingest report ... --catalog <root>` plans with."""
+    return load_settings(None, overrides={"catalog_root": root}, create_directories=False)
+
+
+@pytest.fixture()
+def planned_wide(wider, tmp_path):
+    root, ids = wider
+    return funnel_of(root, _run_settings(tmp_path, root), samples=50), ids
+
+
+def test_every_article_has_a_verdict_from_every_stage_that_planned(planned_wide):
+    funnel, _ = planned_wide
+    assert funnel.planned
+    assert not [key for key in funnel.cells if key[1] == UNACCOUNTED
+                and key[2] == "the stage's plan did not place it"]
+    # Download needs no node with these sources; sync refuses this fixture's old downloads.
+    assert set(funnel.unplanned) == {"sync"}
+
+
 def _ids(root, *args):
     result = CliRunner().invoke(cli.app, ["report", "funnel-ids", "--catalog", str(root), *args])
     assert result.exit_code == 0, result.output
     return {line.split("\t")[0] for line in result.output.splitlines()}
 
 
-def test_triage_enters_on_a_failed_metadata(wide):
+def test_triage_enters_on_a_failed_metadata_as_its_plan_takes_it(wide, planned_wide):
     funnel, ids = wide
+    # The records alone take an article only where its input passed.
     assert _where(funnel, ids["K"], "metadata")[0] == FAILED
-    assert _where(funnel, ids["K"], "triage")[:2] == (PASSED, "")
+    assert _where(funnel, ids["K"], "triage")[:2] == (STALE, "input metadata is failed")
+    # Triage's plan takes what metadata attempted; its record carries no fingerprint.
+    planned, _ = planned_wide
+    assert _where(planned, ids["K"], "metadata")[0] == FAILED
+    assert _where(planned, ids["K"], "triage")[:2] == (RERUN, NO_FINGERPRINT)
+
+
+def test_resolve_with_nothing_to_combine_says_so_as_its_plan_does(catalog, tmp_path):
+    root, ids = catalog
+    funnel = funnel_of(root, _run_settings(tmp_path, root), samples=50)
+    assert _where(funnel, ids["D"], "resolve")[:2] == (
+        FILTERED, "neither the tables nor the prose hold an analysis")
 
 
 def test_resolve_reads_both_the_prose_and_the_tables(wide):
@@ -416,24 +468,61 @@ def test_bad_pages_are_their_own_reason(wide):
     keys = {key[:4] for key in funnel.sources}
     assert ("download", "ace", "failed", "bad page: paywall") in keys
     assert ("extract", "ace", "failed", "bad page: paywall") in keys
-    # pubget's text stands in at extract, but prose read ace's passages.
+    # pubget's text stands in at extract.
     assert _where(funnel, ids["S"], "extract")[0] == PASSED
-    assert _where(funnel, ids["S"], "prose")[:2] == (REFUSED, f"passages {READ_FROM_BAD_PAGE}")
-    # The resolve made before stays, and is stale behind it.
-    assert _where(funnel, ids["S"], "resolve")[:2] == (STALE, "input prose is refused")
 
 
-def test_sync_refuses_prose_from_a_bad_page_whatever_upload_recorded(wider):
-    """Sync's plan refuses it whatever the upload holds, a legacy retraction among them."""
-    root, ids = wider
-    conn = open_readonly(root)
-    try:
-        funnel = build_funnel(conn, prose=False, samples=50)
-    finally:
-        conn.close()
-    assert _where(funnel, ids["S"], _upstream("sync", prose=False))[0] == PASSED
-    assert _where(funnel, ids["S"], "sync")[:2] == (REFUSED, f"prose {READ_FROM_BAD_PAGE}")
-    assert _where(funnel, ids["V"], "sync")[:2] == (REFUSED, f"prose {READ_FROM_BAD_PAGE}")
+def _rows(*rows):
+    """Catalog rows as the funnel reads them, each passing on what the next stage reads."""
+    return [_Row(stage, source, status, None, 1, 1, None, None, None, None, None, None,
+                 None, None, None) for stage, source, status in rows]
+
+
+_GRAPH = stage_graph(False)
+_PASSING = _rows(*((n.name, "", "ok") for n in _GRAPH))
+
+
+def _planned(**verdicts):
+    """Every stage fresh, except the verdicts given."""
+    out = {n.name: Verdict(planning.FRESH) for n in _GRAPH}
+    out.update(verdicts)
+    return out
+
+
+def test_a_plan_s_verdict_says_what_a_run_would_do_with_each_record():
+    def at(stage, rows=_PASSING, **verdicts):
+        placed = place_article(_GRAPH, rows, ran={n.name for n in _GRAPH}, attempted=set(),
+                               verdicts=_planned(**verdicts))
+        return placed[stage].state, placed[stage].reason
+
+    assert at("extract") == (PASSED, "")
+    assert at("extract", extract=Verdict(planning.PENDING, None, (NO_FINGERPRINT,))) == (
+        RERUN, NO_FINGERPRINT)
+    assert at("extract", extract=Verdict(planning.PENDING, None, (CHANGED,))) == (
+        RERUN, CHANGED)
+    failed = _rows(*((n.name, "", "ok") for n in _GRAPH[:1]), ("extract", "", "failed"))
+    # A failure the plan will not try again is spent; one waiting out retry_after is not.
+    assert at("extract", failed, extract=Verdict(planning.PERMANENT, None, (RETRIES_SPENT,)))[0] \
+        == SPENT
+    assert at("extract", failed, extract=Verdict(planning.PERMANENT, None, (BACKING_OFF,)))[0] \
+        == FAILED
+    assert at("extract", failed, extract=Verdict(planning.PENDING))[0] == FAILED
+    # A plan that holds an article whose input passed says why; a bad page is refused.
+    why = f"prose {READ_FROM_BAD_PAGE}"
+    assert at("sync", sync=Verdict(planning.BLOCKED, why)) == (REFUSED, why)
+    assert at("sync", sync=Verdict(planning.BLOCKED, "no neurostore_api_url")) == (
+        HELD, "no neurostore_api_url")
+    # Taken although its input failed, because its plan takes it.
+    assert at("triage", _rows(("download", "", "ok"), ("extract", "", "ok"),
+                              ("metadata", "", "failed"), ("triage", "", "ok")))[0] == PASSED
+    # A stage that cannot plan is placed by its records alone.
+    assert at("extract", failed, extract=Verdict(None, "not known: needs x"))[0] == FAILED
+
+
+def test_only_the_stages_something_waits_for_are_in_the_flow():
+    gating = flow_stages(stage_graph(True))
+    assert not {"reflist", "references", "links", "linkprobe", "notices"} & set(gating)
+    assert gating == [n for n in STAGE_ORDER if getattr(STAGE_TYPES[n], "gates", True)]
 
 
 def test_dimensions_include_tried_sources_and_registration_day(wide):
@@ -447,10 +536,10 @@ def test_dimensions_include_tried_sources_and_registration_day(wide):
     assert cells[("download", ids["K"])][5] != "2026-01-02"
 
 
-def test_funnel_ids_match_the_page(wider, wide):
+def test_funnel_ids_match_the_page(wider):
     root, ids = wider
-    funnel, _ = wide
     # The source table's "dl failed" cell for ace, and the command the page prints for it.
+    funnel = funnel_of(root, _cli_settings(root), samples=50)
     page = {aid for key, (_, sample) in funnel.sources.items()
             if key[:3] == ("download", "ace", "failed") for aid, _ in sample}
     assert page == {ids["S"], ids["T"], ids["V"]}
@@ -469,10 +558,6 @@ def test_funnel_ids_match_the_page(wider, wide):
                 "--to", "2026-01-03") == {ids["Z"], ids["X"]}
     assert _ids(root, "--stage", "download", "--judged", "ace") == {
         ids["S"], ids["V"], ids["Y"]}
-    # The stage graph decides what sync waits on.
-    assert _ids(root, "--stage", "sync", "--state", "refused", "--no-prose") == {
-        ids["S"], ids["V"]}
-    assert _ids(root, "--stage", "sync", "--state", "stale", "--prose") == {ids["S"], ids["V"]}
     assert _ids(root, "--stage", "download", "--state", "failed", "--from", "2026-01-03") == {
         ids["T"]}
 
@@ -497,9 +582,9 @@ def test_flow_adds_up_at_every_step(wide):
     for before, step in zip([None] + steps, steps):
         total = step["passed"] + sum(i[2] for i in step["excluded"] + step["waiting"])
         assert step["adds_up"] and step["in"] == total, step
-        assert step["follows"] and (before is None or step["in"] == before["passed"]), step
+        # The records alone: a stage takes what its input passed.
+        assert before is None or step["in"] == before["passed"], step
     prose = {step["stage"]: step for step in steps}["prose"]
-    assert [REFUSED, f"passages {READ_FROM_BAD_PAGE}", 2] in prose["excluded"]
     assert [PENDING, "input ready, nothing to read (passages = 0); tables wait behind it", 1] \
         in prose["waiting"]
     assert [FAILED, "not open access", 1] in steps[0]["excluded"]
@@ -510,7 +595,7 @@ def test_flow_check_fails_when_a_count_is_off(wide):
     key = next(k for k in funnel.cells if k[0] == "extract" and k[1] == PASSED)
     funnel.cells[key][0] += 1
     steps = {step["stage"]: step for step in flow(funnel)}
-    assert not steps["extract"]["adds_up"] and not steps["passages"]["follows"]
+    assert not steps["extract"]["adds_up"]
 
 
 @pytest.fixture()
@@ -549,32 +634,28 @@ def test_trace_shows_every_record_without_opening_a_payload(stored, monkeypatch)
     assert trace_article(root, "nope")["error"]
 
 
-def test_trace_plans_each_stage_to_say_whether_it_is_fresh(stored, tmp_path, monkeypatch):
+def test_trace_says_what_each_stage_s_plan_would_do(stored, tmp_path):
     root, a, _ = stored
-    monkeypatch.setattr(BlobStore, "get", lambda self, d: (_ for _ in ()).throw(
-        AssertionError("a payload was read")))
     settings = Settings(catalog_root=str(root), cache_root=str(tmp_path / "cache"),
                         data_root=str(tmp_path / "data"))
     found = trace_article(root, a, settings=settings)
     stages = {s["stage"]: s for s in found["stages"]}
-    (extract,) = stages["extract"]["records"]
-    assert extract["freshness"].startswith("stale: built from fingerprint old")
+    # Extract's record was made under fingerprint "old": its plan would make it again.
+    assert stages["extract"]["state"] == RERUN
+    assert stages["extract"]["plan"].startswith(f"would run now: {CHANGED}")
     assert stages["metadata"]["plan"]
     # A stage that cannot plan under these settings says why, and the rest still plan.
     unknown = {s["stage"]: s["plan"] for s in found["stages"] if s["plan"].startswith("not known")}
-    assert set(unknown) == {"triage"} and "coordinate_gate_path" in unknown["triage"]
+    assert "coordinate_gate_path" in unknown["triage"]
+    assert "extract" not in unknown and "metadata" not in unknown
 
 
-def test_trace_judges_triage_from_the_rows_with_a_gate(stored, tmp_path, monkeypatch):
-    """Triage fingerprints the digests the metadata's row records, so the trace, which
-    never reads payloads, can say whether it is fresh."""
+def test_trace_plans_triage_with_a_gate(stored, tmp_path):
     from nspond_tables.classify.model import Gate, RoutedGate
 
     root, a, _ = stored
     gate = tmp_path / "gate.json"
     RoutedGate(candidates=Gate(names=[]), residual=Gate(names=[])).save(gate)
-    monkeypatch.setattr(BlobStore, "get", lambda self, d: (_ for _ in ()).throw(
-        AssertionError("a payload was read")))
     settings = Settings(catalog_root=str(root), cache_root=str(tmp_path / "cache"),
                         data_root=str(tmp_path / "data"), coordinate_gate_path=gate)
     stages = {s["stage"]: s for s in trace_article(root, a, settings=settings)["stages"]}
@@ -617,14 +698,13 @@ def test_page_model_flows_through_every_gating_stage(wide):
     funnel, ids = wide
     model = page_model(funnel)
     steps = {step["stage"]: step for step in model["flow"]}
-    assert list(steps) == [name for name in STAGE_ORDER if name not in OPT_IN_STAGES]
+    assert list(steps) == flow_stages(funnel.graph)
     for step in model["flow"]:
-        assert step["adds_up"] and step["follows"], step
+        assert step["adds_up"], step
         for group in step["excluded"] + step["waiting"] + step["stale"]:
             assert group[2] == sum(n for _, n in group[3])
-    # Triage takes in what metadata attempted, failed included.
-    tried = sum(model["totals"]["metadata"][s] for s in (PASSED, FILTERED, FAILED, PERMANENT))
-    assert steps["triage"]["in"] == tried
+    # The records alone: triage takes in what metadata passed.
+    assert steps["triage"]["in"] == model["totals"]["metadata"][PASSED]
     # Download's joined reasons sit under their primary part.
     groups = {g[1]: g for g in steps["download"]["excluded"]}
     assert groups["HTTP 403 forbidden"][3] == [
@@ -634,9 +714,6 @@ def test_page_model_flows_through_every_gating_stage(wide):
     up = _upstream("upload")
     held = f"input {up} is {_where(funnel, ids['H'], up)[0]}; retracted"
     assert ["stale", held, 1, [[held, 1]]] in steps["upload"]["stale"]
-    # An extraction with no text hash waits for refresh-text before passages.
-    assert any(g[1].startswith("waits for `ingest refresh-text`")
-               for g in steps["passages"]["waiting"])
 
 
 def test_funnel_ids_lists_a_reason_group(wider):
@@ -735,19 +812,19 @@ def read_text(tmp_path, evidence):
     return tmp_path / "text", a, b
 
 
-def test_trace_never_reads_a_payload_and_says_so_plainly(read_text, tmp_path):
+def test_the_trace_asks_passages_own_plan_which_reads_the_text(read_text, tmp_path):
+    """The rows alone would call a's passages fresh; its plan finds the text file gone."""
     root, a, b = read_text
     settings = Settings(catalog_root=str(root), cache_root=str(tmp_path / "cache"),
                         data_root=str(tmp_path / "data"), prose_model="m")
-    plans = {}
     for article in (a, b):
         found = trace_article(root, article, settings=settings)
-        plans[article] = {s["stage"]: s["plan"] for s in found["stages"]}
-        for stage, plan in plans[article].items():
-            assert not re.search(r"[A-Z][a-z]+Error|Traceback", plan), (stage, plan)
-    # The plan wants the text file's path from the payload; the rows tell freshness.
-    assert plans[a]["passages"].startswith("fresh: its fingerprint matches the extraction")
-    assert plans[b]["passages"].startswith("waits for `ingest refresh-text`")
+        plans = {s["stage"]: s["plan"] for s in found["stages"]}
+        for stage, plan in plans.items():
+            assert not re.search(r"Traceback", plan), (stage, plan)
+        passages = {s["stage"]: s for s in found["stages"]}["passages"]
+        assert passages["state"] == HELD
+        assert plans["passages"].startswith("does not take it: no extraction text")
 
 
 def test_trace_marks_a_missing_blob_and_side_inputs(stored):
@@ -1012,3 +1089,37 @@ def test_the_kept_records_notes_are_counted_by_field(tmp_path, evidence):
                                             "abstract": [0, 0, 2]}}
     finally:
         conn.close()
+
+
+def test_the_funnel_waits_on_what_a_dry_run_would_do_and_no_more(tmp_path, evidence):
+    """Download as beast had it: legacy records with no fingerprint, current ones, and
+    failures with retries left and spent. What the funnel says waits is what
+    `ingest run --dry-run` selects."""
+    from ingestion_workflow.catalog import fingerprint
+    from ingestion_workflow.pipeline.selection import Select, everything, narrow
+
+    root = tmp_path / "dl"
+    cat = Catalog.open(root)
+    legacy, current, spent, waiting, new = (
+        cat.register(Identifier(pmcid=f"PMC{6000 + i}"), evidence).id for i in range(5))
+    current_fp = fingerprint("download", "pubget", 1)
+    cat.record([_ok(legacy, "download", "pubget"),
+                Outcome(article_id=current, stage="download", source="pubget", status=OK,
+                        fingerprint=current_fp, payload={"files": []}),
+                Outcome.failure(waiting, "download", "pubget", "Read timed out")])
+    for _ in range(3):
+        cat.record([Outcome.failure(spent, "download", "pubget", "Read timed out")])
+    settings = Settings(catalog_root=root, data_root=tmp_path / "d", cache_root=tmp_path / "c",
+                        download_sources=["pubget"], max_attempts=3)
+    selected = {ref.id for ref in narrow(cat, everything(cat), Select.PENDING, "download",
+                                         settings=settings).refs}
+    cat.close()
+
+    funnel = funnel_of(root, settings, samples=50)
+    state = {aid: key[1] for key, (_, sample) in funnel.cells.items() if key[0] == "download"
+             for aid, _ in sample}
+    assert state == {legacy: RERUN, current: PASSED, spent: SPENT, waiting: FAILED,
+                     new: PENDING}
+    assert _where(funnel, legacy, "download")[1] == NO_FINGERPRINT
+    assert {aid for aid, s in state.items() if s in (RERUN, PENDING, NOT_ATTEMPTED)} == \
+        selected == {legacy, new}

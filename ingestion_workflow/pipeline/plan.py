@@ -27,9 +27,19 @@ class Work:
         return self.ref.id
 
 
+#: What a plan decided for an article it does not put to work.
+FRESH = "fresh"          # its artifact is current: nothing to do
+BLOCKED = "blocked"      # the stage does not take it: its input has not passed, or why
+SKIPPED = "skipped"      # nothing for the stage to do, or no source can address it
+PERMANENT = "permanent"  # its artifact failed and is not tried again now (`Context.attempt_state`)
+#: ... and for an article it does.
+PENDING = "pending"
+
+
 @dataclass
 class StagePlan:
-    """The outcome of planning one stage over one selection."""
+    """The outcome of planning one stage over one selection: per article, the work it
+    is given or the verdict it is not, and the counts of each."""
 
     stage: str
     pending: List[Work] = field(default_factory=list)
@@ -39,11 +49,34 @@ class StagePlan:
     permanent: int = 0
     #: Why articles were blocked, when the stage can say: {reason: count}.
     reasons: Dict[str, int] = field(default_factory=dict)
+    #: article_id -> (verdict, reason) of each article not put to work.
+    verdicts: Dict[str, Tuple[str, Optional[str]]] = field(default_factory=dict)
 
-    def block(self, reason: str) -> None:
-        """Count one article blocked for `reason`."""
+    def add_fresh(self, ref) -> None:
+        self.fresh += 1
+        self.verdicts[ref.id] = (FRESH, None)
+
+    def add_skipped(self, ref, reason: Optional[str] = None) -> None:
+        self.skipped += 1
+        self.verdicts[ref.id] = (SKIPPED, reason)
+
+    def add_permanent(self, ref) -> None:
+        self.permanent += 1
+        self.verdicts[ref.id] = (PERMANENT, None)
+
+    def block(self, ref, reason: Optional[str] = None) -> None:
+        """Count one article blocked, for `reason` when the stage can say."""
         self.blocked += 1
-        self.reasons[reason] = self.reasons.get(reason, 0) + 1
+        self.verdicts[ref.id] = (BLOCKED, reason)
+        if reason is not None:
+            self.reasons[reason] = self.reasons.get(reason, 0) + 1
+
+    def by_article(self) -> Dict[str, Tuple[str, Optional[str]]]:
+        """article_id -> (verdict, reason) for every article planned: PENDING when it
+        has work."""
+        out = dict(self.verdicts)
+        out.update((work.article_id, (PENDING, None)) for work in self.pending)
+        return out
 
     @property
     def total(self) -> int:
