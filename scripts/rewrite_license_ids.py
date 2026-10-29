@@ -14,13 +14,14 @@ download summaries' listed `license`) is left as the source wrote it.
 Run it once, before the pipeline runs with study_schema 0.11.0. Nothing is fetched.
 
 A dry run opens the catalog read-only and prints what it would rewrite, counted by
-former id. --apply first copies the catalog to `--backup`, a path not yet taken, then
-stores each rewritten payload as a new blob and changes only the metadata rows' `blob`
-and `summary`: no fingerprint, status or `updated_at` moves. Sync, which fingerprints the
-metadata's blob (and `PAPER_PARSE_VERSION`), then writes the parse files again. A row written
-meanwhile is left alone, and so is one whose payload is gone or, respelled, still does
-not load as sync reads it (every payload is checked, respelled or not); each is printed
-with why. A second run finds nothing left to rewrite.
+former id. Rows are read, checked and written `BATCH` at a time, so memory stays flat
+however large the catalog. --apply first copies the catalog to `--backup`, a path not
+yet taken, then stores each rewritten payload as a new blob and changes only the
+metadata rows' `blob` and `summary`: no fingerprint, status or `updated_at` moves. Sync,
+which fingerprints the metadata's blob (and `PAPER_PARSE_VERSION`), then writes the
+parse files again. A row written meanwhile is left alone, and so is one whose payload is
+gone or, respelled, still does not load as sync reads it (every payload is checked,
+respelled or not); each is printed with why. A second run finds nothing left to rewrite.
 """
 
 from __future__ import annotations
@@ -44,6 +45,9 @@ from ingestion_workflow.catalog import Catalog  # noqa: E402
 from ingestion_workflow.catalog.blobs import BlobStore  # noqa: E402
 from ingestion_workflow.models.metadata import ArticleMetadata  # noqa: E402
 from study_schema.models.paper_parse import LicenseId  # noqa: E402
+
+#: How many metadata rows are read, checked and written together.
+BATCH = 500
 
 #: Each former spelling, and the id it is now.
 FORMER = {member.value.replace("_", "-"): member.value
@@ -78,6 +82,35 @@ def respelled_summary(summary: Dict[str, Any], seen: Counter) -> Dict[str, Any]:
     return out
 
 
+def _checked(rows, blobs: BlobStore, counts: Counter, out) -> List[tuple]:
+    """Of one batch of metadata rows, those with a former id, respelled and loading as
+    sync reads them; each row left is counted and printed with why."""
+    todo: List[tuple] = []
+    for article_id, source, blob, summary in rows:
+        seen: Counter = Counter()
+        payload = blobs.get(blob) if blob else None
+        if blob and payload is None:
+            counts["left: payload blob missing"] += 1
+            print(f"left\t{article_id}\tpayload blob missing", file=out)
+            continue
+        new_payload = respelled_payload(payload, seen) if payload is not None else None
+        new_summary = respelled_summary(json.loads(summary), seen)
+        if new_payload is not None:
+            # As sync reads it: a payload that would still not load is left, and shown.
+            try:
+                ArticleMetadata.from_dict(new_payload)
+            except (ValidationError, ValueError, KeyError) as exc:
+                why = f"{type(exc).__name__}: {' '.join(str(exc).split())[:200]}"
+                counts["left: does not validate"] += 1
+                print(f"left\t{article_id}\t{why}", file=out)
+                continue
+        if not seen:
+            counts["already current"] += 1
+            continue
+        todo.append((article_id, source, blob, summary, new_payload, new_summary, seen))
+    return todo
+
+
 def run(root: Path, *, apply: bool = False, backup: Optional[Path] = None,
         out=sys.stdout) -> Counter:
     path = Path(root) / "catalog.sqlite"
@@ -91,49 +124,33 @@ def run(root: Path, *, apply: bool = False, backup: Optional[Path] = None,
     counts: Counter = Counter()
     respelled: Counter = Counter()
     try:
-        rows = conn.execute(
-            "SELECT article_id, source, blob, summary FROM artifacts WHERE stage='metadata' "
-            "ORDER BY article_id, source").fetchall()
         if apply:
             # Not Catalog.open, which would migrate an older catalog first.
             catalog = Catalog(conn, Path(root))
             print(f"catalog backed up to {catalog.backup(backup)}", file=out)
-        todo: List[tuple] = []
-        for article_id, source, blob, summary in rows:
-            seen: Counter = Counter()
-            payload = blobs.get(blob) if blob else None
-            if blob and payload is None:
-                counts["left: payload blob missing"] += 1
-                print(f"left\t{article_id}\tpayload blob missing", file=out)
-                continue
-            new_payload = respelled_payload(payload, seen) if payload is not None else None
-            new_summary = respelled_summary(json.loads(summary), seen)
-            if new_payload is not None:
-                # As sync reads it: a payload that would still not load is left, and shown.
-                try:
-                    ArticleMetadata.from_dict(new_payload)
-                except (ValidationError, ValueError, KeyError) as exc:
-                    why = f"{type(exc).__name__}: {' '.join(str(exc).split())[:200]}"
-                    counts["left: does not validate"] += 1
-                    print(f"left\t{article_id}\t{why}", file=out)
-                    continue
-            if not seen:
-                counts["already current"] += 1
-                continue
-            todo.append((article_id, source, blob, summary, new_payload, new_summary, seen))
-        with catalog._write() if apply else nullcontext(conn):
-            for article_id, source, blob, summary, new_payload, new_summary, seen in todo:
-                if apply and not conn.execute(
-                        "UPDATE artifacts SET blob=?, summary=? WHERE article_id=? "
-                        "AND stage='metadata' AND source=? AND blob IS ? AND summary=?",
-                        (blobs.put(new_payload) if new_payload is not None else blob,
-                         json.dumps(new_summary, separators=(",", ":")),
-                         article_id, source, blob, summary)).rowcount:
-                    counts["left: written meanwhile"] += 1
-                    print(f"left\t{article_id}\twritten meanwhile", file=out)
-                    continue
-                counts["respelled"] += 1
-                respelled.update(seen)
+        after = ("", "")
+        while True:
+            rows = conn.execute(
+                "SELECT article_id, source, blob, summary FROM artifacts WHERE stage='metadata' "
+                "AND (article_id, source) > (?, ?) ORDER BY article_id, source LIMIT ?",
+                (*after, BATCH)).fetchall()
+            if not rows:
+                break
+            after = rows[-1][:2]
+            todo = _checked(rows, blobs, counts, out)
+            with catalog._write() if apply else nullcontext(conn):
+                for article_id, source, blob, summary, new_payload, new_summary, seen in todo:
+                    if apply and not conn.execute(
+                            "UPDATE artifacts SET blob=?, summary=? WHERE article_id=? "
+                            "AND stage='metadata' AND source=? AND blob IS ? AND summary=?",
+                            (blobs.put(new_payload) if new_payload is not None else blob,
+                             json.dumps(new_summary, separators=(",", ":")),
+                             article_id, source, blob, summary)).rowcount:
+                        counts["left: written meanwhile"] += 1
+                        print(f"left\t{article_id}\twritten meanwhile", file=out)
+                        continue
+                    counts["respelled"] += 1
+                    respelled.update(seen)
     finally:
         conn.close()
     for key, n in sorted(counts.items()):
