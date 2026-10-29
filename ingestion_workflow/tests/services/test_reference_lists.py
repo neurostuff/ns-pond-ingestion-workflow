@@ -28,14 +28,14 @@ def test_crossref_entries_keep_their_order_and_their_identifiers():
 def test_openalex_names_an_entry_that_is_a_bare_doi():
     refs = L.from_crossref(MESSAGE)
 
-    assert L.enrich(refs, _OpenAlex()) == 1
+    assert L.enrich(refs, _OpenAlex().get_cited_works(L.cited(refs))) == 1
     assert refs[0]["authors"] == ["Smith", "Jones"] and refs[0]["pmid"] == "111"
     assert refs[0]["id_providers"]["pmid"] == "openalex"
 
 
 def test_a_source_entry_without_a_doi_borrows_crossref_s():
     listed = L.from_crossref(MESSAGE)
-    L.enrich(listed, _OpenAlex())
+    L.enrich(listed, _OpenAlex().get_cited_works(L.cited(listed)))
     own = [{"id": "bib1", "doi": None, "pmid": None, "authors": ["Smith"], "year": 2001},
            {"id": "x9", "doi": None, "pmid": None, "authors": ["Nobody"], "year": 1990}]
 
