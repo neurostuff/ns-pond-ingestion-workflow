@@ -787,10 +787,11 @@ def test_the_client_s_secret_and_token_are_scrubbed_from_logs_until_closed(neuro
                                f"{mock.CLIENT_SECRET} {token}", (), None)
     ni._SCRUB.filter(record)
     assert record.getMessage() == f"{ni.REDACTED} {ni.REDACTED}"
-    held = ni._SCRUB.tokens.count(mock.CLIENT_SECRET)  # others open in this process hold it too
+    # Relative counts: an ingester another test in this process left open holds them too.
+    held = ni._SCRUB.tokens.count(mock.CLIENT_SECRET), ni._SCRUB.tokens.count(token)
     ingester.close()
-    assert ni._SCRUB.tokens.count(mock.CLIENT_SECRET) == held - 1
-    assert token not in ni._SCRUB.tokens
+    assert (ni._SCRUB.tokens.count(mock.CLIENT_SECRET), ni._SCRUB.tokens.count(token)) == (
+        held[0] - 1, held[1] - 1)
 
 
 def test_a_secret_that_begins_another_leaves_no_tail_of_it(monkeypatch):
@@ -889,9 +890,9 @@ def test_closing_an_ingester_drops_its_token_and_keeps_scrubbing_bearer_values(
     ingester, token = _holding_token(neurostore)
     with ingester:
         assert ni._SCRUB.tokens.count(mock.CLIENT_SECRET) == held + 2
-        assert token in ni._SCRUB.tokens
+        before = ni._SCRUB.tokens.count(token)
     assert ni._SCRUB.tokens.count(mock.CLIENT_SECRET) == held + 1  # the open one still scrubs it
-    assert token not in ni._SCRUB.tokens
+    assert ni._SCRUB.tokens.count(token) == before - 1
     other.close()
     assert ni._SCRUB.tokens.count(mock.CLIENT_SECRET) == held
     logging.getLogger("httpcore.http11").debug("late line Bearer %s", token)
