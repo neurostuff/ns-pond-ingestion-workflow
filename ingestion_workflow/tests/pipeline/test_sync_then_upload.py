@@ -79,8 +79,8 @@ def vcr_config():
         "filter_headers": ["authorization", "cookie", "set-cookie"],
         "before_record_response": cassette_secrets.scrub_response,
         "record_mode": "none",
-        # The mock neurostore answers in-process; the cassettes hold NCBI's answers.
-        "ignore_hosts": [neurostore_mock.HOST],
+        # The mock neurostore and its tenant answer in-process; the cassettes hold NCBI's.
+        "ignore_hosts": [neurostore_mock.HOST, neurostore_mock.AUTH0_HOST],
     }
 
 
@@ -119,13 +119,13 @@ def _roles(settings, monkeypatch, classifier):
 
 
 @pytest.fixture()
-def token(monkeypatch):
-    monkeypatch.setenv("NEUROSTORE_TOKEN", neurostore_mock.TOKEN)
-    return neurostore_mock.TOKEN
+def client(monkeypatch):
+    monkeypatch.setenv(neurostore_ingest.CLIENT_ID_ENV, neurostore_mock.CLIENT_ID)
+    monkeypatch.setenv(neurostore_ingest.CLIENT_SECRET_ENV, neurostore_mock.CLIENT_SECRET)
 
 
 @pytest.fixture()
-def env(tmp_path, served, token, request, monkeypatch):  # noqa: F811 - the imported fixture
+def env(tmp_path, served, client, request, monkeypatch):  # noqa: F811 - the imported fixture
     """A test that sends asks for `neurostore`; any other takes no request at all."""
     sends = "neurostore" in request.fixturenames
     server = (request.getfixturevalue("neurostore") if sends
@@ -135,7 +135,9 @@ def env(tmp_path, served, token, request, monkeypatch):  # noqa: F811 - the impo
                         catalog_root=tmp_path / "k", ns_pond_root=tmp_path / "pond",
                         prose_model="nu-prose-v2", llm_api_key="x",
                         role_model_table=TABLE_MODEL, role_model_prose=PROSE_MODEL,
-                        neurostore_api_url=server.url)
+                        neurostore_api_url=server.url,
+                        neurostore_auth0_url=neurostore_mock.AUTH0_URL,
+                        neurostore_auth0_audience=neurostore_mock.AUDIENCE)
     path = tmp_path / "article.xml"
     path.write_text(ARTICLE)
     with Catalog.open(settings.catalog_root) as catalog:
@@ -1076,7 +1078,9 @@ def _icafz5(tmp_path, monkeypatch, catalog, evidence, *, analyses_fresh=False, u
             uploaded=True):
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", ns_pond_root=tmp_path / "pond",
-                        role_model_table=TABLE_MODEL, neurostore_api_url=neurostore_mock.URL)
+                        role_model_table=TABLE_MODEL, neurostore_api_url=neurostore_mock.URL,
+                        neurostore_auth0_url=neurostore_mock.AUTH0_URL,
+                        neurostore_auth0_audience=neurostore_mock.AUDIENCE)
     ref = catalog.register(Identifier(pmid="16139528", neurostore="NTKEuAF4Autf"), evidence)
     catalog.record([Outcome(article_id=ref.id, stage="triage", source="", fingerprint="tr-1005",
                             summary={"source": "ace", "tables": 3, "passed": 2,
@@ -1130,8 +1134,8 @@ def _handed_to_the_client(done, settings):
 
 
 @pytest.fixture()
-def icafz5_env(served, token):  # noqa: F811 - the imported fixture
-    """The role server's model card and the token, which `_icafz5`'s settings need."""
+def icafz5_env(served, client):  # noqa: F811 - the imported fixture
+    """The role server's model card and the client, which `_icafz5`'s settings need."""
 
 
 @pytest.mark.vcr
@@ -1487,11 +1491,12 @@ def test_a_token_neurostore_refuses_stops_the_upload_and_records_nothing(
         env, monkeypatch, caplog, neurostore, evidence):
     settings, catalog, _ = env
     ctx, refs = _two_synced(env, monkeypatch, evidence=evidence)
-    neurostore.script(neurostore.error(401, "Provided token is not valid"))
+    refused = neurostore.error(401, "Provided token is not valid")
+    neurostore.script(refused, neurostore.error(401, "Provided token is not valid"))
     upload = UploadStage(settings)
     _stops(upload, ctx, catalog, refs, caplog)
     assert "NeurostoreAuthError" in caplog.text and "with 401" in caplog.text
-    assert len(neurostore.uploads) == 1
+    assert len(neurostore.uploads) == 2 and neurostore.granted == 2  # one new token, refused
     assert list(settings.ns_pond_root.rglob(neurostore_ingest.ARTIFACT_NAME)) == []
 
 
@@ -1526,12 +1531,12 @@ def test_a_stop_leaves_pending_the_article_it_stopped_at_and_every_one_after(env
 
 
 @pytest.mark.vcr
-def test_no_token_stops_the_upload_before_anything_is_sent(env, monkeypatch, caplog, evidence):
+def test_no_client_stops_the_upload_before_anything_is_sent(env, monkeypatch, caplog, evidence):
     settings, catalog, _ = env
     ctx, refs = _two_synced(env, monkeypatch, evidence=evidence)
-    monkeypatch.delenv("NEUROSTORE_TOKEN")
+    monkeypatch.delenv(neurostore_ingest.CLIENT_SECRET_ENV)
     _stops(UploadStage(settings), ctx, catalog, refs, caplog)
-    assert "no neurostore token" in caplog.text
+    assert "no neurostore client" in caplog.text
 
 
 @pytest.mark.vcr

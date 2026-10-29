@@ -38,17 +38,24 @@ def study(tmp_path):
     return summary["dir"].parent
 
 
-@pytest.fixture()
-def token(monkeypatch):
-    monkeypatch.setenv(ni.TOKEN_ENV, mock.TOKEN)
-    return mock.TOKEN
-
-
 def _ingester(server=None, url=mock.URL, sleeps=None, **kwargs):
+    kwargs.setdefault("transport", server.transport if server is not None else None)
+    kwargs.setdefault("auth0", (mock.AUTH0_URL, mock.AUDIENCE))
     return ni.NeurostoreIngester(
-        url, sleep=(sleeps.append if sleeps is not None else lambda s: None),
-        transport=server.transport if server is not None else None, **kwargs
+        url, sleep=(sleeps.append if sleeps is not None else lambda s: None), **kwargs
     )
+
+
+def _holding_token(server):
+    """An ingester that has asked `server`'s tenant for its token, and the token."""
+    ingester = _ingester(server)
+    ingester._ask_token()
+    return ingester, server.token
+
+
+def _no_client(monkeypatch):
+    for name in (ni.CLIENT_ID_ENV, ni.CLIENT_SECRET_ENV):
+        monkeypatch.delenv(name, raising=False)
 
 
 def _artifact(study):
@@ -243,7 +250,9 @@ def test_a_key_the_ingester_refuses_is_the_paper_s_failure(study, neurostore, co
 
 @pytest.mark.parametrize("status", [401, 403])
 def test_a_refused_token_stops_the_upload_and_writes_nothing(study, neurostore, status):
-    neurostore.script(neurostore.error(status, "Only an admin can upload study_schema artifacts."))
+    """A 401 is refused again with a new token, a 403 at once."""
+    refused = neurostore.error(status, "Only an admin can upload study_schema artifacts.")
+    neurostore.script(*[refused] * (2 if status == 401 else 1))
     with _ingester(neurostore) as ingester, pytest.raises(ni.NeurostoreAuthError) as stopped:
         ingester.upload(study)
 
@@ -275,7 +284,7 @@ def _response(status, body=b"", headers=None):
     (lambda s: s.error(404, "Not Found"), ni.NeurostoreConfigError),
     (lambda s: s.error(405, "Method Not Allowed"), ni.NeurostoreConfigError),
     (lambda s: s.error(415, "Unsupported Media Type"), ni.NeurostoreConfigError),
-    (lambda s: s.error(401, "Provided token is not valid"), ni.NeurostoreAuthError),
+    (lambda s: [s.error(401, "Provided token is not valid")] * 2, ni.NeurostoreAuthError),
     (lambda s: s.error(404, "Record x not found in BaseStudy"), None),
     (lambda s: s.error(422, KEYS, codes=["KEY_MISMATCH"]), None),
     (lambda s: s.error(422, TEXTS, codes=["TEXT_MISMATCH"]), None),
@@ -285,8 +294,11 @@ def _response(status, body=b"", headers=None):
 ], ids=["301", "307", "404-route", "405", "415", "401", "404-base-study", "422-KEY_MISMATCH",
         "422-TEXT_MISMATCH", "422-SCHEMA_VERSION", "400"])
 def test_which_statuses_mean_every_paper_would_fail(study, neurostore, answer, stop):
-    """A stop raises before anything is written; any other is this paper's refusal."""
-    neurostore.script(answer(neurostore))
+    """A stop raises before anything is written; any other is this paper's refusal. A 401
+    stops only when a new token is refused too."""
+    answers = answer(neurostore)
+    answers = answers if isinstance(answers, list) else [answers]
+    neurostore.script(*answers)
     with _ingester(neurostore) as ingester:
         if stop:
             with pytest.raises(stop):
@@ -294,7 +306,7 @@ def test_which_statuses_mean_every_paper_would_fail(study, neurostore, answer, s
             assert not (study / ni.UPLOAD_DIR).exists()
         else:
             assert ingester.upload(study)["status"] == "refused"
-    assert len(neurostore.calls) == 1
+    assert len(neurostore.calls) == len(answers)
 
 
 @pytest.mark.parametrize("answer, problem, result", [
@@ -453,20 +465,21 @@ def test_an_api_that_drops_every_try_and_its_health_check_is_down(study, neurost
 
 
 def test_a_redirect_that_names_the_token_stops_without_it(study, neurostore):
+    ingester, token = _holding_token(neurostore)
     neurostore.script(neurostore.proxy(302, headers={
         "Location": "https://login.neurostore.example/?next=/api/study-schema-uploads/"
-                    f"&token={neurostore.token}"}))
-    with _ingester(neurostore) as ingester, pytest.raises(ni.NeurostoreConfigError) as stopped:
+                    f"&token={token}"}))
+    with ingester, pytest.raises(ni.NeurostoreConfigError) as stopped:
         ingester.upload(study)
     assert "redirects (302)" in str(stopped.value)
-    assert neurostore.token not in str(stopped.value) and ni.REDACTED in str(stopped.value)
+    assert token not in str(stopped.value) and ni.REDACTED in str(stopped.value)
     assert not (study / ni.UPLOAD_DIR).exists()
 
 
-def test_a_down_api_stops_the_upload_after_its_tries_and_writes_nothing(study, token):
+def test_a_down_api_stops_the_upload_after_its_tries_and_writes_nothing(study, neurostore):
     sleeps = []
     url = f"http://127.0.0.1:{_closed_port()}"
-    with _ingester(url=url, sleeps=sleeps) as ingester:
+    with _ingester(url=url, sleeps=sleeps, transport=neurostore.with_network()) as ingester:
         with pytest.raises(ni.NeurostoreUnavailable, match="nor its health check"):
             ingester.upload(study)
         assert sleeps == [2.0, 4.0, 8.0, 16.0]
@@ -532,7 +545,7 @@ def test_a_later_failure_or_dry_run_keeps_the_upload_on_record(study, neurostore
 
 def test_a_dry_run_writes_the_exact_payload_and_sends_nothing(study, monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path)
-    monkeypatch.delenv(ni.TOKEN_ENV, raising=False)
+    _no_client(monkeypatch)
     root = tmp_path / "dry"
     ingester = ni.NeurostoreIngester(mock.URL, dry_run=True, dry_run_root=root)
     artifact = ingester.upload(study)
@@ -629,51 +642,164 @@ def test_a_paper_sync_wrote_no_parse_for_is_recorded_missing(tmp_path, neurostor
     assert neurostore.calls == []
 
 
-def test_the_upload_needs_its_api_url_and_reads_its_token_from_the_environment_only(
-        monkeypatch, tmp_path):
+def test_the_upload_needs_its_api_url_and_reads_its_client_from_the_environment_only(
+        monkeypatch, tmp_path, neurostore):
     with pytest.raises(ni.NeurostoreConfigError, match="neurostore_api_url"):
         ni.api_url(Settings())
-    assert not [name for name in Settings.model_fields if "token" in name]
+    assert not [name for name in Settings.model_fields
+                if "token" in name or "secret" in name or "client" in name]
     settings = Settings(neurostore_api_url=mock.URL + "/")
-    monkeypatch.setenv(ni.TOKEN_ENV, mock.TOKEN)
     with ni.NeurostoreIngester.from_settings(settings) as ingester:
         assert ingester.url == mock.URL + ni.UPLOAD_PATH
-    # A token in ./.env is not read: the environment variable is the one source.
+    # A client in ./.env is not read: the environment variables are the one source.
     monkeypatch.chdir(tmp_path)
-    (tmp_path / ".env").write_text(f"{ni.TOKEN_ENV}={mock.TOKEN}\n")
-    monkeypatch.delenv(ni.TOKEN_ENV)
-    with pytest.raises(ni.NeurostoreAuthError, match="no neurostore token"):
+    (tmp_path / ".env").write_text(f"{ni.CLIENT_ID_ENV}={mock.CLIENT_ID}\n"
+                                   f"{ni.CLIENT_SECRET_ENV}={mock.CLIENT_SECRET}\n")
+    _no_client(monkeypatch)
+    with pytest.raises(ni.NeurostoreAuthError, match="no neurostore client"):
         ni.NeurostoreIngester.from_settings(settings)
 
 
-def test_a_missing_or_malformed_token_stops_before_anything_is_sent(monkeypatch, tmp_path):
+def test_a_missing_client_stops_before_anything_is_sent(monkeypatch, tmp_path, neurostore):
     monkeypatch.chdir(tmp_path)
-    monkeypatch.delenv(ni.TOKEN_ENV, raising=False)
-    with pytest.raises(ni.NeurostoreAuthError, match="no neurostore token"):
-        _ingester()
-    monkeypatch.setenv(ni.TOKEN_ENV, "half token")
-    with pytest.raises(ni.NeurostoreAuthError) as stopped:
-        _ingester()
+    monkeypatch.delenv(ni.CLIENT_SECRET_ENV)
+    with pytest.raises(ni.NeurostoreAuthError, match="no neurostore client"):
+        _ingester(neurostore)
+    assert neurostore.calls == [] and neurostore.granted == 0
+
+
+def test_a_malformed_token_from_the_tenant_stops_before_anything_is_sent(study, neurostore):
+    neurostore.auth0_script.append((200, {"access_token": "half token", "expires_in": 60}))
+    with _ingester(neurostore) as ingester, pytest.raises(ni.NeurostoreAuthError) as stopped:
+        ingester.upload(study)
     assert "half token" not in str(stopped.value)
+    assert neurostore.calls == []
 
 
-def test_a_token_with_a_trailing_newline_is_stripped(study, neurostore, monkeypatch):
-    """The mock takes only `Bearer <token>`, exactly."""
-    monkeypatch.setenv(ni.TOKEN_ENV, f" {neurostore.token}\n")
+def test_a_client_with_trailing_newlines_is_stripped(study, neurostore, monkeypatch):
+    """The mock tenant takes only the exact client id and secret."""
+    monkeypatch.setenv(ni.CLIENT_ID_ENV, f" {mock.CLIENT_ID}\n")
+    monkeypatch.setenv(ni.CLIENT_SECRET_ENV, f"{mock.CLIENT_SECRET}\n")
     with _ingester(neurostore) as ingester:
         assert ingester.upload(study)["status"] == "uploaded"
 
 
-def test_a_request_that_cannot_be_sent_stops_without_the_httpx_error(study, token):
+def test_a_request_that_cannot_be_sent_stops_without_the_httpx_error(study, neurostore):
     sleeps = []
-    with _ingester(url=mock.URL.removeprefix("http://"), sleeps=sleeps) as ingester:
+    with _ingester(url=mock.URL.removeprefix("http://"), sleeps=sleeps,
+                   transport=neurostore.with_network()) as ingester:
         with pytest.raises(ni.NeurostoreConfigError, match="cannot be sent") as stopped:
             ingester.upload(study)
 
     assert sleeps == []
     assert stopped.value.__context__ is None and stopped.value.__cause__ is None
-    assert token not in str(stopped.value)
+    assert neurostore.token not in str(stopped.value)
     assert not (study / ni.UPLOAD_DIR).exists()
+
+
+def _clocked(server, clock):
+    return _ingester(server, clock=lambda: clock[0])
+
+
+def test_the_client_s_token_is_asked_for_at_the_first_upload_only(study, neurostore):
+    with _ingester(neurostore) as ingester:
+        assert neurostore.granted == 0
+        assert ingester.upload(study)["status"] == "uploaded"
+        assert ingester.upload(study)["status"] == "uploaded"
+    assert neurostore.granted == 1
+
+
+def test_a_token_about_to_expire_is_asked_for_again_before_an_upload(study, neurostore):
+    clock = [0.0]
+    neurostore.expires_in = 3600
+    with _clocked(neurostore, clock) as ingester:
+        ingester.upload(study)
+        clock[0] = 3600 - ni.REFRESH_MARGIN - 1
+        ingester.upload(study)
+        assert neurostore.granted == 1
+        clock[0] = 3600 - ni.REFRESH_MARGIN
+        assert ingester.upload(study)["status"] == "uploaded"
+    assert neurostore.granted == 2
+
+
+def test_a_refused_client_token_is_asked_for_once_more_then_stops(study, neurostore):
+    refused = neurostore.error(401, "token expired")
+    neurostore.script(refused)
+    with _ingester(neurostore) as ingester:
+        artifact = ingester.upload(study)
+    assert artifact["status"] == "uploaded" and neurostore.granted == 2
+    assert [a.get("token_refused") for a in artifact["attempts"]] == [True, None]
+
+    neurostore.script(*[neurostore.error(401, "token expired")] * 2)
+    with _ingester(neurostore) as ingester, \
+            pytest.raises(ni.NeurostoreAuthError, match=f"{mock.CLIENT_ID}@clients") as stopped:
+        ingester.upload(study)
+    assert mock.CLIENT_SECRET not in str(stopped.value)
+    assert neurostore.token not in str(stopped.value)
+
+
+def test_a_client_without_neurostore_s_admin_role_stops_the_upload(study, neurostore):
+    neurostore.script(neurostore.error(403, "Only an admin can upload study_schema artifacts."))
+    with _ingester(neurostore) as ingester, \
+            pytest.raises(ni.NeurostoreAuthError, match="admin role"):
+        ingester.upload(study)
+    assert neurostore.granted == 1
+
+
+def test_a_client_auth0_refuses_stops_before_anything_is_uploaded(study, neurostore, monkeypatch):
+    monkeypatch.setenv(ni.CLIENT_SECRET_ENV, "wrong-secret")
+    with _ingester(neurostore) as ingester, \
+            pytest.raises(ni.NeurostoreAuthError, match="no token") as stopped:
+        ingester.upload(study)
+    assert "wrong-secret" not in str(stopped.value)
+    assert not neurostore.calls and not (study / ni.UPLOAD_DIR).exists()
+
+
+@pytest.mark.parametrize("status", [429, 503])
+def test_an_auth0_that_does_not_answer_is_down(study, neurostore, status):
+    neurostore.auth0_script.append((status, {"error": "busy"}))
+    with _ingester(neurostore) as ingester, \
+            pytest.raises(ni.NeurostoreUnavailable, match=str(status)):
+        ingester.upload(study)
+    assert not neurostore.calls
+
+
+def test_each_deployment_s_tenant_and_audience_and_the_settings_that_override_them(
+        neurostore, tmp_path):
+    staging = Settings(neurostore_api_url="https://staging.neurostore.xyz/")
+    assert ni.auth0(staging) == ("https://neurosynth-staging.us.auth0.com",
+                                 "https://staging.synth.neurostore.xyz/api/")
+    assert ni.auth0(Settings(neurostore_api_url="https://neurostore.org")) == (
+        "https://neurosynth.us.auth0.com", "https://neurostore.org/api/")
+    mine = Settings(neurostore_api_url=mock.URL, neurostore_auth0_url=mock.AUTH0_URL + "/",
+                    neurostore_auth0_audience=mock.AUDIENCE, data_root=tmp_path)
+    assert ni.auth0(mine) == (mock.AUTH0_URL, mock.AUDIENCE)
+    with ni.NeurostoreIngester.from_settings(mine) as ingester:
+        ingester._ask_token()
+        assert ingester._token == neurostore.token
+    with pytest.raises(ni.NeurostoreConfigError, match="no Auth0 tenant"):
+        ni.NeurostoreIngester.from_settings(Settings(neurostore_api_url="http://elsewhere.test"))
+
+
+def test_the_client_s_secret_and_token_are_scrubbed_from_logs_until_closed(neurostore):
+    ingester, token = _holding_token(neurostore)
+    record = logging.LogRecord("httpx", logging.INFO, __file__, 1,
+                               f"{mock.CLIENT_SECRET} {token}", (), None)
+    ni._SCRUB.filter(record)
+    assert record.getMessage() == f"{ni.REDACTED} {ni.REDACTED}"
+    # Relative counts: an ingester another test in this process left open holds them too.
+    held = ni._SCRUB.tokens.count(mock.CLIENT_SECRET), ni._SCRUB.tokens.count(token)
+    ingester.close()
+    assert (ni._SCRUB.tokens.count(mock.CLIENT_SECRET), ni._SCRUB.tokens.count(token)) == (
+        held[0] - 1, held[1] - 1)
+
+
+def test_a_secret_that_begins_another_leaves_no_tail_of_it(monkeypatch):
+    """Tokens a tenant numbers can begin one another: `-1` begins `-10`."""
+    monkeypatch.setattr(ni._SCRUB, "tokens", ["tok-1", "tok-10"])
+    record = logging.LogRecord("httpx", logging.INFO, __file__, 1, "tok-10 and tok-1", (), None)
+    ni._SCRUB.filter(record)
+    assert record.getMessage() == f"{ni.REDACTED} and {ni.REDACTED}"
 
 
 def test_any_authorization_value_is_scrubbed_not_only_the_token():
@@ -689,21 +815,24 @@ def test_any_authorization_value_is_scrubbed_not_only_the_token():
 
 
 @pytest.mark.parametrize("before_cut", [5, 10, len(mock.TOKEN) - 1])
-def test_a_raw_token_echoed_across_the_excerpt_cut_leaves_no_part_behind(token, before_cut):
+def test_a_raw_token_echoed_across_the_excerpt_cut_leaves_no_part_behind(neurostore,
+                                                                         before_cut):
     """A proxy or a debug page can echo the raw token; neurostore's own errors do not."""
+    ingester, token = _holding_token(neurostore)
     echo = b"x" * (ni.BODY_EXCERPT - before_cut) + token.encode() + b" and more"
-    with _ingester() as ingester:
+    with ingester:
         error = ingester._error(_response(422, echo))
     assert token[:before_cut] not in json.dumps(error)
     assert len(error["body_excerpt"]) == ni.BODY_EXCERPT
 
 
-def test_a_raw_token_echoed_in_an_error_field_is_redacted(token):
+def test_a_raw_token_echoed_in_an_error_field_is_redacted(neurostore):
     """Not an answer neurostore gives (its ErrorResponse never echoes the token): the
     scrubber's own check, on fields named as an ErrorResponse names them."""
+    ingester, token = _holding_token(neurostore)
     body = json.dumps({"detail": f"token {token} rejected", "title": token,
                        "errors": [{"authorization": "x"}]}).encode()
-    with _ingester() as ingester:
+    with ingester:
         error = ingester._error(_response(400, body))
     assert token not in json.dumps(error)
     assert error["detail"] == f"token {ni.REDACTED} rejected"
@@ -721,13 +850,14 @@ def http_debug(caplog):
 
 
 def test_a_token_in_a_transport_error_is_kept_out_of_the_artifact_and_logs(
-    study, token, http_debug
+    study, neurostore, http_debug
 ):
     """httpcore traces a refused header at DEBUG with the header in it."""
     url = f"http://127.0.0.1:{_closed_port()}"
-    with _ingester(url=url) as ingester:
+    with _ingester(url=url, transport=neurostore.with_network()) as ingester:
         with pytest.raises(ni.NeurostoreUnavailable) as stopped:
             ingester.upload(study)
+        token = neurostore.token
         logging.getLogger("httpcore.http11").debug("Illegal header value b'Bearer %s'", token)
         logging.getLogger("httpx").debug("sent Authorization: Bearer %s", token)
 
@@ -742,31 +872,35 @@ HTTP_STACK = ("httpx", "httpcore", "httpcore.connection", "httpcore.http11", "ht
 
 
 @pytest.mark.parametrize("name", HTTP_STACK)
-def test_every_http_logger_is_scrubbed(token, http_debug, name):
+def test_every_http_logger_is_scrubbed(neurostore, http_debug, name):
     http_debug.set_level(logging.DEBUG, logger=name)
-    with _ingester():
+    ingester, token = _holding_token(neurostore)
+    with ingester:
         logging.getLogger(name).debug("sent Authorization: Bearer %s (%s)", "other-secret", token)
     assert "other-secret" not in http_debug.text and token not in http_debug.text
     assert f"Bearer {ni.REDACTED}" in http_debug.text
 
 
 def test_closing_an_ingester_drops_its_token_and_keeps_scrubbing_bearer_values(
-    token, http_debug
+    neurostore, http_debug
 ):
     # Relative counts: an ingester another test in this process left open holds it too.
-    held = ni._SCRUB.tokens.count(token)
-    other = _ingester()
-    with _ingester():
-        assert ni._SCRUB.tokens.count(token) == held + 2
-    assert ni._SCRUB.tokens.count(token) == held + 1  # the open one still scrubs it
+    held = ni._SCRUB.tokens.count(mock.CLIENT_SECRET)
+    other, _ = _holding_token(neurostore)
+    ingester, token = _holding_token(neurostore)
+    with ingester:
+        assert ni._SCRUB.tokens.count(mock.CLIENT_SECRET) == held + 2
+        before = ni._SCRUB.tokens.count(token)
+    assert ni._SCRUB.tokens.count(mock.CLIENT_SECRET) == held + 1  # the open one still scrubs it
+    assert ni._SCRUB.tokens.count(token) == before - 1
     other.close()
-    assert ni._SCRUB.tokens.count(token) == held
+    assert ni._SCRUB.tokens.count(mock.CLIENT_SECRET) == held
     logging.getLogger("httpcore.http11").debug("late line Bearer %s", token)
     assert "late line Bearer [redacted]" in http_debug.text
 
 
-def test_closing_an_ingester_closes_its_connections(token):
-    ingester = _ingester()
+def test_closing_an_ingester_closes_its_connections(neurostore):
+    ingester = _ingester(neurostore)
     client = ingester._client
     ingester.close()
     assert client.is_closed
@@ -784,7 +918,7 @@ def test_an_unreadable_upload_artifact_is_moved_aside_not_overwritten(study, neu
 
 def test_a_dry_run_from_settings_writes_outside_the_pond(study, monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path)
-    monkeypatch.delenv(ni.TOKEN_ENV, raising=False)
+    _no_client(monkeypatch)
     data = tmp_path / "data"
     settings = Settings(neurostore_api_url=mock.URL, dry_run=True, data_root=data)
     with ni.NeurostoreIngester.from_settings(settings) as ingester:
@@ -810,7 +944,7 @@ def test_a_dry_run_of_an_invalid_parse_writes_no_upload_artifact(study, tmp_path
 
 def test_a_dry_run_without_a_root_is_refused(monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path)
-    monkeypatch.delenv(ni.TOKEN_ENV, raising=False)
+    _no_client(monkeypatch)
     with pytest.raises(ValueError, match="dry_run_root"):
         ni.NeurostoreIngester(mock.URL, dry_run=True)
 

@@ -371,9 +371,13 @@ nohup ingest run -c my_config.yaml -m staging/manifests/tbss-2006.jsonl \
 ## Choosing a deployment
 
 `upload` posts each parse to neurostore's study_schema ingester
-(`POST <neurostore_api_url>/api/study-schema-uploads/`) with the admin token from
-the environment variable `NEUROSTORE_TOKEN` (only from there: it is not a setting
-and is not read from `.env`):
+(`POST <neurostore_api_url>/api/study-schema-uploads/`) as an Auth0 client: it trades
+the environment variables `NEUROSTORE_CLIENT_ID` and `NEUROSTORE_CLIENT_SECRET` (only
+from there: they are not settings and are not read from `.env`) for a token from the
+deployment's tenant, and asks again before it expires. Neurostore takes the client as
+the user `<client id>@clients`, which needs its admin role. The tenant and audience
+follow `neurostore_api_url` for staging and neurostore.org;
+`neurostore_auth0_url` and `neurostore_auth0_audience` set them for any other:
 
 Sync writes study_schema paper-parse 0.9.0 headers. Do not set `neurostore_api_url` against a
 neurostore that still pins an older study_schema (`extra=forbid`): it refuses each paper, and a
