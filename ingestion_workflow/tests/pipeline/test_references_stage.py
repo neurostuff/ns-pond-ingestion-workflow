@@ -207,7 +207,9 @@ def test_a_cited_work_is_asked_of_openalex_once_a_run(env, evidence):
 def test_a_cited_work_the_catalog_holds_is_named_from_its_metadata(env, evidence):
     settings, catalog, *_ = env
     (ref,) = _papers(env, evidence, 1)
-    held = catalog.register(Identifier(doi="10.1523/x.2001", pmid="222"), evidence)
+    # by DOI, and the PMID as an alias: registering a PMID asks PubMed for its evidence
+    held = catalog.register(Identifier(doi="10.1523/x.2001"), evidence)
+    catalog.add_aliases([(held.id, "pmid", "222")])
     catalog.record([Outcome(article_id=held.id, stage="metadata", source="", fingerprint="m",
                             payload={"authors": [{"name": "Ann Brown"}], "publication_year": 2001},
                             summary={})])
