@@ -33,6 +33,7 @@ from ingestion_workflow.services.coordinate_flags import (
     subpeak_flags,
 )
 from ingestion_workflow.services.naming import sanitize_table_id
+from ingestion_workflow.services.nuextract_payload import UnreadableAnswer
 from ingestion_workflow.utils.progress import emit_progress
 
 logger = logging.getLogger(__name__)
@@ -234,6 +235,7 @@ class CreateAnalysesService:
         # nothing by definition, which is the whole reason that route exists.
         # It cost 1,438 of 1,461 articles in the first corpus run.
         redundant = self._redundant(bundle.article_data.tables, article_slug)
+        unreadable: Optional[UnreadableAnswer] = None
         for index, table in enumerate(bundle.article_data.tables):
             sanitized_table_id = sanitize_table_id(table.table_id, index)
             table_key = table.table_id or sanitized_table_id
@@ -257,7 +259,13 @@ class CreateAnalysesService:
                 document = self._build_document(
                     bundle, table, self._serialise(table_text, table_key)
                 )
-                parsed_output, model_space = self.client.parse_analyses_native(document)
+                try:
+                    parsed_output, model_space = self.client.parse_analyses_native(document)
+                except UnreadableAnswer as exc:
+                    # One table's answer does not lose the article's others.
+                    unread[table_key] = f"unreadable answer: {exc}"
+                    unreadable = unreadable or exc
+                    continue
             else:
                 prompt = self._build_prompt(bundle, table, table_text, table_key)
                 parsed_output = self.client.parse_analyses(prompt)
@@ -289,6 +297,10 @@ class CreateAnalysesService:
                 results[table_key] = collection
             emit_progress(progress_hook)
 
+        if unreadable is not None and not readings:
+            # Nothing was read: recorded as done, the article would pass for
+            # one with no coordinates and never be asked again.
+            raise unreadable
         return results
 
     def _build_collection(
