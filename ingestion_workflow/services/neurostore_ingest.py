@@ -1,10 +1,11 @@
 """Upload one paper's coordinate parse through neurostore's study_schema ingester.
 
 The ingester is `POST {api}/api/study-schema-uploads/`, admin only. Its body is
-`{"coordinate_parse": <CoordinateParse>, "parsed_paper": <ParsedPaper>}`; its 200 is a
-summary of what the upload changed. The ParsedPaper is always sent: it gives a base
-study the ingester creates its bibliography, and its `bibliography.corrections` mark
-the paper retracted or not. The upload is one
+`{"coordinate_parse": <CoordinateParse>, "parsed_paper": <ParsedPaper>, "text": <str>}`;
+its 200 is a summary of what the upload changed. The ParsedPaper is always sent: it gives
+a base study the ingester creates its bibliography, and its `bibliography.corrections`
+mark the paper retracted or not. `text` is the file the ParsedPaper's `text_path` names,
+which neurostore stores as one of the base study's full texts. The upload is one
 transaction keyed by the parse's analysis content keys, so sending the same parse again
 changes nothing.
 
@@ -19,18 +20,23 @@ the upload artifact.
 How a response is treated:
 
     2xx with this parse's summary   uploaded; the summary is recorded
-    2xx summary of another base     refused: the server filed the parse under a base
-    study                           study the header does not name, and would again
+    2xx summary of another base     uploaded when its `merged_from` holds the base study
+    study                           the header names (neurostore followed a merge), and
+                                    the upload stage learns the other as an alias; else
+                                    refused: the server filed the parse under a base
+                                    study the header does not name, and would again
     408, 429, 5xx, a lost           retried with backoff; then, if the API is down,
     connection or timeout, a 2xx    NeurostoreUnavailable, and nothing is written; if
     that is not a summary of this   it is up, the paper is recorded as blocked
     parse
     401, 403, a malformed token     NeurostoreAuthError; nothing is written
     3xx, 405, 415, a 404 that is    NeurostoreConfigError: the URL or the request is
-    not about a base study          wrong for every paper alike; nothing is written
+    not about a base study, a 422   wrong for every paper alike; nothing is written
+    SCHEMA_VERSION
     any other status                refused: recorded at once and never retried, since
                                     the same body gets the same answer (422
-                                    KEY_MISMATCH or DUPLICATE_KEY among them)
+                                    KEY_MISMATCH, DUPLICATE_KEY or TEXT_MISMATCH among
+                                    them)
 
 The three errors are `StopRun`s: every later paper would fail the same way, so the
 upload stage stops and leaves its papers pending. The API is up when the ingester's
@@ -189,9 +195,10 @@ def build_payload(study_dir: Path) -> Tuple[Dict[str, Any], List[str]]:
 
     The documents are sent as sync wrote them, after they validate as study_schema's
     models and pass `layouts.check_paper` (the same checks sync made writing them,
-    including each analysis key against its cells and the text against its hash).
-    Raises FileNotFoundError when either file is missing and InvalidParse when a
-    check fails.
+    including each analysis key against its cells and the text against its hash), with
+    the text the ParsedPaper's `text_path` names under `study_dir`, decoded from the
+    bytes that hash so its UTF-8 is the hashed text. Raises FileNotFoundError when
+    either file is missing and InvalidParse when a check fails.
     """
     parse_dir = Path(study_dir) / PARSE_DIR
     raw_parse = json.loads((parse_dir / "coordinate_parse.json").read_text("utf-8"))
@@ -217,7 +224,13 @@ def build_payload(study_dir: Path) -> Tuple[Dict[str, Any], List[str]]:
     checks.append("json_schema")
     if problems:
         raise InvalidParse(problems)
-    return {"coordinate_parse": raw_parse, "parsed_paper": raw_paper}, checks
+    text_path = models["parsed_paper"].text_path
+    try:
+        # Not read_text: it would turn a CRLF into LF, and the text would no longer hash.
+        text = (Path(study_dir) / text_path).read_bytes().decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise InvalidParse([f"{text_path} is not UTF-8: {exc}"]) from None
+    return {"coordinate_parse": raw_parse, "parsed_paper": raw_paper, "text": text}, checks
 
 
 def _json_schema_problems(raw_parse, raw_paper) -> List[str]:
@@ -295,6 +308,7 @@ class NeurostoreIngester:
         dry_run: bool = False,
         dry_run_root: Optional[Path] = None,
         sleep: Optional[Callable[[float], None]] = None,
+        transport: Optional[httpx.BaseTransport] = None,
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.url = self.base_url + UPLOAD_PATH
@@ -319,7 +333,7 @@ class NeurostoreIngester:
             )
         if self._token:
             _SCRUB.tokens.append(self._token)
-        self._client = None if dry_run else httpx.Client(timeout=TIMEOUT)
+        self._client = None if dry_run else httpx.Client(timeout=TIMEOUT, transport=transport)
 
     @classmethod
     def from_settings(cls, settings, **kwargs) -> "NeurostoreIngester":
@@ -474,6 +488,15 @@ class NeurostoreIngester:
                 f"{self.url} answered {status}: the ingester is not at this URL or does not "
                 "take this request; check neurostore_api_url (the base URL, without /api)"
             )
+        if status == 422:
+            skew = scrub("; ".join(_schema_version_skew(response)), self._token)
+            if skew:
+                return NeurostoreConfigError(
+                    f"{self.url} takes study_schema documents at another schema version: "
+                    f"{skew}. Every parse of this run would be refused alike; pin study_schema "
+                    "to the version neurostore is pinned to, or deploy a neurostore pinned "
+                    "to this one"
+                )
         return None
 
     def _summary(self, response: httpx.Response, parse: Dict[str, Any]):
@@ -491,9 +514,11 @@ class NeurostoreIngester:
         if not summary.get("base_study_id"):
             return None, "the summary names no base study", False
         expected = parse["header"].get("neurostore_base_study_id")
-        if expected and summary["base_study_id"] != expected:
+        if expected and summary["base_study_id"] != expected \
+                and expected not in (summary.get("merged_from") or []):
             # Its id would be learned as this article's alias; the same body gets the same
-            # answer, so it is the paper's refusal, not a failure to retry.
+            # answer, so it is the paper's refusal, not a failure to retry. A summary whose
+            # merged_from names the expected base study followed a merge, and is this upload.
             return None, (f"the summary is of base study {summary['base_study_id']!r}, "
                           f"not {expected!r}"), True
         return redact(summary, self._token), None, False
@@ -572,6 +597,27 @@ class NeurostoreIngester:
         }
         _write_json(path, artifact)
         return artifact
+
+
+def _schema_version_skew(response: httpx.Response) -> List[str]:
+    """For each SCHEMA_VERSION error of a 422, which document states which version against
+    the one neurostore is pinned to; empty when there is none."""
+    try:
+        parsed = response.json()
+    except ValueError:
+        return []
+    errors = parsed.get("errors") if isinstance(parsed, dict) else None
+    skew = []
+    for error in errors if isinstance(errors, list) else []:
+        if not isinstance(error, dict) or error.get("code") != "SCHEMA_VERSION":
+            continue
+        context = error.get("context")
+        provided = context.get("provided") if isinstance(context, dict) else None
+        provided = provided if isinstance(provided, dict) else {}
+        skew.append(f"{error.get('field') or 'a document'} states "
+                    f"{provided.get('schema_version', '?')}, neurostore is pinned to "
+                    f"{provided.get('pinned', '?')}")
+    return skew
 
 
 def _seconds(value: Optional[str]) -> Optional[float]:

@@ -50,8 +50,11 @@ dependencies = [
   # which resolve compares prose analysis names by, and keys.analysis_key, the
   # content key the parse mints for every analysis, and CopyRoute, CopyVersion and
   # CopyAccess, the facts each download records about its copy, and paper_parse.Author,
-  # each author with ids and affiliations. Pinned to study_schema main.
-  "study-schema @ git+https://github.com/neurostuff/study_schema.git@bc414b3d9fe71a843fcfe8acaa80369cfb6ec060",
+  # each author with ids and affiliations, and ParsedPaper.links with the
+  # data_availability SectionKind, and each PaperLink's occurrences (LinkOccurrence,
+  # LinkSource), and LicenseId spelled as its member names (`cc_by`; paper-parse 0.11.0).
+  # Pinned to neurostuff/study_schema#55's head until it merges; then to its merge commit.
+  "study-schema @ git+https://github.com/neurostuff/study_schema.git@488e1ee4eaf6221aba563a50f7d06c226cece75c",
 ]
 
 [project.optional-dependencies]
@@ -60,6 +63,8 @@ test = [
   "pytest-cov>=4.1",
   "pytest-recording>=0.13",
   "pytest-xdist>=3.5",
+  # The mock neurostore checks requests and answers against neurostore's OpenAPI 3.0 spec.
+  "openapi-schema-validator>=0.6",
 ]
 lint = [
   "ruff>=0.6",

@@ -53,7 +53,7 @@ triage rejected keeps that reading.
   sharing, not a licence, and are not read. A deposit whose `start` is later is embargoed
   and not read; the artifact records the earliest such start (`license_embargo_until`) and
   is stale from then, so the licence is decided again. Terms that grant only text mining (PMC's
-  `TDM`) are `all-rights-reserved`.
+  `TDM`) are `all_rights_reserved`.
 - A publisher's page is read outside its footer (a `footer` tag, or a class or id that
   contains `footer`, unless it holds the article's title, `article`, `main` or footnotes),
   figures, references, research data cards and ScienceDirect's supplementary files.
@@ -65,12 +65,12 @@ triage rejected keeps that reading.
   names another open licence is not read beside them. When the words, or with none the
   links, name two different open licences, the page states none. Its copyright lines are
   its `dc.rights` and `prism.copyright` metadata and what an element classed `copyright`
-  prints; one that names no licence is `all-rights-reserved`, stated. Only an open licence
+  prints; one that names no licence is `all_rights_reserved`, stated. Only an open licence
   the page marks is its copy's own record. Its other marks and its copyright line credit a
   holder or name terms, often printed before a licence is granted, so they rank last, the
   copyright line before an `other` mark. A copy from ACE is `access: unrecorded` whatever
   its page states; the page of a preprint DOI is the preprint (`submitted`, at its server).
-- When no source states one, the licence is `all-rights-reserved`, `assumed`.
+- When no source states one, the licence is `all_rights_reserved`, `assumed`.
 - While a source before the deciding one (or, for an assumed licence, any source in the
   order) did not answer or could not be read, the licence is assumed too, and the metadata
   summary notes why under `errors.license`; so does OpenAlex or Semantic Scholar not

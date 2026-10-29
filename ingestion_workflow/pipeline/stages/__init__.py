@@ -3,6 +3,8 @@
 from .analyses import AnalysesStage
 from .download import DownloadStage
 from .extract import ExtractStage
+from .linkprobe import LinkprobeStage
+from .links import LinksStage
 from .metadata import MetadataStage
 from .notices import NoticesStage
 from .passages import PassagesStage
@@ -35,26 +37,34 @@ from .upload import UploadStage
 #: re-runs nothing upstream.
 #:
 #: `reflist` fetches each paper's Crossref list and `references` reads each
-#: extraction's list and citations, the Crossref list filling its gaps. Nothing
-#: downstream reads them yet, so they run only when asked for by name.
+#: extraction's list and citations, the Crossref list filling its gaps. `reflist` runs
+#: only when asked for by name; `references` runs by default (no network), since sync
+#: writes its list as the parsed paper's references and `links` names its entries.
+#:
+#: `links` reads every http(s) link of the text triage judges, and `linkprobe` asks OSF
+#: and OpenNeuro whether the projects and datasets among them hold NIfTI files. Only sync
+#: reads them, for the parsed paper's links.
 #:
 #: `roles` always runs: it decides what each set of resolve's (or analyses',
 #: without prose) is for, and space, sync and upload read only what it passed.
 #:
 #: `sync` writes the corpus copy and the coordinate parse, and `upload` then
 #: posts that parse to neurostore's study_schema ingester.
-STAGE_ORDER = ("download", "extract", "reflist", "references", "passages", "metadata", "notices",
-               "triage", "analyses", "prose", "resolve", "roles", "space", "sync", "upload")
+STAGE_ORDER = ("download", "extract", "reflist", "references", "links", "linkprobe", "passages",
+               "metadata", "notices", "triage", "analyses", "prose", "resolve", "roles", "space",
+               "sync", "upload")
 
 #: Stages that exist only when prose is switched on.
 PROSE_STAGES = ("passages", "prose", "resolve")
 
 #: Stages a run without `--stage` leaves out.
-OPT_IN_STAGES = ("reflist", "references")
+OPT_IN_STAGES = ("reflist",)
 
 STAGE_TYPES = {
     "download": DownloadStage,
     "extract": ExtractStage,
+    "links": LinksStage,
+    "linkprobe": LinkprobeStage,
     "metadata": MetadataStage,
     "notices": NoticesStage,
     "triage": TriageStage,
@@ -97,6 +107,8 @@ __all__ = [
     "AnalysesStage",
     "DownloadStage",
     "ExtractStage",
+    "LinkprobeStage",
+    "LinksStage",
     "MetadataStage",
     "NoticesStage",
     "OPT_IN_STAGES",

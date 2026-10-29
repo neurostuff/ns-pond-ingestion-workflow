@@ -363,7 +363,7 @@ def _corrections(cat, ref, ctx):
 
     found = {s: cat.artifacts([ref.id], s).get(ref.id, {}) for s in (
         "extract", "metadata", "space", "triage", "analyses", "prose", "resolve", "passages",
-        "notices")}
+        "notices", "links", "linkprobe", "references")}
     inputs = _parse_inputs(ctx, Work(ref=ref, source="", fingerprint="f"), "BASE1", COPY, {},
                            found, "pubget")
     bibliography = _bibliography(ArticleMetadata(title="T", source="pubmed", license=COPY.license),

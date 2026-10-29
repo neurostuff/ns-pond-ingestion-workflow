@@ -1,0 +1,164 @@
+# Recorded from guid 4b9v8 (test_a_project_with_a_nifti_file_among_its_folders_holds_nifti),
+# then edited to answer 503 on every try.
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/guids/4b9v8/
+  response:
+    body:
+      string: <html><body><h1>503 Service Unavailable</h1></body></html>
+    headers:
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - text/html
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:11 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 503
+      message: Service Unavailable
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/guids/4b9v8/
+  response:
+    body:
+      string: <html><body><h1>503 Service Unavailable</h1></body></html>
+    headers:
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - text/html
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:11 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 503
+      message: Service Unavailable
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/guids/4b9v8/
+  response:
+    body:
+      string: <html><body><h1>503 Service Unavailable</h1></body></html>
+    headers:
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - text/html
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:11 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 503
+      message: Service Unavailable
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/vnd.api+json
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.osf.io/v2/guids/4b9v8/
+  response:
+    body:
+      string: <html><body><h1>503 Service Unavailable</h1></body></html>
+    headers:
+      Cache-Control:
+      - no-cache, no-store, max-age=0, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - text/html
+      Cross-Origin-Opener-Policy:
+      - same-origin
+      Date:
+      - Wed, 28 Oct 2026 02:21:11 GMT
+      Expires:
+      - '-1'
+      Pragma:
+      - no-cache
+      Referrer-Policy:
+      - same-origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - DENY
+    status:
+      code: 503
+      message: Service Unavailable
+version: 1

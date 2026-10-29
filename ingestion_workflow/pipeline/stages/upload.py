@@ -50,7 +50,12 @@ class UploadStage:
     dry run, and the ingester's summary or error.
 
     An article whose analyses were taken back is recorded once with the take-back's
-    reason, and is not sent again; nothing is deleted from neurostore.
+    reason, and is not sent again; nothing is deleted from neurostore. When it had been
+    uploaded, a warning names it, its base study and the reason, so a person can look at
+    what neurostore keeps.
+
+    An upload neurostore filed under the base study a merge kept, not the one the header
+    names, is an upload: the base study its summary names is learned as an alias.
 
     When the client raises a `StopRun` (the API is down, or the token or the URL is
     wrong for every paper), the stage stops for the rest of the run: that article and
@@ -185,6 +190,11 @@ class UploadStage:
         works = [w for w in works if not is_take_back(w)]
         for work in back:
             last = _last_upload(previous.get(work.article_id, {}).get(""))
+            if last is not None:
+                logger.warning(
+                    "upload: %s was taken back (%s) after it was uploaded to base study %s; "
+                    "neurostore keeps that upload, so look at it there",
+                    work.article_id, work.reason, last.get("base_study_id"))
             # Recorded with its reason and never sent again; neurostore keeps what it holds.
             yield from self._record(work, Outcome.failure(
                 work.article_id, self.name, "", work.reason, fingerprint=NO_TEXT,

@@ -24,7 +24,10 @@ jobs:
       # text the CLI tests assert on.
       _TYPER_FORCE_DISABLE_TERMINAL: "1"
     steps:
+      # neurostore-spec, the contract the mock neurostore serves (ingestion_workflow/tests/neurostore.py).
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"

@@ -13,7 +13,8 @@ from ingestion_workflow.clients.crossref import CrossrefClient
 from ingestion_workflow.clients.doi_registry import DoiRegistry
 from ingestion_workflow.clients.pubmed import PubMedClient
 from ingestion_workflow.models.ids import Identifier, Identifiers
-from ingestion_workflow.tests import cassette_secrets, upload_body, wiley_tdm
+from ingestion_workflow.tests import cassette_secrets, wiley_tdm
+from ingestion_workflow.tests import neurostore as neurostore_mock
 
 
 @pytest.fixture(scope="session")
@@ -23,7 +24,6 @@ def vcr_cassette_dir() -> str:
 
 def pytest_recording_configure(config, vcr):
     vcr.register_matcher("wiley_token", wiley_tdm.same_token)
-    vcr.register_matcher("upload_body", upload_body.same_body_but_input_fingerprints)
 
 
 @pytest.fixture(scope="session")
@@ -39,8 +39,18 @@ def vcr_config():
             *((name, cassette_secrets.REPLAY_EMAIL) for name in cassette_secrets.EMAIL_QUERY_PARAMETERS),
         ],
         "record_mode": "once",
-        "ignore_hosts": ["localhost"],
+        "ignore_hosts": ["localhost", neurostore_mock.HOST],
     }
+
+
+@pytest.fixture()
+def neurostore(monkeypatch):
+    """neurostore's ingester as its contract has it, at `neurostore_mock.URL`, with
+    NEUROSTORE_TOKEN set to its admin token. An ingester takes it as its `transport`, or
+    gets it from `from_settings`. The test fails on any request or answer the contract
+    does not allow, even one the code under test caught."""
+    with neurostore_mock.serve(monkeypatch) as server:
+        yield server
 
 
 @pytest.fixture()
@@ -58,9 +68,10 @@ def evidence(pubmed):
     registry.close()
 
 
-#: Loopback is where a test starts its own server; the Hub is where docling's weights come
-#: from, a cache CI fills in its own step and never a cassette.
-IGNORED_HOSTS = ["localhost", "127.0.0.1", "huggingface.co"]
+#: Loopback is where a test starts its own server, and the mock neurostore's host is served
+#: in-process; the Hub is where docling's weights come from, a cache CI fills in its own step
+#: and never a cassette.
+IGNORED_HOSTS = ["localhost", "127.0.0.1", neurostore_mock.HOST, "huggingface.co"]
 
 
 def pytest_collection_modifyitems(items):

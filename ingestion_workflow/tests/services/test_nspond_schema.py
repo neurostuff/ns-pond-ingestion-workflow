@@ -33,6 +33,11 @@ from ingestion_workflow.services.nspond_schema import (
 BASE = "22tHjbNRU8t2"
 
 
+def _stage1(root):
+    """The deprecated `stage1/analyses.json` sync still writes; no reader in the repo reads it."""
+    return json.loads((root / BASE / "stage1" / "analyses.json").read_text())
+
+
 
 def _decided(role="result", kind=None, origin="table", **meta):
     """An analysis's metadata once the roles stage has decided its role."""
@@ -124,7 +129,7 @@ def test_coordinates_survive_as_rows(written):
 
 def test_stage1_keeps_the_shape_pondie_reads(written):
     """pondie reads each point's xyz from a nested `coordinates` key."""
-    stage1 = read_record(written, BASE).stage1
+    stage1 = _stage1(written)
     point = stage1["analyses"][0]["points"][0]
     assert point["coordinates"] == [-42.0, 18.0, 6.0]
     assert point["space"] == "MNI"
@@ -145,7 +150,7 @@ def test_a_stored_placeholder_is_not_synced(tmp_path):
     nspond.write_article(root, BASE, ArticleExtractionBundle(content, ArticleMetadata(title="T")),
                          {"t1": tables}, [])
     record = read_record(root, BASE)
-    assert [(a["name"], len(a["points"])) for a in record.stage1["analyses"]] == [
+    assert [(a["name"], len(a["points"])) for a in _stage1(root)["analyses"]] == [
         ("A > B", 0), ("UNKNOWN", 1)]
     assert [a["name"] for a in record.processed["pubget"].analyses] == ["A > B", "UNKNOWN"]
 
@@ -153,7 +158,7 @@ def test_a_stored_placeholder_is_not_synced(tmp_path):
 def test_stage1_points_carry_sign_and_subpeak_but_no_retired_flag(written):
     """A point's sign is read from its statistic; `unsigned` marks one placed
     in the original half with no statistic to place it by."""
-    for analysis in read_record(written, BASE).stage1["analyses"]:
+    for analysis in _stage1(written)["analyses"]:
         for point in analysis["points"]:
             assert point["sign"] in {"positive", "negative", "unsigned"}
             assert isinstance(point["is_subpeak"], bool)
@@ -173,7 +178,7 @@ def test_every_analysis_carries_its_decided_role_in_stage1(tmp_path):
     root = tmp_path / "pond"
     nspond.write_article(root, BASE, ArticleExtractionBundle(content, ArticleMetadata(title="T")), {"prose": prose}, [])
     got = [(a["source"], a["role"], a["anchor_kind"], a["role_origin"], a["table_id"])
-           for a in read_record(root, BASE).stage1["analyses"]]
+           for a in _stage1(root)["analyses"]]
     assert got == [("prose", "anchor", "seed", "text", "prose"), ("prose", "result", None, "text", "prose")]
 
 
@@ -190,12 +195,12 @@ def test_a_held_set_keeps_its_place_so_pondie_s_keys_do_not_shift(tmp_path):
                                                 ("b > a", "result", False)])])
     root = tmp_path / "pond"
     nspond.write_article(root, BASE, ArticleExtractionBundle(content, ArticleMetadata(title="T")), {"t1": t1}, [])
-    got = [(a["name"], a["role"], a["held"]) for a in read_record(root, BASE).stage1["analyses"]]
+    got = [(a["name"], a["role"], a["held"]) for a in _stage1(root)["analyses"]]
     assert got == [("a > b", "result", False), ("Lee et al.", "reference", True), ("b > a", "result", False)]
 
 
 def test_a_table_analysis_carries_its_role_and_no_prose_keys(written):
-    [analysis] = read_record(written, BASE).stage1["analyses"]
+    [analysis] = _stage1(written)["analyses"]
     assert "source" not in analysis
     assert {k: analysis[k] for k in nspond.STAGE1_ROLE_FIELDS} == _decided()["set_role"]
 
@@ -256,6 +261,6 @@ def test_an_unstated_space_is_null_in_stage1(tmp_path):
     root = tmp_path / "pond"
     bundle = ArticleExtractionBundle(content, ArticleMetadata(title="T"))
     nspond.write_article(root, BASE, bundle, {"prose": prose}, [])
-    analysis = read_record(root, BASE).stage1["analyses"][0]
+    analysis = _stage1(root)["analyses"][0]
     assert analysis["coordinate_space"] is None
     assert analysis["points"][0]["space"] is None

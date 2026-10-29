@@ -153,7 +153,7 @@ def _stale(settings, catalog, ref):
 
 def _licensed(record):
     """The record as the metadata stage now writes it: licences decided, the rest as it was."""
-    lic = {"license_id": "cc-by", "determination": "stated"}
+    lic = {"license_id": "cc_by", "determination": "stated"}
     return {**record, "license": lic, "copy_licenses": {"pubget": lic}, "oa_status": "gold",
             "license_embargo_until": None, "open_access": True,
             "pdf_url": "https://example.org/a.pdf"}

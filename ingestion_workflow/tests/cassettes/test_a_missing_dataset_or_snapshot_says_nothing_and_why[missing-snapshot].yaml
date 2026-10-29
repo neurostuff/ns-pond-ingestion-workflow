@@ -1,0 +1,63 @@
+interactions:
+- request:
+    body: '{"query": "query($id: ID!, $tag: String!) { snapshot(datasetId: $id, tag:
+      $tag) { tag summary { modalities secondaryModalities primaryModality } } }",
+      "variables": {"id": "ds006128", "tag": "9.9.9"}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '199'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: POST
+    uri: https://openneuro.org/crn/graphql
+  response:
+    body:
+      string: '{"errors":[{"message":"Not Found","locations":[{"line":1,"column":34}],"path":["snapshot"],"extensions":{"code":"INTERNAL_SERVER_ERROR","stacktrace":["Error:
+        Not Found","    at Request.callback (/srv/.yarn/cache/superagent-npm-3.8.3-8bdf672d54-7226a514eb.zip/node_modules/superagent/lib/node/index.js:706:15)","    at
+        /srv/.yarn/cache/superagent-npm-3.8.3-8bdf672d54-7226a514eb.zip/node_modules/superagent/lib/node/index.js:916:18","    at
+        IncomingMessage.<anonymous> (/srv/.yarn/cache/superagent-npm-3.8.3-8bdf672d54-7226a514eb.zip/node_modules/superagent/lib/node/parsers/json.js:19:7)","    at
+        /srv/.yarn/cache/@sentry-core-npm-11.8.0-e68df308f8-7627751362.zip/node_modules/@sentry/core/build/cjs/tracing/bindScopeToEmitter.js:44:58","    at
+        /srv/.yarn/cache/@sentry-server-utils-npm-11.8.0-01f6ab5fed-a0c5dd2560.zip/node_modules/@sentry/server-utils/build/cjs/async-context.js:29:14","    at
+        AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)","    at
+        Object.withSetScope (/srv/.yarn/cache/@sentry-server-utils-npm-11.8.0-01f6ab5fed-a0c5dd2560.zip/node_modules/@sentry/server-utils/build/cjs/async-context.js:28:25)","    at
+        Module.withScope (/srv/.yarn/cache/@sentry-core-npm-11.8.0-e68df308f8-7627751362.zip/node_modules/@sentry/core/build/cjs/currentScopes.js:38:16)","    at
+        IncomingMessage.<anonymous> (/srv/.yarn/cache/@sentry-core-npm-11.8.0-e68df308f8-7627751362.zip/node_modules/@sentry/core/build/cjs/tracing/bindScopeToEmitter.js:44:26)","    at
+        IncomingMessage.emit (node:events:526:24)","    at endReadableNT (node:internal/streams/readable:2147:12)","    at
+        process.processTicksAndRejections (node:internal/process/task_queues:90:21)"]}}],"data":{"snapshot":null},"extensions":{"openneuro":{"version":"5.10.1"}}}
+
+        '
+    headers:
+      Access-Control-Allow-Headers:
+      - content-type, Authorization
+      Access-Control-Allow-Methods:
+      - GET, POST, OPTIONS, PUT, PATCH, DELETE
+      Access-Control-Allow-Origin:
+      - '*'
+      Alt-Svc:
+      - h3=":443"; ma=2592000
+      Content-Length:
+      - '1764'
+      Content-Type:
+      - application/json; charset=utf-8
+      Date:
+      - Wed, 28 Oct 2026 02:21:28 GMT
+      ETag:
+      - W/"6e4-BJcn5zvZO8Z1lEJT9HPa+2yPtYA"
+      Via:
+      - 1.1 google
+      X-Powered-By:
+      - Express
+      cache-control:
+      - no-store
+    status:
+      code: 200
+      message: OK
+version: 1

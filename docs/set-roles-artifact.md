@@ -122,7 +122,7 @@ no kind (not a result, which is the distinction that matters).
   `role_values`, not the models. A retrained model re-uploads only the articles where a set's
   role changed; elsewhere neurostore keeps the earlier `role_confidence` and `role_source` until
   the article is uploaded again for another reason.
-- ns-pond `stage1/analyses.json` writes each analysis's role fields at its top level: `role`,
+- ns-pond `stage1/analyses.json` (deprecated: read the coordinate parse) writes each analysis's role fields at its top level: `role`,
   `anchor_kind`, `from_prior_study`, `prior_study_evidence`, `role_confidence`, `role_source`,
   `role_origin`, and `held`, plus `source: "prose"` for a prose set. Held sets are written in
   their place, so the positional keys pondie derives do not move. An analysis without
@@ -130,7 +130,8 @@ no kind (not a result, which is the distinction that matters).
 
 ## Reading a role
 
-Read `metadata.set_role` (or the top-level fields in stage1) for every set, table and prose
+Read `metadata.set_role` (or the analysis's fields in `parse/coordinate_parse.json`, never
+stage1) for every set, table and prose
 alike. Do not fall back to `result` when it is missing, and do not read `metadata.role` or a
 point's `role`: resolve no longer writes them, and the prose model's own role word is not a
 role.
