@@ -24,7 +24,7 @@ from ingestion_workflow.models import (
     ExtractedTable,
     ParseAnalysesOutput,
 )
-from ingestion_workflow.extractors.utils import normalize_minus
+from ingestion_workflow.extractors.utils import normalize_minus, table_figures
 from ingestion_workflow.prompts.coordinate_parsing import ANALYSIS_BOUNDARY_RULES
 from ingestion_workflow.services.coordinate_flags import (
     PLACEHOLDER_NAME,
@@ -75,8 +75,6 @@ _CELL_END = re.compile(r"(?i)</t[dh]>")
 _ROW_END = re.compile(r"(?i)</tr>|</row>")
 _ANY_TAG = re.compile(r"<[^>]+>")
 _RUNS = re.compile(r"[ \t]{2,}")
-#: Two renderings of one table agree on every figure, whatever the markup.
-_NUMBER = re.compile(r"-?\d+(?:\.\d+)?")
 
 
 def _text_of(markup: str) -> str:
@@ -688,8 +686,10 @@ Raw Table Content:
 
         Identity is the numbers in order, not the bytes: the two renderings
         differ in markup and whitespace but agree on every figure, and the
-        figures are what gets stored. The longer serialisation wins, because
-        the two renderings are not always equally complete.
+        figures are what gets stored (`table_figures`). A copy with a caption
+        wins over one without, since ACE's own copy carries none; then the
+        longer serialisation, because the two renderings are not always
+        equally complete.
         """
         best: Dict[str, tuple] = {}
         found = []
@@ -699,13 +699,14 @@ Raw Table Content:
                 text = self._serialise(self._read_table_content(table), key)
             except (FileNotFoundError, OSError):
                 continue
-            numbers = _NUMBER.findall(text)
+            numbers = table_figures(text)
             if len(numbers) < 3:
                 continue                    # nothing numeric to collide on
             digest = hashlib.sha1(",".join(numbers).encode()).hexdigest()
             found.append((digest, key))
-            if digest not in best or len(text) > best[digest][1]:
-                best[digest] = (key, len(text))
+            rank = (bool((table.caption or "").strip()), len(text))
+            if digest not in best or rank > best[digest][1]:
+                best[digest] = (key, rank)
 
         winners = {key for key, _ in best.values()}
         drop = {key for _, key in found if key not in winners}
