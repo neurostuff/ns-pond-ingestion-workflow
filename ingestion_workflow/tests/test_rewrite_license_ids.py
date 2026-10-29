@@ -84,6 +84,13 @@ def _summary(licences):
             "license_embargo_until": None, "digests": {"title": "d"}}
 
 
+@pytest.fixture(autouse=True, params=[2, 500], ids=["batches of 2", "one batch"])
+def batch(request, monkeypatch):
+    """Every test, with the six metadata rows read in three batches and in one."""
+    monkeypatch.setattr(rewrite, "BATCH", request.param)
+    return request.param
+
+
 @pytest.fixture()
 def catalog_root(tmp_path, evidence):
     """Metadata stored before 0.11.0: two articles with former ids, one with none to
@@ -196,3 +203,18 @@ def test_a_second_run_finds_nothing_left_to_respell(catalog_root, tmp_path):
     assert counts == {"already current": 4, "left: payload blob missing": 1,
                       "left: does not validate": 1}
     assert _rows(root / "catalog.sqlite") == once
+
+
+def test_a_run_holds_one_batch_of_payloads_at_a_time(catalog_root, tmp_path, batch, monkeypatch):
+    """On beast's 900k metadata rows, holding every respelled payload took memory without
+    bound; each batch is checked and written before the next is read."""
+    root, _ = catalog_root
+    checked = []
+    real = rewrite._checked
+    monkeypatch.setattr(rewrite, "_checked",
+                        lambda rows, *args: checked.append(len(rows)) or real(rows, *args))
+
+    counts = rewrite.run(root, apply=True, backup=tmp_path / "before.sqlite", out=io.StringIO())
+
+    assert counts == DRY_RUN
+    assert checked == ([2, 2, 2] if batch == 2 else [6])
