@@ -389,8 +389,9 @@ class SyncStage:
             )
             if base_study_id:
                 self._synced.append((base_study_id, bundle))
-            # stage1 follows the parse so its splits name their originals by the
-            # parse's keys; it is written whether or not the parse is.
+            # stage1 (deprecated; nothing reads it but older pondie) follows the parse so
+            # its splits name their originals by the parse's keys; it is written whether
+            # or not the parse is.
             splits: dict = {}
             try:
                 parse = paper_parse.write(target, bundle, per_table, inputs,

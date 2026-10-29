@@ -628,10 +628,8 @@ def test_an_article_whose_extraction_has_no_table_is_synced_from_its_prose(
     passages = catalog.payload(catalog.artifact(ref.id, "passages", ""))
     assert processed.text == open(passages["full_text_path"], encoding="utf-8").read()
     assert "greater activation than controls" in processed.text
-    assert [(a["table_id"], a["role"], a["role_source"]) for a in record.stage1["analyses"]] == [
-        ("prose", "result", "results@1")]
     assert (settings.ns_pond_root / "pmids.tsv").read_text().split("\t")[:2] == ["11", "BS11"]
-    # Beside stage1, the paper-parse files, which agree with each other and the text.
+    # The paper-parse files, which agree with each other and the text.
     from pyarty import read_bundle
     from study_schema.layouts import PaperParse, check_paper
 

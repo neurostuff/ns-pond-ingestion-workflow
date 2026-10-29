@@ -27,7 +27,7 @@ def encode_pretty_json(value: Any) -> bytes:
 
 
 def encode_stage1_json(value: Any) -> bytes:
-    """`stage1/analyses.json`, which pondie reads."""
+    """`stage1/analyses.json` (deprecated: read `parse/coordinate_parse.json`)."""
     return (json.dumps(value, indent=1, ensure_ascii=False) + "\n").encode("utf-8")
 
 
@@ -80,24 +80,16 @@ class ProcessedSource:
 
 
 @bundle
-class Stage1:
-    """`stage1/` -- the coordinate parse in the shape pondie reads."""
-
-    analyses: File[bytes] = at("analyses.json")
-
-
-@bundle
 class NsPondRecord:
     """One article under `ns-pond/<base_study_id>/`.
 
     `source/<source>/` is deliberately outside the bundle: it holds whatever
     files the extractor downloaded, under names nothing declares, so it is
-    copied rather than described.
+    copied rather than described. So is the deprecated `stage1/`: nothing reads it.
     """
 
     identifiers: File[bytes] = at("identifiers.json")
     processed: Dir[list[ProcessedSource]] = at("processed/{source}")
-    stage1: Dir[Stage1] = at("stage1")
 
 
 # -- the typed view -----------------------------------------------------------
@@ -122,7 +114,6 @@ class ArticleView:
     base_study_id: str
     identifiers: Dict[str, Any] = field(default_factory=dict)
     processed: Dict[str, ProcessedView] = field(default_factory=dict)
-    stage1: Dict[str, Any] = field(default_factory=dict)
 
 
 def read_record(root: Path | str, base_study_id: str) -> ArticleView:
@@ -145,7 +136,6 @@ def read_record(root: Path | str, base_study_id: str) -> ArticleView:
             )
             for item in record.processed
         },
-        stage1=decode_json(record.stage1.analyses),
     )
 
 
@@ -161,7 +151,6 @@ __all__ = [
     "NsPondRecord",
     "ProcessedSource",
     "ProcessedView",
-    "Stage1",
     "decode_csv",
     "decode_json",
     "decode_jsonl",
