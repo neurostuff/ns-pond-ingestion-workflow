@@ -69,8 +69,9 @@ def cited(refs: List[dict]) -> List[str]:
 
 
 def enrich(refs: List[dict], found: Dict[str, Optional[Dict]]) -> int:
-    """Names, year and PMID from OpenAlex's works by DOI (`get_cited_works`; None for a work
-    it does not know) for entries that have a DOI; returns how many it filled."""
+    """Names, year and PMID from works by DOI (OpenAlex's `get_cited_works`, None for a work
+    it does not know; or the catalog's, whose `provider` the PMID records) for entries
+    that have a DOI; returns how many it filled."""
     filled = 0
     for r in refs:
         work = found.get(r["doi"] or "")
@@ -82,7 +83,7 @@ def enrich(refs: List[dict], found: Dict[str, Optional[Dict]]) -> int:
         r["year"] = r["year"] or work.get("year")
         if not r["pmid"] and work.get("pmid"):
             r["pmid"] = work["pmid"]
-            r.setdefault("id_providers", {})["pmid"] = "openalex"
+            r.setdefault("id_providers", {})["pmid"] = work.get("provider", "openalex")
         filled += before != (bool(r["authors"]), bool(r["year"]), bool(r["pmid"]))
     return filled
 

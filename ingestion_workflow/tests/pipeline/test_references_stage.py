@@ -204,6 +204,40 @@ def test_a_cited_work_is_asked_of_openalex_once_a_run(env, evidence):
     assert outcome.payload["references"][0]["authors"] == ["Smith", "Jones"]
 
 
+def test_a_cited_work_the_catalog_holds_is_named_from_its_metadata(env, evidence):
+    settings, catalog, *_ = env
+    (ref,) = _papers(env, evidence, 1)
+    held = catalog.register(Identifier(doi="10.1523/x.2001", pmid="222"), evidence)
+    catalog.record([Outcome(article_id=held.id, stage="metadata", source="", fingerprint="m",
+                            payload={"authors": [{"name": "Ann Brown"}], "publication_year": 2001},
+                            summary={})])
+    openalex = _CountingOpenAlex()
+
+    _, (outcome,) = _run_all(_reflist(settings, MESSAGE, openalex=openalex),
+                             Context(settings, catalog), catalog, [ref])
+
+    assert not openalex.asked
+    first = outcome.payload["references"][0]
+    assert first["authors"] == ["Brown"] and first["year"] == 2001 and first["pmid"] == "222"
+    assert first["id_providers"]["pmid"] == "catalog"
+    assert outcome.summary["named_from_catalog"] == 1 and outcome.summary["named_by_openalex"] == 0
+
+
+def test_a_held_work_whose_metadata_names_no_one_is_asked_of_openalex(env, evidence):
+    settings, catalog, *_ = env
+    (ref,) = _papers(env, evidence, 1)
+    held = catalog.register(Identifier(doi="10.1523/x.2001"), evidence)
+    catalog.record([Outcome(article_id=held.id, stage="metadata", source="", fingerprint="m",
+                            payload={"authors": [], "publication_year": 2001}, summary={})])
+    openalex = _CountingOpenAlex()
+
+    _, (outcome,) = _run_all(_reflist(settings, MESSAGE, openalex=openalex),
+                             Context(settings, catalog), catalog, [ref])
+
+    assert openalex.asked == [["10.1523/x.2001"]]
+    assert outcome.payload["references"][0]["authors"] == ["Smith", "Jones"]
+
+
 def test_a_doi_the_list_query_does_not_return_is_asked_singly(env, evidence):
     settings, catalog, *_ = env
     first, second = _papers(env, evidence, 2)

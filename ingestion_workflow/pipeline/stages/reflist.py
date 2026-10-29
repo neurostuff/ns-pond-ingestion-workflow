@@ -2,8 +2,8 @@
 
 The list `references` falls back on when the download marks none (a PDF), and where the
 source's own entries borrow their DOIs and PMIDs from (an Elsevier list has DOIs on 16%
-of entries). One request per paper by its DOI; OpenAlex then names the entries that are
-a bare DOI.
+of entries). Lists are asked for by list queries; an entry that is a bare DOI is named
+from the catalog when the work is an article there, and by OpenAlex otherwise.
 """
 
 from __future__ import annotations
@@ -36,6 +36,8 @@ class ReflistStage:
         #: know: papers cite many of the same works (each cited DOI 3.1 times across the
         #: first 18,500 lists, and more as lists are added), and every request is a credit.
         self._cited: Dict[str, Optional[Dict]] = {}
+        #: The cited works the catalog holds, read once a run.
+        self._held: Dict[str, Optional[Dict]] = {}
 
     def clients(self):
         from ingestion_workflow.clients.crossref import CrossrefClient
@@ -84,9 +86,10 @@ class ReflistStage:
         asked = {work.article_id: work.ref.identifier.asking_doi for work in works}
         messages, failed = _records(crossref, list(dict.fromkeys(asked.values())))
         lists = {doi: from_crossref(message) for doi, message in messages.items()}
-        # The batch's cited DOIs in one pool, less those asked earlier in the run.
-        wanted = sorted({doi for refs in lists.values() for doi in cited(refs)
-                         if doi not in self._cited})
+        # The batch's cited DOIs in one pool, less those read or asked earlier in the run.
+        pool = {doi for refs in lists.values() for doi in cited(refs)} - self._held.keys()
+        self._held.update(dict.fromkeys(pool) | _held(ctx.catalog, pool))
+        wanted = sorted(doi for doi in pool if not self._held[doi] and doi not in self._cited)
         notes = Notes()
         if wanted and openalex is not None:
             try:
@@ -105,6 +108,7 @@ class ReflistStage:
                 continue
             message = messages[doi]
             references = copy.deepcopy(lists[doi])
+            held = enrich(references, self._held)
             named = enrich(references, self._cited)
             # No record, or a record with no list (its publisher deposits none), is a
             # fact about the paper, not a failure.
@@ -115,9 +119,9 @@ class ReflistStage:
                          "publisher": (message or {}).get("publisher"), "references": references},
                 summary={"found": message is not None, "references": len(references),
                          "with_doi": sum(bool(r["doi"]) for r in references),
-                         "named_by_openalex": named}
-                | (notes.summary() if any(d not in self._cited for d in cited(references))
-                   else {}),
+                         "named_from_catalog": held, "named_by_openalex": named}
+                | (notes.summary() if any(not self._held[d] and d not in self._cited
+                                          for d in cited(references)) else {}),
             )
 
 
@@ -148,3 +152,21 @@ def _records(crossref, dois: List[str]) -> Tuple[Dict[str, Optional[Dict]], Dict
         except Exception as exc:  # noqa: BLE001 - retried by the scheduler's backoff
             failed[doi] = f"crossref: {type(exc).__name__}: {exc}"
     return found, failed
+
+
+def _held(catalog, dois) -> Dict[str, Dict]:
+    """The works of the DOIs that are catalog articles with an ok metadata record that
+    names their authors, as OpenAlex's are given (`get_cited_works`)."""
+    holders = {doi: holder for doi in dois if (holder := catalog.holder("doi", doi))}
+    records = catalog.artifacts(sorted(set(holders.values())), "metadata")
+    works: Dict[str, Optional[Dict]] = {}
+    for holder in set(holders.values()):
+        record = records.get(holder, {}).get("")
+        meta = (catalog.payload(record) or {}) if record is not None and record.ok else {}
+        works[holder] = {
+            "authors": [str(a.get("name") or "") for a in meta["authors"]],
+            "year": meta.get("publication_year"),
+            "pmid": catalog.ref(holder).identifier.pmid,
+            "provider": "catalog",
+        } if meta.get("authors") else None
+    return {doi: works[holder] for doi, holder in holders.items() if works[holder]}
