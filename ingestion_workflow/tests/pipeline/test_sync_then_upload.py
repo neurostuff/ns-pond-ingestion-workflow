@@ -29,6 +29,7 @@ from ingestion_workflow.pipeline.stage import NO_ANALYSES, NO_TEXT, metadata_fin
 from ingestion_workflow.pipeline.stages import STAGE_ORDER, STAGE_TYPES, build
 from ingestion_workflow.pipeline.stages.analyses import METADATA_READ as ANALYSES_READ
 from ingestion_workflow.pipeline.stages.analyses import AnalysesStage
+from ingestion_workflow.pipeline.stages.linkprobe import answers_digest
 from ingestion_workflow.pipeline.stages.prose import ProseStage
 from ingestion_workflow.pipeline.stages.resolve import ResolveStage
 from ingestion_workflow.pipeline.stages.roles import RolesStage
@@ -370,14 +371,16 @@ def test_the_parse_holds_each_link_with_what_linkprobe_saw_of_it(env, monkeypatc
                            for url, found in zip(urls, occurrences)]},
         summary={"links": 4, "probe": urls[:3]})])
 
-    def probed(osf_has_nifti):
+    def probed(osf_has_nifti, checked_at="2026-10-01T00:00:00+00:00"):
+        probes = [
+            {"url": urls[0], "has_nifti": True, "checked_at": checked_at},
+            {"url": urls[1], "has_nifti": osf_has_nifti, "checked_at": checked_at},
+            {"url": urls[2], "has_nifti": None, "reason": "private on OSF (401: ...)",
+             "checked_at": checked_at}]
         catalog.record([Outcome(
             article_id=ref.id, stage="linkprobe", source="", fingerprint="lp-1",
-            payload={"probes": [
-                {"url": urls[0], "has_nifti": True},
-                {"url": urls[1], "has_nifti": osf_has_nifti},
-                {"url": urls[2], "has_nifti": None, "reason": "private on OSF (401: ...)"}]},
-            summary={"probed": 3})])
+            payload={"probes": probes},
+            summary={"probed": 3, "answers": answers_digest(probes)})])
 
     def stale():
         return bool(sync.plan(ctx, [ref], catalog.artifacts([ref.id], "sync"),
@@ -392,6 +395,10 @@ def test_the_parse_holds_each_link_with_what_linkprobe_saw_of_it(env, monkeypatc
         (urls[0], True, occurrences[0]), (urls[1], False, occurrences[1]),
         (urls[2], None, occurrences[2]), (urls[3], None, occurrences[3])]
     assert {i["artifact_kind"] for i in paper["header"]["inputs"]} >= {"links", "linkprobe"}
+    assert not stale()
+
+    # asked again with the same answers: nothing to re-sync
+    probed(False, checked_at="2026-12-30T00:00:00+00:00")
     assert not stale()
 
     # asked again, OSF now lists a NIfTI file: the probe keeps its fingerprint

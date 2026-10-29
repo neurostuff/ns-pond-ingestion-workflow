@@ -89,6 +89,13 @@ Built on `feat/paper-links`, against study_schema#55.
   modalities, and BIDS stores MRI and PET as NIfTI, so `mri` or `pet` among them is
   `has_nifti`. It records `has_nifti` with what it saw and when; a private or missing
   project or dataset leaves it unset, with the reason. No LLM.
+- **Re-checks.** Decided 2026-10-29: an answer that could still change (no NIfTI seen, or
+  the project private or gone) is asked again 90 days after it was checked
+  (`RECHECK_AFTER`), because authors often share data after the paper is out. A NIfTI seen,
+  and what a tagged OpenNeuro snapshot holds, are kept for good, and a re-check asks only
+  the links that are due. Sync's fingerprint takes the probe's answers
+  (`summary["answers"]`), not its blob, so an article is re-synced and re-uploaded only
+  when an answer changed.
 - **Order:** `references` → `links` → `linkprobe` → `sync`. Sync writes
   `links: [{url, has_nifti?, occurrences: [{found_by, start_char?, end_char?,
   reference_id?}]}]`, each link's occurrences in text order, and `references` (the

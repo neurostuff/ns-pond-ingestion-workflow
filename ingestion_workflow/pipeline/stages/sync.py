@@ -200,7 +200,8 @@ class SyncStage:
         # The parse holds triage's meta-analysis mark, publication types and each table's
         # verdict, score and route, so triage's fingerprint goes in. Its links are those of
         # the synced text (`synced_links`), and each one's has_nifti what linkprobe saw: a
-        # probe asked again keeps its fingerprint, so its content goes in, as metadata's.
+        # probe asked again keeps its fingerprint, so its answers go in (not its blob,
+        # which a re-check that changed nothing still rewrites).
         # The reference list is the synced text's, which the links' occurrences name.
         links, linkprobe = synced_links(links, linkprobe)
         references = references if references is not None and references.ok else None
@@ -213,7 +214,7 @@ class SyncStage:
             *([metadata.blob] if metadata is not None and metadata.ok else []),
             triage.fingerprint if triage is not None and triage.ok else None,
             links.fingerprint if links is not None else None,
-            linkprobe.blob if linkprobe is not None else None,
+            (linkprobe.summary or {}).get("answers") if linkprobe is not None else None,
             references.fingerprint if references is not None else None,
             upstream=upstream.fingerprint,
         )

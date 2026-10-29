@@ -12,11 +12,11 @@ from __future__ import annotations
 import hashlib
 import json
 import shutil
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import pytest
 import tenacity
-from ingestion_workflow.catalog import Catalog, Outcome, Status
+from ingestion_workflow.catalog import Artifact, Catalog, Outcome, Status
 from ingestion_workflow.clients import openneuro, osf
 from ingestion_workflow.config import Settings
 from ingestion_workflow.extractors.copies import copy_of
@@ -29,7 +29,7 @@ from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.stage import metadata_digests
 from ingestion_workflow.pipeline.stages import OPT_IN_STAGES, STAGE_ORDER, STAGE_TYPES, build
 from ingestion_workflow.pipeline.stages.extract import extraction_fingerprint, file_sha256
-from ingestion_workflow.pipeline.stages.linkprobe import LinkprobeStage
+from ingestion_workflow.pipeline.stages.linkprobe import LinkprobeStage, answers_digest
 from ingestion_workflow.pipeline.stages.links import LinksStage
 from ingestion_workflow.pipeline.stages.references import ReferencesStage
 from ingestion_workflow.pipeline.stages.space import SpaceStage
@@ -221,9 +221,59 @@ def test_linkprobe_asks_osf_and_openneuro_about_each_project_and_dataset(env, tm
         "tag": "1.0.9", "modalities": ["mri"]}
     assert probes["https://osf.io/4drz6/overview"]["seen"]["files"] == 35
     assert all(p["checked_at"] for p in probes.values())
-    assert outcome.summary == {"probed": 4, "with_nifti": 2, "without_nifti": 2, "unknown": 0}
+    # The OSF project showed no NIfTI, so its answers are asked again in 90 days.
+    osf_checked = min(datetime.fromisoformat(probes[url]["checked_at"])
+                      for url in (PROBED[0], PROBED[3]))
+    assert outcome.summary == {
+        "probed": 4, "with_nifti": 2, "without_nifti": 2, "unknown": 0,
+        "answers": answers_digest(outcome.payload["probes"]),
+        "recheck_at": (osf_checked + timedelta(days=90)).isoformat(timespec="seconds")}
     again, _ = _run(LinkprobeStage(settings), ctx, catalog, ref)
     assert (again.fresh, again.pending) == (1, [])
+
+
+@pytest.mark.vcr(
+    "test_linkprobe_asks_osf_and_openneuro_about_each_project_and_dataset.yaml",
+    record_mode="none", allow_playback_repeats=True,
+    match_on=["method", "scheme", "host", "port", "path", "query", "body"])
+def test_an_answer_without_nifti_is_asked_again_after_90_days_and_a_nifti_seen_is_kept(
+        env, tmp_path, evidence, monkeypatch):
+    settings, catalog = env
+    ref = _jats_article(env, tmp_path, evidence)
+    ctx = Context(settings, catalog)
+    _run(LinksStage(settings), ctx, catalog, ref)
+    _, (first,) = _run(LinkprobeStage(settings), ctx, catalog, ref)
+    checked = {p["url"]: datetime.fromisoformat(p["checked_at"])
+               for p in first.payload["probes"]}
+
+    def plan_at(now):
+        return LinkprobeStage(settings).plan(
+            Context(settings, catalog, now=now), [ref],
+            catalog.artifacts([ref.id], "linkprobe"), catalog.artifacts([ref.id], "links"))
+
+    osf_due = min(checked[PROBED[0]], checked[PROBED[3]]) + timedelta(days=90)
+    assert plan_at(osf_due - timedelta(seconds=1)).fresh == 1
+    later = Context(settings, catalog, now=osf_due)
+    plan = plan_at(osf_due)
+    assert len(plan.pending) == 1
+
+    # OpenNeuro saw MRI: kept, not asked. OSF showed no NIfTI: asked again.
+    monkeypatch.setattr(openneuro.OpenNeuroClient, "snapshot",
+                        lambda *args: pytest.fail("a NIfTI seen was asked about again"))
+    asked = []
+    listing = osf.OsfClient.listing
+    monkeypatch.setattr(osf.OsfClient, "listing",
+                        lambda self, guid, view_only=None: asked.append(guid)
+                        or listing(self, guid, view_only))
+    (second,) = LinkprobeStage(settings).execute(later, plan.pending)
+
+    assert asked == ["4drz6"]
+    assert [p for p in second.payload["probes"] if "openneuro" in p["url"]] == [
+        p for p in first.payload["probes"] if "openneuro" in p["url"]]
+    # The same answers: sync, and so upload, keep what they made.
+    assert second.summary["answers"] == first.summary["answers"]
+    catalog.record([second])
+    assert plan_at(osf_due).fresh == 1
 
 
 def test_an_article_with_no_repository_link_is_probed_without_asking(env, tmp_path, evidence):
@@ -285,6 +335,27 @@ def test_osf_down_leaves_its_links_to_a_later_run_and_openneuro_still_answers(
     assert len(LinkprobeStage(settings).plan(
         later, [ref], catalog.artifacts([ref.id], "linkprobe"),
         catalog.artifacts([ref.id], "links")).pending) == 1
+
+
+
+def test_sync_redoes_an_article_when_a_probe_s_answers_change_not_when_it_is_asked_again(env):
+    settings, _ = env
+    sync = SyncStage(settings)
+    space = Artifact(article_id="a", stage="space", fingerprint="s")
+    links = Artifact(article_id="a", stage="links", source="europepmc", fingerprint="l")
+
+    def probed(blob, has_nifti):
+        probes = [{"url": PROBED[0], "has_nifti": has_nifti, "checked_at": blob}]
+        return Artifact(article_id="a", stage="linkprobe", fingerprint="p", blob=blob,
+                        summary={"answers": answers_digest(probes)})
+
+    first = sync.fingerprint_for(space, "bs-1", links=links, linkprobe=probed("b1", False))
+    # Asked again 90 days on, with the same answer: a new blob, the same parse.
+    assert sync.fingerprint_for(space, "bs-1", links=links,
+                                linkprobe=probed("b2", False)) == first
+    # The project now holds a NIfTI file.
+    assert sync.fingerprint_for(space, "bs-1", links=links,
+                                linkprobe=probed("b3", True)) != first
 
 
 # -- sync ------------------------------------------------------------------------------
