@@ -16,7 +16,7 @@ from ingestion_workflow.models.statistics import (
     STATISTIC_KINDS,
     normalize_statistic_kind,
 )
-from ingestion_workflow.services.nuextract_payload import parse_payload
+from ingestion_workflow.services.nuextract_payload import UnreadableAnswer, parse_payload
 
 
 logger = logging.getLogger(__name__)
@@ -179,9 +179,7 @@ class CoordinateParsingClient(GenericLLMClient):
             }
         }
         if constrain:
-            # vLLM 0.28 accepts `guided_json` in extra_body, raises nothing and
-            # applies no constraint; `structured_outputs` is the one that binds.
-            extra["structured_outputs"] = {"json": self.native_schema()}
+            extra.update(self._grammar())
         return {
             "model": model or self.default_model,
             "messages": [{"role": "user", "content": document}],
@@ -232,8 +230,33 @@ class CoordinateParsingClient(GenericLLMClient):
         request = self.fit_to_window(
             document, model=model, max_tokens=max_tokens, context_window=context_window
         )
-        response = self.client.chat.completions.create(**request)
-        return parse_payload(response.choices[0].message.content or "")
+        choice = self.client.chat.completions.create(**request).choices[0]
+        try:
+            return parse_payload(choice.message.content or "")
+        except UnreadableAnswer as first:
+            # Greedy decoding repeats a malformed answer exactly, so the retry
+            # is asked under the template's grammar; an answer that ran to the
+            # cap is a loop, which the grammar alone does not stop.
+            extra = {**request["extra_body"], **self._grammar()}
+            if choice.finish_reason == "length":
+                extra["repetition_penalty"] = self.LOOP_PENALTY
+            logger.info("unreadable answer (%s); asking again constrained", first)
+            retry = {**request, "extra_body": extra}
+            answer = self.client.chat.completions.create(**retry).choices[0].message.content
+            try:
+                return parse_payload(answer or "")
+            except UnreadableAnswer as second:
+                raise UnreadableAnswer(f"{first}; constrained: {second}") from second
+
+    #: Breaks a looping answer without hurting the rest: 1.05-1.2 broke the
+    #: loops in the 2026-10-09 sampling runs, and 1.2 cost other tables.
+    LOOP_PENALTY = 1.1
+
+    @classmethod
+    def _grammar(cls) -> Dict[str, Any]:
+        # vLLM 0.28 accepts `guided_json` in extra_body, raises nothing and
+        # applies no constraint; `structured_outputs` is the one that binds.
+        return {"structured_outputs": {"json": cls.native_schema()}}
 
     #: Tokens kept free between the prompt and the answer's budget. The count is
     #: exact, so this covers only what the server adds after tokenizing.

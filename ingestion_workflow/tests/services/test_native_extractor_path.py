@@ -706,3 +706,111 @@ def test_a_point_with_no_label_in_an_unstated_table_is_null():
     svc = CreateAnalysesService.__new__(CreateAnalysesService)
     assert svc._coerce_space(None, None) is None
     assert svc._coerce_space("", None) is None
+
+
+# -- an answer that does not parse ------------------------------------------
+
+def _answering_client(*answers):
+    """A client whose server gives `answers` in turn, as (content, finish_reason)."""
+    client = CoordinateParsingClient.__new__(CoordinateParsingClient)
+    client.default_model = "nu"
+    client._prompt_tokens = lambda request: None
+    sent, queue = [], list(answers)
+
+    def create(**request):
+        sent.append(request)
+        content, finish = queue.pop(0)
+        return SimpleNamespace(choices=[SimpleNamespace(
+            message=SimpleNamespace(content=content), finish_reason=finish)])
+
+    completions = SimpleNamespace(create=create)
+    client.client = SimpleNamespace(chat=SimpleNamespace(completions=completions))
+    return client, sent
+
+
+GOOD = '{"space": "MNI", "analyses": [{"name": "A > B", "points": [[1, 2, 3]]}]}'
+
+
+def test_a_readable_answer_is_asked_for_once_and_unconstrained():
+    """Every answer the corpus already holds was decoded this way."""
+    client, sent = _answering_client((GOOD, "stop"))
+    parsed, space = client.parse_analyses_native("doc")
+    assert [a.name for a in parsed.analyses] == ["A > B"] and space == "MNI"
+    assert len(sent) == 1 and "structured_outputs" not in sent[0]["extra_body"]
+
+
+def test_a_malformed_answer_is_asked_again_under_the_grammar():
+    """Greedy decoding repeats a missing comma exactly; a plain retry loses the
+    table again. Run on 2026-10-28, 114 articles failed this way."""
+    client, sent = _answering_client(('{"space": "MNI" "analyses": []}', "stop"), (GOOD, "stop"))
+    parsed, _ = client.parse_analyses_native("doc")
+    assert [a.name for a in parsed.analyses] == ["A > B"]
+    retry = sent[1]["extra_body"]
+    assert retry["structured_outputs"] == {"json": CoordinateParsingClient.native_schema()}
+    assert "repetition_penalty" not in retry
+    # the same prompt and budget: only the decoding changes
+    assert sent[1]["messages"] == sent[0]["messages"]
+    assert sent[1]["max_completion_tokens"] == sent[0]["max_completion_tokens"]
+
+
+def test_an_answer_that_ran_to_the_cap_is_retried_with_a_repetition_penalty():
+    """The answers that hit the cap are loops, which a grammar does not stop."""
+    client, sent = _answering_client(('{"analyses": [' + "[1, 2, 3], " * 50, "length"),
+                                     (GOOD, "stop"))
+    client.parse_analyses_native("doc")
+    assert sent[1]["extra_body"]["repetition_penalty"] == CoordinateParsingClient.LOOP_PENALTY
+
+
+def test_two_unreadable_answers_name_both_failures():
+    from ingestion_workflow.services.nuextract_payload import UnreadableAnswer
+
+    client, _ = _answering_client(("no json", "stop"), ("", "stop"))
+    with pytest.raises(UnreadableAnswer, match="no JSON object.*constrained: .*nothing at all"):
+        client.parse_analyses_native("doc")
+
+
+def _service_reading(answers):
+    """A service whose extractor answers each table's text from `answers`;
+    a missing key is an unreadable answer."""
+    from ingestion_workflow.models import CoordinatePoint, ParseAnalysesOutput, ParsedAnalysis
+    from ingestion_workflow.services.nuextract_payload import UnreadableAnswer
+
+    def native(document):
+        if document not in answers:
+            raise UnreadableAnswer("Expecting ',' delimiter")
+        point = CoordinatePoint(coordinates=[1, 2, 3])
+        return ParseAnalysesOutput(analyses=[ParsedAnalysis(name=answers[document],
+                                                            points=[point])]), "MNI"
+
+    svc = _service()
+    svc.client = SimpleNamespace(parse_analyses_native=native)
+    svc._redundant = lambda tables, slug: set()
+    svc._read_table_content = lambda table: table.table_id
+    svc._serialise = lambda text, key: text
+    svc._build_document = lambda bundle, table, text: text
+    return svc
+
+
+def _tables_bundle(*ids):
+    tables = [SimpleNamespace(table_id=i, space=None, table_number=n, caption="", footer="",
+                              metadata={}) for n, i in enumerate(ids, start=1)]
+    return SimpleNamespace(article_data=SimpleNamespace(tables=tables, slug="slug",
+                                                        identifier=None))
+
+
+def test_one_unreadable_table_does_not_lose_the_articles_others():
+    """It failed the whole article: every other table's analyses went with it."""
+    svc = _service_reading({"t1": "A > B"})
+    unread = {}
+    results = svc.run(_tables_bundle("t1", "t2"), unread=unread)
+    assert list(results) == ["t1"]
+    assert unread == {"t2": "unreadable answer: Expecting ',' delimiter"}
+
+
+def test_an_article_none_of_whose_tables_could_be_read_still_fails():
+    """Recorded as done, it would pass for an article with no coordinates and
+    never be asked again."""
+    from ingestion_workflow.services.nuextract_payload import UnreadableAnswer
+
+    with pytest.raises(UnreadableAnswer):
+        _service_reading({}).run(_tables_bundle("t1", "t2"))
