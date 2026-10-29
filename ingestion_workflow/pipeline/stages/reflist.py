@@ -32,6 +32,10 @@ class ReflistStage:
         self.settings = settings
         self._crossref = None
         self._openalex = None
+        #: OpenAlex's answer for each cited DOI asked this run, None for one it does not
+        #: know: papers cite many of the same works (each cited DOI 3.1 times across the
+        #: first 18,500 lists, and more as lists are added), and every request is a credit.
+        self._cited: Dict[str, Optional[Dict]] = {}
 
     def clients(self):
         from ingestion_workflow.clients.crossref import CrossrefClient
@@ -80,17 +84,19 @@ class ReflistStage:
         asked = {work.article_id: work.ref.identifier.asking_doi for work in works}
         messages, failed = _records(crossref, list(dict.fromkeys(asked.values())))
         lists = {doi: from_crossref(message) for doi, message in messages.items()}
-        # The batch's cited DOIs in one pool: papers cite many of the same works.
-        wanted = sorted({doi for refs in lists.values() for doi in cited(refs)})
-        names: Dict[str, Dict] = {}
+        # The batch's cited DOIs in one pool, less those asked earlier in the run.
+        wanted = sorted({doi for refs in lists.values() for doi in cited(refs)
+                         if doi not in self._cited})
         notes = Notes()
         if wanted and openalex is not None:
             try:
-                names = openalex.get_cited_works(wanted)
+                found = openalex.get_cited_works(wanted)
             except Exception as exc:  # noqa: BLE001 - the lists stand without the names
                 logger.warning("reflist: OpenAlex names failed for %d works: %s", len(wanted), exc)
                 notes.error("names", f"openalex: {type(exc).__name__}: {exc}",
                             transient=transient(exc))
+            else:
+                self._cited.update({doi: found.get(doi) for doi in wanted})
         for work in works:
             doi = asked[work.article_id]
             if doi in failed:
@@ -99,7 +105,7 @@ class ReflistStage:
                 continue
             message = messages[doi]
             references = copy.deepcopy(lists[doi])
-            named = enrich(references, names)
+            named = enrich(references, self._cited)
             # No record, or a record with no list (its publisher deposits none), is a
             # fact about the paper, not a failure.
             yield Outcome(
@@ -109,7 +115,8 @@ class ReflistStage:
                          "publisher": (message or {}).get("publisher"), "references": references},
                 summary={"found": message is not None, "references": len(references),
                          "with_doi": sum(bool(r["doi"]) for r in references), "named_by_openalex": named}
-                | (notes.summary() if cited(references) else {}),
+                | (notes.summary() if any(d not in self._cited for d in cited(references))
+                   else {}),
             )
 
 

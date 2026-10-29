@@ -188,6 +188,20 @@ def test_a_batch_of_papers_is_one_list_query_and_one_pool_of_cited_works(env, ev
         assert "errors" not in outcome.summary
 
 
+def test_a_cited_work_is_asked_of_openalex_once_a_run(env, evidence):
+    settings, catalog, *_ = env
+    first, second = _papers(env, evidence, 2)
+    openalex = _CountingOpenAlex()
+    stage = _reflist(settings, MESSAGE, openalex=openalex)
+    ctx = Context(settings, catalog)
+
+    _run_all(stage, ctx, catalog, [first])
+    _, (outcome,) = _run_all(stage, ctx, catalog, [second])
+
+    assert openalex.asked == [["10.1523/x.2001"]]
+    assert outcome.payload["references"][0]["authors"] == ["Smith", "Jones"]
+
+
 def test_a_doi_the_list_query_does_not_return_is_asked_singly(env, evidence):
     settings, catalog, *_ = env
     first, second = _papers(env, evidence, 2)
@@ -244,6 +258,24 @@ def test_a_paper_with_nothing_to_name_notes_no_openalex_error(env, evidence):
                              Context(settings, catalog), catalog, [ref])
 
     assert outcome.status is Status.OK and "errors" not in outcome.summary
+
+
+def test_a_failed_pool_leaves_unnoted_the_lists_named_from_earlier_answers(env, evidence):
+    settings, catalog, *_ = env
+    first, second = _papers(env, evidence, 2)
+    openalex = _CountingOpenAlex()
+    stage = _reflist(settings, MESSAGE, openalex=openalex)
+    ctx = Context(settings, catalog)
+    _run_all(stage, ctx, catalog, [first])
+    other = {"reference": [*MESSAGE["reference"], {"key": "b9", "DOI": "10.1/new"}]}
+    stage._crossref = _Crossref(other)
+    openalex.error = requests.HTTPError("OpenAlex request failed (429)", response=_Response(429))
+
+    _, (outcome,) = _run_all(stage, ctx, catalog, [second])
+
+    assert openalex.asked[-1] == ["10.1/new"]
+    assert outcome.payload["references"][0]["authors"] == ["Smith", "Jones"]
+    assert outcome.summary["transient"] == ["names"]
 
 
 def test_reflist_keeps_crossref_s_list_named_by_openalex(env, evidence):
