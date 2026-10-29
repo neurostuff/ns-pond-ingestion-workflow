@@ -185,7 +185,7 @@ class ProseStage:
             if metadata is not None and passages.summary.get("passages"):
                 read = self.metadata_fingerprint(metadata)
                 if read is None:
-                    plan.block(NO_DIGESTS)
+                    plan.wait(NO_DIGESTS, ref.id)
                     continue
             fp = self.fingerprint_for(passages, read)
             existing = artifacts.get(ref.id, {}).get("")

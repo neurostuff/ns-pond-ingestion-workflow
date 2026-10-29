@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from typing import Dict, Iterator, List, Optional, Sequence
+from typing import Dict, Iterator, List, Optional, Sequence, Set
 
 from ingestion_workflow.catalog import ArticleRef, Outcome, Status
 from ingestion_workflow.clients.model_server import ModelUnavailable
@@ -41,6 +41,8 @@ class StageReport:
     notes: List[str] = field(default_factory=list)
     #: Why its plans blocked what they did, with how many.
     reasons: Dict[str, int] = field(default_factory=dict)
+    #: The articles its plans blocked waiting on the operator (`StagePlan.wait`).
+    waiting: Set[str] = field(default_factory=set)
 
     def absorb(self, plan: StagePlan) -> None:
         self.planned += len(plan.pending)
@@ -50,6 +52,7 @@ class StageReport:
         self.permanent += plan.permanent
         for reason, count in plan.reasons.items():
             self.reasons[reason] = self.reasons.get(reason, 0) + count
+        self.waiting |= plan.waiting
 
     def line(self, *, planned_only: bool = False) -> str:
         parts = [f"{self.stage:<16}"]

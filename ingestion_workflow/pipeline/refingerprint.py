@@ -17,7 +17,7 @@ from typing import Any, Dict, List, Mapping, NamedTuple, Optional, Sequence, Set
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Catalog, Status
 
-from .scheduler import RunReport, run_stages
+from .scheduler import RunReport, StageReport, run_stages
 from .stage import NO_TEXT, Context, Stage
 from .stages.extract import extraction_inputs, unusable
 from .stages.passages import text_of
@@ -145,10 +145,17 @@ def _read_from(artifact: Artifact) -> Optional[str]:
     return None
 
 
-#: Why an artifact would run again once the fingerprints are stored (`StageCounts`).
-EMPTY_RERUN = "no fingerprint, and its blob is gone"
+#: A stage the plans never reached: it waits on nothing.
+_NO_REPORT = StageReport(stage="")
+
+#: Why an artifact runs again once the fingerprints are stored. Only the first two stop
+#: an apply: reused now and not after, or not known, its stage waiting on the operator.
 LOST = "reused now, and would not be after"
-UNASKED = "made from a rewritten artifact, and no plan asks about it"
+WAITING = "made from a rewritten artifact; its stage waits on the operator, so whether it is " \
+          "reused cannot be known"
+#: Not reused now either, so the repair changes nothing for them.
+EMPTY_RERUN = "no fingerprint, and its blob is gone"
+UNASKED = "made from a rewritten artifact that no run reads as it stands"
 
 
 @dataclass
@@ -185,14 +192,16 @@ class Refingerprint:
     stages: Dict[str, StageCounts] = field(default_factory=dict)
     #: The plans with the rewrites made: why each stage blocked what it did.
     plan: RunReport = field(default_factory=RunReport)
-    #: By stage, each artifact `rerun` counts, (article_id, source, why), so an operator
-    #: can run the stage for exactly those.
+    #: By stage, (article_id, source, why) of each artifact reused now that would not be
+    #: once this is stored, or whose stage waits on the operator: these stop an apply.
     running_again: Dict[str, List[Tuple[str, str, str]]] = field(default_factory=dict)
+    #: By stage, the same of each artifact not reused now that runs again with or without
+    #: this repair: reported, and no reason to stop.
+    either_way: Dict[str, List[Tuple[str, str, str]]] = field(default_factory=dict)
 
     def rerun(self) -> Dict[str, int]:
-        """By stage, the artifacts that would run again once this is stored."""
-        return {stage: n.empty_rerun + n.lost + n.unasked for stage, n in self.stages.items()
-                if n.empty_rerun + n.lost + n.unasked}
+        """By stage, the artifacts reused now that would not be once this is stored."""
+        return {stage: len(found) for stage, found in self.running_again.items()}
 
 
 def refingerprint(ctx: Context, stages: Sequence[Stage], refs: Sequence[ArticleRef],
@@ -215,10 +224,12 @@ def refingerprint(ctx: Context, stages: Sequence[Stage], refs: Sequence[ArticleR
         else:
             found.filled += 1
     running_again: Dict[str, List[Tuple[str, str, str]]] = {}
+    either_way: Dict[str, List[Tuple[str, str, str]]] = {}
 
     def again(key: Key, why: str) -> None:
         article_id, stage, source = key
-        running_again.setdefault(stage, []).append((article_id, source, why))
+        listed = either_way if why in (EMPTY_RERUN, UNASKED) else running_again
+        listed.setdefault(stage, []).append((article_id, source, why))
 
     for key in sorted(after.empty_asked - rewrites.keys()):
         counts.setdefault(key[1], StageCounts()).empty_rerun += 1
@@ -250,8 +261,9 @@ def refingerprint(ctx: Context, stages: Sequence[Stage], refs: Sequence[ArticleR
                         found.unreachable += 1
                     else:
                         found.unasked += 1
-                        again(key, UNASKED)
+                        waits = article_id in plan.stages.get(stage.name, _NO_REPORT).waiting
+                        again(key, WAITING if waits else UNASKED)
     for stage, n in empty.items():
         found = counts.setdefault(stage, StageCounts())
         found.empty_unplanned = n - found.filled - found.empty_rerun
-    return Refingerprint(rewrites, counts, plan, running_again)
+    return Refingerprint(rewrites, counts, plan, running_again, either_way)
