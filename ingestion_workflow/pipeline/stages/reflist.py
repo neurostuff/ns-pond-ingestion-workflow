@@ -2,16 +2,17 @@
 
 The list `references` falls back on when the download marks none (a PDF), and where the
 source's own entries borrow their DOIs and PMIDs from (an Elsevier list has DOIs on 16%
-of entries). One request per paper by its DOI; OpenAlex then names the entries that are
-a bare DOI.
+of entries). Lists are asked for by list queries; an entry that is a bare DOI is named
+from the catalog when the work is an article there, and by OpenAlex otherwise.
 """
 
 from __future__ import annotations
 
+import copy
 import logging
-from typing import Dict, Iterator, List, Optional, Sequence
+from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
-from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
+from ingestion_workflow.catalog import ArticleRef, Artifact, Notes, Outcome, Status, fingerprint
 
 from ..plan import StagePlan, Work
 from ..stage import Context
@@ -31,6 +32,12 @@ class ReflistStage:
         self.settings = settings
         self._crossref = None
         self._openalex = None
+        #: OpenAlex's answer for each cited DOI asked this run, None for one it does not
+        #: know: papers cite many of the same works (each cited DOI 3.1 times across the
+        #: first 18,500 lists, and more as lists are added), and every request is a credit.
+        self._cited: Dict[str, Optional[Dict]] = {}
+        #: The cited works the catalog holds, read once a run.
+        self._held: Dict[str, Optional[Dict]] = {}
 
     def clients(self):
         from ingestion_workflow.clients.crossref import CrossrefClient
@@ -72,24 +79,37 @@ class ReflistStage:
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
-        from ingestion_workflow.services.reference_lists import enrich, from_crossref
+        from ingestion_workflow.services.reference_lists import cited, enrich, from_crossref
+        from ingestion_workflow.utils.http import transient
 
         crossref, openalex = self.clients()
-        for work in works:
-            doi = work.ref.identifier.asking_doi
+        asked = {work.article_id: work.ref.identifier.asking_doi for work in works}
+        messages, failed = _records(crossref, list(dict.fromkeys(asked.values())))
+        lists = {doi: from_crossref(message) for doi, message in messages.items()}
+        # The batch's cited DOIs in one pool, less those read or asked earlier in the run.
+        pool = {doi for refs in lists.values() for doi in cited(refs)} - self._held.keys()
+        self._held.update(dict.fromkeys(pool) | _held(ctx.catalog, pool))
+        wanted = sorted(doi for doi in pool if not self._held[doi] and doi not in self._cited)
+        notes = Notes()
+        if wanted and openalex is not None:
             try:
-                message = crossref.work(doi)
-            except Exception as exc:  # noqa: BLE001 - retried by the scheduler's backoff
-                yield Outcome.failure(work.article_id, self.name, "", f"crossref: {type(exc).__name__}: {exc}",
+                found = openalex.get_cited_works(wanted)
+            except Exception as exc:  # noqa: BLE001 - the lists stand without the names
+                logger.warning("reflist: OpenAlex names failed for %d works: %s", len(wanted), exc)
+                notes.error("names", f"openalex: {type(exc).__name__}: {exc}",
+                            transient=transient(exc))
+            else:
+                self._cited.update({doi: found.get(doi) for doi in wanted})
+        for work in works:
+            doi = asked[work.article_id]
+            if doi in failed:
+                yield Outcome.failure(work.article_id, self.name, "", failed[doi],
                                       fingerprint=work.fingerprint)
                 continue
-            references = from_crossref(message)
-            named = 0
-            if references and openalex is not None:
-                try:
-                    named = enrich(references, openalex)
-                except Exception as exc:  # noqa: BLE001 - the list stands without the names
-                    logger.warning("reflist: OpenAlex names failed for %s: %s", doi, exc)
+            message = messages[doi]
+            references = copy.deepcopy(lists[doi])
+            held = enrich(references, self._held)
+            named = enrich(references, self._cited)
             # No record, or a record with no list (its publisher deposits none), is a
             # fact about the paper, not a failure.
             yield Outcome(
@@ -98,5 +118,55 @@ class ReflistStage:
                 payload={"doi": doi, "provider": "crossref", "found": message is not None,
                          "publisher": (message or {}).get("publisher"), "references": references},
                 summary={"found": message is not None, "references": len(references),
-                         "with_doi": sum(bool(r["doi"]) for r in references), "named_by_openalex": named},
+                         "with_doi": sum(bool(r["doi"]) for r in references),
+                         "named_from_catalog": held, "named_by_openalex": named}
+                | (notes.summary() if any(not self._held[d] and d not in self._cited
+                                          for d in cited(references)) else {}),
             )
+
+
+#: What a list query keeps of each record: all `execute` reads.
+LIST_FIELDS = "DOI,reference,publisher"
+
+
+def _records(crossref, dois: List[str]) -> Tuple[Dict[str, Optional[Dict]], Dict[str, str]]:
+    """Each DOI's Crossref record (None when Crossref does not know it), and why each DOI
+    whose request failed has none. Many are asked by list queries; a DOI a filter cannot
+    hold, or one the queries did not return, is asked for singly."""
+    from ingestion_workflow.clients.crossref import filterable, packed
+
+    found: Dict[str, Optional[Dict]] = {}
+    failed: Dict[str, str] = {}
+    for batch in packed("doi", [doi for doi in dois if filterable(doi)]):
+        try:
+            items = crossref.works(batch, LIST_FIELDS)
+        except Exception as exc:  # noqa: BLE001 - the batch's articles are retried
+            failed.update(dict.fromkeys(batch, f"crossref: {type(exc).__name__}: {exc}"))
+            continue
+        found.update({doi: items[doi.lower()] for doi in batch if doi.lower() in items})
+    for doi in dois:
+        if doi in found or doi in failed:
+            continue
+        try:
+            found[doi] = crossref.work(doi)
+        except Exception as exc:  # noqa: BLE001 - retried by the scheduler's backoff
+            failed[doi] = f"crossref: {type(exc).__name__}: {exc}"
+    return found, failed
+
+
+def _held(catalog, dois) -> Dict[str, Dict]:
+    """The works of the DOIs that are catalog articles with an ok metadata record that
+    names their authors, as OpenAlex's are given (`get_cited_works`)."""
+    holders = {doi: holder for doi in dois if (holder := catalog.holder("doi", doi))}
+    records = catalog.artifacts(sorted(set(holders.values())), "metadata")
+    works: Dict[str, Optional[Dict]] = {}
+    for holder in set(holders.values()):
+        record = records.get(holder, {}).get("")
+        meta = (catalog.payload(record) or {}) if record is not None and record.ok else {}
+        works[holder] = {
+            "authors": [str(a.get("name") or "") for a in meta["authors"]],
+            "year": meta.get("publication_year"),
+            "pmid": catalog.ref(holder).identifier.pmid,
+            "provider": "catalog",
+        } if meta.get("authors") else None
+    return {doi: works[holder] for doi, holder in holders.items() if works[holder]}
