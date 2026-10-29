@@ -256,7 +256,7 @@ class PassagesStage:
                 continue
             if sha is None:
                 unhashed += 1
-                plan.block("no extraction text hash: run `ingest refresh-text`")
+                plan.wait("no extraction text hash: run `ingest refresh-text`", ref.id)
                 continue
             fp = self.fingerprint_for(extraction, sha)
             if ctx.is_fresh(existing, fp):

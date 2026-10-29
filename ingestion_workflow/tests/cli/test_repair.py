@@ -141,8 +141,10 @@ def test_apply_copies_the_catalog_then_stores_the_fingerprints(migrated):
     assert "nothing to repair" in _repair(config)
 
 
-def test_apply_refuses_while_anything_reused_now_would_run_again(migrated, evidence):
-    """A download whose blob is gone cannot be given a fingerprint that makes it fresh."""
+def test_a_download_whose_blob_is_gone_runs_again_either_way_and_does_not_stop_the_apply(
+        migrated, evidence):
+    """A download whose blob is gone cannot be given a fingerprint that makes it fresh; no
+    run reuses it now either, so the apply goes ahead and names it."""
     config, tmp_path, article_id = migrated
     with Catalog.open(tmp_path / "catalog") as cat:
         ref = cat.register(Identifier(pmid="2", pmcid="PMC2"), evidence)
@@ -154,12 +156,12 @@ def test_apply_refuses_while_anything_reused_now_would_run_again(migrated, evide
     result = CliRunner().invoke(cli.app, ["repair", "--apply", "--backup", str(backup),
                                           "--config", str(config)])
 
-    assert result.exit_code == 1
-    assert "refusing to write: 1 download" in result.output
-    assert "download: 1 have no fingerprint and their blob is gone" in result.output
-    assert "blocked" not in result.output.split("refusing to write")[1].split("Give")[0]
-    assert _fingerprint(tmp_path, article_id) == ""
-    assert not backup.exists()
+    assert result.exit_code == 0, result.output
+    assert f"runs again either way: download {ref.id} pubget (no fingerprint, and its blob " \
+        "is gone)" in result.output
+    assert "stored 1 fingerprints" in result.output
+    assert _fingerprint(tmp_path, article_id) != ""
+    assert backup.exists()
 
 
 def test_fingerprints_wait_for_the_hand_over(stranded):
