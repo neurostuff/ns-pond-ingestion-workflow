@@ -737,7 +737,7 @@ class Settings(BaseSettings):
         default=None,
         description=(
             "Auth0 tenant upload asks for a token with NEUROSTORE_CLIENT_ID and "
-            "NEUROSTORE_CLIENT_SECRET when NEUROSTORE_TOKEN is unset. Unset, the tenant "
+            "NEUROSTORE_CLIENT_SECRET. Unset, the tenant "
             "neurostore_api_url's deployment uses (neurosynth-staging for staging, "
             "neurosynth for neurostore.org)"
         ),

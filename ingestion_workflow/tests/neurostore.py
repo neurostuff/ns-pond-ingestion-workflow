@@ -34,7 +34,12 @@ from urllib.parse import urlsplit
 import httpx
 import jsonschema
 import yaml
-from ingestion_workflow.services.neurostore_ingest import TOKEN_ENV, NeurostoreIngester, api_url
+from ingestion_workflow.services.neurostore_ingest import (
+    CLIENT_ID_ENV,
+    CLIENT_SECRET_ENV,
+    NeurostoreIngester,
+    api_url,
+)
 from openapi_schema_validator import OAS30Validator, oas30_format_checker
 from referencing import Registry, Resource
 from study_schema.jsonschema import load as load_study_schema
@@ -44,7 +49,7 @@ SPEC = Path(__file__).parent / "neurostore-spec" / "neurostore-openapi.yml"
 ROUTE = "/study-schema-uploads/"
 HOST = "neurostore.test"
 URL = f"http://{HOST}"
-#: The test's admin token; a placeholder, never a real one.
+#: What the tokens the test's tenant gives begin with; a placeholder, never a real one.
 TOKEN = "mock-token-5f2c9e"
 #: The Auth0 tenant that trades the test's client for a token, and what it takes.
 AUTH0_HOST = "auth0.test"
@@ -175,6 +180,11 @@ class Neurostore:
         self.auth0_script: List[Any] = []
         self.transport = httpx.MockTransport(self._handle)
 
+    def with_network(self) -> httpx.BaseTransport:
+        """This server's tenant, and the network for every other host: for an ingester
+        posting to a URL this server does not serve."""
+        return _Routed(self.transport, httpx.HTTPTransport())
+
     # -- scripting -------------------------------------------------------------------------
 
     def script(self, *answers: Answer) -> "Neurostore":
@@ -231,12 +241,16 @@ class Neurostore:
 
     def install(self, monkeypatch) -> None:
         """Serve every ingester `from_settings` builds for this server's URL, as the upload
-        stage does; any other URL is left to the network."""
+        stage does; any other URL is left to the network, with this server's tenant when
+        the settings name it."""
         made = NeurostoreIngester.from_settings.__func__
 
         def from_settings(cls, settings, **kwargs):
             if api_url(settings) == self.url:
                 kwargs.setdefault("transport", self.transport)
+                kwargs.setdefault("auth0", (AUTH0_URL, AUDIENCE))
+            elif (settings.neurostore_auth0_url or "").rstrip("/") == AUTH0_URL:
+                kwargs.setdefault("transport", self.with_network())
             return made(cls, settings, **kwargs)
 
         monkeypatch.setattr(NeurostoreIngester, "from_settings", classmethod(from_settings))
@@ -357,14 +371,29 @@ class Neurostore:
 
 @contextmanager
 def serve(monkeypatch, **kwargs: Any) -> Iterator[Neurostore]:
-    """A Neurostore installed for `from_settings`, with the token in the environment;
-    on leaving, ContractViolation if any request or answer broke the contract, even one
-    the code under test caught."""
-    monkeypatch.setenv(TOKEN_ENV, kwargs.get("token", TOKEN))
+    """A Neurostore installed for `from_settings`, with its tenant's client in the
+    environment; on leaving, ContractViolation if any request or answer broke the contract,
+    even one the code under test caught."""
+    monkeypatch.setenv(CLIENT_ID_ENV, CLIENT_ID)
+    monkeypatch.setenv(CLIENT_SECRET_ENV, CLIENT_SECRET)
     server = Neurostore(**kwargs)
     server.install(monkeypatch)
     yield server
     server.check()
+
+
+class _Routed(httpx.BaseTransport):
+    """The tenant's requests to one transport, every other to another."""
+
+    def __init__(self, tenant: httpx.BaseTransport, other: httpx.BaseTransport) -> None:
+        self.tenant, self.other = tenant, other
+
+    def handle_request(self, request: httpx.Request) -> httpx.Response:
+        transport = self.tenant if request.url.host == AUTH0_HOST else self.other
+        return transport.handle_request(request)
+
+    def close(self) -> None:
+        self.other.close()
 
 
 def _keys(upload: Dict[str, Any]) -> Set[str]:

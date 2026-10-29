@@ -29,7 +29,8 @@ How a response is treated:
     connection or timeout, a 2xx    NeurostoreUnavailable, and nothing is written; if
     that is not a summary of this   it is up, the paper is recorded as blocked
     parse
-    401, 403, a malformed token     NeurostoreAuthError; nothing is written
+    401 twice, 403, a client the    NeurostoreAuthError; nothing is written
+    tenant refuses
     3xx, 405, 415, a 404 that is    NeurostoreConfigError: the URL or the request is
     not about a base study, a 422   wrong for every paper alike; nothing is written
     SCHEMA_VERSION
@@ -42,14 +43,14 @@ The three errors are `StopRun`s: every later paper would fail the same way, so t
 upload stage stops and leaves its papers pending. The API is up when the ingester's
 route answers a GET with 405: it is served, and takes only POST.
 
-The admin token is read from the environment variable NEUROSTORE_TOKEN. Without it, the
-ingester trades the client id and secret in NEUROSTORE_CLIENT_ID and NEUROSTORE_CLIENT_SECRET
-with the deployment's Auth0 tenant for one (the client-credentials grant), and asks for
-another before it expires or when neurostore refuses it with a 401; neurostore takes the
-client as the user `<client id>@clients`, which must hold its admin role. Neither the token
-nor the secret is ever logged or written: request headers and bodies are never recorded,
-and both, and any Authorization or Bearer value, are scrubbed from every recorded string and
-from the HTTP libraries' log lines.
+The ingester trades the client id and secret in the environment variables
+NEUROSTORE_CLIENT_ID and NEUROSTORE_CLIENT_SECRET with the deployment's Auth0 tenant for a
+token (the client-credentials grant) before its first upload, and asks for another before
+it expires or when neurostore refuses it with a 401. Neurostore takes the client as the
+user `<client id>@clients`, which must hold its admin role. Neither the token nor the
+secret is ever logged or written: request headers and bodies are never recorded, and both,
+and any Authorization or Bearer value, are scrubbed from every recorded string and from
+the HTTP libraries' log lines.
 """
 
 from __future__ import annotations
@@ -85,9 +86,7 @@ DRY_RUN_NAME = "neurostore_dry_run.json"
 #: Under `data_root`: where `from_settings` puts a dry run's files, one directory per study.
 DRY_RUN_DIR = "neurostore_dry_run"
 PAYLOAD_NAME = "neurostore_payload.json"
-#: The environment variable the admin token is read from; it is never a setting.
-TOKEN_ENV = "NEUROSTORE_TOKEN"
-#: The client credentials traded for a token when TOKEN_ENV is unset; never settings either.
+#: The environment variables the client credentials are read from; they are never settings.
 CLIENT_ID_ENV = "NEUROSTORE_CLIENT_ID"
 CLIENT_SECRET_ENV = "NEUROSTORE_CLIENT_SECRET"
 #: Each deployment's Auth0 tenant and the audience its API checks tokens for, as neurostore's
@@ -175,7 +174,7 @@ class StopRun(RuntimeError):
 
 
 class NeurostoreAuthError(StopRun):
-    """The token is missing, malformed or refused."""
+    """The client is missing or refused, or neurostore refuses its token."""
 
 
 class NeurostoreConfigError(StopRun):
@@ -202,15 +201,9 @@ def api_url(settings) -> str:
     return settings.neurostore_api_url.rstrip("/")
 
 
-def read_token() -> Optional[str]:
-    """The token from TOKEN_ENV, stripped: a pasted trailing newline or space is never
-    part of a token."""
-    return (os.environ.get(TOKEN_ENV) or "").strip() or None
-
-
 def read_client() -> Optional[Tuple[str, str]]:
-    """The client id and secret from CLIENT_ID_ENV and CLIENT_SECRET_ENV, stripped; None
-    unless both are set."""
+    """The client id and secret from CLIENT_ID_ENV and CLIENT_SECRET_ENV, stripped (a
+    pasted trailing newline or space is never part of either); None unless both are set."""
     pair = tuple((os.environ.get(name) or "").strip()
                  for name in (CLIENT_ID_ENV, CLIENT_SECRET_ENV))
     return pair if all(pair) else None
@@ -359,18 +352,17 @@ class NeurostoreIngester:
         self._sleep = sleep or time.sleep
         self._clock = clock or time.monotonic
         self._down: Optional[str] = None
-        self._token = None if dry_run else read_token()
-        #: The client the token is asked for with, when it is not TOKEN_ENV's; when it is
-        #: asked for again.
+        #: The tenant, audience, client id and secret a token is asked for with; the token
+        #: and when it expires, none until the first upload asks for one.
         self._grant: Optional[Tuple[str, str, str, str]] = None
-        self._expires = float("inf")
-        if not dry_run and not self._token:
+        self._token: Optional[str] = None
+        self._expires = float("-inf")
+        if not dry_run:
             client = read_client()
             if client is None:
                 raise NeurostoreAuthError(
-                    f"no neurostore token: set {TOKEN_ENV} to an admin token for {base_url}, "
-                    f"or {CLIENT_ID_ENV} and {CLIENT_SECRET_ENV} to an Auth0 client of its "
-                    "tenant whose user holds neurostore's admin role"
+                    f"no neurostore client: set {CLIENT_ID_ENV} and {CLIENT_SECRET_ENV} to an "
+                    f"Auth0 client of {base_url}'s tenant whose user holds neurostore's admin role"
                 )
             if auth0 is None:
                 raise NeurostoreConfigError(
@@ -379,20 +371,7 @@ class NeurostoreIngester:
                 )
             self._grant = (*auth0, *client)
             _SCRUB.tokens.append(client[1])
-        if self._token and not _TOKEN.fullmatch(self._token):
-            raise NeurostoreAuthError(
-                f"the token in {TOKEN_ENV} is not a valid header value: it holds whitespace "
-                "or a non-ASCII character"
-            )
-        if self._token:
-            _SCRUB.tokens.append(self._token)
         self._client = None if dry_run else httpx.Client(timeout=TIMEOUT, transport=transport)
-        if self._grant is not None:
-            try:
-                self._ask_token()
-            except StopRun:
-                self.close()
-                raise
 
     @classmethod
     def from_settings(cls, settings, **kwargs) -> "NeurostoreIngester":
@@ -476,7 +455,7 @@ class NeurostoreIngester:
             retry_after = None
             unsendable = False
             record.pop("http_status", None)
-            if self._grant is not None and self._clock() >= self._expires - REFRESH_MARGIN:
+            if self._clock() >= self._expires - REFRESH_MARGIN:
                 self._ask_token()
             headers = {"Authorization": f"Bearer {self._token}",
                        "Content-Type": "application/json"}
@@ -499,7 +478,7 @@ class NeurostoreIngester:
                     error = {**self._error(response), "detail": problem}
                     if foreign:
                         return self._finish(out, record, Result.REFUSED, error=error)
-                elif status == 401 and self._grant is not None and not refreshed:
+                elif status == 401 and not refreshed:
                     # Revoked or expired early: one new token, and the same try again.
                     refreshed = True
                     attempt -= 1
@@ -578,11 +557,6 @@ class NeurostoreIngester:
     def _stop(self, response: httpx.Response, status: int) -> Optional[StopRun]:
         """The error that stops the upload when this status means every paper would fail."""
         if status in (401, 403):
-            if self._grant is None:
-                return NeurostoreAuthError(
-                    f"neurostore refused the token in {TOKEN_ENV} with {status} at "
-                    f"{self.url}; it must be an admin token for this deployment"
-                )
             return NeurostoreAuthError(
                 f"neurostore refused the token Auth0 gave the client in {CLIENT_ID_ENV} with "
                 f"{status} at {self.url}; its user, {self._grant[2]}@clients, must hold "
@@ -753,6 +727,9 @@ def _write_atomic(path: Path, data: bytes) -> None:
 
 __all__ = [
     "ARTIFACT_NAME",
+    "AUTH0",
+    "CLIENT_ID_ENV",
+    "CLIENT_SECRET_ENV",
     "DRY_RUN_NAME",
     "PAYLOAD_NAME",
     "InvalidParse",
@@ -763,9 +740,9 @@ __all__ = [
     "Result",
     "StopRun",
     "api_url",
-    "TOKEN_ENV",
+    "auth0",
     "build_payload",
-    "read_token",
+    "read_client",
     "redact",
     "scrub",
 ]
