@@ -64,7 +64,8 @@ def from_crossref(message: Optional[Dict]) -> List[dict]:
 
 def cited(refs: List[dict]) -> List[str]:
     """The DOIs of the entries OpenAlex is asked to fill: those missing names, year or PMID."""
-    return [r["doi"] for r in refs if r["doi"] and (not r["authors"] or not r["year"] or not r["pmid"])]
+    return [r["doi"] for r in refs
+            if r["doi"] and (not r["authors"] or not r["year"] or not r["pmid"])]
 
 
 def enrich(refs: List[dict], found: Dict[str, Optional[Dict]]) -> int:

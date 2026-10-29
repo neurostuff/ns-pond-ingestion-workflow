@@ -156,7 +156,8 @@ def _reflist(settings, message, crossref=None, openalex=None):
 
 def _run_all(stage, ctx, catalog, refs):
     ids = [ref.id for ref in refs]
-    plan = stage.plan(ctx, refs, catalog.artifacts(ids, stage.name), catalog.artifacts(ids, stage.requires))
+    plan = stage.plan(ctx, refs, catalog.artifacts(ids, stage.name),
+                      catalog.artifacts(ids, stage.requires))
     outcomes = list(stage.execute(ctx, plan.pending))
     catalog.record(outcomes)
     return plan, outcomes
@@ -164,7 +165,7 @@ def _run_all(stage, ctx, catalog, refs):
 
 def _papers(env, evidence, n):
     settings, catalog, article, text = env
-    refs = [catalog.register(Identifier(pmid=str(100 + i), doi=f"10.1016/j.test.2020.{i}"), evidence)
+    refs = [catalog.register(Identifier(doi=f"10.1016/j.test.2020.{i}"), evidence)
             for i in range(n)]
     for ref in refs:
         _record(catalog, ref, article, text)
@@ -179,7 +180,8 @@ def test_a_batch_of_papers_is_one_list_query_and_one_pool_of_cited_works(env, ev
     _, outcomes = _run_all(_reflist(settings, MESSAGE, crossref, openalex),
                            Context(settings, catalog), catalog, refs)
 
-    assert len(crossref.lists) == 1 and sorted(crossref.lists[0]) == sorted(r.identifier.doi for r in refs)
+    assert len(crossref.lists) == 1
+    assert sorted(crossref.lists[0]) == sorted(r.identifier.doi for r in refs)
     assert not crossref.singly
     assert openalex.asked == [["10.1523/x.2001"]]  # three papers cite it; asked once
     for outcome in outcomes:
@@ -207,8 +209,8 @@ def test_a_doi_the_list_query_does_not_return_is_asked_singly(env, evidence):
     first, second = _papers(env, evidence, 2)
     crossref = _Crossref(MESSAGE, records={first.identifier.doi})
 
-    _, outcomes = _run_all(_reflist(settings, MESSAGE, crossref), Context(settings, catalog), catalog,
-                           [first, second])
+    stage = _reflist(settings, MESSAGE, crossref)
+    _, outcomes = _run_all(stage, Context(settings, catalog), catalog, [first, second])
 
     assert crossref.singly == [second.identifier.doi]
     assert [o.payload["found"] for o in outcomes] == [True, True]
@@ -219,7 +221,8 @@ def test_a_failed_list_query_fails_only_its_papers(env, evidence):
     refs = _papers(env, evidence, 2)
     crossref = _Crossref(MESSAGE, failing={refs[0].identifier.doi})
 
-    _, outcomes = _run_all(_reflist(settings, MESSAGE, crossref), Context(settings, catalog), catalog, refs)
+    stage = _reflist(settings, MESSAGE, crossref)
+    _, outcomes = _run_all(stage, Context(settings, catalog), catalog, refs)
 
     # both DOIs fit one query, so both fail with it, and neither is asked singly
     assert [o.status for o in outcomes] == [Status.FAILED, Status.FAILED] and not crossref.singly
@@ -234,7 +237,8 @@ def test_openalex_busy_keeps_the_lists_and_asks_again_once_due(env, evidence):
     busy = requests.HTTPError("OpenAlex request failed (429)", response=_Response(429))
     ctx = Context(settings, catalog)
 
-    _, outcomes = _run_all(_reflist(settings, MESSAGE, openalex=_CountingOpenAlex(busy)), ctx, catalog, refs)
+    stage = _reflist(settings, MESSAGE, openalex=_CountingOpenAlex(busy))
+    _, outcomes = _run_all(stage, ctx, catalog, refs)
 
     for outcome in outcomes:
         assert outcome.status is Status.OK and outcome.summary["references"] == 3

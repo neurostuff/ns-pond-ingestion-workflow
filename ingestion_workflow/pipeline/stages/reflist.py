@@ -114,7 +114,8 @@ class ReflistStage:
                 payload={"doi": doi, "provider": "crossref", "found": message is not None,
                          "publisher": (message or {}).get("publisher"), "references": references},
                 summary={"found": message is not None, "references": len(references),
-                         "with_doi": sum(bool(r["doi"]) for r in references), "named_by_openalex": named}
+                         "with_doi": sum(bool(r["doi"]) for r in references),
+                         "named_by_openalex": named}
                 | (notes.summary() if any(d not in self._cited for d in cited(references))
                    else {}),
             )
