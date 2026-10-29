@@ -99,8 +99,8 @@ class UploadStage:
     ) -> StagePlan:
         plan = StagePlan(stage=self.name)
         if not self.settings.neurostore_api_url:
-            for _ in refs:
-                plan.block(NO_API_URL)
+            for ref in refs:
+                plan.wait(NO_API_URL, ref.id)
             return plan
         attempts = ctx.catalog.attempt_counts([ref.id for ref in refs], self.name, "")
         candidates = []

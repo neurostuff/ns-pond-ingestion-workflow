@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact
 
@@ -39,11 +39,19 @@ class StagePlan:
     permanent: int = 0
     #: Why articles were blocked, when the stage can say: {reason: count}.
     reasons: Dict[str, int] = field(default_factory=dict)
+    #: The blocked articles that wait on the operator (`wait`).
+    waiting: Set[str] = field(default_factory=set)
 
     def block(self, reason: str) -> None:
         """Count one article blocked for `reason`."""
         self.blocked += 1
         self.reasons[reason] = self.reasons.get(reason, 0) + 1
+
+    def wait(self, reason: str, article_id: str) -> None:
+        """Count one article blocked until the operator gives what `reason` names (a model
+        served, a text hash, a setting): the plan cannot say whether its artifact is fresh."""
+        self.block(reason)
+        self.waiting.add(article_id)
 
     @property
     def total(self) -> int:
