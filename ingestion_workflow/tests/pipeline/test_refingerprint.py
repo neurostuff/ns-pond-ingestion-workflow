@@ -15,7 +15,7 @@ from ingestion_workflow.models import DownloadedFile, DownloadResult, DownloadSo
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.cli.main import _render_refingerprint
 from ingestion_workflow.pipeline import Context
-from ingestion_workflow.pipeline.refingerprint import refingerprint
+from ingestion_workflow.pipeline.refingerprint import LOST, UNASKED, refingerprint
 from ingestion_workflow.pipeline.stages import (
     AnalysesStage,
     DownloadStage,
@@ -233,6 +233,11 @@ def test_what_a_stage_without_its_model_cannot_be_asked_about_is_counted(migrate
     assert any("role model" in reason for reason in found.plan.stages["roles"].reasons)
     assert found.rerun() == {"roles": 2}
     assert ("roles", prose_only.id, "") not in found.rewrites
+    # each one is named, so the operator can run the stage for exactly those
+    assert sorted(found.running_again["roles"]) == sorted(
+        (ref.id, "", UNASKED) for ref in (tables, prose_only))
+    printed = _render_refingerprint(found)
+    assert f"would run again: roles {prose_only.id} ({UNASKED})" in printed
 
 
 def test_a_fingerprint_written_meanwhile_is_left_alone(migrated):
@@ -400,6 +405,8 @@ def test_a_model_stopped_between_the_plans_counts_its_artifacts_as_running_again
 
     assert found.stages["roles"].lost == 2
     assert found.rerun() == {"roles": 2}
+    assert sorted(found.running_again["roles"]) == sorted(
+        (ref.id, "", LOST) for ref in (tables, prose_only))
 
 
 def _download_of(catalog, ref, tmp_path, source):
