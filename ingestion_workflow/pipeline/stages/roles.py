@@ -18,6 +18,7 @@ from __future__ import annotations
 import collections
 import logging
 import re
+import contextlib
 import threading
 from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from functools import partial
@@ -355,6 +356,8 @@ class RolesStage:
         self._said: Set[str] = set()
         #: The origins whose server is down, its model known from its `path`: why it cannot label.
         self._unserved: Dict[str, str] = {}
+        #: The model states remembered inside `remembering()`; None outside it.
+        self._states: Optional[Dict[str, Tuple[Optional[str], Optional[str]]]] = None
         #: Why the stage stopped in this run: no classifier is loaded after it, and none asks.
         self._stopped: Optional[str] = None
 
@@ -370,6 +373,24 @@ class RolesStage:
         return ("table", "text") if getattr(self.settings, "prose_model", None) else ("table",)
 
     def model_state(self, origin: str) -> Tuple[Optional[str], Optional[str]]:
+        """`_model_state`, or, inside `remembering()`, the state it gave first for the origin."""
+        if self._states is None:
+            return self._model_state(origin)
+        if origin not in self._states:
+            self._states[origin] = self._model_state(origin)
+        return self._states[origin]
+
+    @contextlib.contextmanager
+    def remembering(self):
+        """Ask each model's server once for the plans made inside: upload's gate plans
+        thousands of articles one at a time, and asked both servers for each."""
+        self._states = {}
+        try:
+            yield self
+        finally:
+            self._states = None
+
+    def _model_state(self, origin: str) -> Tuple[Optional[str], Optional[str]]:
         """(The source its sets are recorded with, None) of the origin's model; or (None, why).
 
         The model must be listed by its server now, or, with the server down, have its

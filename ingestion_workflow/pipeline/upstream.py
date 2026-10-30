@@ -17,6 +17,7 @@ both record are the ones below and `stage.TAKE_BACK_REASONS`.
 
 from __future__ import annotations
 
+import contextlib
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
@@ -227,18 +228,23 @@ class Assessor:
         marks = ctx.catalog.exclusions(ids)
         found_by_stage: Dict[str, Dict[str, Dict[str, Artifact]]] = {}
         behind: Dict[str, Dict[str, str]] = {ref.id: {} for ref in refs}
-        for name, stage in self.stages():
-            found = found_by_stage[name] = ctx.catalog.artifacts(ids, name)
-            parents = ctx.catalog.artifacts(ids, stage.requires) if stage.requires else {}
-            # Sync's claims on shared base studies are one query over the whole catalog:
-            # asked once for every article here, not once per article's plan.
-            shared = stage.contended(ctx, refs, parents) if name == "sync" else None
-            for ref in refs:
-                plan = (stage.plan(ctx, [ref], found, parents) if shared is None
-                        else stage.plan_contended(ctx, [ref], found, parents, shared))
-                state = upstream_state(plan, found.get(ref.id, {}).get(""))
-                if state:
-                    behind[ref.id][name] = state
+        with contextlib.ExitStack() as held:
+            # A stage that asks a server in each plan (roles) asks it once for all of these.
+            for _, stage in self.stages():
+                if hasattr(stage, "remembering"):
+                    held.enter_context(stage.remembering())
+            for name, stage in self.stages():
+                found = found_by_stage[name] = ctx.catalog.artifacts(ids, name)
+                parents = ctx.catalog.artifacts(ids, stage.requires) if stage.requires else {}
+                # Sync's claims on shared base studies are one query over the whole catalog:
+                # asked once for every article here, not once per article's plan.
+                shared = stage.contended(ctx, refs, parents) if name == "sync" else None
+                for ref in refs:
+                    plan = (stage.plan(ctx, [ref], found, parents) if shared is None
+                            else stage.plan_contended(ctx, [ref], found, parents, shared))
+                    state = upstream_state(plan, found.get(ref.id, {}).get(""))
+                    if state:
+                        behind[ref.id][name] = state
         if "prose" not in found_by_stage:
             found_by_stage["prose"] = {}
         out = {}
