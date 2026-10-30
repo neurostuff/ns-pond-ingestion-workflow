@@ -187,6 +187,45 @@ def test_a_pdf_is_read_by_its_text_alone(env, tmp_path, evidence):
     assert outcome.summary["nifti_context"] == 1
 
 
+def test_a_pdf_read_from_a_wiley_download_is_read_from_that_download(env, tmp_path, evidence):
+    """Production, 2026-10-30: 11,063 pdf extractions were read from a wiley download (their
+    `download_source`), beside a failed pdf download. references and links looked up the pdf
+    download, found no payload, and failed."""
+    from ingestion_workflow.models import DownloadedFile, DownloadSource, FileType
+
+    settings, catalog = env
+    ref = catalog.register(Identifier(pmid="41635700"), evidence)
+    pdf = tmp_path / "article.pdf"
+    pdf.write_bytes(b"%PDF-1.4")
+    wiley = DownloadResult(identifier=ref.identifier, source=DownloadSource.WILEY, success=True,
+                           files=[DownloadedFile(file_path=pdf, file_type=FileType.PDF,
+                                                 content_type="application/pdf",
+                                                 source=DownloadSource.WILEY)]).to_dict()
+    catalog.record([
+        Outcome(article_id=ref.id, stage="download", source="wiley", fingerprint="dl-1",
+                payload=wiley, summary={}),
+        Outcome.failure(ref.id, "download", "pdf", "OA landing page only"),
+        # references reads a PDF only against a reference list it was handed
+        Outcome(article_id=ref.id, stage="reflist", source="", fingerprint="rl-1",
+                payload={"references": [{"id": "r1", "text": "Doe J. Open data. 2020.",
+                                         "doi": None}]},
+                summary={"references": 1}),
+    ])
+    download = catalog.artifact(ref.id, "download", "wiley")
+    catalog.record([Outcome(article_id=ref.id, stage="extract", source="pdf",
+                            fingerprint=extraction_fingerprint("pdf", download),
+                            payload={"full_text_path": str(PDF_TEXT)},
+                            summary={"tables": 0, "download_source": "wiley"})])
+    ctx = Context(settings, catalog)
+
+    _, (listed,) = _run(ReferencesStage(settings), ctx, catalog, ref)
+    _, (linked,) = _run(LinksStage(settings), ctx, catalog, ref)
+
+    assert (listed.status, linked.status) == (Status.OK, Status.OK), (listed.error, linked.error)
+    assert linked.summary["probe"] == [
+        "https://doi.org/10.18112/openneuro.ds007115.v1.0.0", "https://osf.io/4b9v8"]
+
+
 def test_an_extraction_that_kept_no_text_fails(env, tmp_path, evidence):
     settings, catalog = env
     ref = catalog.register(Identifier(pmid="41635700"), evidence)
