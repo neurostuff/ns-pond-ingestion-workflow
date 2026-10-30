@@ -71,6 +71,14 @@ class RoleModel(BaseModel):
 
     endpoint: str = Field(description="Base URL of the server, up to /v1")
     model: str = Field(description="The served model name it answers to")
+    path: Optional[str] = Field(
+        default=None,
+        description=(
+            "The checkpoint directory the server loads, spelled as it is served. With it the "
+            "model's identity is known while the server is down, so the articles it has "
+            "labelled stay fresh and can be uploaded; labelling still needs the server"
+        ),
+    )
 
 
 class Settings(BaseSettings):
