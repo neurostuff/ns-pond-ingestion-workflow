@@ -758,6 +758,14 @@ class Settings(BaseSettings):
             "(https://staging.synth.neurostore.xyz/api/ for staging)"
         ),
     )
+    neurostore_upload_workers: int = Field(
+        default=1,
+        ge=1,
+        description=(
+            "Papers uploaded at once. Neurostore ingests one per API worker, so up to its "
+            "worker count (WEB_CONCURRENCY) is faster; 1 sends them one after another"
+        ),
+    )
 
 
 def _read_yaml_mapping(yaml_path: Path) -> Dict[str, Any]:
