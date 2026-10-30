@@ -16,8 +16,8 @@ from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.models.metadata import ArticleMetadata
 from ingestion_workflow.models.notices import PartialAnswer
 from ingestion_workflow.utils.doi import normalize_doi
-from ingestion_workflow.utils.http import Pacer, retry_transient, wait_retry_after
-from ingestion_workflow.utils.isolation import error_text, parsed_each
+from ingestion_workflow.utils.http import Pacer, refused, retry_transient, wait_retry_after
+from ingestion_workflow.utils.isolation import error_text, halving, parsed_each
 
 #: The polite pool's single-record limit. Sending an email puts a client in it; there is no key.
 CROSSREF_REQUEST_LIMIT = 10
@@ -129,13 +129,16 @@ class CrossrefClient:
     def works(self, dois: Sequence[str], select: str) -> Dict[str, Dict]:
         """The `select`ed fields of each of many DOIs' records, by list queries, keyed by
         the DOI in lower case. A DOI a filter cannot hold, or one Crossref does not know,
-        is left out, as is an item with no readable DOI, which is logged."""
+        is left out, as is an item with no readable DOI, which is logged. A query Crossref
+        refuses is halved down to the DOIs it refuses alone, which are left out too."""
         found: Dict[str, Dict] = {}
         for batch in packed("doi", [d for d in dict.fromkeys(dois) if filterable(d)]):
-            items = self._list({"filter": ",".join(f"doi:{d}" for d in batch),
-                                "select": select, "rows": str(len(batch))})
-            found.update(parsed_each(items, lambda item: (item["DOI"].lower(), item),
-                                     "Crossref work")[0])
+            answers, _ = halving(batch, lambda part: self._list(
+                {"filter": ",".join(f"doi:{d}" for d in part), "select": select,
+                 "rows": str(len(part))}), refused)
+            for _, items in answers:
+                found.update(parsed_each(items, lambda item: (item["DOI"].lower(), item),
+                                         "Crossref work")[0])
         return found
 
     @retry_transient(4, 16, wait=_wait)
@@ -164,34 +167,45 @@ class CrossrefClient:
         types = [f"relation.type:{kind}" for kind in kinds]
         spare = len(quote(",".join(types), safe=""))
         for batch in packed("relation.object", [d for d in found if "," not in d], spare):
-            asked: Dict[str, List[str]] = {}
-            for doi in batch:
-                asked.setdefault(doi.lower(), []).append(doi)
-            params = {"filter": ",".join([*(f"relation.object:{d}" for d in batch), *types]),
-                      "select": "DOI,relation", "rows": str(CROSSREF_PAGE_ROWS), "cursor": "*"}
-            if self.email:
-                params["mailto"] = self.email
-
-            def relate(item: Dict, asked: Dict[str, List[str]] = asked) -> None:
-                this = item["DOI"].lower()
-                named: List[Tuple[str, str]] = []
-                for kind, related in (item.get("relation") or {}).items():
-                    if kind not in kinds:
-                        continue
-                    # a record may name one DOI twice under a kind; it is related once
-                    named += [(doi, kind) for doi in sorted({
-                        doi for r in related for doi in asked.get((r.get("id") or "").lower(), ())
-                    })]
-                for doi, kind in named:
+            # a query Crossref refuses is halved down to the DOIs it refuses alone, which
+            # have no answer; a half's relations are kept only once its pages are all read
+            answers, _ = halving(batch, lambda part: self._related(part, kinds, types), refused)
+            for _, pairs in answers:
+                for doi, kind, this in pairs:
                     found[doi].setdefault(kind, []).append(this)
-
-            while True:
-                message = self._page(params)
-                parsed_each(message["items"], relate, "Crossref work")
-                if len(message["items"]) < CROSSREF_PAGE_ROWS:
-                    break
-                params["cursor"] = message["next-cursor"]
         return found
+
+    def _related(self, batch: List[str], kinds: Sequence[str],
+                 types: List[str]) -> List[Tuple[str, str, str]]:
+        """(asked DOI, kind, relating DOI) for each relation the records of one query give,
+        every page of it read."""
+        asked: Dict[str, List[str]] = {}
+        for doi in batch:
+            asked.setdefault(doi.lower(), []).append(doi)
+        params = {"filter": ",".join([*(f"relation.object:{d}" for d in batch), *types]),
+                  "select": "DOI,relation", "rows": str(CROSSREF_PAGE_ROWS), "cursor": "*"}
+        if self.email:
+            params["mailto"] = self.email
+        pairs: List[Tuple[str, str, str]] = []
+
+        def relate(item: Dict) -> None:
+            this = item["DOI"].lower()
+            named: List[Tuple[str, str]] = []
+            for kind, related in (item.get("relation") or {}).items():
+                if kind not in kinds:
+                    continue
+                # a record may name one DOI twice under a kind; it is related once
+                named += [(doi, kind) for doi in sorted({
+                    doi for r in related for doi in asked.get((r.get("id") or "").lower(), ())
+                })]
+            pairs.extend((doi, kind, this) for doi, kind in named)
+
+        while True:
+            message = self._page(params)
+            parsed_each(message["items"], relate, "Crossref work")
+            if len(message["items"]) < CROSSREF_PAGE_ROWS:
+                return pairs
+            params["cursor"] = message["next-cursor"]
 
     def get_metadata(self, identifiers: List[Identifier]) -> Dict[str, ArticleMetadata]:
         """Each asked work's licence deposits, verbatim in `raw_metadata["crossref"]`,
@@ -215,12 +229,15 @@ class CrossrefClient:
         failed: set = set()
         for batch in packed("doi", [doi for doi in wanted if filterable(doi)]):
             try:
-                works = self._list({"filter": ",".join(f"doi:{doi}" for doi in batch),
-                                    "select": "DOI,license", "rows": str(len(batch))})
+                # a DOI refused alone is left to the single lookup below
+                answers, _ = halving(batch, lambda part: self._list(
+                    {"filter": ",".join(f"doi:{doi}" for doi in part),
+                     "select": "DOI,license", "rows": str(len(part))}), refused)
             except Exception as exc:  # noqa: BLE001 - the batch's articles are retried
                 failures.append(exc)
                 failed.update(batch)
                 continue
+            works = [work for _, items in answers for work in items]
 
             def asked(work: Dict, batch: List[str] = batch) -> Optional[str]:
                 doi = normalize_doi(work.get("DOI"))

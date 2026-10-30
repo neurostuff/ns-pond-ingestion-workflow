@@ -62,12 +62,16 @@ def from_crossref(message: Optional[Dict]) -> List[dict]:
     return refs
 
 
-def enrich(refs: List[dict], openalex) -> int:
-    """Names, year and PMID from OpenAlex for entries that have a DOI; returns how many it filled."""
-    wanted = [r["doi"] for r in refs if r["doi"] and (not r["authors"] or not r["year"] or not r["pmid"])]
-    if not wanted or openalex is None:
-        return 0
-    found = openalex.get_cited_works(wanted)
+def cited(refs: List[dict]) -> List[str]:
+    """The DOIs of the entries OpenAlex is asked to fill: those missing names, year or PMID."""
+    return [r["doi"] for r in refs
+            if r["doi"] and (not r["authors"] or not r["year"] or not r["pmid"])]
+
+
+def enrich(refs: List[dict], found: Dict[str, Optional[Dict]]) -> int:
+    """Names, year and PMID from works by DOI (OpenAlex's `get_cited_works`, None for a work
+    it does not know; or the catalog's, whose `provider` the PMID records) for entries
+    that have a DOI; returns how many it filled."""
     filled = 0
     for r in refs:
         work = found.get(r["doi"] or "")
@@ -79,7 +83,7 @@ def enrich(refs: List[dict], openalex) -> int:
         r["year"] = r["year"] or work.get("year")
         if not r["pmid"] and work.get("pmid"):
             r["pmid"] = work["pmid"]
-            r.setdefault("id_providers", {})["pmid"] = "openalex"
+            r.setdefault("id_providers", {})["pmid"] = work.get("provider", "openalex")
         filled += before != (bool(r["authors"]), bool(r["year"]), bool(r["pmid"]))
     return filled
 

@@ -141,11 +141,11 @@ class AnalysesStage:
                 plan.block(ref)
                 continue
             if "passed_tables" not in (triaged.summary or {}):
-                plan.block(ref, NO_VERDICT)
+                plan.wait(ref, NO_VERDICT)
                 continue
             read = metadata_fingerprint(metadata.get(ref.id, {}).get(""), METADATA_READ)
             if read is None:
-                plan.block(ref, NO_DIGESTS)
+                plan.wait(ref, NO_DIGESTS)
                 continue
             extraction = self._extraction_for(extractions.get(ref.id, {}), triaged)
             fp = self.fingerprint_for(triaged, extraction, read)

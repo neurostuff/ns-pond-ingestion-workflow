@@ -179,7 +179,7 @@ class TriageStage:
             self.gate_id()  # a missing gate fails the plan before anything else is judged
             read = self.metadata_fingerprint(meta)
             if read is None:
-                plan.block(ref, NO_DIGESTS)
+                plan.wait(ref, NO_DIGESTS)
                 continue
             fp = self.fingerprint_for(read, extraction)
             existing = artifacts.get(ref.id, {}).get("")

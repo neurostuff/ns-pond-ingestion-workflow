@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+import requests
 from lxml import etree
 
 from ingestion_workflow.catalog import Catalog, Outcome, Status
@@ -114,17 +115,210 @@ def test_a_pdf_marks_no_citations_and_is_not_read(env, evidence):
 
 
 class _Crossref:
-    def __init__(self, message):
-        self.message = message
+    """Every DOI's record is `message`; `records` names the DOIs a list query returns,
+    when not every one; a DOI in `failing` fails its list query."""
+
+    def __init__(self, message, records=None, failing=()):
+        self.message, self.records, self.failing = message, records, set(failing)
+        self.lists, self.singly = [], []
+
+    def works(self, dois, select):
+        self.lists.append(list(dois))
+        if self.failing & set(dois):
+            raise requests.HTTPError("503 Server Error", response=_Response(503))
+        returned = dois if self.records is None else [d for d in dois if d in self.records]
+        return {d.lower(): self.message for d in returned} if self.message is not None else {}
 
     def work(self, doi):
+        self.singly.append(doi)
         return self.message
 
 
-def _reflist(settings, message):
+class _Response:
+    def __init__(self, status_code):
+        self.status_code = status_code
+
+
+class _CountingOpenAlex(_OpenAlex):
+    def __init__(self, error=None):
+        self.asked, self.error = [], error
+
+    def get_cited_works(self, dois):
+        self.asked.append(list(dois))
+        if self.error is not None:
+            raise self.error
+        return super().get_cited_works(dois)
+
+
+def _reflist(settings, message, crossref=None, openalex=None):
     stage = ReflistStage(settings)
-    stage._crossref, stage._openalex = _Crossref(message), _OpenAlex()
+    stage._crossref = crossref or _Crossref(message)
+    stage._openalex = openalex or _OpenAlex()
     return stage
+
+
+def _run_all(stage, ctx, catalog, refs):
+    ids = [ref.id for ref in refs]
+    plan = stage.plan(ctx, refs, catalog.artifacts(ids, stage.name),
+                      catalog.artifacts(ids, stage.requires))
+    outcomes = list(stage.execute(ctx, plan.pending))
+    catalog.record(outcomes)
+    return plan, outcomes
+
+
+def _papers(env, evidence, n):
+    settings, catalog, article, text = env
+    refs = [catalog.register(Identifier(doi=f"10.1016/j.test.2020.{i}"), evidence)
+            for i in range(n)]
+    for ref in refs:
+        _record(catalog, ref, article, text)
+    return refs
+
+
+def test_a_batch_of_papers_is_one_list_query_and_one_pool_of_cited_works(env, evidence):
+    settings, catalog, *_ = env
+    refs = _papers(env, evidence, 3)
+    crossref, openalex = _Crossref(MESSAGE), _CountingOpenAlex()
+
+    _, outcomes = _run_all(_reflist(settings, MESSAGE, crossref, openalex),
+                           Context(settings, catalog), catalog, refs)
+
+    assert len(crossref.lists) == 1
+    assert sorted(crossref.lists[0]) == sorted(r.identifier.doi for r in refs)
+    assert not crossref.singly
+    assert openalex.asked == [["10.1523/x.2001"]]  # three papers cite it; asked once
+    for outcome in outcomes:
+        assert outcome.status is Status.OK and outcome.summary["named_by_openalex"] == 1
+        assert outcome.payload["references"][0]["authors"] == ["Smith", "Jones"]
+        assert "errors" not in outcome.summary
+
+
+def test_a_cited_work_is_asked_of_openalex_once_a_run(env, evidence):
+    settings, catalog, *_ = env
+    first, second = _papers(env, evidence, 2)
+    openalex = _CountingOpenAlex()
+    stage = _reflist(settings, MESSAGE, openalex=openalex)
+    ctx = Context(settings, catalog)
+
+    _run_all(stage, ctx, catalog, [first])
+    _, (outcome,) = _run_all(stage, ctx, catalog, [second])
+
+    assert openalex.asked == [["10.1523/x.2001"]]
+    assert outcome.payload["references"][0]["authors"] == ["Smith", "Jones"]
+
+
+def test_a_cited_work_the_catalog_holds_is_named_from_its_metadata(env, evidence):
+    settings, catalog, *_ = env
+    (ref,) = _papers(env, evidence, 1)
+    # by DOI, and the PMID as an alias: registering a PMID asks PubMed for its evidence
+    held = catalog.register(Identifier(doi="10.1523/x.2001"), evidence)
+    catalog.add_aliases([(held.id, "pmid", "222")])
+    catalog.record([Outcome(article_id=held.id, stage="metadata", source="", fingerprint="m",
+                            payload={"authors": [{"name": "Ann Brown"}], "publication_year": 2001},
+                            summary={})])
+    openalex = _CountingOpenAlex()
+
+    _, (outcome,) = _run_all(_reflist(settings, MESSAGE, openalex=openalex),
+                             Context(settings, catalog), catalog, [ref])
+
+    assert not openalex.asked
+    first = outcome.payload["references"][0]
+    assert first["authors"] == ["Brown"] and first["year"] == 2001 and first["pmid"] == "222"
+    assert first["id_providers"]["pmid"] == "catalog"
+    assert outcome.summary["named_from_catalog"] == 1 and outcome.summary["named_by_openalex"] == 0
+
+
+def test_a_held_work_whose_metadata_names_no_one_is_asked_of_openalex(env, evidence):
+    settings, catalog, *_ = env
+    (ref,) = _papers(env, evidence, 1)
+    held = catalog.register(Identifier(doi="10.1523/x.2001"), evidence)
+    catalog.record([Outcome(article_id=held.id, stage="metadata", source="", fingerprint="m",
+                            payload={"authors": [], "publication_year": 2001}, summary={})])
+    openalex = _CountingOpenAlex()
+
+    _, (outcome,) = _run_all(_reflist(settings, MESSAGE, openalex=openalex),
+                             Context(settings, catalog), catalog, [ref])
+
+    assert openalex.asked == [["10.1523/x.2001"]]
+    assert outcome.payload["references"][0]["authors"] == ["Smith", "Jones"]
+
+
+def test_a_doi_the_list_query_does_not_return_is_asked_singly(env, evidence):
+    settings, catalog, *_ = env
+    first, second = _papers(env, evidence, 2)
+    crossref = _Crossref(MESSAGE, records={first.identifier.doi})
+
+    stage = _reflist(settings, MESSAGE, crossref)
+    _, outcomes = _run_all(stage, Context(settings, catalog), catalog, [first, second])
+
+    assert crossref.singly == [second.identifier.doi]
+    assert [o.payload["found"] for o in outcomes] == [True, True]
+
+
+def test_a_failed_list_query_fails_only_its_papers(env, evidence):
+    settings, catalog, *_ = env
+    refs = _papers(env, evidence, 2)
+    crossref = _Crossref(MESSAGE, failing={refs[0].identifier.doi})
+
+    stage = _reflist(settings, MESSAGE, crossref)
+    _, outcomes = _run_all(stage, Context(settings, catalog), catalog, refs)
+
+    # both DOIs fit one query, so both fail with it, and neither is asked singly
+    assert [o.status for o in outcomes] == [Status.FAILED, Status.FAILED] and not crossref.singly
+    assert outcomes[0].error.startswith("crossref: HTTPError")
+
+
+def test_openalex_busy_keeps_the_lists_and_asks_again_once_due(env, evidence):
+    from datetime import timedelta
+
+    settings, catalog, *_ = env
+    refs = _papers(env, evidence, 2)
+    busy = requests.HTTPError("OpenAlex request failed (429)", response=_Response(429))
+    ctx = Context(settings, catalog)
+
+    stage = _reflist(settings, MESSAGE, openalex=_CountingOpenAlex(busy))
+    _, outcomes = _run_all(stage, ctx, catalog, refs)
+
+    for outcome in outcomes:
+        assert outcome.status is Status.OK and outcome.summary["references"] == 3
+        assert outcome.summary["named_by_openalex"] == 0
+        assert outcome.summary["errors"]["names"].startswith("openalex: HTTPError")
+        assert outcome.summary["transient"] == ["names"]
+    soon, _ = _run_all(_reflist(settings, MESSAGE), ctx, catalog, refs)
+    assert soon.fresh == 2
+    ctx.now = ctx.now + ctx.retry_after + timedelta(seconds=1)
+    later, _ = _run_all(_reflist(settings, MESSAGE), ctx, catalog, refs)
+    assert len(later.pending) == 2
+
+
+def test_a_paper_with_nothing_to_name_notes_no_openalex_error(env, evidence):
+    settings, catalog, *_ = env
+    (ref,) = _papers(env, evidence, 1)
+    busy = requests.HTTPError("OpenAlex request failed (429)", response=_Response(429))
+    bare = {"reference": [{"key": "b1", "author": "Lee", "year": "2002"}]}
+
+    _, (outcome,) = _run_all(_reflist(settings, bare, openalex=_CountingOpenAlex(busy)),
+                             Context(settings, catalog), catalog, [ref])
+
+    assert outcome.status is Status.OK and "errors" not in outcome.summary
+
+
+def test_a_failed_pool_leaves_unnoted_the_lists_named_from_earlier_answers(env, evidence):
+    settings, catalog, *_ = env
+    first, second = _papers(env, evidence, 2)
+    openalex = _CountingOpenAlex()
+    stage = _reflist(settings, MESSAGE, openalex=openalex)
+    ctx = Context(settings, catalog)
+    _run_all(stage, ctx, catalog, [first])
+    other = {"reference": [*MESSAGE["reference"], {"key": "b9", "DOI": "10.1/new"}]}
+    stage._crossref = _Crossref(other)
+    openalex.error = requests.HTTPError("OpenAlex request failed (429)", response=_Response(429))
+
+    _, (outcome,) = _run_all(stage, ctx, catalog, [second])
+
+    assert openalex.asked[-1] == ["10.1/new"]
+    assert outcome.payload["references"][0]["authors"] == ["Smith", "Jones"]
+    assert outcome.summary["transient"] == ["names"]
 
 
 def test_reflist_keeps_crossref_s_list_named_by_openalex(env, evidence):

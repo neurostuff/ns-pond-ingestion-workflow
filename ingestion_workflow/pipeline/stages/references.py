@@ -26,6 +26,7 @@ from ingestion_workflow.utils.isolation import error_text
 
 from ..plan import StagePlan, Work
 from ..stage import Context, alone
+from .extract import read_from
 
 logger = logging.getLogger(__name__)
 
@@ -182,7 +183,9 @@ class ReferencesStage:
         jobs, ready = [], []
         reflists = ctx.catalog.artifacts([w.article_id for w in works], "reflist")
         for work in works:
-            download = ctx.catalog.artifact(work.article_id, "download", work.source)
+            # The download the extraction was read from: a pdf one may be read from wiley's.
+            download = ctx.catalog.artifact(work.article_id, "download",
+                                            read_from(work.source, work.upstream))
             download_payload = ctx.payload(download) if download else None
             extraction = ctx.payload(work.upstream)
             if not download_payload or not extraction:

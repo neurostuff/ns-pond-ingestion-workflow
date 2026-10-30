@@ -867,18 +867,10 @@ def repair(
             return
         if rerun:
             typer.echo("refusing to write: " + ", ".join(
-                f"{n:,} {stage}" for stage, n in rerun.items()) + " would run again.")
+                f"{n:,} {stage}" for stage, n in rerun.items()) + " reused now would not be.")
             for stage in rerun:
-                counts, reasons = found.stages[stage], found.plan.stages[stage].reasons
-                if counts.empty_rerun:
-                    typer.echo(f"  {stage}: {counts.empty_rerun:,} have no fingerprint and "
-                               f"their blob is gone: run the stage for them "
-                               f"(`ingest run -s {stage}`) first")
-                for reason, n in reasons.items():
+                for reason, n in found.plan.stages[stage].reasons.items():
                     typer.echo(f"  {stage}: {n:,} blocked: {reason}")
-                if (counts.lost or counts.unasked) and not reasons:
-                    typer.echo(f"  {stage}: {counts.lost + counts.unasked:,} reused now "
-                               "would not be, with no plan blocking them")
             typer.echo("Give the blocked stages what they wait on (the models the config "
                        "names, text hashes from `ingest refresh-text`), then plan again.")
             raise typer.Exit(1)
@@ -968,6 +960,10 @@ def repair_identity(
                    "was made from them, through upload")
 
 
+#: How many of a stage's artifacts that run again the repair names, of each kind.
+RUNNING_AGAIN_SHOWN = 50
+
+
 def _render_refingerprint(found) -> str:
     lines = ["fingerprints:",
              f"  {'stage':<11}{'filled':>10}{'carried':>10}"
@@ -988,6 +984,15 @@ def _render_refingerprint(found) -> str:
         if n is not None and n.failed_read:
             lines.append(f"  {stage}: {n.failed_read:,} read from an extraction that has since "
                          "failed: no plan asks about them, so they are left as they are")
+    for label, by_stage in (("would run again", found.running_again),
+                            ("runs again either way", found.either_way)):
+        for stage in STAGE_ORDER:
+            listed = by_stage.get(stage, [])
+            for article_id, source, why in listed[:RUNNING_AGAIN_SHOWN]:
+                lines.append(f"  {label}: {stage} {article_id}"
+                             f"{' ' + source if source else ''} ({why})")
+            if len(listed) > RUNNING_AGAIN_SHOWN:
+                lines.append(f"  {label}: {stage}: {len(listed) - RUNNING_AGAIN_SHOWN:,} more")
     return "\n".join(lines)
 
 
@@ -995,7 +1000,7 @@ def _render_refingerprint(found) -> str:
 def refresh_text(
     source: Optional[List[str]] = typer.Option(
         None, "--source",
-        help="Extraction sources to read (default: all; a PDF's text only has its hash recorded)."
+        help="Extraction sources to read (default: all; a PDF's text is normalised again)."
     ),
     corpus: bool = typer.Option(
         True, "--corpus/--no-corpus", help="Also replace the ns-pond corpus's copies of the texts."
@@ -1011,7 +1016,8 @@ def refresh_text(
     passages' spans move to the new text in the same catalog write, and the references
     and the sync are marked stale so they are read and written again. For a change
     to the text alone (pubget keeping superscripts, the figure captions written under
-    "Figure legends", ACE's short texts built again without readability). An ACE
+    "Figure legends", ACE's short texts built again without readability, a PDF's NUL
+    minus signs). An ACE
     extraction's `text_source` and summary `text_from` are set to how its new text was made.
     """
     from collections import Counter

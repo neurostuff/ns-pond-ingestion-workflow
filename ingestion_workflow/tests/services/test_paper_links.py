@@ -92,6 +92,7 @@ def test_a_link_is_normalized_as_paper_link_url_says(given, url):
     "mailto:stefania_ashby@byu.edu",
     "journal=OpenNeuro&title=Data for",  # Europe PMC's google-scholar ext-link
     "SCR_007037",
+    "http://[insert link here]",  # urlsplit: Invalid IPv6 URL (58 production articles)
 ])
 def test_what_is_not_an_http_link_is_none(given):
     assert L.normalize_url(given) is None

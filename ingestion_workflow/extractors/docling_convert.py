@@ -40,10 +40,12 @@ _MINUS_TOKENS = (
 )
 
 # Docling emits GLYPH<0> where a leading minus failed to map, and a text layer whose
-# font has no mapping for it gives the glyph's code 0 itself. A NUL right before a digit
-# was a minus in every case read in the corpus (coordinates, t and z values, -80 C);
-# with a space between it is also an approximation or a binary minus, so it is left.
-_MINUS_GLYPH = re.compile(r"GLYPH<0>\s*(?=\d)|\x00(?=\d)")
+# font has no mapping for it gives the glyph's code 0 itself. A NUL was a minus or a
+# hyphen in nearly every case read in the corpus: before a digit or a decimal point
+# (t = -.46), in a table cell set apart by a space, after a group name (CS-, TRP-) and
+# between two (A-B). The few that stood for a lost ligature ("A\x00liated") read no
+# better as NUL, which Postgres cannot store.
+_MINUS_GLYPH = re.compile(r"GLYPH<0>\s*(?=\d)|\x00")
 _DASH_BEFORE_DIGIT = re.compile(r"-(\s+)(?=\d)")
 
 # Docling's cell bbox is drawn around the glyphs it recognised, so a minus sign

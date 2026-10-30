@@ -15,7 +15,13 @@ from ingestion_workflow.models import DownloadedFile, DownloadResult, DownloadSo
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.cli.main import _render_refingerprint
 from ingestion_workflow.pipeline import Context
-from ingestion_workflow.pipeline.refingerprint import refingerprint
+from ingestion_workflow.pipeline.refingerprint import (
+    EMPTY_RERUN,
+    LOST,
+    UNASKED,
+    WAITING,
+    refingerprint,
+)
 from ingestion_workflow.pipeline.stages import (
     AnalysesStage,
     DownloadStage,
@@ -233,6 +239,11 @@ def test_what_a_stage_without_its_model_cannot_be_asked_about_is_counted(migrate
     assert any("role model" in reason for reason in found.plan.stages["roles"].reasons)
     assert found.rerun() == {"roles": 2}
     assert ("roles", prose_only.id, "") not in found.rewrites
+    # each one is named, so the operator can run the stage for exactly those
+    assert sorted(found.running_again["roles"]) == sorted(
+        (ref.id, "", WAITING) for ref in (tables, prose_only))
+    printed = _render_refingerprint(found)
+    assert f"would run again: roles {prose_only.id} ({WAITING})" in printed
 
 
 def test_a_fingerprint_written_meanwhile_is_left_alone(migrated):
@@ -400,6 +411,8 @@ def test_a_model_stopped_between_the_plans_counts_its_artifacts_as_running_again
 
     assert found.stages["roles"].lost == 2
     assert found.rerun() == {"roles": 2}
+    assert sorted(found.running_again["roles"]) == sorted(
+        (ref.id, "", LOST) for ref in (tables, prose_only))
 
 
 def _download_of(catalog, ref, tmp_path, source):
@@ -471,7 +484,8 @@ def test_an_extraction_with_no_download_of_its_source_is_reported_not_a_reason_t
 def test_a_pdf_extraction_read_from_a_wiley_download_is_not_unreachable(elsevier, evidence):
     """11,444 production pdf extractions are read from a wiley download, which `pdf`
     stands for. Planned with extract alone, as a later stage asks about it otherwise, the
-    stale pdf extraction is left unasked, and is still a reason to stop."""
+    stale pdf extraction is left unasked: reachable, so reported as running again, and not
+    a reason to stop, as no run reuses it now either."""
     settings, catalog, stages, tmp_path = elsevier
     ref = _held(catalog, tmp_path, 7, evidence=evidence)
     _download_of(catalog, ref, tmp_path, "wiley")
@@ -482,7 +496,8 @@ def test_a_pdf_extraction_read_from_a_wiley_download_is_not_unreachable(elsevier
 
     assert found.stages["extract"].unreachable == 0
     assert found.stages["extract"].unasked == 1
-    assert found.rerun() == {"extract": 1}
+    assert found.rerun() == {}
+    assert found.either_way == {"extract": [(ref.id, "pdf", UNASKED)]}
 
 
 def test_a_verdict_read_from_an_extraction_that_failed_is_left_as_it_is(elsevier, evidence):
@@ -513,10 +528,10 @@ def test_a_verdict_read_from_an_extraction_that_failed_is_left_as_it_is(elsevier
             if "failed" in line] == ["triage"]
 
 
-def test_passages_read_from_an_extraction_that_is_not_failed_still_stop_the_repair(
+def test_stale_passages_read_from_an_extraction_that_is_carried_run_again_either_way(
         elsevier, evidence):
-    """Left stale where the extraction they chain on changes: the passages are read from
-    the elsevier extraction, which is OK and whose fingerprint is carried."""
+    """The passages are read from the elsevier extraction, which is OK and whose
+    fingerprint is carried; stale already, they run again with or without the repair."""
     _, catalog, _, tmp_path = elsevier
     ref = _held(catalog, tmp_path, 7, evidence=evidence)
     catalog.record([Outcome(article_id=ref.id, stage="passages", source="",
@@ -527,7 +542,8 @@ def test_passages_read_from_an_extraction_that_is_not_failed_still_stop_the_repa
 
     assert found.stages["extract"].carried == 1
     assert found.stages["passages"].unasked == 1
-    assert found.rerun() == {"passages": 1}
+    assert found.rerun() == {}
+    assert found.either_way == {"passages": [(ref.id, "", UNASKED)]}
 
 
 def _imported_without_text(catalog, tmp_path, evidence, **summary):
@@ -554,7 +570,7 @@ def _imported_without_text(catalog, tmp_path, evidence, **summary):
 
 def test_an_extraction_imported_without_its_text_is_not_stored_as_current(env, evidence):
     """Stored, it would be chosen over the ace extraction that has the text, and passages
-    would wait on a text it cannot read. It is left to run again."""
+    would wait on a text it cannot read. It is left to run again, as it would anyway."""
     settings, catalog, stages, tmp_path = env
     ref = _imported_without_text(catalog, tmp_path, evidence=evidence)
     found = refingerprint(Context(settings, catalog), stages, [ref], catalog.empty_fingerprints())
@@ -562,7 +578,8 @@ def test_an_extraction_imported_without_its_text_is_not_stored_as_current(env, e
     assert found.stages["extract"].filled == 0
     assert found.stages["extract"].empty_rerun == 1
     assert "passages" not in found.stages
-    assert found.rerun() == {"extract": 1}
+    assert found.rerun() == {}
+    assert found.either_way == {"extract": [(ref.id, "pubget", EMPTY_RERUN)]}
     assert ("extract", "pubget", ref.id) not in {(k[1], k[2], k[0]) for k in found.rewrites}
 
 
@@ -597,7 +614,7 @@ def test_an_extraction_imported_with_its_text_is_stored(env, evidence):
 def test_an_extraction_whose_download_failed_is_not_unreachable(elsevier, evidence):
     """A failed download still names the source the extraction was read from, as the stages
     that choose among extractions count it. Planned with extract alone, as a later stage
-    asks about it otherwise, the stale extraction still stops the repair."""
+    asks about it otherwise, the stale extraction runs again either way."""
     settings, catalog, stages, tmp_path = elsevier
     ref = _held(catalog, tmp_path, 7, evidence=evidence)
     catalog.record([Outcome.failure(ref.id, "download", "ace", "did not return a payload")])
@@ -608,7 +625,8 @@ def test_an_extraction_whose_download_failed_is_not_unreachable(elsevier, eviden
 
     assert found.stages["extract"].unreachable == 0
     assert found.stages["extract"].unasked == 1
-    assert found.rerun() == {"extract": 1}
+    assert found.rerun() == {}
+    assert found.either_way == {"extract": [(ref.id, "ace", UNASKED)]}
 
 
 def test_a_stage_that_blocks_on_its_model_still_stops_the_repair(migrated):

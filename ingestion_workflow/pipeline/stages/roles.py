@@ -500,7 +500,7 @@ class RolesStage:
             # the article is planned on the first run with the model configured.
             lacking = [missing[o] for o in self.needs(parent) if o in missing]
             if lacking:
-                plan.block(ref, lacking[0])
+                plan.wait(ref, lacking[0])
                 continue
             read = None
             if "text" in self.needs(parent):

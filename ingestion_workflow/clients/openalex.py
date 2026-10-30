@@ -30,13 +30,17 @@ from ingestion_workflow.services import corresponding_authors
 from ingestion_workflow.services.corresponding_authors.common import words
 from ingestion_workflow.utils import authors as author_ids
 from ingestion_workflow.utils.doi import normalize_doi
-from ingestion_workflow.utils.http import Pacer, retry_transient
-from ingestion_workflow.utils.isolation import parsed_each
+from ingestion_workflow.utils.http import Pacer, refused, retry_transient
+from ingestion_workflow.utils.isolation import error_text, halving, parsed_each
 
 logger = logging.getLogger(__name__)
 
 OPENALEX_BATCH_LOOKUP_SIZE = 100  # the most a page holds, and the most values one OR filter takes
 OPENALEX_RETRACTION_BATCH_SIZE = 50  # the most DOIs one filter accepts
+
+
+#: Why a value holding a comma or a pipe is not put in a filter.
+SPLITS_FILTER = "a comma or pipe would split the OpenAlex filter"
 OPENALEX_SEARCH_PAGE_SIZE = 100  # the most a page holds; 200 is a deprecated legacy maximum
 OPENALEX_REQUEST_LIMIT = 10  # polite pool: 10 req / second
 _MIN_REQUEST_INTERVAL = 1 / OPENALEX_REQUEST_LIMIT
@@ -339,13 +343,7 @@ class OpenAlexClient:
             for index in range(0, len(values), OPENALEX_BATCH_LOOKUP_SIZE)
         ]
         for batch in batches:
-            params = {
-                "filter": f"{id_type}:{'|'.join(batch)}",
-                "per_page": str(OPENALEX_BATCH_LOOKUP_SIZE),
-                "mailto": self.email,
-                "select": "ids",
-            }
-            payload = self._request_openalex(params)
+            payload = {"results": self._filtered(id_type, batch, "ids")[0]}
 
             def enrich(pair: Tuple[Dict, Identifier]) -> None:
                 work, found = pair
@@ -396,20 +394,16 @@ class OpenAlexClient:
             ]
             for index in range(0, len(values), OPENALEX_BATCH_LOOKUP_SIZE):
                 batch = values[index : index + OPENALEX_BATCH_LOOKUP_SIZE]
-                params = {
-                    "filter": f"{id_type}:{'|'.join(batch)}",
-                    "per_page": str(OPENALEX_BATCH_LOOKUP_SIZE),
-                    "mailto": self.email,
-                    "select": "ids,best_oa_location,locations",
-                }
                 try:
-                    payload = self._request_openalex(params)
+                    works, alone = self._filtered(id_type, batch, "ids,best_oa_location,locations")
                 except Exception as exc:  # noqa: BLE001 - reported per article
-                    for value in batch:
-                        identifier = identifiers.lookup(value, key=id_type)
-                        if identifier is not None:
-                            failed[identifier.slug] = f"{id_type} batch of {len(batch)}: {exc}"
-                    continue
+                    alone = {value: f"{id_type} batch of {len(batch)}: {exc}" for value in batch}
+                    works = []
+                for value, why in alone.items():
+                    identifier = identifiers.lookup(value, key=id_type)
+                    if identifier is not None:
+                        failed[identifier.slug] = why
+                payload = {"results": works}
 
                 def asked(work, id_type=id_type):
                     key = (work.get("ids", {}) or {}).get(id_type)
@@ -496,14 +490,7 @@ class OpenAlexClient:
             values = list(wanted)
             for index in range(0, len(values), OPENALEX_BATCH_LOOKUP_SIZE):
                 batch = values[index : index + OPENALEX_BATCH_LOOKUP_SIZE]
-                payload = self._request_openalex(
-                    {
-                        "filter": f"{id_type}:{'|'.join(batch)}",
-                        "per_page": str(OPENALEX_BATCH_LOOKUP_SIZE),
-                        "mailto": self.email,
-                        "select": _METADATA_FIELDS,
-                    }
-                )
+                payload = {"results": self._filtered(id_type, batch, _METADATA_FIELDS)[0]}
                 def asked(work, wanted=wanted, id_type=id_type):
                     value = _identifier_from(work.get("ids"), [id_type]).asking(id_type)
                     return str(value) if value and str(value) in wanted else None
@@ -532,14 +519,7 @@ class OpenAlexClient:
         wanted = sorted({d for d in (normalize_doi(d) for d in dois) if d})
         for index in range(0, len(wanted), OPENALEX_BATCH_LOOKUP_SIZE):
             batch = wanted[index : index + OPENALEX_BATCH_LOOKUP_SIZE]
-            payload = self._request_openalex(
-                {
-                    "filter": f"doi:{'|'.join(batch)}",
-                    "per_page": str(OPENALEX_BATCH_LOOKUP_SIZE),
-                    "mailto": self.email,
-                    "select": "ids,publication_year,authorships",
-                }
-            )
+            payload = {"results": self._filtered("doi", batch, "ids,publication_year,authorships")[0]}
             def asked(work, batch=batch):
                 doi = _identifier_from(work.get("ids"), ["doi"]).asking_doi
                 return doi if doi in batch else None
@@ -566,14 +546,8 @@ class OpenAlexClient:
         for index in range(0, len(wanted), OPENALEX_RETRACTION_BATCH_SIZE):
             batch = wanted[index : index + OPENALEX_RETRACTION_BATCH_SIZE]
             try:
-                payload = self._request_openalex(
-                    {
-                        "filter": f"doi:{'|'.join(batch)}",
-                        "per_page": str(OPENALEX_RETRACTION_BATCH_SIZE),
-                        "mailto": self.email,
-                        "select": "doi,is_retracted",
-                    }
-                )
+                payload = {"results": self._filtered("doi", batch, "doi,is_retracted",
+                                                     OPENALEX_RETRACTION_BATCH_SIZE)[0]}
             except Exception as exc:  # noqa: BLE001 - carries the earlier batches
                 raise PartialAnswer(str(exc), found, (exc,), unreadable) from exc
 
@@ -604,7 +578,7 @@ class OpenAlexClient:
 
         OpenAlex answers a batch with each work's current DOI, so a DOI the
         journal has since moved comes back under another name; `/works/doi:`
-        resolves the old one. A DOI OpenAlex does not know is left out.
+        resolves the old one. A DOI OpenAlex does not know, or refuses to look up, is left out.
         """
         works = []
         for doi in asked:
@@ -613,9 +587,33 @@ class OpenAlexClient:
             try:
                 works.append((doi, self._request_openalex({"mailto": self.email, "select": select}, f"doi:{quote(doi, safe='/')}")))
             except requests.HTTPError as exc:
-                if exc.response is None or exc.response.status_code != 404:
+                if refused(exc):
+                    logger.warning("OpenAlex refused to look up %s: %s", doi, exc)
+                elif exc.response is None or exc.response.status_code != 404:
                     raise
         return works
+
+    def _filtered(self, field: str, values: List[str], select: str,
+                  size: int = OPENALEX_BATCH_LOOKUP_SIZE) -> Tuple[List[Dict], Dict[str, str]]:
+        """The works a `field:a|b|c` filter over `values` returns, and why each value it
+        could not ask about was left out.
+
+        A refused batch is halved down to the values OpenAlex refuses alone
+        (`isolation.halving`), so one value cannot cost its batch: a comma or pipe would
+        split the filter (a Crossref deposit such as 10.1080/08,959,420.2016.1161693), and
+        such a value is not sent at all. The callers that make single lookups make them
+        for these values too.
+        """
+        kept = [v for v in values if "," not in v and "|" not in v]
+        answers, alone = halving(kept, lambda part: self._request_openalex({
+            "filter": f"{field}:{'|'.join(part)}",
+            "per_page": str(size),
+            "mailto": self.email,
+            "select": select,
+        }), refused)
+        why = {v: error_text(exc) for v, exc in alone.items()}
+        why.update({v: SPLITS_FILTER for v in values if v not in kept})
+        return [work for _, payload in answers for work in payload.get("results") or []], why
 
     @retry_transient(3, 8)
     def _request_openalex(self, params: Dict[str, str], work: str = "") -> Dict:
@@ -632,5 +630,8 @@ class OpenAlexClient:
                 raise
             # requests quotes the full URL, key included, in its messages; logs must not
             status = getattr(exc.response, "status_code", None) or type(exc).__name__
-            raise type(exc)(f"OpenAlex request failed ({status}) for {url}", response=exc.response) from None
+            # the answer's own words say what was refused; the key is only in the URL
+            said = (getattr(exc.response, "text", "") or "")[:300]
+            raise type(exc)(f"OpenAlex request failed ({status}) for {url}"
+                            + (f": {said}" if said else ""), response=exc.response) from None
         return response.json()

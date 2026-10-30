@@ -733,6 +733,23 @@ class Settings(BaseSettings):
             "sends nothing"
         ),
     )
+    neurostore_auth0_url: Optional[str] = Field(
+        default=None,
+        description=(
+            "Auth0 tenant upload asks for a token with NEUROSTORE_CLIENT_ID and "
+            "NEUROSTORE_CLIENT_SECRET. Unset, the tenant "
+            "neurostore_api_url's deployment uses (neurosynth-staging for staging, "
+            "neurosynth for neurostore.org)"
+        ),
+    )
+    neurostore_auth0_audience: Optional[str] = Field(
+        default=None,
+        description=(
+            "Audience of that token: the Auth0 API neurostore checks tokens against, not "
+            "the URL uploads go to. Unset, the deployment's own "
+            "(https://staging.synth.neurostore.xyz/api/ for staging)"
+        ),
+    )
 
 
 def _read_yaml_mapping(yaml_path: Path) -> Dict[str, Any]:

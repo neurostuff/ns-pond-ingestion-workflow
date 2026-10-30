@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Callable, Dict, Hashable, Iterable, Optional, Tuple, TypeVar
+from typing import Callable, Dict, Hashable, Iterable, List, Optional, Sequence, Tuple, TypeVar
 
 logger = logging.getLogger(__name__)
 
@@ -47,3 +47,30 @@ def _key_of(key: Callable, item) -> Optional[Hashable]:
         return key(item)
     except Exception:  # noqa: BLE001 - an item too broken to name is still left alone
         return None
+
+
+def halving(
+    items: Sequence[T],
+    ask: Callable[[List[T]], R],
+    refused: Callable[[BaseException], bool],
+) -> Tuple[List[Tuple[List[T], R]], Dict[T, BaseException]]:
+    """`ask` for the batch; when the provider refuses it, each half is asked again, down to
+    single items. The answers with the batch each answers, and the refusal of each item
+    refused alone. Any other failure is raised as it was, as an unsplit batch's would be."""
+    answered: List[Tuple[List[T], R]] = []
+    failed: Dict[T, BaseException] = {}
+    pending = [list(items)] if items else []
+    while pending:
+        batch = pending.pop()
+        try:
+            answered.append((batch, ask(batch)))
+        except Exception as exc:  # noqa: BLE001 - refused batches are split; others raise
+            if not refused(exc):
+                raise
+            if len(batch) == 1:
+                logger.warning("%s refused alone: %s", batch[0], exc)
+                failed[batch[0]] = exc
+            else:
+                middle = len(batch) // 2
+                pending += [batch[middle:], batch[:middle]]
+    return answered, failed

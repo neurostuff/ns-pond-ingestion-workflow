@@ -89,5 +89,5 @@ def test_a_retraction_openalex_alone_reports_reaches_the_notice(client):
 def test_openalex_fills_a_reference_whose_doi_has_a_non_ascii_letter(client):
     refs = L.from_crossref({"reference": [{"DOI": REGISTERED}]})
 
-    assert L.enrich(refs, client) == 1
+    assert L.enrich(refs, client.get_cited_works(L.cited(refs))) == 1
     assert refs[0]["authors"] == ["Smith"] and refs[0]["year"] == 2011 and refs[0]["pmid"] == "42"

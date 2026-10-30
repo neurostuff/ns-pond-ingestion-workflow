@@ -24,6 +24,18 @@ def transient(exc: BaseException) -> bool:
                             httpx.TransportError))
 
 
+
+#: Answers that refuse the request as worded: asking again unchanged gets the same answer,
+#: but a smaller batch may not (one value the server cannot read, or a URL too long).
+REFUSED = (400, 413, 414, 422)
+
+
+def refused(exc: BaseException) -> bool:
+    """The provider refused the request itself (400, 413, 414, 422), not a busy provider."""
+    if isinstance(exc, (requests.HTTPError, httpx.HTTPStatusError)):
+        return getattr(exc.response, "status_code", None) in REFUSED
+    return False
+
 class Pacer:
     """Keeps requests at least an interval apart; share one among the callers a provider
     counts as one."""
