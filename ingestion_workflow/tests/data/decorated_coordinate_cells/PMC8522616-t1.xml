@@ -1,0 +1,108 @@
+<original-table>
+  <table-wrap xmlns:mml="http://www.w3.org/1998/Math/MathML" xmlns:xlink="http://www.w3.org/1999/xlink" position="float" id="T1">
+    <label>Table 1</label>
+    <caption>
+      <p>Activated (or deactivated) brain areas (at <italic toggle="yes">P&lt;</italic>0.05 level of significance) for the heroin-dependent group in response to heroin-related versus neutral 1: Activated (or deactivated) brain areas (at <italic toggle="yes">P</italic>&lt;0.05 level of significance) for the heroin-dependent group in response to heroin-related versus neutral</p>
+    </caption>
+    <table frame="hsides" rules="groups">
+      <thead>
+        <tr>
+          <th align="left" rowspan="3" colspan="1">Brain areas</th>
+          <th align="center" rowspan="3" colspan="1">Volumes</th>
+          <th align="center" rowspan="3" colspan="1">Maximum intensity (peak <italic toggle="yes">t</italic> score)</th>
+          <th align="center" rowspan="3" colspan="1">Mean (mean <italic toggle="yes">t</italic> score)</th>
+          <th align="center" colspan="3" rowspan="1">Peak locations according to MNI co-ordinates</th>
+        </tr>
+        <tr>
+          <th align="center" colspan="3" rowspan="1">
+            <hr/>
+          </th>
+        </tr>
+        <tr>
+          <th align="center" rowspan="1" colspan="1">RL-x</th>
+          <th align="center" rowspan="1" colspan="1">AP-y</th>
+          <th align="center" rowspan="1" colspan="1">IS-z</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="left" rowspan="1" colspan="1">Right inferior frontal gyrus (p. Opercularis)</td>
+          <td align="center" rowspan="1" colspan="1">243</td>
+          <td align="center" rowspan="1" colspan="1">8.81</td>
+          <td align="center" rowspan="1" colspan="1">6.5272</td>
+          <td align="center" rowspan="1" colspan="1">52 mm (R)</td>
+          <td align="center" rowspan="1" colspan="1">8 mm (A)</td>
+          <td align="center" rowspan="1" colspan="1">22 mm (S)</td>
+        </tr>
+        <tr>
+          <td align="left" rowspan="1" colspan="1">Right precuneus</td>
+          <td align="center" rowspan="1" colspan="1">1404</td>
+          <td align="center" rowspan="1" colspan="1">14.0</td>
+          <td align="center" rowspan="1" colspan="1">7.3375</td>
+          <td align="center" rowspan="1" colspan="1">8 mm (R)</td>
+          <td align="center" rowspan="1" colspan="1">−52 mm (P)</td>
+          <td align="center" rowspan="1" colspan="1">10 mm (S)</td>
+        </tr>
+        <tr>
+          <td align="left" rowspan="1" colspan="1">Right inferior temporal gyrus</td>
+          <td align="center" rowspan="1" colspan="1">216</td>
+          <td align="center" rowspan="1" colspan="1">7.0458</td>
+          <td align="center" rowspan="1" colspan="1">6.4385</td>
+          <td align="center" rowspan="1" colspan="1">46 mm (R)</td>
+          <td align="center" rowspan="1" colspan="1">−46 mm (P)</td>
+          <td align="center" rowspan="1" colspan="1">−14 mm (I)</td>
+        </tr>
+        <tr>
+          <td align="left" rowspan="1" colspan="1">Right lingual gyrus</td>
+          <td align="center" rowspan="1" colspan="1">270</td>
+          <td align="center" rowspan="1" colspan="1">7.7135</td>
+          <td align="center" rowspan="1" colspan="1">6.6473</td>
+          <td align="center" rowspan="1" colspan="1">28 mm (R)</td>
+          <td align="center" rowspan="1" colspan="1">46 mm (P)</td>
+          <td align="center" rowspan="1" colspan="1">−4 mm (I)</td>
+        </tr>
+        <tr>
+          <td align="left" rowspan="1" colspan="1">Left fusiform gyrus</td>
+          <td align="center" rowspan="1" colspan="1">162</td>
+          <td align="center" rowspan="1" colspan="1">7.2873</td>
+          <td align="center" rowspan="1" colspan="1">6.5955</td>
+          <td align="center" rowspan="1" colspan="1">−40 mm (L)</td>
+          <td align="center" rowspan="1" colspan="1">−58 mm (P)</td>
+          <td align="center" rowspan="1" colspan="1">−16 mm (I)</td>
+        </tr>
+        <tr>
+          <td align="left" rowspan="1" colspan="1">Left middle occipital gyrus</td>
+          <td align="center" rowspan="1" colspan="1">540</td>
+          <td align="center" rowspan="1" colspan="1">7.2468</td>
+          <td align="center" rowspan="1" colspan="1">6.4487</td>
+          <td align="center" rowspan="1" colspan="1">−52 mm (L)</td>
+          <td align="center" rowspan="1" colspan="1">−76 mm (P)</td>
+          <td align="center" rowspan="1" colspan="1">2 mm (S)</td>
+        </tr>
+        <tr>
+          <td align="left" rowspan="1" colspan="1">Right middle occipital gyrus</td>
+          <td align="center" rowspan="1" colspan="1">459</td>
+          <td align="center" rowspan="1" colspan="1">7.4768</td>
+          <td align="center" rowspan="1" colspan="1">6.4282</td>
+          <td align="center" rowspan="1" colspan="1">46 mm (R)</td>
+          <td align="center" rowspan="1" colspan="1">−82 mm (P)</td>
+          <td align="center" rowspan="1" colspan="1">4 mm (S)</td>
+        </tr>
+        <tr>
+          <td align="left" rowspan="1" colspan="1">Left inferior occipital gyrus</td>
+          <td align="center" rowspan="1" colspan="1">405</td>
+          <td align="center" rowspan="1" colspan="1">7.7805</td>
+          <td align="center" rowspan="1" colspan="1">6.5661</td>
+          <td align="center" rowspan="1" colspan="1">−44 mm (L)</td>
+          <td align="center" rowspan="1" colspan="1">−70 mm (P)</td>
+          <td align="center" rowspan="1" colspan="1">−10 mm (I)</td>
+        </tr>
+      </tbody>
+    </table>
+    <table-wrap-foot>
+      <fn>
+        <p>MNI – Montreal neurological institute; RL – Right to left; AP – Anterior to posterior; IS – Inferior to superior along with –x, -y, -z axes</p>
+      </fn>
+    </table-wrap-foot>
+  </table-wrap>
+</original-table>

@@ -122,17 +122,39 @@ class _Table:
     def index(self) -> list:
         """Per body row, its numbers and the triples printed in one cell, read once."""
         if self._index is None:
-            from nspond_tables.grid import as_number
             from nspond_tables.read import triples_in
 
             self._index = [
                 (
-                    [(as_number(text), col) for text, col in cells],
+                    [(_coordinate_number(text), col) for text, col in cells],
                     [(trio, col) for text, col in cells for trio in triples_in(text)],
                 )
                 for cells in self.rows
             ]
         return self._index
+
+
+#: A coordinate cell that decorates its number: a dispersion (`43 ± 1.1`, `-47 (7.7)`,
+#: `-5.98 (±1.11)`), another analysis's value (`-36 (-36)`), a unit and direction
+#: (`52 mm (R)`, `-52 mm (P)`), or the separator of a triple split across cells (`-54,`).
+_DECORATED = re.compile(
+    r"^([-+]?\d+(?:\.\d+)?)\s*,?\s*(?:mm\b)?\s*(?:\(\s*[LRAPSI]\s*\))?\s*"
+    r"(?:±\s*\d+(?:\.\d+)?|\(\s*[-+±]?\s*\d+(?:\.\d+)?\s*\))?$"
+)
+
+
+def _coordinate_number(text: str) -> Optional[float]:
+    """The number a cell prints for a point's x, y or z.
+
+    `as_number`'s, or else the value a decorated cell leads with.
+    """
+    from nspond_tables.grid import as_number
+
+    number = as_number(text)
+    if number is not None:
+        return number
+    found = _DECORATED.match(str(text).strip().replace("\u2212", "-").replace("\u2013", "-"))
+    return float(found.group(1)) if found else None
 
 
 #: Characters a table cell and the text print differently: superscript digits.
