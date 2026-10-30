@@ -86,6 +86,13 @@ def tables_reading(ctx: Context, article_id: str, analyses: Optional[Artifact]) 
         summary = analyses.summary or {}
         unread = {k: v for k, v in (summary.get("unread") or {}).items()
                   if v not in _UNREAD_AS_NOTHING}
+        empty = (analyses.status is Status.SKIPPED and not summary.get("tables")) or (
+            analyses.status is Status.OK and not unread and not summary.get("tables"))
+        if empty and _passed_since(ctx, article_id, analyses):
+            # A triage run since passed tables this reading never saw (emcznvwqpaor: skipped
+            # for "no coordinate tables" on 09-30, triage passed two on 10-15).
+            return Reading(Kind.UNKNOWN, f"{TABLES_NOT_READ}: triage passed tables since "
+                                         "the analyses stage last ran")
         if analyses.status is Status.SKIPPED and not summary.get("tables"):
             return Reading(Kind.EMPTY)
         if analyses.status is Status.OK and not unread:
@@ -104,6 +111,14 @@ def tables_reading(ctx: Context, article_id: str, analyses: Optional[Artifact]) 
                          for e in extracted.values()):
         return Reading(Kind.EMPTY)
     return Reading(Kind.UNKNOWN, f"{TABLES_NOT_READ}: triage has not run")
+
+
+def _passed_since(ctx: Context, article_id: str, analyses: Artifact) -> bool:
+    """Whether the article's triage, run after `analyses`, passes a table."""
+    triaged = ctx.catalog.artifacts([article_id], "triage").get(article_id, {}).get("")
+    if triaged is None or triaged.status is not Status.OK or triaged.updated_at <= analyses.updated_at:
+        return False
+    return any(v.get("passes") for v in (ctx.payload(triaged) or {}).get("tables", []))
 
 
 def prose_reading(prose: Optional[Artifact]) -> Reading:
