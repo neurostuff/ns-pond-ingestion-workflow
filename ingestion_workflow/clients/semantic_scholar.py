@@ -12,8 +12,8 @@ from ingestion_workflow.models import Identifiers
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
 from ingestion_workflow.models.notices import PartialAnswer
-from ingestion_workflow.utils.http import Pacer, retry_transient
-from ingestion_workflow.utils.isolation import parsed_each
+from ingestion_workflow.utils.http import Pacer, refused, retry_transient
+from ingestion_workflow.utils.isolation import halving, parsed_each
 
 SEMANTIC_SCHOLAR_BATCH_SIZE = 500
 SEMANTIC_SCHOLAR_REQUEST_LIMIT = 1  # requests per second with API key
@@ -90,9 +90,12 @@ class SemanticScholarClient:
         ]
 
         for batch in batches:
-            request_ids = [self._format_for_request(id_type, value) for value in batch]
-            payload = self._request_semantic_scholar(request_ids)
-            self._apply_records(id_type, identifiers, batch, payload)
+            # a batch Semantic Scholar refuses is halved down to the ids it refuses alone,
+            # which are left unenriched; each answer lines up with the part it was asked for
+            answers, _ = halving(batch, lambda part: self._request_semantic_scholar(
+                [self._format_for_request(id_type, value) for value in part]), refused)
+            for part, payload in answers:
+                self._apply_records(id_type, identifiers, part, payload)
 
         return identifiers
 
@@ -286,14 +289,17 @@ class SemanticScholarClient:
         unreadable: Dict[str, str] = {}
         for batch in batches:
             try:
-                response_data = self._request_metadata_batch(batch)
+                # a refused batch is halved down to the ids refused alone
+                answers, alone = halving(batch, self._request_metadata_batch, refused)
             except Exception as exc:  # noqa: BLE001
                 # Continue with other batches, and say so: an unanswered article is not
                 # one Semantic Scholar has nothing for.
                 failures.append(exc)
                 continue
-            unreadable.update(
-                self._process_metadata_response(batch, response_data, request_map, results))
+            for part, response_data in answers:
+                unreadable.update(
+                    self._process_metadata_response(part, response_data, request_map, results))
+            failures += list(alone.values())  # each refused alone: no answer about it
 
         if failures:
             first = failures[0]
