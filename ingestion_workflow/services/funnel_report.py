@@ -573,6 +573,10 @@ def place_article(graph: Sequence[StageNode], rows: Sequence[_Row], *, ran: set,
                                     verdict.reason or f"{node.name} has nothing to do for it")
         elif node.name not in ran:
             out[node.name] = Placed(NOT_ATTEMPTED, "this stage has never run on the catalog")
+        elif before is not None and before.state not in (PASSED, RERUN):
+            # Its plan takes what its input did not pass on: a run records why.
+            out[node.name] = Placed(PENDING, f"taken by its plan although {node.upstream} is "
+                                             f"{before.state}: {before.reason or 'no reason'}")
         else:
             out[node.name] = Placed(PENDING, _pending_reason(node, by_stage))
         if set_aside and out[node.name].reason == NO_TEXT:

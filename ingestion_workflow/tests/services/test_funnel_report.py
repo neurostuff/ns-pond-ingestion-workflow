@@ -515,6 +515,12 @@ def test_a_plan_s_verdict_says_what_a_run_would_do_with_each_record():
     # Taken although its input failed, because its plan takes it.
     assert at("triage", _rows(("download", "", "ok"), ("extract", "", "ok"),
                               ("metadata", "", "failed"), ("triage", "", "ok")))[0] == PASSED
+    # Taken although its input was filtered, with nothing recorded yet: says so.
+    filtered = _rows(("download", "", "ok"), ("extract", "", "ok"), ("metadata", "", "ok"),
+                     ("triage", "", "skipped"))
+    assert at("analyses", filtered, analyses=Verdict(planning.PENDING)) == (
+        PENDING, "taken by its plan although triage is filtered: skipped: the source cannot "
+                 "handle it")
     # A stage that cannot plan is placed by its records alone.
     assert at("extract", failed, extract=Verdict(None, "not known: needs x"))[0] == FAILED
 
