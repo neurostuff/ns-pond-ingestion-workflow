@@ -210,9 +210,8 @@ class UploadStage:
                 ctx.catalog.add_aliases(learned)
 
     def _upload(self, ctx, works, previous, held, learned) -> Iterator[Outcome]:
-        from ingestion_workflow.services.neurostore_ingest import StopRun
-
-        for index, work in enumerate(works):
+        sending: List[Tuple[Work, Dict[str, Any]]] = []
+        for work in works:
             last = _last_upload(previous.get(work.article_id, {}).get(""))
             summary = self._summary(work.upstream, last)
             gate = held.get(work.article_id)
@@ -230,23 +229,57 @@ class UploadStage:
                     status=Status.SKIPPED, fingerprint=work.fingerprint,
                     summary={**summary, "reason": "no analyses to upload"}))
                 continue
-            try:
-                artifact = self.ingester().upload(Path(work.upstream.summary.get("path") or ""))
-            except StopRun as exc:
-                # Not this article's failure: recording one would spend every remaining
-                # article's retries. This article and the rest stay pending.
-                self._stopped = f"{type(exc).__name__}: {exc}"
-                logger.error("upload stopped: %s; %d article(s) left pending",
-                             self._stopped, len(works) - index)
-                return
-            except Exception as exc:  # noqa: BLE001 - this article's failure, not the batch's
-                logger.warning("upload failed for %s: %s", work.article_id, exc)
-                yield from self._record(work, Outcome.failure(
-                    work.article_id, self.name, "",
-                    f"{type(exc).__name__}: {short_reason(str(exc))}",
-                    fingerprint=work.fingerprint, summary=summary))
-                continue
-            yield from self._record(work, self._outcome(work, artifact, summary, learned))
+            sending.append((work, summary))
+        yield from self._send_all(sending, learned)
+
+    def _send_all(self, sending, learned) -> Iterator[Outcome]:
+        """Each paper sent, `neurostore_upload_workers` at once, its outcome as it is answered.
+
+        A StopRun (the token refused, neurostore down) starts no other paper: those under
+        way are answered and recorded, and the rest stay pending."""
+        from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
+
+        from ingestion_workflow.services.neurostore_ingest import StopRun
+
+        if not sending:
+            return
+        try:
+            ingester = self.ingester()  # no client, or no tenant: nothing is sent
+        except StopRun as exc:
+            self._stopped = f"{type(exc).__name__}: {exc}"
+            logger.error("upload stopped: %s; %d article(s) left pending",
+                         self._stopped, len(sending))
+            return
+        workers = max(1, int(getattr(self.settings, "neurostore_upload_workers", 1) or 1))
+        queue = list(reversed(sending))
+        window: Dict[Any, Tuple[Work, Dict[str, Any]]] = {}
+        with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="upload") as pool:
+            while window or (queue and not self._stopped):
+                while queue and not self._stopped and len(window) < workers:
+                    work, summary = queue.pop()
+                    path = Path(work.upstream.summary.get("path") or "")
+                    window[pool.submit(ingester.upload, path)] = (work, summary)
+                done, _ = wait(window, return_when=FIRST_COMPLETED)
+                for future in done:
+                    work, summary = window.pop(future)
+                    try:
+                        artifact = future.result()
+                    except StopRun as exc:
+                        # Not this article's failure: recording one would spend every
+                        # remaining article's retries. This article and the rest stay pending.
+                        if not self._stopped:
+                            self._stopped = f"{type(exc).__name__}: {exc}"
+                            logger.error("upload stopped: %s; %d article(s) left pending",
+                                         self._stopped, len(queue) + len(window) + 1)
+                        continue
+                    except Exception as exc:  # noqa: BLE001 - this article's failure
+                        logger.warning("upload failed for %s: %s", work.article_id, exc)
+                        yield from self._record(work, Outcome.failure(
+                            work.article_id, self.name, "",
+                            f"{type(exc).__name__}: {short_reason(str(exc))}",
+                            fingerprint=work.fingerprint, summary=summary))
+                        continue
+                    yield from self._record(work, self._outcome(work, artifact, summary, learned))
 
     def _summary(self, synced: Optional[Artifact],
                  last: Optional[Dict[str, Any]]) -> Dict[str, Any]:

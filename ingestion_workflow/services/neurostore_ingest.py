@@ -60,6 +60,7 @@ import json
 import logging
 import os
 import re
+import threading
 import time
 from enum import Enum
 from pathlib import Path
@@ -370,6 +371,8 @@ class NeurostoreIngester:
         self._sleep = sleep or time.sleep
         self._clock = clock or time.monotonic
         self._down: Optional[str] = None
+        #: One refresh at a time when several uploads run at once.
+        self._token_lock = threading.Lock()
         #: The tenant, audience, client id and secret a token is asked for with; the token
         #: and when it expires, none until the first upload asks for one.
         self._grant: Optional[Tuple[str, str, str, str]] = None
@@ -473,9 +476,8 @@ class NeurostoreIngester:
             retry_after = None
             unsendable = False
             record.pop("http_status", None)
-            if self._clock() >= self._expires - REFRESH_MARGIN:
-                self._ask_token()
-            headers = {"Authorization": f"Bearer {self._token}",
+            token = self._current_token()
+            headers = {"Authorization": f"Bearer {token}",
                        "Content-Type": "application/json"}
             try:
                 response = self._client.post(self.url, content=body, headers=headers)
@@ -501,7 +503,7 @@ class NeurostoreIngester:
                     refreshed = True
                     attempt -= 1
                     attempts[-1]["token_refused"] = True
-                    self._ask_token()
+                    self._current_token(refused=token)
                     continue
                 else:
                     error = self._error(response)
@@ -529,6 +531,15 @@ class NeurostoreIngester:
         # Up, and failing on this paper every time: its failure, not an outage, so the
         # papers after it are still sent.
         return self._finish(out, record, Result.BLOCKED, error=error)
+
+    def _current_token(self, refused: Optional[str] = None) -> str:
+        """The token to send: asked of Auth0 when it is about to expire or `refused` (the one
+        a 401 answered) is still the current one, by one upload at a time."""
+        with self._token_lock:
+            if self._clock() >= self._expires - REFRESH_MARGIN or (
+                    refused is not None and refused == self._token):
+                self._ask_token()
+            return self._token
 
     def _ask_token(self) -> None:
         """A token for the client, from its Auth0 tenant: NeurostoreAuthError when the
