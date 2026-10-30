@@ -1003,6 +1003,11 @@ def test_a_point_printed_in_decorated_cells_is_placed_in_its_row(table, points):
         (["IFG", "-54,", "6,", "29"], (-54, 6, 29)),               # a triple split by commas
         (["V1", "-10 ± 3", "-77 ± 2", "0 ± 4"], (-10, -77, 0)),    # mean ± SD
         (["OFA", "36 (2)", "-70 (3)", "-15 (2)"], (36, -70, -15)),  # mean (SEM)
+        # A comma-separated triple inside a cell's text, or one of several in it.
+        (["Seed", "Cluster 1: 56, -46, 18 (x,y,z)", "188"], (56, -46, 18)),
+        (["PCC", "2, -56,32 8, -56, 24", "0.014"], (8, -56, 24)),
+        (["FEF", "-23 , 24 , 44 , 22 , 26 , 45"], (22, 26, 45)),
+        (["STG", "-46 ± 5, -13 ± 4, 9 ± 7"], (-46, -13, 9)),
     ],
 )
 def test_a_point_printed_in_decorated_cells_of_one_row_is_placed(tmp_path, cells, point):
@@ -1018,6 +1023,8 @@ def test_a_point_printed_in_decorated_cells_of_one_row_is_placed(tmp_path, cells
         (["MFG", "L47", "A11", "S19"], (47, 11, 19)),
         # A number with letters is not read: `5 mA` is a current, `BA6` an area.
         (["M1", "5 mA", "BA6", "1"], (5, 6, 1)),
+        # Three numbers of a longer comma list are not a point.
+        (["Ages", "2, 4, 5, 7, 9"], (5, 7, 9)),
         # One hemisphere's x of a pair (`7/-8`) is not a point's x on its own.
         (["Th", "7/-8", "-11", "2"], (-8, -11, 2)),
     ],
@@ -1026,6 +1033,20 @@ def test_a_row_does_not_print_a_point_it_only_resembles(tmp_path, cells, point):
     parse, omitted = _decorated_parse(_html_grid(tmp_path, [cells]), [point])
     assert parse.analyses == []
     assert [o.reason for o in omitted] == ["no row of the table prints its points"]
+
+
+def test_a_point_the_cell_readers_place_keeps_its_cell_when_a_decorated_copy_is_printed_too(
+    tmp_path,
+):
+    """A row printing one peak twice (ngprwem7jhqy, Table 1): the triple cell the cell readers
+    find stays the point's cell, not the decorated copy the new readers would find first."""
+    from types import SimpleNamespace
+
+    from ingestion_workflow.services.paper_parse import _candidates
+
+    row = ["Left pars triangularis", "-52", "34", "4 (6.0)", "-52 34 4 (5.4)"]
+    grid = _html_grid(tmp_path, [row])
+    assert _candidates(SimpleNamespace(x=-52, y=34, z=4), grid) == [(0, 4)]
 
 
 def test_two_names_on_the_same_cells_are_both_kept_and_only_a_true_duplicate_is_omitted(tmp_path):

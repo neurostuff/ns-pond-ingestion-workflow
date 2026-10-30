@@ -120,14 +120,19 @@ class _Table:
     _index: Optional[list] = field(default=None, repr=False)
 
     def index(self) -> list:
-        """Per body row, its numbers and the triples printed in one cell, read once."""
+        """Per body row, read once: its numbers and the triples printed in one cell, as the
+        cell readers read them, then the same with decorated cells (`_coordinate_number`) and
+        comma-separated triples (`_comma_triples`) read too."""
         if self._index is None:
+            from nspond_tables.grid import as_number
             from nspond_tables.read import triples_in
 
             self._index = [
                 (
-                    [(_coordinate_number(text), col) for text, col in cells],
+                    [(as_number(text), col) for text, col in cells],
                     [(trio, col) for text, col in cells for trio in triples_in(text)],
+                    [(_coordinate_number(text), col) for text, col in cells],
+                    [(trio, col) for text, col in cells for trio in _comma_triples(text)],
                 )
                 for cells in self.rows
             ]
@@ -155,6 +160,35 @@ def _coordinate_number(text: str) -> Optional[float]:
         return number
     found = _DECORATED.match(str(text).strip().replace("\u2212", "-").replace("\u2013", "-"))
     return float(found.group(1)) if found else None
+
+
+#: What follows a number to qualify it rather than add a value: a dispersion (`-46 ± 5`) or a
+#: bracketed group after it (`34.2, -64.8, -16.1 (4.5, 7.9, 6.0)`, `-36 (-36)`).
+_QUALIFIER = re.compile(r"(?<=[\d.])\s*(?:±\s*[\d.]+|\([^()]*\)|\[[^\[\]]*\])")
+_AXIS = r"[-+]?\d+(?:\.\d+)?"
+#: A run of numbers a cell separates by commas (`and` may lead the last), wherever in the cell;
+#: not after a minus set apart (`(- 48,7,26)`) or a bracket a PDF left for one (`)60, 3, 36`).
+_COMMA_RUN = re.compile(
+    rf"(?<![\w.)])(?<!-\s)(?<!-){_AXIS}(?:\s*,\s*(?:and\s+)?{_AXIS})+(?![\w.])"
+)
+
+
+def _comma_triples(text: str) -> List[Tuple[float, float, float]]:
+    """The triples a cell prints as comma-separated runs of three numbers, or of a multiple of
+    three, wherever in the cell (`Cluster 1: 56, -46, 18 (x,y,z)`, `peak at [44, -36, 46]`,
+    `-23, 24, 44, 22, 26, 45`), qualifiers left out, that could be brain coordinates. The cell
+    readers take a triple only when it is the whole cell or bracketed; a run of another
+    length (`2, 4, 5, 7, 9`) is a list, not points."""
+    from nspond_tables.read import in_head
+
+    s = _QUALIFIER.sub("", str(text).replace("\u2212", "-").replace("\u2013", "-"))
+    out = []
+    for run in _COMMA_RUN.finditer(s):
+        values = [float(v) for v in re.findall(_AXIS, run.group())]
+        if len(values) % 3 == 0:
+            trios = [tuple(values[i : i + 3]) for i in range(0, len(values), 3)]
+            out += [trio for trio in trios if in_head(trio)]
+    return out
 
 
 #: Characters a table cell and the text print differently: superscript digits.
@@ -996,27 +1030,35 @@ def _table_analyses(
 
 
 def _candidates(coordinate, grid: _Table) -> List[Tuple[int, int]]:
-    """Every (body row, x column) printing this point's x, y, z; one per row."""
+    """Every (body row, x column) printing this point's x, y, z; one per row.
+
+    Decorated cells and comma-separated triples are read only for a point no row prints
+    otherwise, so that they never move a point the cell readers place.
+    """
     xyz = (coordinate.x, coordinate.y, coordinate.z)
 
     def same(trio) -> bool:
         return all(v is not None and abs(a - v) <= _SAME_NUMBER for a, v in zip(xyz, trio))
 
-    found = []
-    for index, (numbers, triples) in enumerate(grid.index()):
-        hit = next(
-            (
-                numbers[i][1]
-                for i in range(len(numbers) - 2)
-                if same([n for n, _ in numbers[i : i + 3]])
-            ),
-            None,
-        )
-        if hit is None:
-            hit = next((col for trio, col in triples if same(trio)), None)
-        if hit is not None:
-            found.append((index, hit))
-    return found
+    def search(numbers_at: int, triples_at: int) -> List[Tuple[int, int]]:
+        found = []
+        for index, read in enumerate(grid.index()):
+            numbers, triples = read[numbers_at], read[triples_at]
+            hit = next(
+                (
+                    numbers[i][1]
+                    for i in range(len(numbers) - 2)
+                    if same([n for n, _ in numbers[i : i + 3]])
+                ),
+                None,
+            )
+            if hit is None:
+                hit = next((col for trio, col in triples if same(trio)), None)
+            if hit is not None:
+                found.append((index, hit))
+        return found
+
+    return search(0, 1) or search(2, 3)
 
 
 def _place_all(
