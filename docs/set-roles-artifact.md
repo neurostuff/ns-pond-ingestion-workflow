@@ -21,7 +21,13 @@ Each is configured by its server and served model name:
 role_model_table:
   endpoint: http://localhost:8372/v1   # OpenAI-compatible server, up to /v1
   model: role-table                    # its served model name
+  path: /data/james/agents/x1-drift/merged-table   # optional: the checkpoint it serves
 ```
+
+The fingerprint names the checkpoint the server loads (its model card's `root`, with the
+weights' digest when that path is readable). With `path`, the same identity is known while the
+server is down: the articles it labelled stay fresh, so `upload` (which checks roles is fresh)
+needs no GPU, and an article not yet labelled waits for the server.
 
 Each set is one request, built as the models were trained and evaluated
 (`services/set_roles/served_prompt.py`: the instruction, template and JSON schema, and the context
@@ -73,7 +79,7 @@ origin's model, `role_values` is a digest of every set's decided `role`, `anchor
 stage read.
 
 **Blocked, not failed.** When a set's origin has no usable model (not configured, its server
-not listing it or not reachable when the stage is planned, or its prompt built on another context version), the articles with sets of that
+not listing it or not reachable when the stage is planned with no `path`, or its prompt built on another context version), the articles with sets of that
 origin are not attempted: the plan counts them as blocked, with the reason (for example
 `no prose role model is configured (role_model_prose)`), and logs the reason once. Nothing is
 recorded for them, so no retry is used up, and they are planned on the first run with the model

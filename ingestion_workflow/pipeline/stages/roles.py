@@ -353,6 +353,8 @@ class RolesStage:
         self._classifiers: Dict[str, Any] = {}
         self._lock = threading.Lock()
         self._said: Set[str] = set()
+        #: The origins whose server is down, its model known from its `path`: why it cannot label.
+        self._unserved: Dict[str, str] = {}
         #: Why the stage stopped in this run: no classifier is loaded after it, and none asks.
         self._stopped: Optional[str] = None
 
@@ -370,8 +372,9 @@ class RolesStage:
     def model_state(self, origin: str) -> Tuple[Optional[str], Optional[str]]:
         """(The source its sets are recorded with, None) of the origin's model; or (None, why).
 
-        The model must be listed by its server now, and the prompt it was trained
-        with must be for the contexts this code builds.
+        The model must be listed by its server now, or, with the server down, have its
+        checkpoint `path` configured (then it is known but cannot label: `_unserved`); and
+        the prompt it was trained with must be for the contexts this code builds.
         """
         setting = MODEL_SETTINGS[origin]
         served = getattr(self.settings, setting, None)
@@ -386,7 +389,13 @@ class RolesStage:
         try:
             listed = served_models(served.endpoint)
         except Exception as exc:  # noqa: BLE001 - recorded as the articles' block
-            return None, f"{where} cannot be reached: {type(exc).__name__}: {exc}"
+            down = f"{where} cannot be reached: {type(exc).__name__}: {exc}"
+            if not served.path:
+                return None, down
+            # The checkpoint on disk is the one the server loads: the same identity.
+            self._unserved[origin] = down
+            return f"{served.model}@{PROMPT.version}+{model_identity({'root': served.path})[:12]}", None
+        self._unserved.pop(origin, None)
         card = next((c for c in listed if c.get("id") == served.model), None)
         if card is None:
             names = [c.get("id") for c in listed]
@@ -407,8 +416,8 @@ class RolesStage:
                     raise ModelUnavailable(self._stopped)
                 if origin not in self._classifiers:
                     source, reason = self.model_state(origin)
-                    if source is None:
-                        raise ModelUnavailable(reason)
+                    if source is None or origin in self._unserved:
+                        raise ModelUnavailable(reason or self._unserved[origin])
                     served = getattr(self.settings, MODEL_SETTINGS[origin])
                     self._classifiers[origin] = ServedClassifier(
                         served.endpoint, served.model, source=source
@@ -513,6 +522,11 @@ class RolesStage:
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
                 plan.fresh += 1
+                continue
+            # Known from its checkpoint, but only a server labels: the article waits.
+            down = [self._unserved[o] for o in self.needs(parent) if o in self._unserved]
+            if down:
+                plan.wait(down[0], ref.id)
                 continue
             count, last = attempts.get(ref.id, (0, None))
             if not ctx.should_attempt(existing, count, last, self.name):
