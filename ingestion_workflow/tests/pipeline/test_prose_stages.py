@@ -2222,6 +2222,34 @@ def test_a_failed_table_reading_holds_in_resolve_and_in_the_upload_gate_alike(en
     assert "APIConnectionError: Connection error." in assessed.reason
 
 
+@pytest.mark.parametrize("tables", [
+    pytest.param(lambda ref: "no coordinate tables", id="skipped, no coordinate tables"),
+    pytest.param(lambda ref: _analyses(ref, tables=0), id="read, none held"),
+])
+def test_an_empty_table_reading_older_than_a_triage_that_passes_tables_only_holds(
+        env, tables, evidence, monkeypatch):
+    """emcznvwqpaor: analyses skipped it for "no coordinate tables" on 09-30, triage ran again
+    on 10-15 and passed two tables, and resolve took the article back from Neurostore before
+    analyses read them. An empty reading made before a triage that passes tables is not the
+    tables' answer: resolve and the upload gate hold until the analyses stage reads them."""
+    from ingestion_workflow.pipeline.upstream import Assessor, Verdict
+
+    settings, catalog, path = env
+    ref = catalog.register(Identifier(pmid="99"), evidence)
+    _empty_re_read(catalog, ref, analyses=tables(ref), prose_analyses=0)
+    # triage ran again later, as it did days later in production
+    monkeypatch.setattr("ingestion_workflow.catalog.store.utcnow", lambda: "2999-01-01T00:00:00+00:00")
+    catalog.record([Outcome(article_id=ref.id, stage="triage", source="", fingerprint="tr-2",
+                            payload={"tables": [{"table_id": "t2", "passes": True}]},
+                            summary={"tables": 1, "passed": 1})])
+    ctx = Context(settings, catalog)
+    plan, outcomes = _run(ResolveStage(settings), ctx, catalog, ref)
+    assert (plan.blocked, plan.pending, outcomes) == (1, [], [])
+    assert "triage passed tables since the analyses stage last ran" in " ".join(plan.reasons)
+    assert catalog.artifacts([ref.id], "resolve")[ref.id][""].status is Status.OK
+    assert Assessor(settings).assess(ctx, [ref])[ref.id].verdict is Verdict.HOLD
+
+
 def test_tables_read_whole_and_empty_are_known_to_hold_nothing(env, monkeypatch, evidence):
     settings, catalog, path = env
     ref = catalog.register(Identifier(pmid="94"), evidence)
