@@ -88,14 +88,20 @@ def test_a_nul_before_a_digit_is_read_as_the_minus_it_was(raw, repaired):
     assert normalize_text_tokens(raw) == repaired
 
 
-@pytest.mark.parametrize("left", [
-    # nz6cotdhpgtx, ccv4fmkvh6q2: with a space it is a binary minus or an approximation
-    "orthogonal to (n \x00 1) lead vectors", "(AV-1451: median \x00 3 months)",
+@pytest.mark.parametrize("raw, read", [
+    # nz6cotdhpgtx, ccv4fmkvh6q2: with a space it was a binary minus or an approximation,
+    # read as a minus like the table cells' "| \x00 9 |"; Postgres stores no NUL
+    ("orthogonal to (n \x00 1) lead vectors", "orthogonal to (n -1) lead vectors"),
+    ("(AV-1451: median \x00 3 months)", "(AV-1451: median -3 months)"),
     # xd5on45nm3no: not before a digit
-    "TRP\x00 channels", CLEAN_CD6FEP6C7MXV,
+    ("TRP\x00 channels", "TRP- channels"),
 ])
-def test_a_nul_not_right_before_a_digit_and_a_sound_text_are_left(left):
-    assert normalize_text_tokens(left) == left
+def test_a_nul_anywhere_else_is_read_as_a_minus_too(raw, read):
+    assert normalize_text_tokens(raw) == read
+
+
+def test_a_sound_text_is_left():
+    assert normalize_text_tokens(CLEAN_CD6FEP6C7MXV) == CLEAN_CD6FEP6C7MXV
 
 
 def test_a_text_whose_only_misreading_is_the_nul_minus_is_repaired_not_set_aside():

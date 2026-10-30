@@ -151,6 +151,11 @@ def test_resolve_pdf_candidates_survives_a_failing_provider(monkeypatch, tmp_pat
         ("GLYPH<0>42", "-42"),
         ("−37", "-37"),
         ("- 42", "-42"),
+        # NULs as the corpus's PDF texts hold them (6upywhvq3wnq, ...): every one a minus
+        ("[t(42) = \x00.06, p = .55]", "[t(42) = -.06, p = .55]"),
+        ("| \x00 9        |  1531 | \x00 0.68 |", "| -9        |  1531 | -0.68 |"),
+        ("x¼\x000.3, y¼28", "x¼-0.3, y¼28"),
+        ("received CS\x00 and TRP\x00, in COMBINED\x00REST", "received CS- and TRP-, in COMBINED-REST"),
         ("plain text", "plain text"),
         (None, None),
     ],
