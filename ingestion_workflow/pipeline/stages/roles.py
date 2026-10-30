@@ -494,29 +494,29 @@ class RolesStage:
             if "text" in self.needs(parent) and read_from_bad_page(
                     prose.get(ref.id, {}).get(""), downloads.get(ref.id, {}),
                     extracted.get(ref.id, {})):
-                plan.block(f"prose {READ_FROM_BAD_PAGE}")
+                plan.block(ref, f"prose {READ_FROM_BAD_PAGE}")
                 continue
             # Not a failure: nothing is attempted, so no retry is used up, and
             # the article is planned on the first run with the model configured.
             lacking = [missing[o] for o in self.needs(parent) if o in missing]
             if lacking:
-                plan.wait(lacking[0], ref.id)
+                plan.wait(ref, lacking[0])
                 continue
             read = None
             if "text" in self.needs(parent):
                 read, stale = self.prose_read(prose.get(ref.id, {}).get(""),
                                               passages.get(ref.id, {}).get(""), parent)
                 if stale:
-                    plan.block(stale)
+                    plan.block(ref, stale)
                     continue
             fp = self.fingerprint_for(parent, models, read)
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
-                plan.fresh += 1
+                plan.add_fresh(ref)
                 continue
             count, last = attempts.get(ref.id, (0, None))
             if not ctx.should_attempt(existing, count, last, self.name):
-                plan.permanent += 1
+                plan.add_permanent(ref)
                 continue
             plan.pending.append(Work(ref=ref, source="", fingerprint=fp, upstream=parent))
         return plan

@@ -801,12 +801,15 @@ def environment_profile(
 def load_settings(
     yaml_path: Optional[Path] = None,
     overrides: Optional[Dict[str, Any]] = None,
+    *,
+    create_directories: bool = True,
 ) -> Settings:
     """
     Load settings with proper precedence handling.
 
     Precedence, highest first: overrides (CLI) > YAML > environment >
-    environment profile > field defaults.
+    environment profile > field defaults. `create_directories=False` leaves the
+    disk as it is, for commands that only read.
     """
     overrides = overrides or {}
     yaml_data = _read_yaml_mapping(Path(yaml_path)) if yaml_path is not None else {}
@@ -817,5 +820,6 @@ def load_settings(
     if overrides:
         settings = settings.merge_overrides(overrides)
 
-    settings.ensure_directories()
+    if create_directories:
+        settings.ensure_directories()
     return settings

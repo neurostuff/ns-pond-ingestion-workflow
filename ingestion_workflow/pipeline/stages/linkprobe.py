@@ -46,6 +46,8 @@ REPOSITORY_NAMES = {"osf": "OSF", "openneuro": "OpenNeuro"}
 class LinkprobeStage:
     name = "linkprobe"
     requires = "links"
+    #: No stage waits for it: sync writes what it saw of each link, when it has looked.
+    gates = False
 
     def __init__(self, settings) -> None:
         self.settings = settings
@@ -84,16 +86,16 @@ class LinkprobeStage:
         for ref in refs:
             links = found.get(ref.id)
             if links is None:
-                plan.blocked += 1
+                plan.block(ref)
                 continue
             fp = self.fingerprint_for((links.summary or {}).get("probe") or [])
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp) and not recheck_due(ctx, existing):
-                plan.fresh += 1
+                plan.add_fresh(ref)
                 continue
             count, last = attempts.get(ref.id, (0, None))
             if not ctx.should_attempt(existing, count, last, self.name):
-                plan.permanent += 1
+                plan.add_permanent(ref)
                 continue
             plan.pending.append(Work(ref=ref, source="", fingerprint=fp, upstream=links))
         return plan
