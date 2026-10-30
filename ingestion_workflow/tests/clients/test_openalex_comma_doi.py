@@ -18,6 +18,10 @@ from ingestion_workflow.models.ids import Identifier
 
 COMMA = "10.1080/08,959,420.2016.1161693"
 PLAIN = "10.1002/hbm.24703"
+#: A DOI OpenAlex refuses for a reason no rule here foresees: it answered 400 to the
+#: reflist stage's pools of 9,652 and 11,032 cited works on 2026-10-30, and no single DOI
+#: of them was refused alone when asked again.
+POISON = "10.9999/refused.by.openalex"
 
 
 def _work(doi, year):
@@ -37,7 +41,9 @@ class _OpenAlexHandler(BaseHTTPRequestHandler):
         single = unquote(url.path).partition("/works/doi:")[2] or None
         query = parse_qs(url.query).get("filter", [None])[0]
         ASKED.append((query, single))
-        if single:
+        if POISON in (single or query or ""):
+            self._answer(400, {"error": "Invalid query parameters error."})
+        elif single:
             work = WORKS.get(single)
             self._answer(200 if work else 404, work or {"error": "not found"})
         elif any(":" not in part for part in query.split(",")):
@@ -89,3 +95,18 @@ def test_a_batch_of_comma_dois_alone_sends_no_filter(client):
     client.get_cited_works([COMMA])
 
     assert ASKED == [(None, COMMA)]
+
+
+def test_a_doi_openalex_refuses_costs_only_itself(client):
+    """The refused batch is halved down to the DOI OpenAlex refuses alone; the rest are
+    answered, and the refused one is left out rather than failing every cited work."""
+    found = client.get_cited_works([PLAIN, POISON, COMMA])
+
+    assert set(found) == {PLAIN, COMMA}
+    assert (f"doi:{PLAIN}", None) in ASKED and (f"doi:{POISON}", None) in ASKED
+
+
+def test_metadata_and_retractions_keep_the_rest_of_a_refused_batch(client):
+    assert client.get_retractions([PLAIN, POISON]) == {PLAIN: False}
+    found = client.get_metadata([Identifier(doi=PLAIN), Identifier(doi=POISON)])
+    assert [m.publication_year for m in found.values()] == [2019]

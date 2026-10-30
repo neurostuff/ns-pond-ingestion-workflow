@@ -20,8 +20,8 @@ from ingestion_workflow.models import Identifier, Identifiers
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
 from ingestion_workflow.models.notices import Correction, PartialAnswer, corrections_from_pubmed
 from ingestion_workflow.utils import authors as author_ids
-from ingestion_workflow.utils.http import Pacer, retry_transient, transient
-from ingestion_workflow.utils.isolation import parsed_each
+from ingestion_workflow.utils.http import Pacer, refused, retry_transient, transient
+from ingestion_workflow.utils.isolation import error_text, halving, parsed_each
 from ingestion_workflow.utils.pmcid import normalize_pmcid
 
 logger = logging.getLogger(__name__)
@@ -289,10 +289,11 @@ class PubMedClient:
         ]
 
         for batch in batches:
-            params = self._build_params(id_type, batch)
-            payload = self._request_idconv(params)
-            records = payload.get("records", [])
-            self._apply_records(id_type, identifiers, records)
+            # a batch the converter refuses is halved down to the ids it refuses alone
+            answers, _ = halving(batch, lambda part: self._request_idconv(
+                self._build_params(id_type, part)), refused)
+            for _, payload in answers:
+                self._apply_records(id_type, identifiers, payload.get("records", []))
 
         return identifiers
 
@@ -586,8 +587,10 @@ class PubMedClient:
         for i in range(0, len(pmids), batch_size):
             batch = pmids[i : i + batch_size]
             try:
-                response_data = self._request_efetch(batch)
-                unreadable.update(self._process_efetch_response(response_data, pmid_map, results))
+                answers, alone = halving(batch, self._request_efetch, refused)
+                for _, response_data in answers:
+                    unreadable.update(self._process_efetch_response(response_data, pmid_map, results))
+                failures += list(alone.values())  # each refused alone: no answer about it
             except Exception as exc:  # noqa: BLE001 - the other batches are still asked
                 failures.append(exc)
 
@@ -609,7 +612,10 @@ class PubMedClient:
         found: Dict[str, PubMedSummary] = {}
         pmids = list(dict.fromkeys(str(p) for p in pmids if p))
         for i in range(0, len(pmids), IDCONV_BATCH_SIZE):
-            found.update(self._summary_batch(pmids[i : i + IDCONV_BATCH_SIZE]))
+            # a refused batch is halved down to the PMIDs esummary refuses alone, left out
+            answers, _ = halving(pmids[i : i + IDCONV_BATCH_SIZE], self._summary_batch, refused)
+            for _, summaries in answers:
+                found.update(summaries)
         return found
 
     def _summary_batch(self, pmids: List[str]) -> Dict[str, PubMedSummary]:
@@ -659,9 +665,11 @@ class PubMedClient:
         pmcids = list(dict.fromkeys(str(p) for p in pmcids if p))
         for i in range(0, len(pmcids), IDCONV_BATCH_SIZE):
             batch = pmcids[i : i + IDCONV_BATCH_SIZE]
-            payload = self._request_idconv(self._build_params("pmcid", batch))
-            found.update(parsed_each(payload.get("records") or [], _pmc_record,
-                                     "PMC record", key=lambda record: record.get("pmcid"))[0])
+            answers, _ = halving(batch, lambda part: self._request_idconv(
+                self._build_params("pmcid", part)), refused)
+            for _, payload in answers:
+                found.update(parsed_each(payload.get("records") or [], _pmc_record,
+                                         "PMC record", key=lambda record: record.get("pmcid"))[0])
         return found
 
     def pmids_for_title(self, title: str) -> List[str]:
@@ -694,14 +702,19 @@ class PubMedClient:
         found: List[str] = []
         dois = list(dict.fromkeys(d for d in dois if d))
         for i in range(0, len(dois), DOI_SEARCH_BATCH_SIZE):
-            term = " OR ".join(f'"{d}"[doi]' for d in dois[i : i + DOI_SEARCH_BATCH_SIZE])
-            params = [("db", "pubmed"), ("term", term), ("retmode", "json"),
-                      ("retmax", str(ESEARCH_MAX_RESULTS)), ("email", self.email),
-                      ("tool", self.tool)]
-            params.append(("api_key", self.api_key))
-            result = self._request_json(self.ESEARCH_URL, params).get("esearchresult") or {}
-            found += [str(p) for p in result.get("idlist") or []]
+            # a refused search is halved down to the DOIs it refuses alone, which find nothing
+            answers, _ = halving(dois[i : i + DOI_SEARCH_BATCH_SIZE], self._doi_search, refused)
+            found += [pmid for _, pmids in answers for pmid in pmids]
         return list(dict.fromkeys(found))
+
+    def _doi_search(self, dois: List[str]) -> List[str]:
+        term = " OR ".join(f'"{d}"[doi]' for d in dois)
+        params = [("db", "pubmed"), ("term", term), ("retmode", "json"),
+                  ("retmax", str(ESEARCH_MAX_RESULTS)), ("email", self.email),
+                  ("tool", self.tool)]
+        params.append(("api_key", self.api_key))
+        result = self._request_json(self.ESEARCH_URL, params).get("esearchresult") or {}
+        return [str(p) for p in result.get("idlist") or []]
 
     def get_notices(self, pmids: Sequence[str]) -> Dict[str, Tuple[List[Correction], bool]]:
         """`(corrections, is_retraction_notice)` for each PMID PubMed returned.
@@ -716,10 +729,15 @@ class PubMedClient:
         pmids = list(dict.fromkeys(str(p) for p in pmids if p))
         for i in range(0, len(pmids), IDCONV_BATCH_SIZE):
             try:
-                response = self._request_efetch(pmids[i : i + IDCONV_BATCH_SIZE])
+                answers, alone = halving(pmids[i : i + IDCONV_BATCH_SIZE], self._request_efetch,
+                                         refused)
             except Exception as exc:  # noqa: BLE001 - carries the earlier batches
                 raise PartialAnswer(str(exc), found, (exc,), unreadable) from exc
-            articles = (response.get("PubmedArticleSet") or {}).get("PubmedArticle")
+            # a PMID refused alone cannot be said to have no notices
+            unreadable.update({pmid: error_text(exc) for pmid, exc in alone.items()})
+            articles = [a for _, response in answers
+                        for a in self._ensure_list((response.get("PubmedArticleSet") or {})
+                                                   .get("PubmedArticle"))]
 
             def parse(article):
                 pmid = self._extract_pmid(article) if isinstance(article, dict) else None
