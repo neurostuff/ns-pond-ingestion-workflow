@@ -1347,24 +1347,28 @@ class Catalog:
         predates the move in `_merge` leaves its rows on the retired id. A table
         both sides excluded shows the survivor's own row.
         """
-        merges = self._merges()
-        live = merges.live
         if article_ids is None:
+            live = self._merges().live
             rows = self._conn.execute(
                 "SELECT article_id, table_id, reason, note, created_at FROM exclusions"
             ).fetchall()
         else:
+            # The asked articles' own rows, and the few rows left on retired ids, followed
+            # to their survivors one by one: not every merge in the catalog per call.
+            live = self._follow_merge
             wanted = set(article_ids)
-            sources = list(wanted) + [
-                retired for retired in merges.retired_into(wanted) if retired not in wanted
-            ]
             rows = []
-            for chunk in _chunks(sources, 500):
+            for chunk in _chunks(list(wanted), 500):
                 rows += self._conn.execute(
                     "SELECT article_id, table_id, reason, note, created_at FROM exclusions "
                     "WHERE article_id IN (%s)" % ",".join("?" * len(chunk)),
                     chunk,
                 ).fetchall()
+            rows += [row for row in self._conn.execute(
+                "SELECT e.article_id, e.table_id, e.reason, e.note, e.created_at "
+                "FROM exclusions e JOIN articles a ON a.id = e.article_id "
+                "WHERE a.merged_into IS NOT NULL"
+            ).fetchall() if row["article_id"] not in wanted and live(row["article_id"]) in wanted]
         out: Dict[str, Dict[str, Dict[str, str]]] = {}
         for row in sorted(rows, key=lambda r: r["article_id"] != live(r["article_id"])):
             out.setdefault(live(row["article_id"]), {}).setdefault(row["table_id"], {
