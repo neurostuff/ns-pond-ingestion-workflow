@@ -88,9 +88,13 @@ def normalize_url(url: Optional[str]) -> Optional[str]:
                         r"|[a-z0-9-]+(?:\.[a-z0-9-]+)+/)", url):
             return None
         url = "https://" + url
-    parts = urlsplit(url)
+    try:
+        parts = urlsplit(url)
+        hostname = parts.hostname
+    except ValueError:  # "http://[insert link here]": not a URL urllib can read
+        return None
     scheme = parts.scheme.lower()
-    if scheme not in ("http", "https") or not parts.hostname:
+    if scheme not in ("http", "https") or not hostname:
         return None
     netloc = parts.netloc.lower()
     if netloc.startswith("www."):
