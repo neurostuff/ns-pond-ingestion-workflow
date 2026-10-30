@@ -37,6 +37,18 @@ logger = logging.getLogger(__name__)
 
 OPENALEX_BATCH_LOOKUP_SIZE = 100  # the most a page holds, and the most values one OR filter takes
 OPENALEX_RETRACTION_BATCH_SIZE = 50  # the most DOIs one filter accepts
+
+
+def _or_filter(field: str, values: List[str]) -> Optional[str]:
+    """`field:a|b|c` over the values one OR filter can carry, or None when none can.
+
+    A comma separates filters and a pipe values, so a value holding either (a Crossref
+    deposit such as 10.1080/08,959,420.2016.1161693) splits the filter, and OpenAlex
+    answers the whole batch 400. Such a DOI is left to the single lookup, where
+    the caller makes one.
+    """
+    kept = [v for v in values if "," not in v and "|" not in v]
+    return f"{field}:{'|'.join(kept)}" if kept else None
 OPENALEX_SEARCH_PAGE_SIZE = 100  # the most a page holds; 200 is a deprecated legacy maximum
 OPENALEX_REQUEST_LIMIT = 10  # polite pool: 10 req / second
 _MIN_REQUEST_INTERVAL = 1 / OPENALEX_REQUEST_LIMIT
@@ -339,8 +351,11 @@ class OpenAlexClient:
             for index in range(0, len(values), OPENALEX_BATCH_LOOKUP_SIZE)
         ]
         for batch in batches:
+            query = _or_filter(id_type, batch)
+            if query is None:
+                continue
             params = {
-                "filter": f"{id_type}:{'|'.join(batch)}",
+                "filter": query,
                 "per_page": str(OPENALEX_BATCH_LOOKUP_SIZE),
                 "mailto": self.email,
                 "select": "ids",
@@ -396,8 +411,11 @@ class OpenAlexClient:
             ]
             for index in range(0, len(values), OPENALEX_BATCH_LOOKUP_SIZE):
                 batch = values[index : index + OPENALEX_BATCH_LOOKUP_SIZE]
+                query = _or_filter(id_type, batch)
+                if query is None:
+                    continue
                 params = {
-                    "filter": f"{id_type}:{'|'.join(batch)}",
+                    "filter": query,
                     "per_page": str(OPENALEX_BATCH_LOOKUP_SIZE),
                     "mailto": self.email,
                     "select": "ids,best_oa_location,locations",
@@ -496,9 +514,10 @@ class OpenAlexClient:
             values = list(wanted)
             for index in range(0, len(values), OPENALEX_BATCH_LOOKUP_SIZE):
                 batch = values[index : index + OPENALEX_BATCH_LOOKUP_SIZE]
-                payload = self._request_openalex(
+                query = _or_filter(id_type, batch)
+                payload = {} if query is None else self._request_openalex(
                     {
-                        "filter": f"{id_type}:{'|'.join(batch)}",
+                        "filter": query,
                         "per_page": str(OPENALEX_BATCH_LOOKUP_SIZE),
                         "mailto": self.email,
                         "select": _METADATA_FIELDS,
@@ -532,9 +551,10 @@ class OpenAlexClient:
         wanted = sorted({d for d in (normalize_doi(d) for d in dois) if d})
         for index in range(0, len(wanted), OPENALEX_BATCH_LOOKUP_SIZE):
             batch = wanted[index : index + OPENALEX_BATCH_LOOKUP_SIZE]
-            payload = self._request_openalex(
+            query = _or_filter("doi", batch)
+            payload = {} if query is None else self._request_openalex(
                 {
-                    "filter": f"doi:{'|'.join(batch)}",
+                    "filter": query,
                     "per_page": str(OPENALEX_BATCH_LOOKUP_SIZE),
                     "mailto": self.email,
                     "select": "ids,publication_year,authorships",
@@ -565,10 +585,11 @@ class OpenAlexClient:
         wanted = sorted({d for d in (normalize_doi(d) for d in dois) if d})
         for index in range(0, len(wanted), OPENALEX_RETRACTION_BATCH_SIZE):
             batch = wanted[index : index + OPENALEX_RETRACTION_BATCH_SIZE]
+            query = _or_filter("doi", batch)
             try:
-                payload = self._request_openalex(
+                payload = {} if query is None else self._request_openalex(
                     {
-                        "filter": f"doi:{'|'.join(batch)}",
+                        "filter": query,
                         "per_page": str(OPENALEX_RETRACTION_BATCH_SIZE),
                         "mailto": self.email,
                         "select": "doi,is_retracted",
