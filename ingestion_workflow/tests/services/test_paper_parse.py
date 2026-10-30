@@ -949,6 +949,106 @@ def test_of_one_table_stored_twice_the_parse_keeps_the_captioned_copy(tmp_path):
     assert "it repeats a kept analysis" in repeat.reason and "table html-table-5" in repeat.reason
 
 
+def _decorated_parse(grid, points):
+    paper = SimpleNamespace(
+        header=SimpleNamespace(identifiers=IDENTIFIERS),
+        text_sha256="0" * 64,
+        tables=[_bare_table("t", None, grid.headings)],
+    )
+    coordinates = [Coordinate(x=x, y=y, z=z) for x, y, z in points]
+    collection = _collection([Analysis(name="A > B", table_id="t", coordinates=coordinates)])
+    return paper_parse.coordinate_parse(
+        paper, "Results\n", {"t": grid}, {"t": collection},
+        _inputs(readings={"t": "coordinates"}),
+    )
+
+
+def _html_grid(tmp_path, rows):
+    from ingestion_workflow.services.paper_parse import _grid
+
+    body = "".join("<tr>" + "".join(f"<td>{c}</td>" for c in row) + "</tr>" for row in rows)
+    path = tmp_path / "t.html"
+    path.write_text(f"<table><tr><th>Region</th><th>x</th><th>y</th><th>z</th></tr>{body}</table>")
+    return _grid(path)
+
+
+@pytest.mark.parametrize(
+    "table, points",
+    [
+        # PMC8522616 Table 1 prints each axis with its unit and direction: `52 mm (R)`.
+        ("PMC8522616-t1", [(52, 8, 22), (8, -52, 10), (46, -46, -14), (28, 46, -4)]),
+        # PMC8421273 Table 2 prints mean ROI centres with their SD: `43 ± 1.1`.
+        ("PMC8421273-tab2", [(43, -55, -18), (-40, -57, -17)]),
+    ],
+)
+def test_a_point_printed_in_decorated_cells_is_placed_in_its_row(table, points):
+    """Sync once omitted these analyses ("no row of the table prints its points"): the grid
+    read only bare numbers, so a cell that adds a unit, a direction or a dispersion held none."""
+    from pathlib import Path
+
+    from ingestion_workflow.services.paper_parse import _grid
+
+    data = Path(__file__).parents[1] / "data" / "decorated_coordinate_cells"
+    parse, omitted = _decorated_parse(_grid(data / f"{table}.xml"), points)
+    assert omitted == []
+    (kept,) = parse.analyses
+    assert len({cell.row for cell in kept.cells}) == len(points)
+
+
+@pytest.mark.parametrize(
+    "cells, point",
+    [
+        # Shapes from the corpus' omitted analyses (their tables carry no licence to copy).
+        (["SFG", "-36 (-36)", "-21 (-18)", "60 (51)"], (-36, -21, 60)),  # a second analysis's
+        (["IFG", "-54,", "6,", "29"], (-54, 6, 29)),               # a triple split by commas
+        (["V1", "-10 ± 3", "-77 ± 2", "0 ± 4"], (-10, -77, 0)),    # mean ± SD
+        (["OFA", "36 (2)", "-70 (3)", "-15 (2)"], (36, -70, -15)),  # mean (SEM)
+        # A comma-separated triple inside a cell's text, or one of several in it.
+        (["Seed", "Cluster 1: 56, -46, 18 (x,y,z)", "188"], (56, -46, 18)),
+        (["PCC", "2, -56,32 8, -56, 24", "0.014"], (8, -56, 24)),
+        (["FEF", "-23 , 24 , 44 , 22 , 26 , 45"], (22, 26, 45)),
+        (["STG", "-46 ± 5, -13 ± 4, 9 ± 7"], (-46, -13, 9)),
+    ],
+)
+def test_a_point_printed_in_decorated_cells_of_one_row_is_placed(tmp_path, cells, point):
+    parse, omitted = _decorated_parse(_html_grid(tmp_path, [cells]), [point])
+    assert omitted == []
+    assert [c.row for c in parse.analyses[0].cells] == [0]
+
+
+@pytest.mark.parametrize(
+    "cells, point",
+    [
+        # A direction letter is the sign: `L47` is x = -47, so (47, 11, 19) is not printed.
+        (["MFG", "L47", "A11", "S19"], (47, 11, 19)),
+        # A number with letters is not read: `5 mA` is a current, `BA6` an area.
+        (["M1", "5 mA", "BA6", "1"], (5, 6, 1)),
+        # Three numbers of a longer comma list are not a point.
+        (["Ages", "2, 4, 5, 7, 9"], (5, 7, 9)),
+        # One hemisphere's x of a pair (`7/-8`) is not a point's x on its own.
+        (["Th", "7/-8", "-11", "2"], (-8, -11, 2)),
+    ],
+)
+def test_a_row_does_not_print_a_point_it_only_resembles(tmp_path, cells, point):
+    parse, omitted = _decorated_parse(_html_grid(tmp_path, [cells]), [point])
+    assert parse.analyses == []
+    assert [o.reason for o in omitted] == ["no row of the table prints its points"]
+
+
+def test_a_point_the_cell_readers_place_keeps_its_cell_when_a_decorated_copy_is_printed_too(
+    tmp_path,
+):
+    """A row printing one peak twice (ngprwem7jhqy, Table 1): the triple cell the cell readers
+    find stays the point's cell, not the decorated copy the new readers would find first."""
+    from types import SimpleNamespace
+
+    from ingestion_workflow.services.paper_parse import _candidates
+
+    row = ["Left pars triangularis", "-52", "34", "4 (6.0)", "-52 34 4 (5.4)"]
+    grid = _html_grid(tmp_path, [row])
+    assert _candidates(SimpleNamespace(x=-52, y=34, z=4), grid) == [(0, 4)]
+
+
 def test_two_names_on_the_same_cells_are_both_kept_and_only_a_true_duplicate_is_omitted(tmp_path):
     collection = _collection(
         [
