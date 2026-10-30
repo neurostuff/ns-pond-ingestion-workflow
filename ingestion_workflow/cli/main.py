@@ -1007,7 +1007,7 @@ def _render_refingerprint(found) -> str:
 def refresh_text(
     source: Optional[List[str]] = typer.Option(
         None, "--source",
-        help="Extraction sources to read (default: all; a PDF's text only has its hash recorded)."
+        help="Extraction sources to read (default: all; a PDF's text is normalised again)."
     ),
     corpus: bool = typer.Option(
         True, "--corpus/--no-corpus", help="Also replace the ns-pond corpus's copies of the texts."
@@ -1023,7 +1023,8 @@ def refresh_text(
     passages' spans move to the new text in the same catalog write, and the references
     and the sync are marked stale so they are read and written again. For a change
     to the text alone (pubget keeping superscripts, the figure captions written under
-    "Figure legends", ACE's short texts built again without readability). An ACE
+    "Figure legends", ACE's short texts built again without readability, a PDF's NUL
+    minus signs). An ACE
     extraction's `text_source` and summary `text_from` are set to how its new text was made.
     """
     from collections import Counter

@@ -48,11 +48,9 @@ logger = logging.getLogger(__name__)
 
 #: The sources whose text a rebuild reproduces from the download: JATS through pubget's
 #: stylesheet, Elsevier XML, and ACE's HTML (its fetched tables read from the extraction's
-#: cache). Not a PDF: its text is docling's conversion, which is not kept.
-REFRESHABLE_SOURCES = JATS_SOURCES + ("elsevier", "ace")
-#: The sources refresh-text reads: a text it cannot rebuild still has its hash recorded, the
-#: one the passages plan reads instead of hashing the file.
-SOURCES = REFRESHABLE_SOURCES + ("pdf",)
+#: cache). A PDF's text is docling's conversion, which is not kept: its rebuild is the
+#: stored text normalised again (`normalize_text_tokens`, which leaves its own output as it is).
+SOURCES = JATS_SOURCES + ("elsevier", "ace", "pdf")
 
 
 def sha256(text: str) -> str:
@@ -74,7 +72,7 @@ class Job:
 class Result:
     article_id: str
     source: str
-    status: str  # unchanged | rewritten | would_rewrite | no_text | no_download | not_rebuilt | failed: ...
+    status: str  # unchanged | rewritten | would_rewrite | no_text | no_download | failed: ...
     text_path: Optional[str] = None
     old_sha256: Optional[str] = None
     new_sha256: Optional[str] = None
@@ -113,18 +111,21 @@ def rebuild(job: Job, write: bool) -> Result:
     path = Path(job.text_path)
     old = _read(path)
     result.old_sha256 = sha256(old)  # recorded even when the text cannot be rebuilt
-    if job.source not in REFRESHABLE_SOURCES:
-        result.status = "not_rebuilt"
-        return result
-    if not job.article_file or not Path(job.article_file).is_file():
+    if job.source == "pdf":
+        from ingestion_workflow.extractors.docling_convert import normalize_text_tokens
+
+        # its caption spans move with the text (`carried`)
+        new = normalize_text_tokens(old)
+    elif not job.article_file or not Path(job.article_file).is_file():
         result.status = "no_download"
         return result
-    try:
-        new, result.figure_captions, result.text_source = build(
-            job.source, Path(job.article_file), path, job.pmid)
-    except Exception as exc:  # noqa: BLE001 - one unreadable article keeps its old text
-        result.status = f"failed: {type(exc).__name__}: {exc}"[:300]
-        return result
+    else:
+        try:
+            new, result.figure_captions, result.text_source = build(
+                job.source, Path(job.article_file), path, job.pmid)
+        except Exception as exc:  # noqa: BLE001 - one unreadable article keeps its old text
+            result.status = f"failed: {type(exc).__name__}: {exc}"[:300]
+            return result
     result.new_sha256 = sha256(new)
     if new == old:
         result.figure_captions = None  # the payload's spans are the old text's, which stays
@@ -362,9 +363,14 @@ def carried(catalog, result: Result, found: Optional[Dict[str, object]] = None) 
     offset_map = OffsetMap(tuple(e) for e in result.edits or ())
     extract_payload = dict(catalog.payload(extraction) or {})
     summary = {**extraction.summary, "text_sha256": result.new_sha256}
-    if result.figure_captions is not None:
-        extract_payload["figure_captions"] = result.figure_captions
-        summary["captions_sha256"] = captions_digest(result.figure_captions)
+    captions = result.figure_captions
+    if captions is None and extract_payload.get("figure_captions"):
+        # A text normalised again (a PDF's) keeps its captions where the edits moved them.
+        captions = [{**c, "span": list(got)} for c in extract_payload["figure_captions"]
+                    if (got := offset_map.span(*c["span"]))]
+    if captions is not None:
+        extract_payload["figure_captions"] = captions
+        summary["captions_sha256"] = captions_digest(captions)
     # The payload says how the text now on disk was made, not the one it replaced.
     extract_payload.pop("text_source", None)
     summary.pop("text_from", None)

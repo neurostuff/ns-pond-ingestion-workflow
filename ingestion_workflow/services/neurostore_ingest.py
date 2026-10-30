@@ -218,6 +218,16 @@ def auth0(settings) -> Optional[Tuple[str, str]]:
     return (url.rstrip("/"), audience) if url and audience else None
 
 
+def _holds_nul(value: Any) -> bool:
+    if isinstance(value, str):
+        return "\x00" in value
+    if isinstance(value, dict):
+        return any(_holds_nul(k) or _holds_nul(v) for k, v in value.items())
+    if isinstance(value, list):
+        return any(_holds_nul(v) for v in value)
+    return False
+
+
 def build_payload(study_dir: Path) -> Tuple[Dict[str, Any], List[str]]:
     """The request body for one paper, and the checks it passed.
 
@@ -258,6 +268,13 @@ def build_payload(study_dir: Path) -> Tuple[Dict[str, Any], List[str]]:
         text = (Path(study_dir) / text_path).read_bytes().decode("utf-8")
     except UnicodeDecodeError as exc:
         raise InvalidParse([f"{text_path} is not UTF-8: {exc}"]) from None
+    # Postgres stores no NUL in text: the ingester would answer 500, and again on every retry.
+    held = [name for name, value in (("coordinate_parse", raw_parse), ("parsed_paper", raw_paper),
+                                     (str(text_path), text)) if _holds_nul(value)]
+    if held:
+        raise InvalidParse([f"{name} holds a NUL character, which Neurostore cannot store"
+                            for name in held])
+    checks.append("no_nul")
     return {"coordinate_parse": raw_parse, "parsed_paper": raw_paper, "text": text}, checks
 
 

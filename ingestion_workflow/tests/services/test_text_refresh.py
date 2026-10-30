@@ -495,3 +495,41 @@ def test_workers_fork_from_a_frozen_parent(tmp_path):
 
     assert gc.get_freeze_count() == 0
     assert [r.status for r in [first, *rest]] == ["would_rewrite"] * 2
+
+
+def test_a_pdf_text_is_normalised_again_and_its_captions_move_with_it(tmp_path, evidence):
+    """A PDF's conversion is not kept: its text is the stored one with the NUL minus signs
+    (6upywhvq3wnq: "t(42) = \\x00.06", a table's "| \\x00 9 |") read as the extractor now
+    reads them, and the caption after them stays on its words."""
+    from ingestion_workflow.catalog import Catalog, Outcome
+    from ingestion_workflow.extractors.figure_captions import HEADING, captions_digest
+    from ingestion_workflow.models.ids import Identifier
+
+    body = ("Neither group differed [t(42) = \x00.06, p = .55].\n\n"
+            "| Region | x |\n|---|---|\n| R premotor | \x00 9 |\n\n")
+    caption = "Figure 1. Activation for CS\x00 trials."
+    old = f"{body}{HEADING}\n\n{caption}\n"
+    text = tmp_path / "article.txt"
+    text.write_text(old, encoding="utf-8")
+    start = old.index(caption)
+    with Catalog.open(tmp_path / "k") as catalog:
+        ref_id = catalog.register(Identifier(doi="10.5555/refresh.pdf.nul"), evidence).id
+        catalog.record([Outcome(
+            article_id=ref_id, stage="extract", source="pdf", fingerprint="ex-1",
+            payload={"full_text_path": str(text),
+                     "figure_captions": [{"ids": ["#/pictures/0"], "span": [start, start + len(caption)]}]},
+            summary={"text_sha256": R.sha256(old)})])
+
+        result = R.rebuild(R.Job(ref_id, "pdf", str(text), None), write=True)
+        assert result.status == "rewritten"
+        R.carry_all(catalog, [result], write=True)
+        again = R.rebuild(R.Job(ref_id, "pdf", str(text), None), write=True)
+
+        new = text.read_text(encoding="utf-8")
+        assert "\x00" not in new and "t(42) = -.06" in new and "| -9 |" in new
+        assert again.status == "unchanged"
+        extraction = catalog.artifacts([ref_id], "extract")[ref_id]["pdf"]
+        (moved,) = catalog.payload(extraction)["figure_captions"]
+        assert new[slice(*moved["span"])] == "Figure 1. Activation for CS- trials."
+        assert extraction.summary["text_sha256"] == R.sha256(new)
+        assert extraction.summary["captions_sha256"] == captions_digest([moved])

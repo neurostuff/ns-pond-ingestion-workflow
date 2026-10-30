@@ -97,7 +97,7 @@ def test_a_parse_and_its_parsed_paper_are_posted_as_sync_wrote_them(study, neuro
     assert (summary["kind"], summary["base_study_id"], summary["parse_id"]) == (
         "parse", BASE, parse_id)
     assert summary["study_id"] and "skeleton" in summary
-    assert artifact["checks"] == ["model", "check_paper", "json_schema"]
+    assert artifact["checks"] == ["model", "check_paper", "json_schema", "no_nul"]
     assert artifact["endpoint"] == mock.URL + ni.UPLOAD_PATH
     assert _artifact(study) == artifact
     assert artifact["last_uploaded"][artifact["endpoint"]]["summary"] == summary
@@ -588,6 +588,19 @@ def test_a_text_that_is_not_utf8_is_not_sent(study, tmp_path):
     assert artifact["status"] == "invalid"
     assert any("is not UTF-8" in p for p in artifact["error"]["problems"])
     assert not (root / study.name / ni.PAYLOAD_NAME).exists()
+
+
+def test_a_text_holding_a_nul_is_not_sent(study, neurostore):
+    """Postgres cannot store a NUL: staging answered 500 to 6upywhvq3wnq's PDF text, whose
+    minus signs were NULs ("t(42) = \\x00.06"), on each of five tries."""
+    _rewrite_text(study, TEXT.replace("Title", "t(42) = \x00.06").encode())
+    with _ingester(neurostore) as ingester:
+        artifact = ingester.upload(study)
+
+    assert artifact["status"] == "invalid"
+    assert ni.Result(artifact["status"]).catalog_status is Status.PERMANENT
+    assert any("holds a NUL character" in p for p in artifact["error"]["problems"])
+    assert neurostore.calls == []
 
 
 def test_the_dry_run_payload_is_the_body_a_real_upload_sends(study, neurostore, tmp_path):
