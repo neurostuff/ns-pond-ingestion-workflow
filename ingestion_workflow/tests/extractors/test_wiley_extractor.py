@@ -274,8 +274,9 @@ def _downloaded(ctx, ref, source: DownloadSource, payload: bytes, status=Status.
 
 def test_a_wiley_pdf_is_read_into_the_articles_pdf_text(tmp_path, slept, evidence):
     """Download through the stage from a recorded answer, extract through the stage: the
-    text is the `pdf` one, which is all downstream (corpus, parse, triage) knows of."""
-    settings = _settings(tmp_path, pdf_extract_workers=1)
+    text is the `pdf` one, which is all downstream (corpus, parse, triage) knows of.
+    Read by Docling: MinerU needs a GPU and its own environment."""
+    settings = _settings(tmp_path, pdf_extract_workers=1, pdf_engines=["docling"])
     ctx, refs = _catalog(settings, SERVED_DOI, evidence=evidence)
     # Only the download is replayed: Docling's model files are not Wiley's to answer.
     with _replay(SERVED):
