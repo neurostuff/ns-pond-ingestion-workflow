@@ -648,7 +648,7 @@ class Settings(BaseSettings):
         # MinerU reads each page from its image, so a text layer that maps the minus to
         # 2 does not reach its tables; Docling reads that layer. On PDFs set aside for
         # such a layer MinerU recovered 98% of ACE's coordinates and Docling 15%, and on
-        # PDFs extract kept, 529 of 530 against 432 (wiki PR-<n>-MinerU-PDF-Extractor).
+        # PDFs extract kept, 529 of 530 against 432 (wiki PR-189-MinerU-PDF-Extractor).
         default_factory=lambda: ["mineru", "docling"],
         min_length=1,
         description=(

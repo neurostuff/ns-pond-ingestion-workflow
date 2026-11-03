@@ -32,7 +32,7 @@ from ingestion_workflow.extractors.docling_convert import free_cuda_devices
 logger = logging.getLogger(__name__)
 
 #: The tier and modes the comparison against Docling measured
-#: (wiki PR-<n>-MinerU-PDF-Extractor).
+#: (wiki PR-189-MinerU-PDF-Extractor).
 MINERU_ARGS = ("--tier", "advanced", "--ocr-mode", "ocr", "--format", "middle_json")
 #: MinerU's vLLM engine held 6.9 GiB of an 8 GiB card.
 MIN_FREE_GPU_MIB = 7000
