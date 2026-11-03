@@ -1,6 +1,6 @@
 """Homepages (and RRIDs) from SciCrunch for dictionary entries, matched on an exact name, synonym or abbreviation.
 
-usage: SCICRUNCH_API_KEY=... python -I scicrunch_urls.py API_URL IDS.txt OUT.tsv
+usage: SCICRUNCH_API_KEY=... python -I scicrunch_urls.py IDS.txt OUT.tsv
 """
 
 import csv
@@ -59,8 +59,8 @@ def search(text):
 
 
 def main():
-    dict_path, ids_path, out = sys.argv[1:4]
-    rows = {r["id"]: r for r in read_dictionary_rows(dict_path)}
+    ids_path, out = sys.argv[1:3]
+    rows = {r["id"]: r for r in read_dictionary_rows()}
     ids = [ln.split("\t", 1)[0].strip() for ln in read_lines(ids_path) if ln.strip()]
     with open(out, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f, delimiter="\t", lineterminator="\n")

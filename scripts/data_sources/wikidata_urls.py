@@ -1,6 +1,6 @@
 """Official websites (P856) from Wikidata for dictionary entries, matched on an exact label or alias.
 
-usage: python -I wikidata_urls.py API_URL IDS.txt OUT.tsv
+usage: python -I wikidata_urls.py IDS.txt OUT.tsv
 
 IDS.txt lists the ids to look up (first tab-separated column). A candidate item counts only when one of its
 labels or aliases equals one of the entry's names or acronyms after key() normalisation.
@@ -39,8 +39,8 @@ def call(**params):
 
 
 def main():
-    dict_path, ids_path, out = sys.argv[1:4]
-    rows = {r["id"]: r for r in read_dictionary_rows(dict_path)}
+    ids_path, out = sys.argv[1:3]
+    rows = {r["id"]: r for r in read_dictionary_rows()}
     ids = [ln.split("\t", 1)[0].strip() for ln in read_lines(ids_path) if ln.strip()]
     with open(out, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f, delimiter="\t", lineterminator="\n")

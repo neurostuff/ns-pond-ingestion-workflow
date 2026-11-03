@@ -1,8 +1,12 @@
 """Find neuroimaging studies, consortia and repositories named in ns-pond full text.
 
-usage: python -I match.py API_URL OUT_DIR ROOT [ROOT ...] [--workers N] [--limit N]
+usage: python -I match.py OUT_DIR ROOT [ROOT ...] [--dictionary TSV] [--api URL] [--workers N]
+       [--limit N]
 
-API_URL is the neurostore API whose /data-sources/ are searched for, e.g. https://neurostore.org/api.
+The data sources searched for, with their aliases and alias tiers, are data_sources.tsv beside
+this script; each row's id is the data source's id in neurostore. --api (e.g.
+https://neurostore.org/api) warns about ids neurostore has no data source for, which
+`manage data-sources link-matches` skips.
 
 Each ROOT holds one directory per paper with processed/<source>/text.txt; the longest
 text per paper is searched. Writes paper_entities.tsv, entity_summary.tsv, hits.jsonl
@@ -19,6 +23,8 @@ import urllib.parse
 import urllib.request
 from collections import Counter, defaultdict
 from multiprocessing import Pool
+
+DICTIONARY = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_sources.tsv")
 
 SEP = r"[\s\-‐‑–—]+"
 CUE = re.compile(
@@ -105,64 +111,28 @@ def split(cell):
     return [x.strip() for x in (cell or "").split("|") if x.strip()]
 
 
-ALIAS_COLUMNS = {
-    "name": "full_names",
-    "safe": "acronyms_safe",
-    "context": "acronyms_context",
-    "defined": "acronyms_defined",
-    "qualified": "qualified_names",
-}
+def read_dictionary_rows(path=DICTIONARY):
+    return read_tsv(path)
 
 
-def read_dictionary_rows(api):
-    """Every data source from a neurostore API (e.g. https://neurostore.org/api), as dictionary rows."""
-    return dictionary_rows(fetch_data_sources(api))
+def load_dictionary(path=DICTIONARY):
+    return build_dictionary(read_dictionary_rows(path))
 
 
-def fetch_data_sources(api):
-    records, page = [], 1
+def missing_from_neurostore(rows, api):
+    """Dictionary ids the neurostore API (e.g. https://neurostore.org/api) has no data source for."""
+    known, page = set(), 1
     while True:
-        query = urllib.parse.urlencode(
-            {"page": page, "page_size": 1000, "sort": "slug", "desc": "false"}
-        )
+        query = urllib.parse.urlencode({"page": page, "page_size": 1000})
         with urllib.request.urlopen(
             f"{api.rstrip('/')}/data-sources/?{query}", timeout=120
         ) as r:
             body = json.load(r)
-        records += body["results"]
-        if not body["results"] or len(records) >= body["metadata"]["total_count"]:
+        known |= {d["id"] for d in body["results"]}
+        if not body["results"] or len(known) >= body["metadata"]["total_count"]:
             break
         page += 1
-    return records
-
-
-def dictionary_rows(records):
-    """/data-sources/ records as rows with the dictionary TSV's columns: id is the slug, hosted_by the
-    parent's slug, and each alias tier a '|'-joined column."""
-    slug_of = {r["id"]: r["slug"] for r in records}
-    rows = []
-    for r in records:
-        row = {
-            "id": r["slug"],
-            "name": r["name"],
-            "roles": "|".join(r.get("kinds") or []),
-            "modality": "|".join(r.get("modalities") or []),
-            "hosted_by": slug_of.get(r.get("part_of"), ""),
-            "rrid": "|".join(r.get("rrids") or []),
-            "re3data_id": "|".join(r.get("re3data_ids") or []),
-            "source": "|".join(r.get("listed_in") or []),
-            "url": r.get("url") or "",
-        }
-        for tier, column in ALIAS_COLUMNS.items():
-            row[column] = "|".join(
-                a["alias"] for a in r.get("aliases") or [] if a["tier"] == tier
-            )
-        rows.append(row)
-    return rows
-
-
-def load_dictionary(api):
-    return build_dictionary(read_dictionary_rows(api))
+    return sorted(r["id"] for r in rows if r["id"] not in known)
 
 
 def build_dictionary(rows):
@@ -372,15 +342,20 @@ def init(rows):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("dictionary")
     ap.add_argument("out")
     ap.add_argument("roots", nargs="+")
+    ap.add_argument("--dictionary", default=DICTIONARY)
+    ap.add_argument("--api")
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--limit", type=int)
     args = ap.parse_args()
 
     rows = read_dictionary_rows(args.dictionary)
     entities = build_dictionary(rows)[0]
+    if args.api:
+        missing = missing_from_neurostore(rows, args.api)
+        if missing:
+            print(f"warning: {len(missing)} ids not in {args.api}: {missing}", file=sys.stderr)
     dirs = sorted(os.path.join(r, d) for r in args.roots for d in os.listdir(r))
     if args.limit:
         dirs = dirs[: args.limit]

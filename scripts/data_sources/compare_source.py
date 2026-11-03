@@ -1,6 +1,6 @@
 """Rows of a source TSV (name, acronym columns) split into known / new against the dictionary.
 
-usage: python -I compare_source.py API_URL SOURCE.tsv [FILTER_COLUMN]
+usage: python -I compare_source.py SOURCE.tsv [FILTER_COLUMN]
 """
 
 import os
@@ -9,11 +9,11 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from match import key, load_dictionary, read_tsv  # noqa: E402
 
-entities, names, acronyms, _, _ = load_dictionary(sys.argv[1])
+entities, names, acronyms, _, _ = load_dictionary()
 known = set(names) | {key(e["name"]) for e in entities.values()}
 known_acr = {key(a) for a in acronyms}
-col = sys.argv[3] if len(sys.argv) > 3 else None
-for r in read_tsv(sys.argv[2]):
+col = sys.argv[2] if len(sys.argv) > 2 else None
+for r in read_tsv(sys.argv[1]):
     if col and not any(
         t in r[col] for t in ("MRI", "PET", "Magnetic resonance", "Positron")
     ):

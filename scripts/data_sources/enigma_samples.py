@@ -1,6 +1,6 @@
 """Sample names from ENIGMA sample tables, counted across papers and checked against the dictionary.
 
-usage: python -I enigma_samples.py API_URL CELLS.tsv OUT.tsv
+usage: python -I enigma_samples.py CELLS.tsv OUT.tsv
 
 CELLS.tsv is the output of enigma_tables.py. A name is kept when it looks like a label (short, has a letter, is not
 a statistic, diagnosis or column word).
@@ -65,8 +65,8 @@ def keep(name):
 
 
 def main():
-    dict_path, cells_path, out = sys.argv[1:4]
-    entities, names, acronyms, _, _ = load_dictionary(dict_path)
+    cells_path, out = sys.argv[1:3]
+    entities, names, acronyms, _, _ = load_dictionary()
     by_key = {}
     for k, ent in names.items():
         by_key.setdefault(k, ent if isinstance(ent, str) else ent[0])

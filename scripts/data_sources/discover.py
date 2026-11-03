@@ -1,6 +1,6 @@
 """Candidate data sources named in ns-pond full text but missing from the dictionary, for review.
 
-usage: python -I discover.py API_URL OUT.tsv ROOT [ROOT ...] [--workers N] [--min-papers N]
+usage: python -I discover.py OUT.tsv ROOT [ROOT ...] [--dictionary TSV] [--workers N] [--min-papers N]
 
 A candidate is a name that follows a usage cue ("data from the", "participants of the", "obtained from")
 in the abstract, methods, data availability or acknowledgments, and is either
@@ -18,6 +18,7 @@ from multiprocessing import Pool
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from match import (
+    DICTIONARY,
     build_dictionary,
     key,
     pick_text,
@@ -366,9 +367,9 @@ def init(rows):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("dictionary")
     ap.add_argument("out")
     ap.add_argument("roots", nargs="+")
+    ap.add_argument("--dictionary", default=DICTIONARY)
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--min-papers", type=int, default=3)
     args = ap.parse_args()

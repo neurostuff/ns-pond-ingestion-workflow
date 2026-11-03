@@ -1,6 +1,6 @@
 """Named cohorts per ENIGMA paper, from its sample tables, with the working group taken from the title or abstract.
 
-usage: python -I enigma_cohorts.py API_URL EPMC_DIR OUT_PAPERS.tsv OUT_GROUPS.tsv
+usage: python -I enigma_cohorts.py EPMC_DIR OUT_PAPERS.tsv OUT_GROUPS.tsv
 """
 
 import csv
@@ -38,8 +38,8 @@ def paper_group(title, xml_path):
 
 
 def main():
-    dict_path, epmc, out_papers, out_groups = sys.argv[1:5]
-    entities, names, acronyms, _, _ = load_dictionary(dict_path)
+    epmc, out_papers, out_groups = sys.argv[1:4]
+    entities, names, acronyms, _, _ = load_dictionary()
     by_key = dict(names)
     for acr, ents in acronyms.items():
         by_key.setdefault(key(acr), ents[0][0])
