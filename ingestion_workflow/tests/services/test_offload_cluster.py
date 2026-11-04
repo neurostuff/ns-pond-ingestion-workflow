@@ -335,7 +335,8 @@ def test_evidence_of_a_record_replaced_since_export_is_refused(world):
     newer["analyses"][0]["name"]["value"] = "a later run's name"
     sent = json.loads((DATA / "paper-26klegjq7mhi/parse/coordinate_parse.json").read_text())
     import_run(world["catalog"], Run("ns-27b-e-20261105", RunKind.MODEL, "record", "ns-27b",
-                                     model="Qwen/Qwen3.8-27B", created_at="2026-11-05"),
+                                     model="Qwen/Qwen3.8-27B", prompt_version="v6",
+                                     created_at="2026-11-05"),
                [{"article_id": ARTICLE, "status": "ok", "text_sha256": sent["text_sha256"],
                  "record": newer}])
     pull(world["remote"], bundle, world["catalog"])
