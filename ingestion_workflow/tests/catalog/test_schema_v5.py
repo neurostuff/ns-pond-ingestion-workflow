@@ -39,7 +39,8 @@ def _v4(root):
 
 def _run(**kwargs) -> Run:
     base = dict(run_id="r1", kind=RunKind.MODEL, stage="record", source="ns-27b",
-                model="Qwen/Qwen3.8-27B", adapter="r3-27b-full/adapter-final",
+                model="Qwen/Qwen3.8-27B",
+                adapter="jdkent/qwen3.8-27b-ns-record@dbfd846bd3e1259039eb2f3117dc12bd733c640a",
                 config={"max_len": 65536}, created_at="2026-10-31T00:00:00+00:00")
     base.update(kwargs)
     return Run(**base)

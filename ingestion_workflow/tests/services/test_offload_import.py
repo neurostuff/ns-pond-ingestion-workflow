@@ -37,7 +37,8 @@ ARTICLE, BASE_STUDY = "26klegjq7mhi", "tS8tSUXeybTo"
 
 def _run(stage="record", run_id="ns-27b-e-20261031", **kwargs) -> Run:
     base = dict(run_id=run_id, kind=RunKind.MODEL, stage=stage, source="ns-27b",
-                model="Qwen/Qwen3.8-27B", adapter="r3-27b-full/adapter-final",
+                model="Qwen/Qwen3.8-27B",
+                adapter="jdkent/qwen3.8-27b-ns-record@dbfd846bd3e1259039eb2f3117dc12bd733c640a",
                 created_at="2026-10-31T13:43:00+00:00")
     base.update(kwargs)
     return Run(**base)

@@ -54,9 +54,8 @@ VLLM_E = {"guided": False, "workers": 48, "gpu_mem": 0.92,
 RECORD_RUN = dict(
     kind="model", stage="record", source="ns-27b", pipeline="pondie astra-distill vista",
     version="ns-27b-e", model="Qwen/Qwen3.8-27B",
-    # QLoRA nf4 r=64, 1 epoch on train v5, step 776; merged on Vista $SCRATCH as
-    # merged/r3-27b-bench. Not on the Hub yet, so it has no revision.
-    adapter="r3-27b-full/adapter-final",
+    # r3-27b-full/adapter-final: QLoRA nf4 r=64, 1 epoch on train v5, step 776 (tag v1).
+    adapter="jdkent/qwen3.8-27b-ns-record@dbfd846bd3e1259039eb2f3117dc12bd733c640a",
     prompt_version="astra-distill v5 paper prompt (vista/tasks.py prompt_of, bodies_ns.py)",
     schema_version="extraction-record (pondie migrate/in, compact.from_compact)",
     code_commit="pondie@a963c94", machine="vista gh (GH200)")
@@ -77,7 +76,8 @@ SHARD_DIRS = (NS / "shards-20261028", NS / "run-20261030/shards-20261030",
 EVIDENCE_RUN = dict(
     run_id="ns-ev1-20261102", kind="model", stage="evidence", source="ns-27b",
     pipeline="pondie astra-distill ev1", version="ev1-full", model="numind/NuExtract3",
-    adapter="ev1-full/adapter-final",
+    # ev1-full/adapter-final (tag v1)
+    adapter="jdkent/nuextract3-ns-evidence@ea9be65e535cec75ba9a03dc637352b96d07e9b6",
     prompt_version="evidence by unit index (vista/evidence.py, ns_ev1_bodies.py)",
     schema_version="extraction-evidence (evidence sets, source retriever)",
     code_commit="pondie@58a8d36", machine="vista gh (GH200)", created_at="2026-11-02",
