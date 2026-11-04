@@ -77,10 +77,55 @@ class Artifact:
     summary: Dict[str, Any] = field(default_factory=dict)
     error: Optional[str] = None
     updated_at: str = field(default_factory=utcnow)
+    #: The run it was imported from; None for a stage ns-pond runs itself.
+    run_id: Optional[str] = None
 
     @property
     def ok(self) -> bool:
         return self.status is Status.OK
+
+
+class RunKind(str, Enum):
+    MODEL = "model"
+    MIGRATION = "migration"
+
+
+#: The fields of a run that say what made its output. A change to any of them makes a new
+#: output; the rest (where and when it ran, the bundle, the job settings in `config`) do not.
+RUN_IDENTITY = ("kind", "stage", "source", "pipeline", "version", "model", "adapter",
+                "prompt_version", "schema_version")
+
+
+@dataclass
+class Run:
+    """One run of a stage made away from ns-pond, or a migration of a run's output."""
+
+    run_id: str
+    kind: RunKind
+    stage: str
+    source: str
+    pipeline: Optional[str] = None
+    version: Optional[str] = None
+    model: Optional[str] = None
+    #: `repo@revision`, or a path where the adapter has no revision.
+    adapter: Optional[str] = None
+    prompt_version: Optional[str] = None
+    schema_version: Optional[str] = None
+    code_commit: Optional[str] = None
+    machine: Optional[str] = None
+    config: Dict[str, Any] = field(default_factory=dict)
+    bundle_id: Optional[str] = None
+    created_at: str = field(default_factory=utcnow)
+    imported_at: Optional[str] = None
+
+    @property
+    def identity(self) -> str:
+        """What a stage's fingerprint holds of the run: two runs of one model are one."""
+        from .fingerprint import fingerprint
+
+        held = {name: getattr(self, name) for name in RUN_IDENTITY}
+        held["kind"] = RunKind(self.kind).value
+        return fingerprint("run", *held.items())
 
 
 @dataclass
@@ -120,6 +165,7 @@ class Outcome:
     payload: Any = None          # written to the blob store when not None
     summary: Dict[str, Any] = field(default_factory=dict)
     error: Optional[str] = None
+    run_id: Optional[str] = None
 
     @classmethod
     def failure(

@@ -43,11 +43,13 @@ from .models import (
     ArticleRef,
     Artifact,
     Outcome,
+    Run,
+    RunKind,
     Status,
     field_of,
     utcnow,
 )
-from .schema import DDL, PRAGMAS, SCHEMA_VERSION
+from .schema import CURRENT_DDL, DDL, PRAGMAS, SCHEMA_VERSION
 
 logger = logging.getLogger(__name__)
 
@@ -168,6 +170,7 @@ class Catalog:
             conn.execute(
                 "INSERT INTO meta(key, value) VALUES('schema_version', ?)", (str(SCHEMA_VERSION),)
             )
+        conn.executescript(CURRENT_DDL)
         return catalog
 
     def backup(self, target: Path | str) -> Path:
@@ -185,10 +188,11 @@ class Catalog:
 
         Under the write lock, the version is read again: a process that opened
         the catalog while another migrated it waits here, then finds it current.
-        A copy is taken next, beside the catalog, because the rewrite drops the
-        spellings it replaces; without the copy nothing is migrated. The data
-        and the new version commit together, so a failed migration leaves the
-        catalog as it was.
+        A copy is taken next, beside the catalog, when a step rewrites rows (before
+        v4), because the rewrite drops the spellings it replaces; without the copy
+        nothing is migrated. v5 only adds, so it takes no copy. The data and the
+        new version commit together, so a failed migration leaves the catalog as
+        it was.
         """
         with self._write() as conn:
             version = int(conn.execute(
@@ -198,16 +202,29 @@ class Catalog:
             # `backup` reads through a second connection, as sqlite cannot back up
             # from the one holding the write lock. That lock keeps any write out
             # between the copy and the rewrite.
-            copy = self.backup(self.root / f"catalog.pre-v{version}.sqlite")
-            logger.warning("catalog: schema %d -> %d; backed up to %s",
-                           version, SCHEMA_VERSION, copy)
+            if version < 4:
+                copy = self.backup(self.root / f"catalog.pre-v{version}.sqlite")
+                logger.warning("catalog: schema %d -> %d; backed up to %s",
+                               version, SCHEMA_VERSION, copy)
+            else:
+                logger.warning("catalog: schema %d -> %d", version, SCHEMA_VERSION)
             if version < 3:
                 self._canonical_doi_aliases(conn)
             if version < 4:
                 self._bucket_aliases(conn)
+            if version < 5:
+                self._add_run_ids(conn)
             conn.execute(
                 "UPDATE meta SET value=? WHERE key='schema_version'", (str(SCHEMA_VERSION),)
             )
+
+    @staticmethod
+    def _add_run_ids(conn: sqlite3.Connection) -> None:
+        """Give artifacts a `run_id`, null for every row already there: ns-pond ran them.
+        The `runs` table is made by the DDL, which every open runs."""
+        columns = {row["name"] for row in conn.execute("PRAGMA table_info(artifacts)")}
+        if "run_id" not in columns:
+            conn.execute("ALTER TABLE artifacts ADD COLUMN run_id TEXT")
 
     def _bucket_aliases(self, conn: sqlite3.Connection) -> Dict[str, int]:
         """Hold each id in the bucket it belongs to: the version of record's, a preprint's
@@ -1423,6 +1440,7 @@ class Catalog:
                     json.dumps(outcome.summary, separators=(",", ":")),
                     outcome.error,
                     now,
+                    outcome.run_id,
                 )
             )
             attempts.append(
@@ -1440,12 +1458,13 @@ class Catalog:
                 """
                 INSERT INTO artifacts
                     (article_id, stage, source, status, fingerprint, blob,
-                     summary, error, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     summary, error, updated_at, run_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(article_id, stage, source) DO UPDATE SET
                     status=excluded.status, fingerprint=excluded.fingerprint,
                     blob=excluded.blob, summary=excluded.summary,
-                    error=excluded.error, updated_at=excluded.updated_at
+                    error=excluded.error, updated_at=excluded.updated_at,
+                    run_id=excluded.run_id
                 WHERE NOT (artifacts.status = 'ok' AND excluded.status <> 'ok'
                            AND artifacts.stage IN ({keep}))
                 """.format(keep=",".join("'%s'" % s for s in KEEPS_LAST_OK)),
@@ -1456,6 +1475,39 @@ class Catalog:
                 "VALUES (?, ?, ?, ?, ?, ?)",
                 attempts,
             )
+
+    # -- runs ----------------------------------------------------------------
+
+    def record_run(self, run: Run) -> Run:
+        """Keep `run`, stamped with when it was imported. A run already kept under its id
+        must be the same run: an id names one run for good."""
+        held = self.run(run.run_id)
+        if held is not None:
+            if held.identity != run.identity:
+                raise ValueError(f"run {run.run_id} is already kept, as another run")
+            return held
+        kept = Run(**{**run.__dict__, "kind": RunKind(run.kind),
+                      "imported_at": run.imported_at or utcnow()})
+        with self._write() as conn:
+            conn.execute(
+                "INSERT INTO runs (run_id, kind, stage, source, pipeline, version, model, "
+                "adapter, prompt_version, schema_version, code_commit, machine, config, "
+                "bundle_id, created_at, imported_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (kept.run_id, kept.kind.value, kept.stage, kept.source, kept.pipeline,
+                 kept.version, kept.model, kept.adapter, kept.prompt_version,
+                 kept.schema_version, kept.code_commit, kept.machine,
+                 json.dumps(kept.config, sort_keys=True), kept.bundle_id, kept.created_at,
+                 kept.imported_at))
+        return kept
+
+    def run(self, run_id: str) -> Optional[Run]:
+        row = self._conn.execute("SELECT * FROM runs WHERE run_id=?", (run_id,)).fetchone()
+        return _run(row) if row else None
+
+    def runs(self) -> List[Run]:
+        return [_run(row) for row in self._conn.execute(
+            "SELECT * FROM runs ORDER BY created_at, run_id")]
 
     #: The stage under which `attempts` holds that a provider was asked for an article's ids.
     LOOKUP_STAGE = "id_lookup"
@@ -1679,7 +1731,13 @@ def _artifact(row: sqlite3.Row) -> Artifact:
         summary=json.loads(row["summary"]) if row["summary"] else {},
         error=row["error"],
         updated_at=row["updated_at"],
+        run_id=row["run_id"],
     )
+
+
+def _run(row: sqlite3.Row) -> Run:
+    return Run(**{**dict(row), "kind": RunKind(row["kind"]),
+                  "config": json.loads(row["config"]) if row["config"] else {}})
 
 
 def _chunks(items: Sequence[str], size: int) -> Iterator[Sequence[str]]:
