@@ -1490,8 +1490,7 @@ def offload_push(bundle: Path = BundleArgument, config: Optional[Path] = ConfigO
 
     settings = _settings(config)
     _say(_offload(lambda: push(_bundle_remote(settings, bundle), bundle,
-                               hf_cache=settings.cache_root / "hf",
-                               hf_token=settings.hf_token)))
+                               hf_cache=settings.cache_root / "hf")))
 
 
 @offload_app.command("submit")

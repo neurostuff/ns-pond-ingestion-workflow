@@ -69,7 +69,7 @@ prose_api_base: null  # Its server, apart from the table model's; defaults to ll
 # role_model_prose: {endpoint: "http://host:8001/v1", model: "name", path: "/checkpoint/dir"}  # The served set-role model for prose sets, {endpoint, model, path}. Without it every article with a prose set is blocked at the roles stage
 
 # ===== Offloaded stages =====
-hf_token: null  # HF_TOKEN; reads the private adapters `ingest offload push` copies to a machine
+# The private adapters `ingest offload push` copies are read with HF_TOKEN, from the environment only.
 # machines:  # The clusters offloaded stages run on, by name (`ingest offload --machine`)
 #   vista:
 #     ssh: vista  # its connection is opened by you (MFA) and reused; closed, a command stops

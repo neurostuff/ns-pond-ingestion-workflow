@@ -395,11 +395,6 @@ class Settings(BaseSettings):
         ),
     )
 
-    hf_token: Optional[str] = Field(
-        default=None,
-        validation_alias=AliasChoices("hf_token", "HF_TOKEN"),
-        description="Reads the private adapters `ingest offload push` copies to a machine",
-    )
     machines: Dict[str, Machine] = Field(
         default_factory=dict,
         description="The clusters offloaded stages run on, by name (`ingest offload --machine`)",

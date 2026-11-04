@@ -122,7 +122,7 @@ def world(tmp_path, monkeypatch):
 
 
 def _push(w):
-    return R.push(w["remote"], w["bundle"], hf_cache=Path("/nonexistent"), hf_token=None)
+    return R.push(w["remote"], w["bundle"], hf_cache=Path("/nonexistent"))
 
 
 def test_push_copies_the_bundle_its_scripts_and_the_adapter_once(world):
