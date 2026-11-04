@@ -65,9 +65,8 @@ def _run(ctx, catalog, ref):
     return outcomes
 
 
-def test_datasources_runs_after_sync_and_before_upload():
-    order = list(STAGE_ORDER)
-    assert order.index("sync") < order.index("datasources") < order.index("upload")
+def test_datasources_runs_last_on_what_sync_wrote():
+    assert STAGE_ORDER[-1] == "datasources"
     assert STAGE_TYPES["datasources"].requires == "sync"
 
 

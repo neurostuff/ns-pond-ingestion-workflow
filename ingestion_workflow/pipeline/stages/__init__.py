@@ -53,11 +53,11 @@ from .upload import UploadStage
 #: posts that parse to neurostore's study_schema ingester.
 #:
 #: `datasources` searches the text of each paper sync wrote for the data sources
-#: `ingest data-sources pull` keeps in the catalog. Nothing after it reads it:
+#: `ingest data-sources pull` keeps in the catalog. No stage reads it:
 #: `ingest data-sources export` writes its matches for neurostore.
 STAGE_ORDER = ("download", "extract", "reflist", "references", "links", "linkprobe", "passages",
                "metadata", "notices", "triage", "analyses", "prose", "resolve", "roles", "space",
-               "sync", "datasources", "upload")
+               "sync", "upload", "datasources")
 
 #: Stages that exist only when prose is switched on.
 PROSE_STAGES = ("passages", "prose", "resolve")
