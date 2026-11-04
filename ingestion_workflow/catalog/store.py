@@ -1186,6 +1186,69 @@ class Catalog:
 
     # -- exclusions ----------------------------------------------------------
 
+    # -- data sources --------------------------------------------------------
+
+    def replace_data_sources(
+        self,
+        records: Mapping[str, Sequence[Mapping[str, Any]]],
+        sources: Sequence[Mapping[str, Any]],
+        aliases: Sequence[Tuple[str, str, str]],
+        digest: str,
+    ) -> None:
+        """Replace the records of each provider in `records`, and the whole merged dictionary,
+        together. `sources` are `DataSource` fields; `digest` is the aliases' digest."""
+        now = utcnow()
+        columns = ("id", "name", "kinds", "modalities", "url", "url_source", "rrids",
+                   "re3data_ids", "part_of", "providers")
+        with self._write() as conn:
+            for provider, held in records.items():
+                conn.execute("DELETE FROM data_source_records WHERE provider=?", (provider,))
+                conn.executemany(
+                    "INSERT INTO data_source_records(provider, record_id, record, pulled_at) "
+                    "VALUES(?, ?, ?, ?)",
+                    [(provider, r["record_id"], json.dumps(r, sort_keys=True), now)
+                     for r in held])
+            conn.execute("DELETE FROM data_sources")
+            conn.execute("DELETE FROM data_source_aliases")
+            conn.executemany(
+                f"INSERT INTO data_sources({', '.join(columns)}) "
+                f"VALUES({', '.join('?' * len(columns))})",
+                [tuple(json.dumps(s[c]) if isinstance(s[c], list) else s[c] for c in columns)
+                 for s in sources])
+            conn.executemany(
+                "INSERT INTO data_source_aliases(data_source_id, alias, tier) VALUES(?, ?, ?)",
+                aliases)
+            conn.execute(
+                "INSERT OR REPLACE INTO meta(key, value) VALUES('data_sources_digest', ?)",
+                (digest,))
+
+    def data_source_records(self, provider: Optional[str] = None) -> List[Dict[str, Any]]:
+        """The records each pull stored, of one provider or all."""
+        query = "SELECT record FROM data_source_records"
+        rows = (self._conn.execute(query + " WHERE provider=? ORDER BY record_id", (provider,))
+                if provider else
+                self._conn.execute(query + " ORDER BY provider, record_id"))
+        return [json.loads(row["record"]) for row in rows]
+
+    def data_sources(self) -> List[Dict[str, Any]]:
+        out = []
+        for row in self._conn.execute("SELECT * FROM data_sources ORDER BY id"):
+            out.append({k: json.loads(row[k]) if k in ("kinds", "modalities", "rrids",
+                                                          "re3data_ids", "providers")
+                        else row[k] for k in row.keys()})
+        return out
+
+    def data_source_aliases(self) -> List[Tuple[str, str, str]]:
+        return [tuple(row) for row in self._conn.execute(
+            "SELECT data_source_id, alias, tier FROM data_source_aliases "
+            "ORDER BY data_source_id, alias, tier")]
+
+    def data_sources_digest(self) -> Optional[str]:
+        """The digest of the aliases the last pull stored; None before any pull."""
+        row = self._conn.execute(
+            "SELECT value FROM meta WHERE key='data_sources_digest'").fetchone()
+        return row["value"] if row else None
+
     # -- searches ------------------------------------------------------------
 
     def record_search(

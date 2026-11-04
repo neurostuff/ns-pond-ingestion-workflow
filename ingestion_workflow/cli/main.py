@@ -1388,6 +1388,61 @@ def searches_manifest(
     typer.echo(f"{len(ids):,} articles -> {path}")
 
 
+# -- data sources ------------------------------------------------------------
+
+data_sources_app = typer.Typer(
+    help="The data sources (studies, consortia, repositories) the datasources stage searches "
+         "papers for.", no_args_is_help=True,
+)
+app.add_typer(data_sources_app, name="data-sources")
+
+
+@data_sources_app.command("pull")
+def data_sources_pull(
+    provider: Optional[List[str]] = typer.Option(
+        None, "--provider", "-p",
+        help="A catalogue to pull (repeatable): re3data, scicrunch or jpnd. Default all; the "
+             "curated TSV is read every time.",
+    ),
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Pull the catalogues into the catalog and rebuild the dictionary from every record held."""
+    from ingestion_workflow.data_sources.merge import PROVIDERS
+    from ingestion_workflow.data_sources.providers import pullers
+    from ingestion_workflow.data_sources.pull import pull
+
+    settings = _settings(config)
+    found = pullers(settings)
+    if not provider and "scicrunch" not in found:
+        typer.echo("scicrunch left out: set scicrunch_api_key to pull it", err=True)
+    with _catalog(settings) as catalog:
+        try:
+            held = pull(catalog, found, provider or [p for p in PROVIDERS if p in found])
+        except ValueError as exc:
+            raise typer.BadParameter(str(exc)) from None
+        sources, aliases = catalog.data_sources(), catalog.data_source_aliases()
+    for name, count in held.items():
+        typer.echo(f"{name:>10}: {count:,} records")
+    typer.echo(f"{len(sources):,} data sources, {len(aliases):,} aliases")
+
+
+@data_sources_app.command("export")
+def data_sources_export(
+    out: Path = typer.Argument(..., help="Directory to write data_sources.tsv and "
+                                         "paper_entities.tsv into."),
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Write the dictionary for neurostore's `manage data-sources load` and the matches of the
+    papers sync wrote for `manage data-sources link-matches`."""
+    from ingestion_workflow.data_sources.export import export
+
+    settings = _settings(config)
+    with _catalog(settings) as catalog:
+        written = export(_context(settings, catalog, []), out)
+    for name, rows in written.items():
+        typer.echo(f"{rows:>9,} rows -> {out / name}")
+
+
 def main() -> None:
     app()
 

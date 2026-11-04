@@ -20,7 +20,7 @@ from collections import Counter
 from multiprocessing import Pool
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from match import pick_text, read_json, section_at, sections, snippet  # noqa: E402
+from common import pick_text, read_json, section_at, sections, snippet  # noqa: E402
 
 # Working groups listed at https://enigma.ini.usc.edu/ongoing/ (2026-11-02), plus the genetics projects.
 # Order matters: the first pattern that matches the phrase after "ENIGMA" wins.

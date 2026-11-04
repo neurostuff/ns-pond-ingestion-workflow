@@ -110,6 +110,37 @@ CREATE TABLE IF NOT EXISTS download_names_read (
     blob TEXT PRIMARY KEY
 ) WITHOUT ROWID;
 
+-- What each data-source catalogue said, under its own ids; a pull of a catalogue replaces
+-- all of its records.
+CREATE TABLE IF NOT EXISTS data_source_records (
+    provider  TEXT NOT NULL,
+    record_id TEXT NOT NULL,
+    record    TEXT NOT NULL,
+    pulled_at TEXT NOT NULL,
+    PRIMARY KEY (provider, record_id)
+) WITHOUT ROWID;
+
+-- The dictionary merged from those records (`data_sources.merge`), rebuilt by each pull.
+-- The datasources stage searches papers for its aliases; list columns hold JSON arrays.
+CREATE TABLE IF NOT EXISTS data_sources (
+    id          TEXT PRIMARY KEY,
+    name        TEXT NOT NULL,
+    kinds       TEXT NOT NULL,
+    modalities  TEXT NOT NULL,
+    url         TEXT NOT NULL,
+    url_source  TEXT NOT NULL,
+    rrids       TEXT NOT NULL,
+    re3data_ids TEXT NOT NULL,
+    part_of     TEXT NOT NULL,
+    providers   TEXT NOT NULL
+) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS data_source_aliases (
+    data_source_id TEXT NOT NULL,
+    alias          TEXT NOT NULL,
+    tier           TEXT NOT NULL,
+    PRIMARY KEY (data_source_id, alias, tier)
+) WITHOUT ROWID;
+
 CREATE TABLE IF NOT EXISTS meta (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL

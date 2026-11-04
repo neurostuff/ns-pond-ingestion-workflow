@@ -17,8 +17,8 @@ from collections import Counter, defaultdict
 from multiprocessing import Pool
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from match import (
-    DICTIONARY,
+from common import (
+    CURATED,
     build_dictionary,
     key,
     pick_text,
@@ -369,7 +369,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("out")
     ap.add_argument("roots", nargs="+")
-    ap.add_argument("--dictionary", default=DICTIONARY)
+    ap.add_argument("--dictionary", default=CURATED)
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--min-papers", type=int, default=3)
     args = ap.parse_args()

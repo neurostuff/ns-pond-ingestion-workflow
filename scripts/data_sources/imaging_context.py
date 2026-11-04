@@ -12,7 +12,7 @@ from collections import defaultdict
 from multiprocessing import Pool
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from match import alias_pattern, key, pick_text, read_tsv, snippet  # noqa: E402
+from common import alias_pattern, key, pick_text, read_tsv, snippet  # noqa: E402
 
 IMAGING = re.compile(
     r"\b(?:MRI|fMRI|MR imaging|magnetic resonance|PET|positron|neuroimaging|brain imaging|DTI|"

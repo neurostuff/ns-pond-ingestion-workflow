@@ -7,7 +7,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from match import key, load_dictionary, read_tsv  # noqa: E402
+from common import key, load_dictionary, read_tsv  # noqa: E402
 
 entities, names, acronyms, _, _ = load_dictionary()
 known = set(names) | {key(e["name"]) for e in entities.values()}

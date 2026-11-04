@@ -13,7 +13,7 @@ import sys
 from multiprocessing import Pool
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from match import (
+from common import (
     pick_text,
     read_json,
     read_tsv,

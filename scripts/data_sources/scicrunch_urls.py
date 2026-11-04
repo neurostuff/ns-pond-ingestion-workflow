@@ -11,7 +11,7 @@ import subprocess
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from match import key, read_dictionary_rows, read_lines, split  # noqa: E402
+from common import key, read_dictionary_rows, read_lines, split  # noqa: E402
 
 URL = "https://scicrunch.org/api/1/elastic/RIN_Tool_pr/_search"
 
@@ -39,7 +39,8 @@ def search(text):
         },
     }
     # curl, with the key read from stdin so it stays out of the process list (urllib is refused with 403)
-    config = f'url = "{URL}?api_key={os.environ["SCICRUNCH_API_KEY"]}"\nheader = "Content-Type: application/json"\n'
+    config = (f'url = "{URL}"\nheader = "apikey: {os.environ["SCICRUNCH_API_KEY"]}"\n'
+              'header = "Content-Type: application/json"\n')
     res = subprocess.run(
         [
             "curl",

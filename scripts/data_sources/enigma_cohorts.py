@@ -13,7 +13,7 @@ from collections import Counter, defaultdict
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from enigma import MENTION, group_at  # noqa: E402
 from enigma_samples import clean, keep  # noqa: E402
-from match import key, load_dictionary, read_tsv  # noqa: E402
+from common import key, load_dictionary, read_tsv  # noqa: E402
 
 
 def paper_group(title, xml_path):

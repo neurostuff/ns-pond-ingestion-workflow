@@ -12,13 +12,13 @@ One-off tools that are not part of the `ingest` command.
 | `rekey_analyses_reads.py` | give analyses, and what is made from them, the fingerprints of what analyses now reads (triage's verdict, the extraction, the title and abstract), read from a copy of the catalog from before triage ran again; run once, before analyses re-runs; a dry run unless `--apply --backup <path>` |
 | `rewrite_license_ids.py` | respell the licence ids the metadata stored before study_schema 0.11.0 (`cc-by` → `cc_by`), in each metadata payload and summary; run once, before the pipeline runs with 0.11.0; a dry run unless `--apply --backup <path>` |
 | `repair_doi_collisions.py` | settle the DOIs two catalog articles hold in different case, by `doi_collisions.tsv`; run once, before the schema version 3 migration |
-| `data_sources/match.py` | find the studies, consortia and repositories in `data_sources/data_sources.tsv` named in `ns-pond` text; writes `paper_entities.tsv` for neurostore's `manage data-sources link-matches` |
-| `data_sources/discover.py` | candidate data sources named in `ns-pond` text but missing from the dictionary |
+| `data_sources/discover.py` | candidate data sources named in `ns-pond` text but missing from the curated dictionary |
 
-The other `data_sources/` scripts build and check the dictionary: catalogue pulls
-(`pull_*.py`, `ebrains_imaging.py`, `*_urls.py`), ENIGMA cohort mining (`enigma*.py`,
-`fetch_enigma_epmc.py`) and review helpers. A dictionary row's `id` is the data source's id in
-neurostore; neurostore keeps the metadata, this repo keeps the aliases and their match tiers.
+The other `data_sources/` scripts help curate `ingestion_workflow/data_sources/curated.tsv`:
+RRIDs counted in the corpus (`pull_rrid.py`), EBRAINS KG pages (`ebrains_imaging.py`), official
+websites (`*_urls.py`), ENIGMA cohort mining (`enigma*.py`, `fetch_enigma_epmc.py`) and
+`compare_source.py`. Pulling the catalogues and matching papers is `ingest data-sources pull`
+and the `datasources` stage.
 
 Removed in the catalog refactor, because `ingest` now covers them:
 

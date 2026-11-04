@@ -1,0 +1,539 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://neurodegenerationresearch.eu/wp-json/wp/v2/posts?_fields=id%2Cslug%2Clink%2Ctitle%2Ccontent&categories=285&page=1&per_page=10
+  response:
+    body:
+      string: '[{"id":28121,"slug":"the-atherosclerosis-risk-in-communities-study","link":"https:\/\/neurodegenerationresearch.eu\/the-atherosclerosis-risk-in-communities-study\/","title":{"rendered":"The
+        Atherosclerosis Risk in Communities Study"},"content":{"rendered":"<p>The
+        Atherosclerosis Risk in Communities Study (ARIC) is a prospective epidemiologic
+        study conducted in four U.S. communities. ARIC is designed to investigate
+        the etiology and natural history of atherosclerosis, the etiology of clinical
+        atherosclerotic diseases, and variation in cardiovascular risk factors, medical
+        care and disease by race, gender, location, and date. Since 2011 a large ancillary
+        study, the ARIC Neurocognitive Study (ARIC-NCS) has been assessing neurocognitive
+        status and adjudicating possible cases of dementia.<\/p>\n<p>Four ARIC field
+        centers each randomly selected and recruited a cohort sample of approximately
+        4,000 individuals aged 45-64 from a defined population in their community.
+        A total of 15,792 participants received an extensive baseline examination
+        (visit 1, 1987-1989), including medical, social, and demographic data collection.
+        Subsequent examinations occurred in 1990-92 (visit 2), 1993-95 (visit 3),
+        1996-98 (visit 4), 2011-2013 (visit 5) and 2016-2017 (visit 6).  Visit 7 (2018-2019)
+        is currently in progress. Follow-up occurs annually (semi-annually since 2012)
+        by telephone to maintain contact with participants and to assess health status
+        of the cohort.<\/p>\n<p><span data-sheets-root=\"1\">Types <\/span>General
+        population-based cohort<br \/>\n<span data-sheets-root=\"1\">Participant Types
+        <\/span>No diagnosis<br \/>\n<span data-sheets-root=\"1\">Countries <\/span>USA<br
+        \/>\n<span data-sheets-root=\"1\">Genders <\/span>Male and Female<br \/>\n<span
+        data-sheets-root=\"1\">Sample sizes <\/span>10,000 to 19,999<br \/>\n<span
+        data-sheets-root=\"1\">Ages <\/span>40 to 59|60 to 100<br \/>\n<span data-sheets-root=\"1\">Brain
+        related measures <\/span><br \/>\n<span data-sheets-root=\"1\">Funtional rating
+        <\/span>Individual psychological<br \/>\n<span data-sheets-root=\"1\">Anthropometric
+        <\/span>Blood pressure|Height|Hip circumference|Waist circumference|Weight<br
+        \/>\n<span data-sheets-root=\"1\">Physical <\/span><br \/>\n<span data-sheets-root=\"1\">Biological
+        samples <\/span>Cardiovascular|Hearing and vision|Musculoskeletal|Reproductive|Respiratory<br
+        \/>\n<span data-sheets-root=\"1\">Genotyping <\/span>Gene screening<br \/>\n<span
+        data-sheets-root=\"1\">Brain imaging <\/span>Magnetic resonance imaging (MRI)|Positron
+        emission tomography (PET) &#8211; amyloid<br \/>\n<span data-sheets-root=\"1\">Brain
+        banking <\/span><br \/>\n<span data-sheets-root=\"1\">Lifestyle <\/span>Alcohol|Dietary
+        habits|Physical activity|Smoking<br \/>\n<span data-sheets-root=\"1\">Socio-economic
+        <\/span>Education|Ethnic group|Family circumstances|Informal support|Martial
+        status|Occupation and employment<br \/>\n<span data-sheets-root=\"1\">Health
+        service utilisation <\/span>Formal health and social care service utilisation
+        including private care<br \/>\n<span data-sheets-root=\"1\">Institute names
+        <\/span>University of North Carolina at Chapel Hill<br \/>\n<span data-sheets-root=\"1\">Current
+        Sample Sizes <\/span>10,000 to 19,999<\/p>\n<p><span data-sheets-root=\"1\">age
+        at recruitment\u00a0<\/span>45-64<br \/>\nlast updated<br \/>\nrecruitment
+        period 1987-1989<br \/>\nestimated current sample size number value 7,400<br
+        \/>\ncohort acronym ARIC<br \/>\nstart date 1987-1989<br \/>\npi Jacqueline
+        Wright<br \/>\nwebsite <a href=\"http:\/\/www2.cscc.unc.edu\/aric\/\/\">http:\/\/www2.cscc.unc.edu\/aric\/<\/a><br
+        \/>\ncontact details ARIC Study Coordinating Center:<br \/>\nPI:  Dr. David
+        Couper;  Project Director:  Ms. Kim Ring<br \/>\nCollaborative Studies Coordinating
+        Center<br \/>\nDepartment of Biostatistics<br \/>\nUniversity of North Carolina
+        at Chapel Hill<br \/>\n123 W. Franklin Street, Suite 450<br \/>\nChapel Hill,
+        NC 27516<br \/>\nabstract\u00a0 ARIC is designed to investigate the etiology
+        and natural history of atherosclerosis, the etiology of clinical atherosclerotic
+        diseases, and variation in cardiovascular risk factors, medical care and disease
+        by race, gender, location, and date.<br \/>\nfunders\u00a0 National Institutes
+        of Health (NIH)<br \/>\ncontact email PI email: <a href=\"mailto: jacqueline.wright@nih.gov\">jacqueline.wright@nih.gov<\/a>;
+        Contact email: <a href=\"mailto: david_couper@unc.edu\">david_couper@unc.edu<\/a>;
+        <a href=\"mailto: kim_ring@unc.edu\">kim_ring@unc.edu<\/a><br \/>\ncontact
+        phone number\u00a0919-962-3229; 919-962-3096<br \/>\nestimated current sample
+        size 5,000 to 9,999<br \/>\nsample sizes\u00a015,792<\/p>\n","protected":false}},{"id":28122,"slug":"the-zaragoza-dementia-depression-project","link":"https:\/\/neurodegenerationresearch.eu\/the-zaragoza-dementia-depression-project\/","title":{"rendered":"The
+        ZARAgoza DEMentia DEPression project"},"content":{"rendered":"<p>The ZARADEMP
+        project (ZARAgoza DEMentia<br \/>\nDEPression project) was designed as a longitudinal,<br
+        \/>\ncommunity-based study to examine the incidence<br \/>\nof dementia and
+        the risk factors in incident cases of<br \/>\ndementia. It was carried out
+        in Zaragoza, a typical,<br \/>\nlarge city in Spain, with an important proportion<br
+        \/>\nof inhabitants coming from surrounding rural<br \/>\nareas (12). A stratified
+        random sample of individuals<br \/>\n55 years of age and older, with proportional<br
+        \/>\nallocation by age and sex, drawn from the eligible<br \/>\nindividuals
+        (n = 157 787) in the Spanish official<br \/>\ncensus lists of 1991, was invited
+        to participate in<br \/>\nthe baseline examination.<\/p>\n<p><span data-sheets-root=\"1\">Types
+        <\/span>General population-based cohort<br \/>\n<span data-sheets-root=\"1\">Participant
+        Types <\/span>At-risk diagnosis<br \/>\n<span data-sheets-root=\"1\">Countries
+        <\/span>Spain<br \/>\n<span data-sheets-root=\"1\">Genders <\/span>Male and
+        Female<br \/>\n<span data-sheets-root=\"1\">Sample sizes <\/span>0 to 4,999<br
+        \/>\n<span data-sheets-root=\"1\">Ages <\/span>40 to 59|60 to 100<br \/>\n<span
+        data-sheets-root=\"1\">Brain related measures <\/span><br \/>\n<span data-sheets-root=\"1\">Funtional
+        rating <\/span>Individual psychological<br \/>\n<span data-sheets-root=\"1\">Anthropometric
+        <\/span>Blood pressure|Height|Weight<br \/>\n<span data-sheets-root=\"1\">Physical
+        <\/span><br \/>\n<span data-sheets-root=\"1\">Biological samples <\/span><br
+        \/>\n<span data-sheets-root=\"1\">Genotyping <\/span><br \/>\n<span data-sheets-root=\"1\">Brain
+        imaging <\/span>Magnetic resonance imaging (MRI)<br \/>\n<span data-sheets-root=\"1\">Brain
+        banking <\/span><br \/>\n<span data-sheets-root=\"1\">Lifestyle <\/span>Alcohol|Physical
+        activity|Smoking<br \/>\n<span data-sheets-root=\"1\">Socio-economic <\/span>Education|Ethnic
+        group|Family circumstances|Housing and accommodation|Informal support|Martial
+        status|Occupation and employment<br \/>\n<span data-sheets-root=\"1\">Health
+        service utilisation <\/span><br \/>\n<span data-sheets-root=\"1\">Institute
+        names <\/span><br \/>\n<span data-sheets-root=\"1\">Current Sample Sizes <\/span>0
+        to 4,999<\/p>\n<p><span data-sheets-root=\"1\">age at recruitment\u00a0<\/span>>55<br
+        \/>\nlast updated<br \/>\nrecruitment period 1991<br \/>\nestimated current
+        sample size number value 1,500<br \/>\ncohort acronym ZARADEMP<br \/>\nstart
+        date 1991<br \/>\npi Professor Antonio Lobo<br \/>\nwebsite <a href=\"https:\/\/www.ncbi.nlm.nih.gov\/pubmed\/21848704\">https:\/\/www.ncbi.nlm.nih.gov\/pubmed\/21848704<\/a><br
+        \/>\ncontact details Facultad de Medicina, Departamento de Medicina, Psiquiatr\u00eda,<br
+        \/>\nC\/ Domingo Miral s\/n, 50009 Zaragoza, Spain<br \/>\nabstract\u00a0
+        The ZARADEMP project (ZARAgoza DEMentia<br \/>\nDEPression project) was designed
+        as a longitudinal,<br \/>\ncommunity-based study to examine the incidence<br
+        \/>\nof dementia and the risk factors in incident cases of<br \/>\ndementia.<br
+        \/>\nfunders\u00a0 Fondo de Investigaci\u00f3n Sanitaria, Instituto de Salud
+        Carlos III, Spanish Ministry of Health<br \/>\ncontact email <a href=\"mailto:
+        alobo@unizar.es\">alobo@unizar.es<\/a><br \/>\ncontact phone number\u00a0<br
+        \/>\nestimated current sample size<br \/>\nsample sizes\u00a04,802<\/p>\n","protected":false}},{"id":22473,"slug":"uppsala-longitudinal-study-of-adult-men","link":"https:\/\/neurodegenerationresearch.eu\/uppsala-longitudinal-study-of-adult-men\/","title":{"rendered":"Uppsala
+        Longitudinal Study of Adult Men"},"content":{"rendered":"<p>ULSAM is a unique,
+        ongoing, longitudinal, epidemiologic study based on all available men, born
+        between 1920 and 1924, in Uppsala County, Sweden. The men were investigated
+        at the ages of 50, 60, 70, 77, 82 88 and 93 years. The reinvestigations in
+        ULSAM were based on the previous investigations. Full screening and official
+        registry data is available in our databases and more data is continuously
+        added.<\/p>\n<p>Health examination at 93 years of age was carried out between
+        December 2013 and March 2015. To this examination 245 men have been invited.
+        Totally 147 men (60%) participated in the investigation. Of these, 23 men
+        were examined at the hospital and 102 were visited at home by a nurse. In
+        addition, 22 men completed only a questionnaire. To this examination even
+        spouses were invited. In the complete examination 43 spouses have participated
+        and 11 completed only a questionnaire.<\/p>\n<p><span data-sheets-root=\"1\">Types
+        <\/span>General population-based cohort<br \/>\n<span data-sheets-root=\"1\">Participant
+        Types <\/span>No diagnosis<br \/>\n<span data-sheets-root=\"1\">Countries
+        <\/span>Sweden<br \/>\n<span data-sheets-root=\"1\">Genders <\/span>Male<br
+        \/>\n<span data-sheets-root=\"1\">Sample sizes <\/span>0 to 4,999<br \/>\n<span
+        data-sheets-root=\"1\">Ages <\/span>40 to 59|60 to 100<br \/>\n<span data-sheets-root=\"1\">Brain
+        related measures <\/span><br \/>\n<span data-sheets-root=\"1\">Funtional rating
+        <\/span><br \/>\n<span data-sheets-root=\"1\">Anthropometric <\/span>Blood
+        pressure|Height|Hip circumference|Waist circumference|Weight<br \/>\n<span
+        data-sheets-root=\"1\">Physical <\/span>Cardiovascular|Musculoskeletal|Respiratory<br
+        \/>\n<span data-sheets-root=\"1\">Biological samples <\/span>Blood|Cerebral
+        spinal fluid (CSF)|If CSF was collected is biomarker data available|Urine<br
+        \/>\n<span data-sheets-root=\"1\">Genotyping <\/span>Gene screening<br \/>\n<span
+        data-sheets-root=\"1\">Brain imaging <\/span><br \/>\n<span data-sheets-root=\"1\">Brain
+        banking <\/span>Consent for brain donation<br \/>\n<span data-sheets-root=\"1\">Lifestyle
+        <\/span>Alcohol|Dietary habits|Physical activity|Smoking<br \/>\n<span data-sheets-root=\"1\">Socio-economic
+        <\/span>Education|Family circumstances|Housing and accommodation|Martial status|Occupation
+        and employment<br \/>\n<span data-sheets-root=\"1\">Health service utilisation
+        <\/span>Formal health and social care service utilisation including private
+        care<br \/>\n<span data-sheets-root=\"1\">Institute names <\/span>Uppsala
+        University<br \/>\n<span data-sheets-root=\"1\">Current Sample Sizes <\/span>0
+        to 4,999<\/p>\n<p><span data-sheets-root=\"1\">age at recruitment\u00a0<\/span>>50<br
+        \/>\nlast updated<br \/>\nrecruitment period 1970-1973<br \/>\nestimated current
+        sample size number value 147<br \/>\ncohort acronym ULSAM<br \/>\nstart date
+        1970-1973<br \/>\npi Professor Martin Ingelsson<br \/>\nwebsite <a href=\"http:\/\/www.pubcare.uu.se\/ulsam\/Database\">http:\/\/www.pubcare.uu.se\/ulsam\/Database<\/a><br
+        \/>\ncontact details<br \/>\nabstract\u00a0 ULSAM is a unique, ongoing, longitudinal,
+        epidemiologic study based on all available men, born between 1920 and 1924,
+        in Uppsala County, Sweden.<br \/>\nfunders\u00a0 UK Medical Research Council|Swedish
+        Research Council|Swedish Council for Working Life<br \/>\ncontact email <a
+        href=\"mailto: martin.ingelsson@pubcare.uu.se\">martin.ingelsson@pubcare.uu.se<\/a>
+        (Head of Geriatrics \/ Principal investigator for ULSAM); <a href=\"mailto:
+        vilmantas.giedraitis@pubcare.uu.se\">vilmantas.giedraitis@pubcare.uu.se <\/a>(ICTUS
+        coordinator \/ ULSAM data manager)<br \/>\ncontact phone number\u00a0+46 18
+        471 41 07; +46 18 471 50 39<br \/>\nestimated current sample size 0 to 4,999<br
+        \/>\nsample sizes\u00a02,322<\/p>\n","protected":false}},{"id":25378,"slug":"uppsala-longitudinal-study-of-adult-men-2","link":"https:\/\/neurodegenerationresearch.eu\/uppsala-longitudinal-study-of-adult-men-2\/","title":{"rendered":"Uppsala
+        Longitudinal Study of Adult Men"},"content":{"rendered":"<p>ULSAM is a unique,
+        ongoing, longitudinal, epidemiologic study based on all available men, born
+        between 1920 and 1924, in Uppsala County, Sweden. The men were investigated
+        at the ages of 50, 60, 70, 77, 82 88 and 93 years. The reinvestigations in
+        ULSAM were based on the previous investigations. Full screening and official
+        registry data is available in our databases and more data is continuously
+        added.<\/p>\n<p>Health examination at 93 years of age was carried out between
+        December 2013 and March 2015. To this examination 245 men have been invited.
+        Totally 147 men (60%) participated in the investigation. Of these, 23 men
+        were examined at the hospital and 102 were visited at home by a nurse. In
+        addition, 22 men completed only a questionnaire. To this examination even
+        spouses were invited. In the complete examination 43 spouses have participated
+        and 11 completed only a questionnaire.<\/p>\n<p><span data-sheets-root=\"1\">Types
+        <\/span>General population-based cohort<br \/>\n<span data-sheets-root=\"1\">Participant
+        Types <\/span>No diagnosis<br \/>\n<span data-sheets-root=\"1\">Countries
+        <\/span>Sweden<br \/>\n<span data-sheets-root=\"1\">Genders <\/span>Male<br
+        \/>\n<span data-sheets-root=\"1\">Sample sizes <\/span>0 to 4,999<br \/>\n<span
+        data-sheets-root=\"1\">Ages <\/span>40 to 59|60 to 100<br \/>\n<span data-sheets-root=\"1\">Brain
+        related measures <\/span><br \/>\n<span data-sheets-root=\"1\">Funtional rating
+        <\/span><br \/>\n<span data-sheets-root=\"1\">Anthropometric <\/span>Blood
+        pressure|Height|Hip circumference|Waist circumference|Weight<br \/>\n<span
+        data-sheets-root=\"1\">Physical <\/span>Cardiovascular|Musculoskeletal|Respiratory<br
+        \/>\n<span data-sheets-root=\"1\">Biological samples <\/span>Blood|Cerebral
+        spinal fluid (CSF)|If CSF was collected is biomarker data available|Urine<br
+        \/>\n<span data-sheets-root=\"1\">Genotyping <\/span>Gene screening<br \/>\n<span
+        data-sheets-root=\"1\">Brain imaging <\/span><br \/>\n<span data-sheets-root=\"1\">Brain
+        banking <\/span>Consent for brain donation<br \/>\n<span data-sheets-root=\"1\">Lifestyle
+        <\/span>Alcohol|Dietary habits|Physical activity|Smoking<br \/>\n<span data-sheets-root=\"1\">Socio-economic
+        <\/span>Education|Family circumstances|Housing and accommodation|Martial status|Occupation
+        and employment<br \/>\n<span data-sheets-root=\"1\">Health service utilisation
+        <\/span>Formal health and social care service utilisation including private
+        care<br \/>\n<span data-sheets-root=\"1\">Institute names <\/span>Uppsala
+        University<br \/>\n<span data-sheets-root=\"1\">Current Sample Sizes <\/span>0
+        to 4,999<\/p>\n<p><span data-sheets-root=\"1\">age at recruitment\u00a0<\/span>>50<br
+        \/>\nlast updated<br \/>\nrecruitment period 1970-1973<br \/>\nestimated current
+        sample size number value 147<br \/>\ncohort acronym ULSAM<br \/>\nstart date
+        1970-1973<br \/>\npi Professor Martin Ingelsson<br \/>\nwebsite <a href=\"http:\/\/www.pubcare.uu.se\/ulsam\/Database\">http:\/\/www.pubcare.uu.se\/ulsam\/Database<\/a><br
+        \/>\ncontact details<br \/>\nabstract\u00a0 ULSAM is a unique, ongoing, longitudinal,
+        epidemiologic study based on all available men, born between 1920 and 1924,
+        in Uppsala County, Sweden.<br \/>\nfunders\u00a0 UK Medical Research Council|Swedish
+        Research Council|Swedish Council for Working Life<br \/>\ncontact email <a
+        href=\"mailto: martin.ingelsson@pubcare.uu.se\">martin.ingelsson@pubcare.uu.se<\/a>
+        (Head of Geriatrics \/ Principal investigator for ULSAM); <a href=\"mailto:
+        vilmantas.giedraitis@pubcare.uu.se\">vilmantas.giedraitis@pubcare.uu.se <\/a>(ICTUS
+        coordinator \/ ULSAM data manager)<br \/>\ncontact phone number\u00a0+46 18
+        471 41 07; +46 18 471 50 39<br \/>\nestimated current sample size 0 to 4,999<br
+        \/>\nsample sizes\u00a02,322<\/p>\n","protected":false}},{"id":28032,"slug":"next-steps-2-2","link":"https:\/\/neurodegenerationresearch.eu\/next-steps-2-2\/","title":{"rendered":"Next
+        Steps"},"content":{"rendered":"<p>Recruitment Period: 2004<br \/>\nSample
+        size at start or planned sample size if still recruiting: 16,122 (15,770 households
+        included at Sweep 1; 352 ethnic boost interviews added at Sweep 4)<br \/>\nEstimated
+        current sample size: 15,629<br \/>\nAge at recruitment: 13-14<\/p>\n<p>Abstract<br
+        \/>\nNext Steps (previously known as the Longitudinal Study of Young People
+        in England &#8211; LSYPE) is a major innovative cohort study of young people.
+        The study began in 2004 and included all young people in Year 9, aged between
+        13 and 14, who attended state and independent schools in England.<\/p>\n<p>Next
+        Steps is one of the main information sources for the formation and appraisal
+        of policies relating to young people and will continue to be so for at least
+        the next 10 years. The baseline data will be used to monitor the progress
+        of the cohort group, evaluate the success of policies aimed at this group
+        and provide an evidence base for further policy development. The study brings
+        together data from a wide range of sources and reflects the variety of influences
+        on learning and progression. <\/p>\n<p>Following the initial survey at age
+        13-14, the cohort members were visited every year until 2010, when they were
+        age 19-20. Young people were interviewed along with their parents up to sweep
+        4 (age 17).<\/p>\n<p>The most recent survey took place in 2015\/16, when the
+        cohort members were 25 years old. It maintained the strong focus on education,
+        but the content was broadened to become a more multi-disciplinary research
+        resource. Data was collected about cohort members&#8217; housing and family
+        life, employment and economic circumstances, education and job training, physical
+        and emotional health, and identity and participation. A wide range of administrative
+        data linkage consents were collected in the domains of health, education,
+        economics and criminal behaviour.<\/p>\n<p><span data-sheets-root=\"1\">Types
+        <\/span>General population-based cohort<br \/>\n<span data-sheets-root=\"1\">Participant
+        Types <\/span>No diagnosis<br \/>\n<span data-sheets-root=\"1\">Countries
+        <\/span>United Kingdom<br \/>\n<span data-sheets-root=\"1\">Genders <\/span>Male
+        and Female<br \/>\n<span data-sheets-root=\"1\">Sample sizes <\/span>15,000
+        to 19,999<br \/>\n<span data-sheets-root=\"1\">Ages <\/span>10 to 19<br \/>\n<span
+        data-sheets-root=\"1\">Brain related measures <\/span><br \/>\n<span data-sheets-root=\"1\">Funtional
+        rating <\/span>Individual physiological|Individual psychological<br \/>\n<span
+        data-sheets-root=\"1\">Anthropometric <\/span>Height|Weight<br \/>\n<span
+        data-sheets-root=\"1\">Physical <\/span>Hearing and Vision|Reproductive<br
+        \/>\n<span data-sheets-root=\"1\">Biological samples <\/span><br \/>\n<span
+        data-sheets-root=\"1\">Genotyping <\/span><br \/>\n<span data-sheets-root=\"1\">Brain
+        imaging <\/span><br \/>\n<span data-sheets-root=\"1\">Brain banking <\/span><br
+        \/>\n<span data-sheets-root=\"1\">Lifestyle <\/span>Alcohol|Dietary habits|Physical
+        activity|Smoking<br \/>\n<span data-sheets-root=\"1\">Socio-economic <\/span>Education|Ethnic
+        group|Family circumstances|Housing and accommodation|Income and finances|Informal
+        support|Martial status|Occupation and employment|Unpaid care<br \/>\n<span
+        data-sheets-root=\"1\">Health service utilisation <\/span><br \/>\n<span data-sheets-root=\"1\">Institute
+        names <\/span>University College, London<br \/>\n<span data-sheets-root=\"1\">Current
+        Sample Sizes <\/span>15,000 to 19,999<\/p>\n<p><span data-sheets-root=\"1\">age
+        at recruitment\u00a0<\/span>13-14<br \/>\nlast updated<br \/>\nrecruitment
+        period 2004<br \/>\nestimated current sample size number value 15,629<br \/>\ncohort
+        acronym Next Steps<br \/>\nstart date 2004<br \/>\npi Dr Lisa Calderwood<br
+        \/>\nwebsite <a href=\"http:\/\/www.cls.ioe.ac.uk\/page.aspx?&#038;sitesectionid=1246&#038;sitesectiontitle=Welcome+to+the+Longitudinal+Study+of+Young+People+in+England+
+        \">http:\/\/www.cls.ioe.ac.uk\/page.aspx?&#038;sitesectionid=1246&#038;sitesectiontitle=Welcome+to+the+Longitudinal+Study+of+Young+People+in+England+<\/a><br
+        \/>\ncontact details Centre for Longitudinal Studies<br \/>\nabstract\u00a0
+        The study began in 2004 and included all young people in Year 9, aged between
+        13 and 14, who attended state and independent schools in England.<br \/>\nfunders\u00a0
+        Department of Education|Economic and Social Research Council<br \/>\ncontact
+        email <a href=\"mailto: l.calderwood@ucl.ac.uk \">l.calderwood@ucl.ac.uk<\/a><br
+        \/>\ncontact phone number\u00a0+44 (0)20 7612 6875<br \/>\nestimated current
+        sample size 15,000 to 19,999<br \/>\nsample sizes\u00a016,122<\/p>\n","protected":false}},{"id":28103,"slug":"the-1970-british-cohort-study","link":"https:\/\/neurodegenerationresearch.eu\/the-1970-british-cohort-study\/","title":{"rendered":"The
+        1970 British Cohort Study"},"content":{"rendered":"<p>The 1970 British Cohort
+        Study (BCS70) follows the lives of more than 17,000 people born in England,
+        Scotland and Wales in a single week of 1970. Over the course of cohort members
+        lives, the BCS70 has collected information on health, physical, educational
+        and social development, and economic circumstances among other factors.<\/p>\n<p><span
+        data-sheets-root=\"1\">Types <\/span>General population-based cohort<br \/>\n<span
+        data-sheets-root=\"1\">Participant Types <\/span>No diagnosis<br \/>\n<span
+        data-sheets-root=\"1\">Countries <\/span>United Kingdom<br \/>\n<span data-sheets-root=\"1\">Genders
+        <\/span>Male and Female<br \/>\n<span data-sheets-root=\"1\">Sample sizes
+        <\/span>15,000 to 19,999<br \/>\n<span data-sheets-root=\"1\">Ages <\/span><br
+        \/>\n<span data-sheets-root=\"1\">Brain related measures <\/span><br \/>\n<span
+        data-sheets-root=\"1\">Funtional rating <\/span>Individual psychological<br
+        \/>\n<span data-sheets-root=\"1\">Anthropometric <\/span>Blood pressure|Height|Hip
+        circumference|Waist circumference|Weight<br \/>\n<span data-sheets-root=\"1\">Physical
+        <\/span>Cardiovascular|Hearing and Vision|Musculoskeletal|Reproductive|Respiratory<br
+        \/>\n<span data-sheets-root=\"1\">Biological samples <\/span>Blood<br \/>\n<span
+        data-sheets-root=\"1\">Genotyping <\/span><br \/>\n<span data-sheets-root=\"1\">Brain
+        imaging <\/span><br \/>\n<span data-sheets-root=\"1\">Brain banking <\/span><br
+        \/>\n<span data-sheets-root=\"1\">Lifestyle <\/span>Alcohol|Dietary habits|Physical
+        activity|Smoking<br \/>\n<span data-sheets-root=\"1\">Socio-economic <\/span>Education|Ethnic
+        group|Family circumstances|Housing and accommodation|Income and finances|Informal
+        support|Martial status|Occupation and employment|Unpaid care<br \/>\n<span
+        data-sheets-root=\"1\">Health service utilisation <\/span>Formal health and
+        social care service utilisation including private care<br \/>\n<span data-sheets-root=\"1\">Institute
+        names <\/span>University College, London<br \/>\n<span data-sheets-root=\"1\">Current
+        Sample Sizes <\/span>15,000 to 19,999<\/p>\n<p><span data-sheets-root=\"1\">age
+        at recruitment\u00a0<\/span>0<br \/>\nlast updated<br \/>\nrecruitment period
+        01\/04\/1970<br \/>\nestimated current sample size number value 9,841<br \/>\ncohort
+        acronym BCS70<br \/>\nstart date 01\/04\/1970<br \/>\npi Alice Sullivan<br
+        \/>\nwebsite <a href=\"http:\/\/www.cls.ioe.ac.uk\/page.aspx?&#038;sitesectionid=795&#038;sitesectiontitle=Welcome+to+the+1970+British+Cohort+Study\">http:\/\/www.cls.ioe.ac.uk\/page.aspx?&#038;sitesectionid=795&#038;sitesectiontitle=Welcome+to+the+1970+British+Cohort+Study<\/a><br
+        \/>\ncontact details Centre for Longitudinal Studies<br \/>\nUCL Institute
+        of Education<br \/>\n20 Bedford Way<br \/>\nLondon<br \/>\nWC1H 0AL<br \/>\nabstract\u00a0
+        The 1970 British Cohort Study (BCS70) follows the lives of more than 17,000
+        people born in England, Scotland and Wales in a single week of 1970.<br \/>\nfunders\u00a0
+        Economic and Social Research Council.<br \/>\ncontact email <a href=\"mailto:
+        clsfeedback@ioe.ac.uk\">clsfeedback@ioe.ac.uk<\/a>; PI email: <a href=\"mailto:
+        alice.sullivan@ucl.ac.uk\">alice.sullivan@ucl.ac.uk<\/a><br \/>\ncontact phone
+        number\u00a044 (0) 2076126875<br \/>\nestimated current sample size 5,000
+        to 9,999<br \/>\nsample sizes\u00a017,200<\/p>\n","protected":false}},{"id":28104,"slug":"the-confucius-hometown-aging-project","link":"https:\/\/neurodegenerationresearch.eu\/the-confucius-hometown-aging-project\/","title":{"rendered":"The
+        Confucius Hometown Aging Project"},"content":{"rendered":"<p>The Confucius
+        Hometown Aging Project (CHAP) is a longitudinal study of vascular risk factors,
+        ageing, and health in people aged 60 years or older who live in a rural community
+        near Qufu (hometown of Confucius), Shandong, China. The study was done by
+        local hospital staff consisting of clinicians and nurses.<\/p>\n<p><span data-sheets-root=\"1\">Types
+        <\/span>General population-based cohort<br \/>\n<span data-sheets-root=\"1\">Participant
+        Types <\/span>No diagnosis<br \/>\n<span data-sheets-root=\"1\">Countries
+        <\/span>China<br \/>\n<span data-sheets-root=\"1\">Genders <\/span>Male and
+        Female<br \/>\n<span data-sheets-root=\"1\">Sample sizes <\/span>0 to 4,999<br
+        \/>\n<span data-sheets-root=\"1\">Ages <\/span><br \/>\n<span data-sheets-root=\"1\">Brain
+        related measures <\/span><br \/>\n<span data-sheets-root=\"1\">Funtional rating
+        <\/span>Individual physiological|Individual psychological<br \/>\n<span data-sheets-root=\"1\">Anthropometric
+        <\/span>Blood pressure|Height|Waist circumference|Weight<br \/>\n<span data-sheets-root=\"1\">Physical
+        <\/span>Cardiovascular|Hearing and Vision|Musculoskeletal|Reproductive|Respiratory<br
+        \/>\n<span data-sheets-root=\"1\">Biological samples <\/span>Blood<br \/>\n<span
+        data-sheets-root=\"1\">Genotyping <\/span><br \/>\n<span data-sheets-root=\"1\">Brain
+        imaging <\/span><br \/>\n<span data-sheets-root=\"1\">Brain banking <\/span><br
+        \/>\n<span data-sheets-root=\"1\">Lifestyle <\/span>Alcohol|Dietary habits|Physical
+        activity|Smoking<br \/>\n<span data-sheets-root=\"1\">Socio-economic <\/span>Education|Ethnic
+        group|Family circumstances|Housing and accommodation|Income and finances|Informal
+        support|Martial status|Occupation and employment<br \/>\n<span data-sheets-root=\"1\">Health
+        service utilisation <\/span><br \/>\n<span data-sheets-root=\"1\">Institute
+        names <\/span>Jining Medical University<br \/>\n<span data-sheets-root=\"1\">Current
+        Sample Sizes <\/span>0 to 4,999<\/p>\n<p><span data-sheets-root=\"1\">age
+        at recruitment\u00a0<\/span>>60<br \/>\nlast updated<br \/>\nrecruitment period
+        2010-2011<br \/>\nestimated current sample size number value 850<br \/>\ncohort
+        acronym CHAP<br \/>\nstart date 2010-2011<br \/>\npi Chengxuan Qiu; Zhongrui
+        Yan<br \/>\nwebsite <a href=\"https:\/\/www.ncbi.nlm.nih.gov\/pmc\/articles\/PMC3895010\/\">https:\/\/www.ncbi.nlm.nih.gov\/pmc\/articles\/PMC3895010\/<\/a><br
+        \/>\ncontact details Aging Research Center, Department of Neurobiology, Health
+        Care Sciences and Society, Karolinska Institutet-Stockholm University, Stockholm,
+        Sweden<br \/>\nabstract\u00a0 The Confucius Hometown Aging Project (CHAP)
+        is a longitudinal study of vascular risk factors, ageing, and health in people
+        aged 60 years or older who live in a rural community near Qufu (hometown of
+        Confucius), Shandong, China.<br \/>\nfunders\u00a0 Department of Science and
+        Technology and the Department of Health of Shandong Province, the Natural
+        Science Foundation of Shandong Province<br \/>\ncontact email <a href=\"mailto:
+        chengxuan.qiu@ki.se\">chengxuan.qiu@ki.se<\/a><br \/>\ncontact phone number\u00a0<br
+        \/>\nestimated current sample size 0 to 4,999<br \/>\nsample sizes\u00a01,480<\/p>\n","protected":false}},{"id":28105,"slug":"epiporto","link":"https:\/\/neurodegenerationresearch.eu\/epiporto\/","title":{"rendered":"EPIPorto"},"content":{"rendered":"<p>The
+        EPIPorto study is a landmark in epidemiological research in Portugal. It is
+        a population-based cohort study, ongoing for over 15 years, with the main
+        aim of assessing the determinants of health in the adult population of Porto.
+        For this purpose we randomly selected 2485 persons, who have been repeatedly
+        evaluated over time.<\/p>\n<p>Participants were invited to visit the study
+        centre to answer a questionnaire on social, demographic and behavioural characteristics,
+        and their clinical history. Additionally, objective measurements were made,
+        including blood tests, blood pressure, weight and height, electrocardiogram,
+        evaluation of lung function and bone mineral density. The participants\u0092
+        address was georeferenced, allowing the analysis of the spatial distribution
+        of health states and events in the city. Subgroups of the cohort at the baseline
+        evaluation were used as controls in case-control studies namely on myocardial
+        infarction and gastric cancer.<\/p>\n<p><span data-sheets-root=\"1\">Types
+        <\/span>General population-based cohort<br \/>\n<span data-sheets-root=\"1\">Participant
+        Types <\/span><br \/>\n<span data-sheets-root=\"1\">Countries <\/span>Portugal<br
+        \/>\n<span data-sheets-root=\"1\">Genders <\/span>Male and Female<br \/>\n<span
+        data-sheets-root=\"1\">Sample sizes <\/span>0 to 4,999<br \/>\n<span data-sheets-root=\"1\">Ages
+        <\/span><br \/>\n<span data-sheets-root=\"1\">Brain related measures <\/span><br
+        \/>\n<span data-sheets-root=\"1\">Funtional rating <\/span>Individual psychological<br
+        \/>\n<span data-sheets-root=\"1\">Anthropometric <\/span>Blood pressure|Height|Hip
+        circumference|Waist circumference|Weight<br \/>\n<span data-sheets-root=\"1\">Physical
+        <\/span>Cardiovascular|Musculoskeletal|Reproductive|Respiratory<br \/>\n<span
+        data-sheets-root=\"1\">Biological samples <\/span>Blood<br \/>\n<span data-sheets-root=\"1\">Genotyping
+        <\/span><br \/>\n<span data-sheets-root=\"1\">Brain imaging <\/span><br \/>\n<span
+        data-sheets-root=\"1\">Brain banking <\/span><br \/>\n<span data-sheets-root=\"1\">Lifestyle
+        <\/span>Alcohol|Dietary habits|Physical activity|Smoking<br \/>\n<span data-sheets-root=\"1\">Socio-economic
+        <\/span>Education|Ethnic group|Family circumstances|Housing and accommodation|Income
+        and finances|Informal support|Martial status|Occupation and employment|Unpaid
+        care<br \/>\n<span data-sheets-root=\"1\">Health service utilisation <\/span>Formal
+        health and social care service utilisation including private care<br \/>\n<span
+        data-sheets-root=\"1\">Institute names <\/span>ISPUP &#8211; Public Health
+        Institute of the University of Porto<br \/>\n<span data-sheets-root=\"1\">Current
+        Sample Sizes <\/span>0 to 4,999<\/p>\n<p><span data-sheets-root=\"1\">age
+        at recruitment\u00a0<\/span>18-92<br \/>\nlast updated<br \/>\nrecruitment
+        period 1999-2003<br \/>\nestimated current sample size number value<br \/>\ncohort
+        acronym EPIPorto<br \/>\nstart date 1999-2003<br \/>\npi Henrique Barros<br
+        \/>\nwebsite <a href=\"http:\/\/ispup.up.pt\/research\/research-structures\/cohorts\/\">http:\/\/ispup.up.pt\/research\/research-structures\/cohorts\/<\/a><br
+        \/>\ncontact details EPIUnit, Institute of Public Health, University of Porto,
+        Porto, Portugal<br \/>\nabstract\u00a0 It is a population-based cohort study,
+        ongoing for over 15 years, with the main aim of assessing the determinants
+        of health in the adult population of Porto.<br \/>\nfunders\u00a0 Funda\u00e7\u00e3o
+        para a Ci\u00eancia e a Tecnologia (Foundation for Science and Technology)<br
+        \/>\ncontact email <a href=\"mailto: hbarros@med.up.pt\">hbarros@med.up.pt<\/a><br
+        \/>\ncontact phone number\u00a0+351 222 061 820<br \/>\nestimated current
+        sample size<br \/>\nsample sizes\u00a02,485<\/p>\n","protected":false}},{"id":28106,"slug":"japanese-study-of-aging-and-retirement","link":"https:\/\/neurodegenerationresearch.eu\/japanese-study-of-aging-and-retirement\/","title":{"rendered":"Japanese
+        Study of Aging and Retirement"},"content":{"rendered":"<p>JSTAR project researchers
+        aimed to construct a world-class longitudinal dataset on middle-aged and elderly
+        Japanese persons to enable researchers worldwide to perform scientific investigation
+        on aging and retirement from an international perspective. Despite the rapid
+        aging of the Japanese population, no statistical survey that could properly
+        capture the diversity of the elderly population from various viewpoints had
+        been carried out in Japan until recently. RIETI, Hitotsubashi University jointly
+        launched a comprehensive survey of elderly people in 2007 to collect panel
+        data on their lives and health, with the University of Tokyo joining from
+        2009 onward.<br \/>\nThe 2009 JSTAR survey includes a follow-up survey of
+        the respondents to the 2007 survey and an initial survey of elderly people
+        in two additional municipalities, i.e., Tosu in Saga Prefecture and Naha in
+        Okinawa Prefecture, whereas the 2011 JSTAR Survey includes follow-up surveys
+        of the respondents to the 2007 and 2009 surveys plus an initial survey of
+        elderly people in three additional municipalities, Tondabayashi, Chofu, and
+        Hiroshima<\/p>\n<p><span data-sheets-root=\"1\">Types <\/span>General population-based
+        cohort<br \/>\n<span data-sheets-root=\"1\">Participant Types <\/span>No diagnosis<br
+        \/>\n<span data-sheets-root=\"1\">Countries <\/span>Japan<br \/>\n<span data-sheets-root=\"1\">Genders
+        <\/span>Male and Female<br \/>\n<span data-sheets-root=\"1\">Sample sizes
+        <\/span>5,000 to 9,999<br \/>\n<span data-sheets-root=\"1\">Ages <\/span><br
+        \/>\n<span data-sheets-root=\"1\">Brain related measures <\/span><br \/>\n<span
+        data-sheets-root=\"1\">Funtional rating <\/span>Individual physiological|Individual
+        psychological<br \/>\n<span data-sheets-root=\"1\">Anthropometric <\/span>Blood
+        pressure|Height|Weight<br \/>\n<span data-sheets-root=\"1\">Physical <\/span>Cardiovascular|Hearing
+        and Vision|Musculoskeletal|Reproductive|Respiratory<br \/>\n<span data-sheets-root=\"1\">Biological
+        samples <\/span><br \/>\n<span data-sheets-root=\"1\">Genotyping <\/span><br
+        \/>\n<span data-sheets-root=\"1\">Brain imaging <\/span><br \/>\n<span data-sheets-root=\"1\">Brain
+        banking <\/span><br \/>\n<span data-sheets-root=\"1\">Lifestyle <\/span>Alcohol|Dietary
+        habits|Physical activity|Smoking<br \/>\n<span data-sheets-root=\"1\">Socio-economic
+        <\/span>Education|Family circumstances|Income and finances|Informal support|Martial
+        status|Occupation and employment|Unpaid care<br \/>\n<span data-sheets-root=\"1\">Health
+        service utilisation <\/span>Formal health and social care service utilisation
+        including private care<br \/>\n<span data-sheets-root=\"1\">Institute names
+        <\/span>The Research Institute of Economy, Trade and Industry (RIETI), Hitotsubashi
+        University and The University of Tokyo<br \/>\n<span data-sheets-root=\"1\">Current
+        Sample Sizes <\/span>5,000 to 9,999<\/p>\n<p><span data-sheets-root=\"1\">age
+        at recruitment\u00a0<\/span>>50 <75\nlast updated \nrecruitment period 2007-2017\nestimated
+        current sample size number value \ncohort acronym JSTAR\nstart date 2007-2017\npi
+        Hidehiko Ichimura, Satoshi Shimizutani\nwebsite <a href=\"http:\/\/www.rieti.go.jp\/en\/projects\/jstar\/index.html
+        \">http:\/\/www.rieti.go.jp\/en\/projects\/jstar\/index.html <\/a><br \/>\ncontact
+        details<br \/>\nabstract\u00a0 JSTAR project researchers aimed to construct
+        a world-class longitudinal dataset on middle-aged and elderly Japanese persons
+        to enable researchers worldwide to perform scientific investigation on aging
+        and retirement from an international perspective.<br \/>\nfunders\u00a0 Research
+        Institute of Economy, Trade and Industry (RIETI)<br \/>\ncontact email <a
+        href=\"mailto: jstar@rieti.go.jp\">jstar@rieti.go.jp<\/a>; <a href=\"mailto:
+        ichimura@e.u-tokyo.ac.jp\">ichimura@e.u-tokyo.ac.jp<\/a>; <a href=\"mailto:
+        sshimizutani@iips.org\">sshimizutani@iips.org<\/a>; <a href=\"mailto: hidehashimoto-circ@umin.ac.jp\">
+        hidehashimoto-circ@umin.ac.jp<\/a><br \/>\ncontact phone number\u00a0<br \/>\nestimated
+        current sample size<br \/>\nsample sizes\u00a07,268<\/p>\n","protected":false}},{"id":28107,"slug":"1958-national-child-development-study-2","link":"https:\/\/neurodegenerationresearch.eu\/1958-national-child-development-study-2\/","title":{"rendered":"1958
+        National Child Development Study"},"content":{"rendered":"<p>The National
+        Child Development Study (NCDS) is a longitudinal study which follows the lives
+        of 17,000 people born in England, Scotland and Wales in a single week of 1958.
+        Also known as the 1958 Birth Cohort Study, it collects information on physical
+        and educational development, economic circumstances, employment, family life,
+        health behaviour, wellbeing, social participation and attitudes.<\/p>\n<p>Since
+        the birth survey in 1958, there have been nine further \u0091sweeps\u0092
+        of all cohort members at ages 7, 11, 16, 23, 33, 42, 46, 50 and 55. In 2003
+        (at age 45), 9,000 cohort members also participated in a special bio-medical
+        survey to learn more about how development, environments and lifestyles affect
+        people\u0092s health. CLS will carry out a new survey of the NCDS cohort at
+        age 60 in 2018.<\/p>\n<p>NCDS is part of CLOSER (Cohort &amp; Longitudinal
+        Studies Enhancement Resources) which aims to maximise the use, value and impact
+        of the UK&#8217;s longitudinal studies.<\/p>\n<p><span data-sheets-root=\"1\">Types
+        <\/span>General population-based cohort<br \/>\n<span data-sheets-root=\"1\">Participant
+        Types <\/span>No diagnosis<br \/>\n<span data-sheets-root=\"1\">Countries
+        <\/span>United Kingdom<br \/>\n<span data-sheets-root=\"1\">Genders <\/span>Male
+        and Female<br \/>\n<span data-sheets-root=\"1\">Sample sizes <\/span>15,000
+        to 19,999<br \/>\n<span data-sheets-root=\"1\">Ages <\/span>0 to 9|10 to 19|20
+        to 39|40 to 59|60 to 100<br \/>\n<span data-sheets-root=\"1\">Brain related
+        measures <\/span><br \/>\n<span data-sheets-root=\"1\">Funtional rating <\/span>Individual
+        physiological|Individual psychological<br \/>\n<span data-sheets-root=\"1\">Anthropometric
+        <\/span>Blood pressure|Height|Hip circumference|Waist circumference|Weight<br
+        \/>\n<span data-sheets-root=\"1\">Physical <\/span>Cardiovascular|Hearing
+        and Vision|Musculoskeletal|Reproductive|Respiratory<br \/>\n<span data-sheets-root=\"1\">Biological
+        samples <\/span>Blood|Saliva<br \/>\n<span data-sheets-root=\"1\">Genotyping
+        <\/span>Gene screening<br \/>\n<span data-sheets-root=\"1\">Brain imaging
+        <\/span><br \/>\n<span data-sheets-root=\"1\">Brain banking <\/span><br \/>\n<span
+        data-sheets-root=\"1\">Lifestyle <\/span>Alcohol|Dietary habits|Physical activity|Smoking<br
+        \/>\n<span data-sheets-root=\"1\">Socio-economic <\/span>Education|Ethnic
+        group|Family circumstances|Housing and accommodation|Income and finances|Informal
+        support|Martial status|Occupation and employment|Unpaid care<br \/>\n<span
+        data-sheets-root=\"1\">Health service utilisation <\/span><br \/>\n<span data-sheets-root=\"1\">Institute
+        names <\/span>Centre for Longitudinal Studies<br \/>\n<span data-sheets-root=\"1\">Current
+        Sample Sizes <\/span>15,000 to 19,999<\/p>\n<p><span data-sheets-root=\"1\">age
+        at recruitment\u00a0<\/span>0<br \/>\nlast updated<br \/>\nrecruitment period
+        1958<br \/>\nestimated current sample size number value 9,790<br \/>\ncohort
+        acronym NCDS<br \/>\nstart date 1958<br \/>\npi Professor Alissa Goodman<br
+        \/>\nwebsite <a href=\"http:\/\/www.cls.ioe.ac.uk\/ncds \">http:\/\/www.cls.ioe.ac.uk\/ncds<\/a><br
+        \/>\ncontact details Centre for Longitudinal Studies<br \/>\nInstitute of
+        Education<br \/>\n20 Bedford Way<br \/>\nLondon<br \/>\nWC1H 0AL<br \/>\nabstract\u00a0
+        The National Child Development Study (NCDS) is a longitudinal study which
+        follows the lives of 17,000 people born in England, Scotland and Wales in
+        a single week of 1958.<br \/>\nfunders\u00a0 Economic and Social Research
+        Council<br \/>\ncontact email <a href=\"mailto: clsfeedback@ioe.ac.uk \">clsfeedback@ioe.ac.uk<\/a><br
+        \/>\ncontact phone number\u00a0+44 (0)20 7612 6875<br \/>\nestimated current
+        sample size 5,000 to 9,999<br \/>\nsample sizes\u00a017,415<\/p>\n","protected":false}}]'
+    headers:
+      CF-RAY:
+      - a554ec8b3d56f0c0-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json; charset=UTF-8
+      Date:
+      - Wed, 04 Nov 2026 16:16:35 GMT
+      Nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      Report-To:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=%2B66Oqo5xechPSYfa4J4E7oMcw%2F5QtpBWoqf9DgpNeI7IBv%2BcHLZqS%2B30hWaiOUYboZtwM7A%2B46uRUp6c%2B0lUFuX9sQdNktPOaVcAmRTrvBaXc8390bbAoZqUmWGVFTD4eP325JRmq6EXHu0MQriu"}]}'
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - Authorization, X-WP-Nonce, Content-Disposition, Content-MD5, Content-Type
+      access-control-expose-headers:
+      - X-WP-Total, X-WP-TotalPages, Link
+      allow:
+      - GET
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      fastcgi-cache:
+      - BYPASS
+      link:
+      - <https://neurodegenerationresearch.eu/wp-json/wp/v2/posts?categories%5B0%5D=285&per_page=10&page=2&_fields=id%2Cslug%2Clink%2Ctitle%2Ccontent>;
+        rel="next"
+      referrer-policy:
+      - strict-origin-when-cross-origin
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains
+      vary:
+      - Accept-Encoding
+      - Origin
+      x-content-type-options:
+      - nosniff
+      - nosniff
+      x-frame-options:
+      - SAMEORIGIN
+      x-robots-tag:
+      - noindex
+      x-wp-total:
+      - '175'
+      x-wp-totalpages:
+      - '18'
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

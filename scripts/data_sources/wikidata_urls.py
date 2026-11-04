@@ -16,7 +16,7 @@ import urllib.parse
 import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from match import key, read_dictionary_rows, read_lines, split  # noqa: E402
+from common import key, read_dictionary_rows, read_lines, split  # noqa: E402
 
 API = "https://www.wikidata.org/w/api.php"
 HEADERS = {"User-Agent": "neurostore-consortia-dictionary/0.1"}
