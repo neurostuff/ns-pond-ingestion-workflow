@@ -1550,7 +1550,7 @@ class Catalog:
             if held.identity != run.identity:
                 raise ValueError(f"run {run.run_id} is already kept, as another run")
             return held
-        same = next((r for r in self.runs() if r.identity == run.identity), None)
+        same = self.run_like(run)
         if same is not None:
             raise ValueError(f"run {run.run_id} is run {same.run_id}, already kept")
         kept = Run(**{**run.__dict__, "kind": RunKind(run.kind),
@@ -1571,6 +1571,10 @@ class Catalog:
     def run(self, run_id: str) -> Optional[Run]:
         row = self._conn.execute("SELECT * FROM runs WHERE run_id=?", (run_id,)).fetchone()
         return _run(row) if row else None
+
+    def run_like(self, run: Run) -> Optional[Run]:
+        """The kept run `run` repeats: the one with its identity, if any."""
+        return next((held for held in self.runs() if held.identity == run.identity), None)
 
     def runs(self) -> List[Run]:
         return [_run(row) for row in self._conn.execute(
