@@ -76,6 +76,15 @@ RELATIONS = [
      "(HCP).", "hcp", "borrowed"),
     ("80 subjects were retrieved from the publicly available Human Connectome Project (HCP) "
      "dataset.", "hcp", "used"),
+    ("Wholebrain t-maps for all reported contrasts can be found in a neurovault online "
+     "repository.", "neurovault", "deposited"),
+    ("ROIs were derived from an independent-component analysis of resting-state data from the "
+     "Human Connectome Project.", "hcp", "borrowed"),
+    ("We excluded the studies that only used online fMRI datasets such as ABIDE.", "abide",
+     "mentioned"),
+    ("A measurement of correlation strength was obtained from 961 independent subjects from the "
+     "1000 Functional Connectome project using identical preprocessing steps.", "fcp_indi",
+     "used"),
 ]
 
 

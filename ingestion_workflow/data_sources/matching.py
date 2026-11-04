@@ -6,8 +6,9 @@ the paper also gives the full name) and `qualified` (an ordinary word, counted o
 dataset word, an OpenNeuro accession, or the full name).
 
 Each hit's sentence says how the paper names it: the paper's data came from it (`use`), the
-paper put its own data there (`deposit`), or the paper took a protocol, pipeline, template or
-task from it (`borrowed`). A hit inside a URL does not count.
+paper put its own data there (`deposit`), the paper took a protocol, pipeline, template,
+task or ICA networks from it (`borrowed`), or it is an example of a kind ("datasets such as
+ABIDE", `mention`). A hit inside a URL does not count.
 """
 
 from __future__ import annotations
@@ -79,27 +80,32 @@ MENTIONED = {"intro", "discussion", "conclusion", "acknowledgments"}
 #: A match's status: from how its hits in the USED sections name it, else from the sections
 #: it is named in.
 STATUSES = ("used", "deposited", "borrowed", "mentioned", "references_only", "unsectioned")
-RELATIONS = ("use", "deposit", "borrowed")
+RELATIONS = ("use", "deposit", "borrowed", "mention")
 
 #: How far back a hit's sentence is read.
 SENTENCE = 160
 #: "deposited on", "uploaded to", "available via", "shared with" the data source.
 DEPOSIT_BEFORE = re.compile(
     r"\b(?:deposited|uploaded|shared|submitted|archived|available|accessible|released|stored|"
-    r"hosted)\b[^.;]{0,60}?\b(?:on|at|in|via|through|to|with|into)\s+(?:the\s+|an?\s+)?"
+    r"hosted|found|accessed)\b[^.;]{0,60}?\b(?:on|at|in|via|through|to|with|into)\s+(?:the\s+|an?\s+)?"
     r"(?:[\w-]+\s+){0,2}$", re.I)
 _TAKEN = (r"protocols?|pipelines?|paradigms?|templates?|atlas(?:es)?|toolbox|parcellations?|"
-          r"guidelines|sequences?|tasks?|preprocessing|ROIs?|networks?|software")
+          r"guidelines|sequences?|tasks?|ROIs?|networks?|software")
 #: "the ADNI protocol", "the HCP (Glasser 2013) pipeline", "the IXI-549 tissue probability
 #: map template".
-BORROWED_AFTER = re.compile(r"\s*(?:\([^)]{1,40}\)\s*)?(?:[\w'’-]+\s+){0,3}?(?:" + _TAKEN
+BORROWED_AFTER = re.compile(r"\s*(?:\([^)]{1,40}\)\s*)?(?:[\w'’-]+\s+){0,4}?(?:" + _TAKEN
                             + r")\b", re.I)
 #: "the protocol developed by the", "the social cognition paradigm from the", "scan parameters
 #: were based on the".
 BORROWED_BEFORE = re.compile(
     r"\b(?:" + _TAKEN + r"|parameters|procedures?|recommendations)\s+(?:[\w-]+\s+){0,3}?"
     r"(?:of|from|by|in|used (?:in|by)|developed by|adapted from|based on|described by|"
-    r"provided by)\s+(?:the\s+)?$", re.I)
+    r"provided by)\s+(?:the\s+)?$"
+    # "ROIs derived from an independent-component analysis of resting-state data from the"
+    r"|\b(?:ICA|independent[- ]components?[- ]analys[ie]s)\b[^.;]{0,60}?\b(?:of|from|on)\s+"
+    r"(?:the\s+)?$", re.I)
+#: "online fMRI datasets such as ABIDE", "repositories such as OpenfMRI, NeuroVault".
+EXAMPLE_BEFORE = re.compile(r"\b(?:such as|e\.g\.,?)\s+(?:the\s+)?(?:[\w-]+,?\s+){0,4}$", re.I)
 
 
 def key(s: str) -> str:
@@ -154,6 +160,8 @@ def relation(text: str, start: int, end: int) -> str:
         return "borrowed"
     if DEPOSIT_BEFORE.search(before):
         return "deposit"
+    if EXAMPLE_BEFORE.search(before):
+        return "mention"
     return "use"
 
 
@@ -243,9 +251,9 @@ class Dictionary:
                 status = "used" if sectioned else "unsectioned"
             elif "deposit" in read:
                 status = "deposited"
-            elif read:
+            elif "borrowed" in read:
                 status = "borrowed"
-            elif MENTIONED & secs.keys():
+            elif read or MENTIONED & secs.keys():
                 status = "mentioned"
             else:
                 status = "references_only"

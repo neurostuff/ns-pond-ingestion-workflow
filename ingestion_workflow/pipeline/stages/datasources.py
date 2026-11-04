@@ -21,7 +21,8 @@ from ..stage import Context
 #: Bump when what is read, or how a match is found, changes.
 #: 2: each hit's relation (use, deposit, borrowed); no hits inside URLs; the acknowledgments
 #:    only mention.
-DATASOURCES_VERSION = 2
+#: 3: ICA networks are borrowed, examples ("such as X") mentioned, "found in" a deposit.
+DATASOURCES_VERSION = 3
 
 #: Why every article waits: the catalog holds no dictionary yet.
 NO_DICTIONARY = "no data sources pulled: run `ingest data-sources pull`"
