@@ -58,7 +58,7 @@ dependencies = [
   # The astra-distill models' paper prompt, compact record format and frozen schema, which
   # `ingest offload export` builds requests with and `pull` restores records with. Pinned to
   # neurostuff/pondie#32's head until it merges.
-  "pondie-astra @ git+https://github.com/neurostuff/pondie.git@c0687107f4e50b371950182bed49936831e4dbcf#subdirectory=packages/pondie-astra",
+  "pondie-astra @ git+https://github.com/neurostuff/pondie.git@ee956b83f8bcdda49537fea091bef3f5b3eb3510#subdirectory=packages/pondie-astra",
   # Fetches the private adapters `ingest offload push` copies to a machine.
   "huggingface_hub>=0.24",
 ]
