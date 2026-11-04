@@ -1,0 +1,162 @@
+Estimating effective connectivity in Alzheimer's disease progression: A dynamic causal modeling study
+
+Alzheimer's disease (AD)
+mild cognitive impairment (MCI)
+effective connectivity
+dynamic causal modeling
+resting-state fMRI
+
+## Introduction 
+  
+Alzheimer's disease (AD) affects the whole brain from the cellular level to the entire brain network structure. The causal relationship among brain regions concerning the different AD stages is not yet investigated. This study used Dynamic Causal Modeling (DCM) method to assess effective connectivity (EC) and investigate the changes that accompany AD progression. 
+
+
+## Methods 
+  
+We included the resting-state fMRI data of 34 AD patients, 31 late mild cognitive impairment (LMCI) patients, 34 early MCI (EMCI) patients, and 31 cognitive normal (CN) subjects selected from the Alzheimer's Disease Neuroimaging Initiative (ADNI) database. The parametric Empirical Bayes (PEB) method was used to infer the effective connectivities and the corresponding probabilities. A linear regression analysis was carried out to test if the connection strengths could predict subjects' cognitive scores. 
+
+
+## Results 
+  
+The results showed that the connections reduced from full connection in the CN group to no connection in the AD group. Statistical analysis showed the connectivity strengths were lower for later-stage patients. Linear regression analysis showed that the connection strengths were partially predictive of the cognitive scores. 
+
+
+## Discussion 
+  
+Our results demonstrated the dwindling connectivity accompanying AD progression on causal relationships among brain regions and indicated the potential of EC as a loyal biomarker in AD progression.
+
+## 1. Introduction 
+  
+Alzheimer's disease (AD) is a neurodegenerative disorder that leads to the death of nerve cells and loss of brain tissues, which result in brain shrinkage causing disturbed brain functioning (Deeksha and Abhishek,  ). There are multiple stages of the disorder: cognitively normal (CN), early mild cognitive impairment (EMCI), late mild cognitive impairment (LMCI), and Alzheimer's disease (AD) (Ramzan et al.,  ). CN subjects age normally with no sign of depression or dementia, while EMCI and LMCI subjects suffer from difficulties in daily life activity caused by the progressed disease. AD is the advanced and final stage of the disease leading to death. 
+
+### 1.1. Brain regions and networks associated with AD 
+  
+Neural imaging analyzes in the past have identified AD-affected brain regions by recording brain activities during both cognitive tasks and resting state. For example, an fMRI study of a learning task found that compared to CN subjects, people with AD exhibit reduced brain activity in the parietal and hippocampal regions during information encoding (Rombouts et al.,  ). This was further confirmed by Smith ( ) in which they found the most severe volume reduction in the hippocampus (HC) important for the formation of new memories. Another important brain region whose reduced activity is associated with AD regardless of subtypes is the posterior cingulate cortex (PCC) (Herholz et al.,  ). PCC is a critical part of the retrieval process of episodic memories (Greicius et al.,  ). Reduced activity in this region is associated with decreased cognitive performance and memory issues. 
+
+Bernard et al. ( ) identified PCC as the most connected brain region in the altered brain networks of groups suffering from memory declines. As a vital node in the default mode network (DMN), PCC is connected with the precuneus (Prec), medial prefrontal cortex (mPFC), intraparietal cortex (IPC), inferior temporal cortex (ITC), and HC (Buckner et al.,  ). Those brain regions in DMN tend to be active in a conscious resting state with stimulus-independent thought, representing a default mode of brain function (Greicius et al.,  ). Studies of resting glucose metabolism and brain atrophy showed disruptions in the DMN of AD patients. Similar disruptions were also found in subjects at genetic risk for AD, implying the changes in DMN occur early in the course of the disease (Su et al.,  ). 
+
+Other brain networks are also affected by AD progression. Chand et al. ( ) studied the modulatory interactions between DMN, salience network (SAN), and central executive network (CEN) in subjects with normal cognition and MCI. They found SAN modulates the interaction between the DMN and CEN, and such modulation was disrupted in MCI. CEN, anchored in the dorsolateral prefrontal cortex (dlPFC) and posterior parietal cortex, is widely reported to be more activated for cognitive functions such as attention, working memory, and decision-making (Bor and Seth,  ). SAN, anchored in the insula and anterior cingulate cortex (ACC), was also studied to understand the altered patterns of cognitive impairment (Chand et al.,  ). The connections between DMN, SAN, and CEN in AD patients remain an interesting and understudied topic. 
+
+While brain regions are considered responsible for specific functions, information is passed around through structural, functional, and effective connections. The temporal correlations among the affected brain regions were studied using functional connectivity (FC). Reduction of FC in the DMN was primarily and consistently reported in AD compared with MCI patients and CN subjects (Greicius et al.,  ; Wu et al.,  ; Grieder et al.,  ; Soman et al.,  ). From the early stages to the late stages of AD, generally reduced correlations within five studied networks including DMN, SAN, dorsal attention network, control network, and sensory-motor network were reported (Brier et al.,  ). The decreased FCs between the posterior part of the cerebral cortex (Prec & PCC) and the anterior parts (ACC & mPFC) were particularly significant in AD patients (Ibrahim et al.,  ). 
+
+Representing the directional causal relationships between brain regions, effective connectivity (EC) depicts the influence that one neural system exerts over another (Friston et al.,  ). As opposed to the FC quantified with measures of statistical dependencies, EC corresponds to the parameter of a model that tries to explain the cause of such dependencies (Friston,  ). Compared to CN subjects, AD patients showed reduced EC within DMN (Zhong et al.,  ). Both the intensity and quantity of the connections decreased and the inter-network interactions were also weaker than that of CN subjects (Liu et al.,  ). Wu et al. ( ) found the ECs from HC to IPC, mPFC, and PCC were all lost in AD patients. ECs in CEN were also disturbed by AD progression. Cai et al. ( ) reported decreased EC within the dlPFC → caudate → thalamus → dlPFC circuit. Using such differences in the EC circuit, their results distinguished MCI patients who since reverted to the normal functioning state, patients who maintained the MCI state, and patients who progressed to AD. Although the small handful of studies shed some light on the connectivity pattern difference between CN subjects and AD patients, no investigation was done on the strengths (i.e., the scaled coupling rate between regions) of such connections. The relationships between the connection strengths and severity of AD were also neglected. 
+
+
+### 1.2. Effective connectivity estimated by dynamic causal modeling 
+  
+To study the EC of AD patients, we use the dynamic causal modeling method on resting-state fMRI. First introduced in 2003, DCM has quickly become the most popular approach to EC (Friston et al.,  ). DCM regards the propagation of neural activity through brain networks as an input-state-output system (Friston et al.,  ). It infers effective connections under the Bayesian framework to find the model best explaining the observed data. DCM models are motivated by the biophysical behaviors of the neuronal system, thus they reflect empirical knowledge about the connection strength parameters (Stephan et al.,  ). 
+
+To infer the connection strengths, Parametric Empirical Bayes (PEB) method is used. This hierarchical method is used to quantify the commonalities and differences across subjects by collating parameters of interest in a two-level model (within-subject level and between-subject level) (Zeidman et al.,  ). The connectivity strengths allow us to into the modulatory effect of the AD progression. 
+
+The aim of this study is to investigate the EC between brain regions in different AD progression stages. EC of each subject and group will be estimated using DCM so the directions and intensities of the connections can be compared to reveal the development of AD. We expect that the strength of the connections will be weaker in AD and LMCI subjects compared to EMCI and CN subjects, and that the connectivity strength will be positively related to the mini-mental state examination (MMSE) scores and negatively related to clinical dementia rating (CDR) scores. The worse the cognitive test performance, the weaker the connection. 
+
+
+
+## 2. Materials and methods 
+  
+### 2.1. fMRI data 
+  
+Data used in this study were obtained from the Alzheimer's Disease Neuroimaging Initiative (ADNI) database (  adni.loni.usc.edu  ). The ADNI was launched in 2003 as a public-private partnership, led by Principal Investigator Michael W. Weiner, MD. The primary goal of ADNI has been to test whether serial magnetic resonance imaging (MRI), positron emission tomography (PET), other biological markers, and clinical and neuropsychological assessment can be combined to measure the progression of MCI and early Alzheimer's disease (AD). 
+
+Under ADNI, there are numerous research data sets available. We used fMRI data from subjects whose longitudinal records of the visits were fully documented and publicly available. To ensure the uniformity of data acquisition protocols and formats, all images and corresponding clinical data (e.g., mini-mental state examination, [MMSE], clinical dementia rating, [CDR]) were downloaded from ADNI-2 phase since it has most of the fMRI data. We selected four types of subjects, whose general inclusion/exclusion criteria are as follows: (1) CN subjects: MMSE scores above 24, CDR = 0, free of memory complaints; (2) EMCI patients: MMSE scores above 24, CDR = 0.5, have subjective memory complaints, abnormal memory functions; (3) LMCI patients: MMSE scores above 24, CDR = 0.5, have subjective memory complaints, abnormal memory functions (more severe compared to EMCIs); (4) AD patients: MMSE scores ranging from 20 to 26, CDR above 0.5, have subjective memory complaints, abnormal memory functions (same as LMCIs). 
+
+In this study, 34 AD patients, 31 LMCI patients, 34 EMCI patients, and 31 CN subjects were selected and analyzed. All subjects remained in their progression stage (stable) throughout the entire data collection visits (spanning for at least 24 months). The average age was 76.65, 72.00, 73.00, and 73.34 for CNs, EMCIs, LMCIs, and ADs, respectively. Details of the demographic and clinical information could be found in  . 
+  
+Demographics and clinical information. 
+  
+
+### 2.2. Data acquisition and preprocessing 
+  
+The data were acquired on a 3.0-T (Philips) scanner with TR/TE set as 3,000/30 ms and flip angle of 80. Resting-state functional images were obtained using an echo-planar imaging sequence (EPI). Each series has 140 volumes, and each volume consists of 48 slices of image matrices with dimensions 64 × 64 with voxel size of 3.31 × 3.31 × 3.31   mm  . During the fMRI scans, all participants were instructed to keep their eyes open and relax. 
+
+The preprocessing was carried out using Statistical Parametric Mapping 12 (SPM 12,   http://www.fil.ion.ucl.ac.uk/spm  ) and RESTplus toolkits (Jia et al.,  ). The first 10 volumes of each functional time series were discarded from analysis to allow for participant's stabilization and magnetic field equilibration. The remaining 130 volumes were corrected for the staggered order of slice acquisition that was used during echo-planar scanning. The correction ensures the data on each slice corresponds to the same point in time. The preprocessing also included regression of head motion parameters, realignment for head movement, and spatial normalization using T1 image unified segmentation to the Montreal Neurological Institute (MNI) space. 
+
+
+### 2.3. Dynamic causal modeling 
+  
+We modeled the regions of interest (ROIs) as nodes in the EC networks. To include regions from DMN, SAN, and CEN networks, mPFC and bilateral PCC, dlPFC, ACC were chosen as regions of interest We summarized ROI activity by extracting time series at all voxels within a sphere having radius 8   mm   around an associated MNI coordinate for the ROI. See   for MNI coordinates of each ROI. The coordinates were chosen based on previous investigations on bilateral PCC (Jeong et al.,  ), dlPFC (Gruber et al.,  ), ACC (Mannell et al.,  ), and mPFC (Maguire et al.,  ). 
+  
+Coordinates of ROI in MNI space. 
+  
+DCM is comprised of two models: the neuronal model and the observation model. For the resting state, the neuronal model tasks the form as follows: 
+
+In the equation above,   x   denotes the neuronal activity and   u   denotes stimulus.   v   denotes the random neuronal fluctuation that represents the state noise. Stimulus   u   is still included in the equation for the resting state scenario, but is usually set to zero in resting state models. The parameters θ = {  A, B  ,   C  } represent the intrinsic connectivity, extrinsic connectivity, and input, respectively. 
+
+The second model in DCM is the observation model. fMRI machines detect the activated brain regions by observing the changes in BOLD signal   y  . The generalized BOLD signal model was proposed by Stephan et al. ( ), in which both blood volume   v   and deoxyhemoglobin content   q   affect the observations: 
+
+where   V   is the resting venous blood volume fraction and   k  ,   k  ,   k   represent the coefficients associated with the machine's echo time and relaxation time. Changes in blood volume and deoxyhemoglobin level were caused by neuronal activities, and in turn, changed the observed BOLD signal responses. Thus the neuronal model and the observation model together captured the dynamics of the neural activity propagation. 
+
+We used PEB to infer the connectivity strengths for the four subject groups. In general, for PEB, a parameter vector is first sampled from a prior distribution. A random effect is added to the parameter vector for this subject. Then data are generated using the DCM and observation noise is added to model the observed response. The calculated connection strengths are accompanied by the likelihood of each connection. By setting the threshold for the likelihood, the most probable estimates are selected. Bayesian Model Reduction (BMR) was used to control the switching on and off of each connection (to calculate the likelihood with the connection's presence and absence) and estimate the parameter to infer the connectivity pattern. The connectivity strengths for each subject group were compared using analysis of variance (ANOVA). Bonferroni correction was applied for multiple comparisons. A linear regression analysis was also carried out to test if EC between regions could predict subjects' cognitive scores. 
+
+
+
+## 3. Results 
+  
+### 3.1. Connectivity at individual level 
+  
+The estimated DCMs for the four subject groups are shown in  . The subject-specific matrices represent the intrinsic EC among the seven brain regions during the resting state. 
+  
+Subject-specific effective connectivity matrices following DCM of the resting-state fMRI for CN   (A)  , EMCI   (B)  , LMCI   (C)  , and AD   (D)   subjects. Each matrix element represents effective connectivity among 7 nodes in the following order: left PCC, right PCC, left ACC, right ACC, left dlPFC, right dlPFC, and mPFC. Directions of the connections are represented from columns to rows. 
+  
+
+### 3.2. Connectivity at group level 
+  
+The PEB process estimates group EC at five levels of confidence. At 0.5 level, all subject groups presented full connections (connections present among all ROI pairings). See   for details of each subject group. However, the fully connected pattern only persisted for the CN group. Only two connections remained for the EMCI group after thresholding for 0.99 level. One connection (self connection L-PCC → L-PCC) remained for the LMCI group at 0.99 level. No connection was left after thresholding for the AD patient group. More information can be found in  . 
+  
+Effective connectivity for CN   (A)  , EMCI   (B)  , LMCI   (C)  , and AD   (D)   subject groups. 
+    
+PEB estimates of connectivity for the four subject groups. Each row represents a threshold imposed on the evidence for each connection. The first row represents a no-threshold condition. The second, third, fourth, and fifth row represent free energy exceeding 0.5, 0.75, 0.95, and 0.99 conditions, respectively. CN   (A)  , EMCI   (B)  , LMCI   (C)  , and AD   (D)  . 
+  
+The group EC strengths were calculated following the calculation of connection probabilities. Posterior means and variances of all connection strengths for each subject group were presented in detail in   and  – . ANOVA of the effective connection strengths showed only connections L-PCC → L-PCC, R-PCC → R-ACC, and R-ACC → R-ACC were significantly different within subject groups. See details in  . 
+  
+Effective connectivity for CN, EMCI, LMCI, and AD subject groups. 
+    
+Connectivity strengths (means and variances) of CN subjects. 
+    
+Connectivity strengths (means and variances) of EMCI patients. 
+    
+Connectivity strengths (means and variances) of LMCI patients. 
+    
+Connectivity strengths (means and variances) of AD patients. 
+    
+ANOVA results for the effective connections. 
+  
+Following the PEB analysis, a linear regression analysis was carried out to test if resting-state connectivity between the brain regions could predict subjects' cognitive scores. For MMSE, the forward step-wise linear regression showed the EC between left dlPFC to left PCC was the first variable automatically entered into the step-wise regression (β = −0.234,   p   = 0.007), followed by connection between L-dlPFC to mPFC (β = 0.222,   p   = 0.01), and connection between L-PCC to R-ACC (β = 0.168,   p   = 0.048). Together, they explain 11.5% of variance in MMSE scores (  R   = 0.115,   F   = 5.434,   p   = 0.002). For CDR, both forward and backward connections between L-dlPFC and mPFC are predictive of the score (  R   = 0.121,   F   = 8.755,   p   < 0.001). Connection from L-dlPFC to mPFC negatively predicted the score (β = −0.307,   p   < 0.001), and connection from mPFC to L-dlPFC positively predicted the score (β = 0.214,   p   = 0.012). Scatter plots of effective connections vs. MMSE and CDR scores are shown in  . 
+  
+Scatterplots of significant effective connectivities vs. MMSE scores   (A)   and CDR scores   (B)  . Linear fit lines are shown. Both β and   p   values for each correlation are shown. 
+  
+
+
+## 4. Discussion 
+  
+The DCM results revealed that the effective connection pattern and strength were different among the multiple stages of AD subjects. As expected, the EC analysis showed that the EC of EMCI, LMCI, and AD patients was reduced compared to that of CN subjects. The number of connections reduced from full connection in CN group to no connection in AD group. Statistical analysis revealed that for connection R-PCC → R-ACC, connection strength of CN is greater than that of LMCI. For connection R-ACC → R-ACC, connection strength of EMCI is greater than that of LMCI. In addition, for connection L-PCC → L-PCC, the connection strength of CN and EMCI is marginally greater than that of LMCI. Cognitive scores were also partially predicted by connectivity strengths of specific connections. MMSE scores were partially predicted by connection L-dlPFC → L-PCC, L-dlPFC → mPFC, and L-PCC → R-ACC. CDR scores were partially predicted by connection L-dlPFC → mPFC and mPFC → L-dlPFC. 
+
+The number of ECs was reported to dwindle steadily throughout the AD progression. Consistent with the results reported in this study, Wu et al. ( ) found that connections between mPFC and PCC were all lost in AD patients compared to CN subjects. Rytsar et al. ( ) also reported that AD was associated with significantly weakened effective connections. Although their study was focused on the visual cortex, it nonetheless provides evidence that loss of EC is common in AD progression. Neufang et al. ( ) related the connectivity parameters to subjects' gray matter volume and found gray matter volume at the right middle frontal gyrus significantly correlated with connectivity strengths. They concluded that the reduction of EC contributes to brain control impairments in AD patients. 
+
+Although not enough EC analyzes have been carried out for AD, evidence from FC studies also showed the degenerative effect of disease progression on the communications between brain regions. For example, Binnewijzend et al. ( ) investigated regional FC in DMN of CN, MCI, and AD patients. Although the statistical difference was only observed between AD and MCI patients, they reported numerical decreases of FC from CN to MCI to AD. A meta-review of past MCI studies by Xu et al. ( ) suggested increased FCs in MCI patients were located in the precentral gyrus and middle frontal gyrus, and decreased FCs were located in the middle frontal gyrus, cingulate gyrus, and superior frontal gyrus. They concluded that the effect of AD progression is presented in the interactive neural networks and that dysfunctional connectivity may reflect the gradual decline from MCI to AD. The results from our study agree with the notion that disruption in connectivities can be detected in early stage of AD, as early as EMCI stage. 
+
+Only a handful of studies have investigated the EC of AD patients. Among them, even fewer studies looked into the details of the connection strengths and their relationships with cognitive scores. Chand et al. ( ) studied the interaction of DMN, CEN, and SAN and showed that disruption in SAN correlated significantly with lower cognitive performance. In the present study, we found the interactions between DMN and CEN significantly affected cognitive performance. Connections between L-dlPFC, PCC, and mPFC partially predict both the MMSE and CDR scores. ACC anchored in SAN did not demonstrate a great effect on cognitive scores. However, it is worth noting that connections involving ACC were sensitive to the disease progression. Lower connection strengths were observed for later-stage subjects in connections involving ACC. 
+
+Considering the relationship of EC with FC, Neufang et al. ( ) found that two connectivities are significantly related in healthy subjects. Yet they pointed out this kind of similarity is disrupted in AD patients. FC strengths are not good indicators of EC strengths in AD patients. In fronto-cingulo-parietal connections, subjects with AD showed significant differences between the measures. Past studies associated such differences with age rather than AD (Raji et al.,  ), yet the study on EC among patients within different AD stages suggested otherwise. The Cingulate is an important region as well as a vital part of fronto-cingulo connections. The strengths of connections involving cingulate are predictive of cognitive scores as shown in this study. This could be due to disconnections among the networks, or it could be the result of the impaired integration of the cingulate cortex itself. Further studies are still needed to clarify the exact role of cingulate cortex and its connections in AD progression. Overall, the results highlighted the important progressively disrupting effect of AD on DMN, CEN, and SAN. We believe such an effect could be valuable for the classification and prediction of AD stages. The altered connectivity strengths combined with other symptoms and biological information of the patients could be used as classification features in patient diagnoses. 
+
+Due to the relatively small sample size of the current study, further investigation of AD progression is still needed to draw a conclusion of the generative effect of the progression on the connectivity strengths. We did not include other complications (e.g., depression, Parkinson's disease) in our current study, but as these are common diseases among AD patients, further studies are still needed to look into the combined effect of multiple neurological disorders on brain connectivities. Further studies should also include brain signals captured under other experimental conditions in addition to the resting state and investigate the intrinsic brain dynamics. 
+
+
+## 5. Conclusion 
+  
+The results of this study showed the potential of EC as a biomarker in predicting and classifying AD progression. Reduced ECs were reported in later stages of AD progression compared to CN subjects. The directional information revealed exclusively with EC using DCM has contributed, and may further contribute, to our understanding of the progression of Alzheimer's disease. 
+
+
+## Alzheimer's Disease Neuroimaging Initiative 
+  
+Data collection and sharing for this project was funded by the Alzheimer's Disease Neuroimaging Initiative (ADNI) (National Institutes of Health Grant U01 AG024904) and DOD ADNI (Department of Defense award number W81XWH-12-2-0012). ADNI is funded by the National Institute on Aging, the National Institute of Biomedical Imaging and Bioengineering, and through generous contributions from the following: AbbVie, Alzheimer's Association; Alzheimer's Drug Discovery Foundation; Araclon Biotech; BioClinica, Inc.; Biogen; Bristol-Myers Squibb Company; CereSpir, Inc.; Cogstate; Eisai Inc.; Elan Pharmaceuticals, Inc.; Eli Lilly and Company; EuroImmun; F. Hoffmann-La Roche Ltd and its affiliated company Genentech, Inc.; Fujirebio; GE Healthcare; IXICO Ltd.; Janssen Alzheimer Immunotherapy Research & Development, LLC.; Johnson & Johnson Pharmaceutical Research & Development LLC.; Lumosity; Lundbeck; Merck & Co., Inc.; Meso Scale Diagnostics, LLC.; NeuroRx Research; Neurotrack Technologies; Novartis Pharmaceuticals Corporation; Pfizer Inc.; Piramal Imaging; Servier; Takeda Pharmaceutical Company; and Transition Therapeutics. The Canadian Institutes of Health Research is providing funds to support ADNI clinical sites in Canada. Private sector contributions are facilitated by the Foundation for the National Institutes of Health (  www.fnih.org  ). The grantee organization is the Northern California Institute for Research and Education, and the study is coordinated by the Alzheimer's Therapeutic Research Institute at the University of Southern California. ADNI data are disseminated by the Laboratory for Neuro Imaging at the University of Southern California. 
+
+
+## Data availability statement 
+  
+The original contributions presented in the study are included in the article/supplementary material, further inquiries can be directed to the corresponding author. 
+
+
+## Author contributions 
+  
+JH, J-YJ, and CN contributed to the conception and design of the study and to the interpretation of the findings of the study. JH selected and analyzed the data. JH and CN drafted the manuscript. All authors contributed to the article and approved the submitted version.

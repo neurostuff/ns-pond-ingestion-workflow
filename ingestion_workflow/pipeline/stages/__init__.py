@@ -1,6 +1,7 @@
 """The stages, in the order they run."""
 
 from .analyses import AnalysesStage
+from .datasources import DataSourcesStage
 from .download import DownloadStage
 from .extract import ExtractStage
 from .linkprobe import LinkprobeStage
@@ -50,9 +51,13 @@ from .upload import UploadStage
 #:
 #: `sync` writes the corpus copy and the coordinate parse, and `upload` then
 #: posts that parse to neurostore's study_schema ingester.
+#:
+#: `datasources` searches the text of each paper sync wrote for the data sources
+#: `ingest data-sources pull` keeps in the catalog. No stage reads it:
+#: `ingest data-sources export` writes its matches for neurostore.
 STAGE_ORDER = ("download", "extract", "reflist", "references", "links", "linkprobe", "passages",
                "metadata", "notices", "triage", "analyses", "prose", "resolve", "roles", "space",
-               "sync", "upload")
+               "sync", "upload", "datasources")
 
 #: Stages that exist only when prose is switched on.
 PROSE_STAGES = ("passages", "prose", "resolve")
@@ -69,6 +74,7 @@ STAGE_TYPES = {
     "notices": NoticesStage,
     "triage": TriageStage,
     "analyses": AnalysesStage,
+    "datasources": DataSourcesStage,
     "passages": PassagesStage,
     "prose": ProseStage,
     "references": ReferencesStage,
@@ -105,6 +111,7 @@ def build(names, settings):
 
 __all__ = [
     "AnalysesStage",
+    "DataSourcesStage",
     "DownloadStage",
     "ExtractStage",
     "LinkprobeStage",

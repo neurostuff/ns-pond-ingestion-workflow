@@ -161,6 +161,11 @@ class Settings(BaseSettings):
         description=("Optional API key for Semantic Scholar (increases rate limits)"),
     )
 
+    scicrunch_api_key: Optional[str] = Field(
+        default=None,
+        description="API key for the SciCrunch registry, one of the data-source catalogues",
+    )
+
     openalex_email: Optional[str] = Field(
         default=None,
         description="Contact email for OpenAlex API (enables polite pool)",

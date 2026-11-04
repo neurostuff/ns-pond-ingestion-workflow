@@ -81,6 +81,9 @@ build-backend = "setuptools.build_meta"
 where = ["."]
 include = ["ingestion_workflow*"]
 
+[tool.setuptools.package-data]
+"ingestion_workflow.data_sources" = ["curated.tsv"]
+
 [tool.ruff]
 target-version = "py39"
 line-length = 99
