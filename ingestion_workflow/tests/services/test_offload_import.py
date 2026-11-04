@@ -22,7 +22,7 @@ from ingestion_workflow.pipeline.stages.offloaded import (
     RecordStage,
     record_digest,
 )
-from ingestion_workflow.services.offload_import import (
+from ingestion_workflow.services.offload.importer import (
     RECORD_MOVED,
     SCHEMA_INVALID,
     import_run,

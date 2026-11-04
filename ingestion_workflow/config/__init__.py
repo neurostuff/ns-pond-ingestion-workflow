@@ -81,6 +81,36 @@ class RoleModel(BaseModel):
     )
 
 
+class Machine(BaseModel):
+    """A cluster the offloaded stages run on (`ingest offload push/submit/status/pull`)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    ssh: str = Field(description=(
+        "The SSH host alias. Commands reuse its connection, which you open (and answer MFA "
+        "for) and keep open; when it is closed a command stops and the bundle stays pending"))
+    work: str = Field(description="Bundles, adapters and job logs go under this directory")
+    scratch: str = Field(description="Merged models go under this directory")
+    partition: str
+    account: str
+    gpus_per_node: int = 1
+    serve_python: str = Field(description="The python of the environment with vLLM")
+    train_python: str = Field(description=(
+        "The python of the environment with torch, peft and transformers, for the merge"))
+    hf_home: str = Field(description="HF_HOME holding the base models; jobs run offline")
+    environment: Dict[str, str] = Field(
+        default_factory=dict,
+        description="Exported in every job before it starts: the machine's compiler and vLLM traps",
+    )
+    infer_group: Optional[str] = Field(default=None, description=(
+        "The optional-dependency group the serve environment must match (`offload setup`)"))
+    merge_group: Optional[str] = Field(default=None, description=(
+        "The optional-dependency group the train environment must match"))
+    max_queued: int = Field(default=30, description="Jobs pending or running at once, at most")
+    su_per_node_hour: float = Field(default=1.0, description="What a node-hour is charged")
+    su_cap: float = Field(description="`submit` needs --yes for an estimate above this")
+
+
 class Settings(BaseSettings):
     """
     Application configuration with support for:
@@ -363,6 +393,16 @@ class Settings(BaseSettings):
             "The served set-role model for prose sets, {endpoint, model}. Without it every "
             "article with a prose set is blocked at the roles stage"
         ),
+    )
+
+    hf_token: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("hf_token", "HF_TOKEN"),
+        description="Reads the private adapters `ingest offload push` copies to a machine",
+    )
+    machines: Dict[str, Machine] = Field(
+        default_factory=dict,
+        description="The clusters offloaded stages run on, by name (`ingest offload --machine`)",
     )
 
     sync_overwrite: bool = Field(
