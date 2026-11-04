@@ -292,19 +292,19 @@ def elapsed_s(elapsed: str) -> int:
 
 
 def group_pins(group: str) -> Dict[str, str]:
-    """{package: version} an optional-dependency group of this package pins."""
-    from importlib.metadata import requires
+    """{package: version} an optional-dependency group of this checkout's pyproject.toml
+    pins. Read from the file, since an editable install's metadata keeps the groups it was
+    installed with."""
+    import tomllib
 
     from packaging.requirements import Requirement
 
-    out = {}
-    for spec in requires("ingestion-workflow") or []:
-        req = Requirement(spec)
-        if req.marker is not None and req.marker.evaluate({"extra": group}):
-            out[req.name] = str(req.specifier).lstrip("=")
-    if not out:
-        raise ValueError(f"no optional-dependency group {group!r}")
-    return out
+    pyproject = Path(__file__).resolve().parents[3] / "pyproject.toml"
+    groups = tomllib.loads(pyproject.read_text("utf-8"))["project"]["optional-dependencies"]
+    if group not in groups:
+        raise ValueError(f"no optional-dependency group {group!r} in {pyproject}")
+    return {Requirement(spec).name: str(Requirement(spec).specifier).lstrip("=")
+            for spec in groups[group]}
 
 
 _VERSIONS = ("import importlib.metadata as m, json, sys; "
