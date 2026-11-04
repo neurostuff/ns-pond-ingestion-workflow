@@ -52,9 +52,10 @@ dependencies = [
   # CopyAccess, the facts each download records about its copy, and paper_parse.Author,
   # each author with ids and affiliations, and ParsedPaper.links with the
   # data_availability SectionKind, and each PaperLink's occurrences (LinkOccurrence,
-  # LinkSource), and LicenseId spelled as its member names (`cc_by`; paper-parse 0.11.0).
-  # Pinned to neurostuff/study_schema#55's head until it merges; then to its merge commit.
-  "study-schema @ git+https://github.com/neurostuff/study_schema.git@488e1ee4eaf6221aba563a50f7d06c226cece75c",
+  # LinkSource), and LicenseId spelled as its member names (`cc_by`; paper-parse 0.11.0),
+  # and the `normalized` sidecar on every extracted value, which `normalization` writes.
+  # Pinned to the merge of neurostuff/study_schema#56, the commit pondie pins.
+  "study-schema @ git+https://github.com/neurostuff/study_schema.git@b7efbdd6c465a00e2ef80d19b47acff6bb17471e",
 ]
 
 [project.optional-dependencies]
@@ -68,6 +69,19 @@ test = [
 ]
 lint = [
   "ruff>=0.6",
+]
+# `ingestion_workflow.normalization`: task, condition, medical-condition and contrast-set
+# normalization of extraction records. pondie supplies the MONDO/ONVOC linker and the
+# sidecar shape; the pin is the merge of neurostuff/pondie#31, which pins the same
+# study_schema commit as above. scikit-learn is pinned to the version the fixed fits were
+# pickled with. spaCy's en_core_web_sm, pondie's negation parser, is a separate download:
+# python -m spacy download en_core_web_sm
+normalize = [
+  "pondie[encoders] @ git+https://github.com/neurostuff/pondie.git@8c796f4eb2fc03337bad38ffadca2dea4f6e9f8d",
+  "scikit-learn==1.9.1",
+  "scipy>=1.11",
+  "numpy>=1.26",
+  "sentence-transformers>=3",
 ]
 
 [project.scripts]
@@ -83,6 +97,7 @@ include = ["ingestion_workflow*"]
 
 [tool.setuptools.package-data]
 "ingestion_workflow.data_sources" = ["curated.tsv"]
+"ingestion_workflow.normalization" = ["data/*.json", "data/hed-task/*.json", "data/hed-task/mappings/*.tsv"]
 
 [tool.ruff]
 target-version = "py39"
@@ -91,6 +106,14 @@ src = ["ingestion_workflow"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+# Ported from the Astra build's scripts and taskcat in their own style, so a rule can be diffed against
+# the code it came from line by line.
+"ingestion_workflow/normalization/**" = ["E501", "E701", "E702", "E731", "E741"]
+"experiments/normalization/**" = ["E501", "E701", "E702", "E731", "E741"]
+# Vendored from taskcat unchanged but for its data paths.
+"ingestion_workflow/normalization/taskcat/**" = ["E402", "E501", "E701", "E702", "E731", "E741", "F841"]
 
 [tool.coverage.run]
 branch = true
