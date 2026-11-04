@@ -651,6 +651,22 @@ class Settings(BaseSettings):
             "CUDA device, or 1 on CPU"
         ),
     )
+    pdf_extract_memory_mb: int = Field(
+        default=8192,
+        gt=0,
+        description=(
+            "Resident memory (MB) a PDF extraction worker may reach before it is killed "
+            "and that article failed"
+        ),
+    )
+    pdf_extract_timeout_s: float = Field(
+        default=600.0,
+        gt=0,
+        description=(
+            "Seconds one PDF extraction may run before its worker is killed and that "
+            "article failed; the first article a worker reads also loads its models"
+        ),
+    )
 
     # ===== Upload configuration =====
     neurostore_env: NeurostoreEnv = Field(
