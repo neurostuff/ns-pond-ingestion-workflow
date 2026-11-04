@@ -148,6 +148,7 @@ def _read_by_docling(download):
 
 
 def test_no_free_gpu_is_unavailable(monkeypatch):
+    monkeypatch.setattr(mineru_convert.importlib.util, "find_spec", lambda name: object())
     monkeypatch.setattr(mineru_convert, "free_cuda_devices", lambda min_free_mib: [])
 
     with pytest.raises(ModelUnavailable, match="no GPU"):
