@@ -23,6 +23,7 @@ from __future__ import annotations
 import gzip
 import json
 import logging
+import re
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -211,7 +212,7 @@ class _Importer:
         return None
 
     def refuse(self, article_id: str, why: str) -> Outcome:
-        self.report.refused[why.split(":")[0].split(" (")[0]] += 1
+        self.report.refused[re.sub(r"\d+", "N", why.split(":")[0].split(" (")[0])] += 1
         outcome = Outcome.failure(article_id, self.run.stage, self.run.source, why,
                                   summary={"refused": True})
         outcome.run_id = self.run.run_id
