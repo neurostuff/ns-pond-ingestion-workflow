@@ -72,8 +72,46 @@ def test_the_request_is_the_one_the_ns_extraction_sent(ctx, tmp_path, fake_token
         (DATA / "paper-26klegjq7mhi/parse/coordinate_parse.json").read_text())["text_sha256"]
     assert row["parse_keys"] == ["analysis#840c7bec806dd3ad"]
     bundle = BundleDir(report.bundle).bundle()
-    assert bundle.bundle_id == "ns-27b-e-20261104-1500" == bundle.run["run_id"]
+    assert bundle.bundle_id == "ns-27b-e-20261104-1500"
+    assert bundle.run["run_id"] == _spec_run().minted_id
     assert bundle.run["adapter"] == SPEC.adapter and bundle.run["machine"] == "vista"
+
+
+def _spec_run(**kwargs):
+    from ingestion_workflow.catalog import Run, RunKind
+
+    return Run("", RunKind.MODEL, SPEC.stage, SPEC.source, version=SPEC.version,
+               model=SPEC.model, adapter=SPEC.adapter, prompt_version=SPEC.prompt_version,
+               schema_version=SPEC.schema_version, **kwargs)
+
+
+def test_the_spec_makes_the_run_the_backfill_kept():
+    """The 2026-10-28..31 waves ran this model on this prompt, so a rerun joins them."""
+    import importlib.util
+
+    path = Path(__file__).resolve().parents[3] / "scripts" / "offload_backfill.py"
+    loaded = importlib.util.spec_from_file_location("offload_backfill", path)
+    backfill = importlib.util.module_from_spec(loaded)
+    loaded.loader.exec_module(backfill)
+    from ingestion_workflow.catalog import Run, RunKind
+
+    kept = Run(**{**backfill.RECORD_RUN, "run_id": "", "kind": RunKind.MODEL})
+    assert kept.identity == _spec_run().identity
+    # ev1 was sent each record as it was extracted; the catalog sends it with its keys
+    # sorted, so that is another prompt, and another run
+    ev1 = Run(**{**backfill.EVIDENCE_RUN, "run_id": "", "kind": RunKind.MODEL})
+    assert ev1.adapter == EV1_SPEC.adapter and ev1.prompt_version != EV1_SPEC.prompt_version
+
+
+def test_a_rerun_of_missing_papers_is_the_kept_run(ctx, tmp_path, fake_tokens):
+    from dataclasses import replace
+
+    _synced(ctx, ARTICLE, _paper(tmp_path / "pond", ARTICLE))
+    first = _spec_run(machine="vista gh (GH200)", created_at="2026-10-28")
+    ctx.catalog.record_run(replace(first, run_id="ns-27b-e-kept"))  # it never had this paper
+    bundle = BundleDir(export(ctx, SPEC, "ls6", workers=1, now=NOW).bundle).bundle()
+    assert bundle.run["run_id"] == "ns-27b-e-kept" and bundle.run["created_at"] == "2026-10-28"
+    assert bundle.machine == "ls6" and bundle.run["machine"] == "vista gh (GH200)"
 
 
 def test_the_token_count_is_the_one_the_shards_were_cut_by(ctx, tmp_path):

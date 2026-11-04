@@ -126,6 +126,7 @@ CREATE TABLE IF NOT EXISTS runs (
     adapter        TEXT,
     prompt_version TEXT,
     schema_version TEXT,
+    fit            TEXT,
     code_commit    TEXT,
     machine        TEXT,
     config         TEXT NOT NULL DEFAULT '{}',

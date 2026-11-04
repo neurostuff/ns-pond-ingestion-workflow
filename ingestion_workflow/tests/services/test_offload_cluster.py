@@ -208,15 +208,15 @@ def test_pull_imports_a_completed_shard_as_the_record_the_collected_set_holds(wo
     pull(world["remote"], world["bundle"], world["catalog"])
     kept = world["catalog"].artifact(ARTICLE, "record", "ns-27b")
     bundle = BundleDir(world["bundle"]).bundle()
-    assert kept.ok and kept.run_id == bundle.bundle_id
+    assert kept.ok and kept.run_id == bundle.run["run_id"]
     record = world["catalog"].payload(kept)
-    assert record["extraction_metadata"]["extractor_version"] == bundle.bundle_id
+    assert record["extraction_metadata"]["extractor_version"] == bundle.run["run_id"]
     strip = ("local_id", "extraction_metadata")
     assert {k: v for k, v in record.items() if k not in strip} == \
         {k: v for k, v in RECORD.items() if k not in strip}
     state = BundleDir(world["bundle"]).state()
     assert state.imported["s000"] == {"ok": 1, "elapsed_s": 1979}
-    assert world["catalog"].run(bundle.bundle_id).adapter == bundle.spec.adapter
+    assert world["catalog"].run(bundle.run["run_id"]).adapter == bundle.spec.adapter
     pull(world["remote"], world["bundle"], world["catalog"])   # nothing left to do
     assert BundleDir(world["bundle"]).state().imported == state.imported
 

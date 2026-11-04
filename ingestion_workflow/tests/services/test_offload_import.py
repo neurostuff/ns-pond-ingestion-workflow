@@ -131,7 +131,7 @@ def test_too_long_is_skipped_and_done(ctx):
 
 
 def test_a_refusal_never_replaces_another_run_s_record(ctx):
-    import_run(ctx.catalog, _run(run_id="ns-27b-e-20261028"), [_row()])
+    import_run(ctx.catalog, _run(run_id="ns-27b-e-20261028", prompt_version="v4"), [_row()])
     report = import_run(ctx.catalog, _run(), [_row(text_sha256="0" * 64)])
     assert report.kept == 1
     kept = ctx.catalog.artifact(ARTICLE, "record", "ns-27b")
@@ -185,7 +185,8 @@ def test_a_new_record_makes_its_evidence_and_normalization_stale(ctx):
 
     newer = copy.deepcopy(RECORD)
     newer["analyses"][0]["name"]["value"] = "a later run's name"
-    import_run(ctx.catalog, _run(run_id="ns-27b-e-20261105"), [_row(record=newer)])
+    import_run(ctx.catalog, _run(run_id="ns-27b-e-20261105", prompt_version="v6"),
+               [_row(record=newer)])
     assert _plan(ctx, NormalizeStage(ctx.settings)).fresh == 0
     assert _plan(ctx, EvidenceStage(ctx.settings)).fresh == 0
 

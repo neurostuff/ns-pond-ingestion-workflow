@@ -1542,24 +1542,28 @@ class Catalog:
     # -- runs ----------------------------------------------------------------
 
     def record_run(self, run: Run) -> Run:
-        """Keep `run`, stamped with when it was imported. A run already kept under its id
-        must be the same run: an id names one run for good."""
+        """Keep `run`, stamped with when it was imported, and return the run as kept. A run
+        already kept under its id must be the same run, and a run is kept under one id: an
+        id names one run for good, and a rerun is the run it repeats, as first kept."""
         held = self.run(run.run_id)
         if held is not None:
             if held.identity != run.identity:
                 raise ValueError(f"run {run.run_id} is already kept, as another run")
             return held
+        same = self.run_like(run)
+        if same is not None:
+            raise ValueError(f"run {run.run_id} is run {same.run_id}, already kept")
         kept = Run(**{**run.__dict__, "kind": RunKind(run.kind),
                       "imported_at": run.imported_at or utcnow()})
         with self._write() as conn:
             conn.execute(
                 "INSERT INTO runs (run_id, kind, stage, source, pipeline, version, model, "
-                "adapter, prompt_version, schema_version, code_commit, machine, config, "
+                "adapter, prompt_version, schema_version, fit, code_commit, machine, config, "
                 "bundle_id, created_at, imported_at) "
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (kept.run_id, kept.kind.value, kept.stage, kept.source, kept.pipeline,
                  kept.version, kept.model, kept.adapter, kept.prompt_version,
-                 kept.schema_version, kept.code_commit, kept.machine,
+                 kept.schema_version, kept.fit, kept.code_commit, kept.machine,
                  json.dumps(kept.config, sort_keys=True), kept.bundle_id, kept.created_at,
                  kept.imported_at))
         return kept
@@ -1567,6 +1571,10 @@ class Catalog:
     def run(self, run_id: str) -> Optional[Run]:
         row = self._conn.execute("SELECT * FROM runs WHERE run_id=?", (run_id,)).fetchone()
         return _run(row) if row else None
+
+    def run_like(self, run: Run) -> Optional[Run]:
+        """The kept run `run` repeats: the one with its identity, if any."""
+        return next((held for held in self.runs() if held.identity == run.identity), None)
 
     def runs(self) -> List[Run]:
         return [_run(row) for row in self._conn.execute(

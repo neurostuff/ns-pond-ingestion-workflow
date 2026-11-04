@@ -82,7 +82,8 @@ class Bundle(BaseModel):
     machine: str
     ns_pond_commit: str
     created_at: str
-    #: The `runs` row its results are imported under; its run_id is the bundle_id.
+    #: The `runs` row its results are imported under: the kept run it repeats, or a new one
+    #: under its minted_id. Many bundles can make one run.
     run: Dict[str, Any]
     spec: RunSpec
     shards: List[Shard]

@@ -20,12 +20,12 @@ import json
 import subprocess
 from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable, List, Optional, Sequence, Tuple
 
-from ingestion_workflow.catalog import Catalog, RunKind, Status
+from ingestion_workflow.catalog import Catalog, Run, RunKind, Status
 from ingestion_workflow.pipeline.stage import Context, recorded_path
 from ingestion_workflow.pipeline.stages.offloaded import (
     EvidenceStage,
@@ -253,13 +253,16 @@ def export(ctx: Context, spec: RunSpec, machine: str, *, articles: Optional[Iter
               "model_revision": spec.model_revision, "adapter_sha256": spec.adapter_sha256,
               "shard_size": spec.shard_size, "max_input_tokens": spec.max_input_tokens,
               "time": spec.time, "shards": len(shards)}
-    run = dict(run_id=bundle_id, kind=RunKind.MODEL.value, stage=spec.stage, source=spec.source,
-               pipeline=spec.pipeline, version=spec.version, model=spec.model,
-               adapter=spec.adapter, prompt_version=spec.prompt_version,
-               schema_version=spec.schema_version, code_commit=ns_pond_commit(),
-               machine=machine, config=config, bundle_id=bundle_id,
-               created_at=now.isoformat(timespec="seconds"))
-    bundle = Bundle(bundle_id=bundle_id, machine=machine, ns_pond_commit=run["code_commit"],
+    commit = ns_pond_commit()
+    made = Run("", RunKind.MODEL, spec.stage, spec.source, pipeline=spec.pipeline,
+               version=spec.version, model=spec.model, adapter=spec.adapter,
+               prompt_version=spec.prompt_version, schema_version=spec.schema_version,
+               code_commit=commit, machine=machine, config=config,
+               bundle_id=bundle_id, created_at=now.isoformat(timespec="seconds"))
+    # A rerun of a kept run (its missing papers, say) is that run, as it was first kept.
+    made = catalog.run_like(made) or replace(made, run_id=made.minted_id)
+    run = {**asdict(made), "kind": made.kind.value, "imported_at": None}
+    bundle = Bundle(bundle_id=bundle_id, machine=machine, ns_pond_commit=commit,
                     created_at=run["created_at"], run=run, spec=spec, shards=shards,
                     skipped=len(skipped))
     out.manifest.write_text(bundle.model_dump_json(indent=1), "utf-8")
