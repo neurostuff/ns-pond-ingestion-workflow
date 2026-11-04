@@ -259,9 +259,10 @@ def submit(remote: Remote, root: Path, *, yes: bool, again: Sequence[str] = (),
                                remote.machine.partition, time=time)
         path = f"{where}/logs/{shard}.sbatch"
         remote.run(f"cat > {shlex.quote(path)} <<'EOF'\n{script}EOF")
-        job = remote.run(f"sbatch --parsable {shlex.quote(path)}").strip().split(";")[0]
-        if not job.isdigit():
-            raise RemoteError(f"{shard}: sbatch said {job!r}")
+        said_back = remote.run(f"sbatch --parsable {shlex.quote(path)}")
+        job = sbatch_job_id(said_back)
+        if job is None:
+            raise RemoteError(f"{shard}: sbatch said {said_back.strip()[-300:]!r}")
         state.jobs[shard] = job
         held.save(state)
         said.append(f"{shard}: job {job}")
@@ -269,6 +270,14 @@ def submit(remote: Remote, root: Path, *, yes: bool, again: Sequence[str] = (),
         said.append(f"{len(todo) - room} shards wait for room in the queue "
                     f"({queued} of {remote.machine.max_queued} queued); submit again later")
     return said
+
+
+def sbatch_job_id(output: str) -> Optional[str]:
+    """The job id `sbatch --parsable` printed: its last line, `<id>[;cluster]`. TACC's submit
+    filter prints a banner before it on stdout."""
+    lines = output.strip().splitlines()
+    job = lines[-1].split(";")[0].strip() if lines else ""
+    return job if job.isdigit() else None
 
 
 def job_states(remote: Remote, jobs: Dict[str, str]) -> Dict[str, Dict[str, str]]:

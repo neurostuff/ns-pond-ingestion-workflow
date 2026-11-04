@@ -31,6 +31,16 @@ PRED = json.loads((DATA / "26klegjq7mhi.pred.json").read_text())
 RECORD = json.loads((DATA / "26klegjq7mhi.extraction.json").read_text())
 ARTICLE = "26klegjq7mhi"
 NOW = datetime(2026, 11, 4, 15, 0, tzinfo=timezone.utc)
+#: What Vista's sbatch --parsable printed for the 2026-11-04 smoke job: TACC's banner first.
+SBATCH = ("-----------------------------------------------------------------\n"
+          "          Welcome to the Vista Supercomputer                       \n"
+          "-----------------------------------------------------------------\n\n"
+          "No reservation for this job\n--> Verifying valid submit host (login1)...OK\n"
+          "--> Verifying valid jobname...OK\n--> Verifying valid ssh keys...OK\n"
+          "--> Verifying access to desired queue (gh-dev)...OK\n"
+          "--> Checking available allocation (IBN26027)...OK\n"
+          "--> Quotas are not currently enabled for filesystem /home1/07723/jdk3232...OK\n"
+          "{job}\n")
 #: Vista's sacct, -X -n -P -o JobID,State,Elapsed,ExitCode.
 SACCT = {"COMPLETED": "{job}|COMPLETED|00:32:59|0:0",
          "TIMEOUT": "{job}|TIMEOUT|01:15:12|0:15",
@@ -57,7 +67,7 @@ class Cluster:
             if command.startswith("sbatch"):
                 self.next_job += 1
                 self.states[str(self.next_job)] = "PENDING"
-                return self._done(f"{self.next_job}\n")
+                return self._done(SBATCH.format(job=self.next_job))
             if command.startswith("sacct"):
                 jobs = command.rsplit("-j ", 1)[1].split(",")
                 return self._done("\n".join(SACCT.get(self.states.get(j), "{job}|PENDING|00:00:00|0:0")
@@ -266,3 +276,9 @@ def test_setup_checks_each_environment_against_its_group(world):
                                            "transformers": "5.16.1"}
     with pytest.raises(ValueError, match="no optional-dependency group"):
         R.group_pins("infer-nowhere")
+
+
+def test_the_job_id_is_read_past_tacc_s_banner():
+    assert R.sbatch_job_id(SBATCH.format(job=1122428)) == "1122428"
+    assert R.sbatch_job_id("1122428;vista\n") == "1122428"
+    assert R.sbatch_job_id("sbatch: error: invalid partition\n") is None
