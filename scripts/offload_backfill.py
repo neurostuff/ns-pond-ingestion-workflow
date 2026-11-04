@@ -8,7 +8,7 @@ Three sets on beast, each made outside ns-pond:
   `vista-compact` / `0`; import stamps the run instead.
 * `evidence`: those records with ev1-full's evidence (`ns-collect/set-20261101-ev1`,
   pondie `vista/ns_ev1_merge.py`).
-* `normalize`: the normalization build `astra_norm/out_all/current`, per study the rows
+* `normalize`: the normalization build `astra_norm/out_all2/current`, per study the rows
   of its derived tables. Only the studies it built from a 27B record are written; the
   rest were Astra's, and the catalog holds no Astra record.
 
@@ -17,7 +17,7 @@ text a record was made from is the `Text:` of the prompt its shard sent: when it
 parse's text file, decoded as the prompt builder read it, the row carries the file's
 sha256, which is the parse's `text_sha256`; otherwise the prompt text's own, and import
 refuses it. Evidence and normalization rows carry `record_digest` of the record they
-read: the collected record, and the build's `records_all` copy.
+read: the collected record, and the build's own copy (`records_all2`).
 
     python scripts/offload_backfill.py --catalog COPY --out DIR [--only record evidence normalize]
 
@@ -231,7 +231,7 @@ def evidence_run(out: Path, hashes: Dict[str, Tuple[str, str]]) -> None:
 def normalize_run(out: Path) -> None:
     import pyarrow.parquet as pq
 
-    build = NORM / "out_all/current"
+    build = NORM / "out_all2/current"
     manifest = json.loads((build / "manifest.json").read_text())
     tables = {name: pq.read_table(build / "derived" / f"{name}.parquet").to_pylist()
               for name in ("analyses", "tasks", "conditions", "groups_medical")}
@@ -247,9 +247,11 @@ def normalize_run(out: Path) -> None:
         pipeline="taskCategories astra_build_combined.sh", version="astra-norm",
         model="SapBERT + MiniLM + MONDO + taskcat",
         # The build fitted its classifier, citation index and contrast sets, then assigned
-        # with them: the build is the fit.
-        fit=fingerprint("fit", manifest["built"], manifest["code_sha256"],
-                        manifest["parameters"], vocabulary),
+        # with them. The fit is what it fitted (the sha256 of its task labels and contrast
+        # sets) and what with; not when, so the same fit reused keeps its fingerprint.
+        fit=fingerprint("fit", manifest["code_sha256"], manifest["parameters"],
+                        manifest["vocab"], manifest["pondie_commit"],
+                        manifest["inputs"]["task_labels"], manifest["inputs"]["contrast_sets"]),
         code_commit=f"pondie@{manifest['pondie_commit']}",
         machine="beast (CPU)", created_at=manifest["built"],
         config={"vocabulary": vocabulary, "parameters": manifest["parameters"],
@@ -260,7 +262,8 @@ def normalize_run(out: Path) -> None:
     def rows():
         for line in (build / "record_hashes.tsv").read_text().splitlines()[1:]:
             sid = line.split("\t")[0]
-            record = json.loads((NORM / "records_all" / f"{sid}.extraction.json").read_text())
+            record = json.loads((Path(manifest["inputs"]["record_dir"])
+                                 / f"{sid}.extraction.json").read_text())
             if (record.get("extraction_metadata") or {}).get("extractor_version") != "ns-27b-e":
                 skipped["astra record"] += 1
                 continue
