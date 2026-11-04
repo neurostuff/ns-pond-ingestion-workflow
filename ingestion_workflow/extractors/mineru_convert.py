@@ -14,7 +14,6 @@ anyway is started again on the PDFs it had not reached, without the one it stopp
 
 from __future__ import annotations
 
-import gzip
 import json
 import logging
 import os
@@ -190,12 +189,6 @@ def run_on_gpus(
     return out
 
 
-def save_middle_json(middle: Mapping[str, Any], path: Path) -> None:
-    """Keep MinerU's answer beside the text it was read into: it took a GPU to make."""
-    with gzip.open(path, "wt", encoding="utf-8") as handle:
-        json.dump(middle, handle)
-
-
 def read_middle_json(middle: Mapping[str, Any]) -> MineruDocument:
     """The article's text, figure legends and tables, in reading order.
 
@@ -351,7 +344,6 @@ __all__ = [
     "read_middle_json",
     "run_mineru",
     "run_on_gpus",
-    "save_middle_json",
     "table_frame",
     "table_text",
     "unreadable",

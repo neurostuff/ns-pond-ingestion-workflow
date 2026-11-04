@@ -106,7 +106,7 @@ def test_mark_header_rows(html, marked):
         assert marked in out and "<td>-4</td>" in out
 
 
-def test_the_article_keeps_signed_coordinates_and_minerus_answer(tmp_path):
+def test_the_article_keeps_signed_coordinates(tmp_path):
     content = _extract_mineru_article(_download(tmp_path / "a.pdf"), MIDDLE, tmp_path)
 
     assert content.symbols_as_digits is None
@@ -115,7 +115,6 @@ def test_the_article_keeps_signed_coordinates_and_minerus_answer(tmp_path):
     assert content.full_text_path.read_text().split("Figure legends")[1].strip().startswith(
         "Fig 1. BOLD")
     assert Path(content.tables[0].raw_content_path).suffix == ".html"
-    assert (content.full_text_path.parent / "mineru.json.gz").is_file()
 
 
 # -- the CLI --------------------------------------------------------------------

@@ -1117,14 +1117,12 @@ def _extract_mineru_article(
     from ingestion_workflow.extractors.figure_captions import append_legends, dedupe
     from ingestion_workflow.extractors.mineru_convert import (
         read_middle_json,
-        save_middle_json,
         table_frame,
     )
 
     output_dir = Path(extraction_root) / safe_hash_stem(download_result.identifier.slug)
     tables_dir = output_dir / "tables"
     tables_dir.mkdir(parents=True, exist_ok=True)
-    save_middle_json(middle, output_dir / "mineru.json.gz")
 
     document = read_middle_json(middle)
     full_text, figure_captions = append_legends(
