@@ -14,7 +14,6 @@ download is a PDF share.
 from __future__ import annotations
 
 import logging
-import multiprocessing
 import os
 import re
 import tempfile
@@ -40,6 +39,7 @@ from ingestion_workflow.clients.openalex import (
 from ingestion_workflow.clients.semantic_scholar import SemanticScholarClient
 from ingestion_workflow.config import Settings, load_settings
 from ingestion_workflow.extractors.base import BaseExtractor
+from ingestion_workflow.extractors.bounded import Limits
 from ingestion_workflow.extractors.docling_convert import usable_cuda_devices
 from ingestion_workflow.extractors.utils import safe_hash_stem, sanitize_table_id
 from ingestion_workflow.models import (
@@ -912,10 +912,14 @@ class PdfExtractor(BaseExtractor):
             extraction_root=extraction_root,
             worker=_extract_pdf_article,
             worker_count=worker_count,
-            worker_initializer=_pin_worker_to_gpu if gpus else None,
-            worker_initargs=(
-                (multiprocessing.get_context("spawn").Value("i", 0), gpus) if gpus else ()
+            # Docling's memory grew without bound on one PDF (7rsekeh66ykb) until the
+            # kernel killed the run, so every PDF is read in a child that is killed first.
+            limits=Limits(
+                memory_mb=self.settings.pdf_extract_memory_mb,
+                timeout_s=self.settings.pdf_extract_timeout_s,
             ),
+            worker_initializer=_pin_worker_to_gpu if gpus else None,
+            worker_initargs=(gpus,) if gpus else (),
             source_name="PDF",
             failure_message="PDF extraction did not produce a result.",
             failure_builder=_build_failure_content,
@@ -1016,17 +1020,15 @@ def _merge_split_coordinate_columns(frame: Any) -> Any:
     return result
 
 
-def _pin_worker_to_gpu(counter: Any, gpus: List[int]) -> None:
+def _pin_worker_to_gpu(slot: int, gpus: List[int]) -> None:
     """Give this worker process exactly one GPU, before torch is imported.
 
-    Each worker takes the next index off a shared counter, so two workers never
-    land on the same card. Setting CUDA_VISIBLE_DEVICES rather than choosing a
-    device later means the worker's torch only ever sees the one it owns.
+    Each worker's slot is its own, and a killed worker's replacement keeps it, so
+    two workers never land on the same card. Setting CUDA_VISIBLE_DEVICES rather
+    than choosing a device later means the worker's torch only ever sees the one
+    it owns.
     """
-    with counter.get_lock():
-        ordinal = counter.value
-        counter.value += 1
-    device = gpus[ordinal % len(gpus)]
+    device = gpus[slot % len(gpus)]
     os.environ["CUDA_VISIBLE_DEVICES"] = str(device)
 
 

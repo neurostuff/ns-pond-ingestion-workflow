@@ -4,8 +4,9 @@ import logging
 import multiprocessing
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Sequence, Tuple
+from typing import Any, Callable, Dict, Iterator, List, Optional, Sequence, Tuple
 
+from ingestion_workflow.extractors.bounded import Limits, Stopped, bounded_map
 from ingestion_workflow.models import DownloadResult, ExtractionResult, Identifier, Identifiers
 from ingestion_workflow.utils.progress import emit_progress
 
@@ -13,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 ExtractionWorker = Callable[[DownloadResult, Path | str], ExtractionResult]
 FailureBuilder = Callable[[DownloadResult, str], ExtractionResult]
+#: `(index, result, None)`, or `(index, None, error)` for an article whose worker failed.
+Answer = Tuple[int, Optional[ExtractionResult], Optional[BaseException]]
 
 
 class SourceMisconfigured(RuntimeError):
@@ -88,10 +91,16 @@ class BaseExtractor:
         failure_message: str,
         failure_builder: FailureBuilder,
         progress_hook: Callable[[int], None] | None = None,
+        limits: Limits | None = None,
         worker_initializer: Callable[..., None] | None = None,
         worker_initargs: Tuple[Any, ...] = (),
         min_batch_for_pool: int = 2,
     ) -> List[ExtractionResult]:
+        """`worker` over each download, one article's error failing it alone.
+
+        With `limits`, every article runs in a child killed when it goes over them,
+        even alone; `worker_initializer(slot, *worker_initargs)` sets each child up
+        (`bounded.bounded_map`). Without, a pool runs only for a batch big enough."""
         if not download_results:
             return []
 
@@ -106,54 +115,36 @@ class BaseExtractor:
         ordered_results: List[ExtractionResult | None] = [None] * len(download_results)
         worker_count = max(1, worker_count)
 
-        if worker_count == 1 or len(download_results) < max(2, min_batch_for_pool):
-            for index, download_result in enumerate(download_results):
-                # Same isolation as the pool path below. Without it a single
-                # article that raises before reaching its worker's own guard
-                # escapes to ExtractStage.execute, which fails the whole batch.
-                try:
-                    ordered_results[index] = worker(download_result, extraction_root)
-                except Exception as exc:
-                    logger.exception(
-                        "%s extraction raised exception for %s",
-                        source_name,
-                        download_result.identifier.slug,
-                    )
-                    ordered_results[index] = failure_builder(
-                        download_result,
-                        f"{source_name} extraction raised an exception: {exc}",
-                    )
-                finally:
-                    emit_progress(progress_hook)
-        else:
-            root_arg = str(extraction_root)
-            with ProcessPoolExecutor(
-                max_workers=worker_count,
-                mp_context=multiprocessing.get_context(self.mp_start_method),
+        if limits is not None:
+            answers = bounded_map(
+                download_results,
+                worker,
+                (str(extraction_root),),
+                workers=worker_count,
+                limits=limits,
+                context=multiprocessing.get_context(self.mp_start_method),
                 initializer=worker_initializer,
                 initargs=worker_initargs,
-            ) as executor:
-                future_map = {
-                    executor.submit(worker, download_result, root_arg): index
-                    for index, download_result in enumerate(download_results)
-                }
-                for future in as_completed(future_map):
-                    index = future_map[future]
-                    download_result = download_results[index]
-                    try:
-                        ordered_results[index] = future.result()
-                    except Exception as exc:  # pragma: no cover - defensive guard
-                        logger.exception(
-                            "%s extraction raised exception for %s",
-                            source_name,
-                            download_result.identifier.slug,
-                        )
-                        ordered_results[index] = failure_builder(
-                            download_result,
-                            f"{source_name} extraction raised an exception: {exc}",
-                        )
-                    finally:
-                        emit_progress(progress_hook)
+            )
+        elif worker_count == 1 or len(download_results) < max(2, min_batch_for_pool):
+            answers = _inline(download_results, worker, extraction_root)
+        else:
+            answers = self._pooled(download_results, worker, worker_count, extraction_root)
+
+        # Without this, a single article that raises before reaching its worker's own
+        # guard escapes to ExtractStage.execute, which fails the whole batch.
+        for index, result, error in answers:
+            download_result = download_results[index]
+            if error is None:
+                ordered_results[index] = result
+            else:
+                stopped = isinstance(error, Stopped)
+                message = (f"{source_name} extraction {error}" if stopped
+                           else f"{source_name} extraction raised an exception: {error}")
+                logger.error("%s: %s", download_result.identifier.slug, message,
+                             exc_info=None if stopped else error)
+                ordered_results[index] = failure_builder(download_result, message)
+            emit_progress(progress_hook)
 
         final_results: List[ExtractionResult] = []
         for index, download_result in enumerate(download_results):
@@ -162,3 +153,29 @@ class BaseExtractor:
                 result = failure_builder(download_result, failure_message)
             final_results.append(result)
         return final_results
+
+    def _pooled(self, download_results, worker, worker_count, extraction_root) -> Iterator[Answer]:
+        root_arg = str(extraction_root)
+        with ProcessPoolExecutor(
+            max_workers=worker_count,
+            mp_context=multiprocessing.get_context(self.mp_start_method),
+        ) as executor:
+            future_map = {
+                executor.submit(worker, download_result, root_arg): index
+                for index, download_result in enumerate(download_results)
+            }
+            for future in as_completed(future_map):
+                try:
+                    yield future_map[future], future.result(), None
+                except Exception as exc:  # pragma: no cover - defensive guard
+                    yield future_map[future], None, exc
+
+
+def _inline(download_results, worker, extraction_root) -> Iterator[Answer]:
+    for index, download_result in enumerate(download_results):
+        try:
+            result = worker(download_result, extraction_root)
+        except Exception as exc:
+            yield index, None, exc
+        else:
+            yield index, result, None
