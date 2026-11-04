@@ -90,10 +90,11 @@ class RunKind(str, Enum):
     MIGRATION = "migration"
 
 
-#: The fields of a run that say what made its output. A change to any of them makes a new
-#: output; the rest (where and when it ran, the bundle, the job settings in `config`) do not.
-RUN_IDENTITY = ("kind", "stage", "source", "pipeline", "version", "model", "adapter",
-                "prompt_version", "schema_version")
+#: The fields of a run that say what made its output: its model and inputs. A change to any
+#: of them makes a new run; the rest (the code that drove it, where and when it ran, the
+#: bundle, the job settings in `config`) do not, so a rerun joins the run it repeats.
+RUN_IDENTITY = ("kind", "stage", "source", "version", "model", "adapter", "prompt_version",
+                "schema_version", "fit")
 
 
 @dataclass
@@ -111,6 +112,8 @@ class Run:
     adapter: Optional[str] = None
     prompt_version: Optional[str] = None
     schema_version: Optional[str] = None
+    #: The fingerprint of the fitted model a normalize run assigned with; a refit is a new run.
+    fit: Optional[str] = None
     code_commit: Optional[str] = None
     machine: Optional[str] = None
     config: Dict[str, Any] = field(default_factory=dict)
@@ -126,6 +129,11 @@ class Run:
         held = {name: getattr(self, name) for name in RUN_IDENTITY}
         held["kind"] = RunKind(self.kind).value
         return fingerprint("run", *held.items())
+
+    @property
+    def minted_id(self) -> str:
+        """The run_id a run is kept under: one per identity, so a rerun has the same id."""
+        return f"{self.version or self.stage}-{self.identity[:12]}"
 
 
 @dataclass

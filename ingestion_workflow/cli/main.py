@@ -1364,8 +1364,10 @@ def runs_list(
         counts = ", ".join(f"{n:,} {status}" for status, n in sorted(run["articles"].items()))
         typer.echo(f"{run['run_id']}  {run['kind']} {run['stage']}/{run['source']}  "
                    f"ran {run['created_at']}  imported {run['imported_at']}")
-        typer.echo(f"  model {run['model'] or '-'}  adapter {run['adapter'] or '-'}  "
-                   f"prompt {run['prompt_version'] or '-'}  on {run['machine'] or '-'}")
+        typer.echo(f"  {run['version'] or '-'}  model {run['model'] or '-'}  "
+                   f"adapter {run['adapter'] or '-'}  prompt {run['prompt_version'] or '-'}"
+                   + (f"  fit {run['fit']}" if run.get("fit") else "")
+                   + f"  on {run['machine'] or '-'}")
         typer.echo(f"  articles: {counts or 'none'}")
     if not found["runs"]:
         typer.echo("no runs kept.")

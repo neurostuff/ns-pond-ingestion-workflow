@@ -3,7 +3,8 @@
 Three sets on beast, each made outside ns-pond:
 
 * `record`: the 27B's records (`ns-collect/set-20261101`, pondie `vista/collect_ns.py`),
-  one run per wave of Vista jobs. `extraction_metadata` there is the placeholder
+  one run: its waves of Vista jobs ran one model on one prompt, and are listed in its
+  config. It is the run `configs/offload/ns-27b-e.json` makes, so a rerun joins it. `extraction_metadata` there is the placeholder
   `vista-compact` / `0`; import stamps the run instead.
 * `evidence`: those records with ev1-full's evidence (`ns-collect/set-20261101-ev1`,
   pondie `vista/ns_ev1_merge.py`).
@@ -11,7 +12,7 @@ Three sets on beast, each made outside ns-pond:
   of its derived tables. Only the studies it built from a 27B record are written; the
   rest were Astra's, and the catalog holds no Astra record.
 
-The runs are rebuilt from pondie's job configs and `VISTA-JOURNAL.md` (RUNS below). The
+Each run is kept under its `minted_id`. The runs are rebuilt from pondie's job configs and `VISTA-JOURNAL.md` (RUNS below). The
 text a record was made from is the `Text:` of the prompt its shard sent: when it is the
 parse's text file, decoded as the prompt builder read it, the row carries the file's
 sha256, which is the parse's `text_sha256`; otherwise the prompt text's own, and import
@@ -39,6 +40,8 @@ from collections import Counter
 from pathlib import Path
 from typing import Dict, Iterator, Optional, Tuple
 
+from ingestion_workflow.catalog import Run, RunKind
+from ingestion_workflow.catalog.fingerprint import fingerprint
 from ingestion_workflow.pipeline.stages.offloaded import record_digest
 
 AGENTS = Path("/data/james/agents/astra-distill")
@@ -56,25 +59,26 @@ RECORD_RUN = dict(
     version="ns-27b-e", model="Qwen/Qwen3.8-27B",
     # r3-27b-full/adapter-final: QLoRA nf4 r=64, 1 epoch on train v5, step 776 (tag v1).
     adapter="jdkent/qwen3.8-27b-ns-record@dbfd846bd3e1259039eb2f3117dc12bd733c640a",
-    prompt_version="astra-distill v5 paper prompt (vista/tasks.py prompt_of, bodies_ns.py)",
-    schema_version="extraction-record (pondie migrate/in, compact.from_compact)",
-    code_commit="pondie@a963c94", machine="vista gh (GH200)")
-#: (run_id, first shard, last shard, created, max_len, jobs and notes), VISTA-JOURNAL.md.
+    # The prompt pondie-astra packaged from vista/tasks.py and bodies_ns.py, byte for byte.
+    prompt_version="astra-distill v5 paper prompt (pondie-astra prompt.prompt_of, user_content q27)",
+    schema_version="extraction-record (pondie-astra frozen schema, sha256 27f8cf61)",
+    code_commit="pondie@a963c94", machine="vista gh (GH200)", created_at="2026-10-28")
+#: (wave, first shard, last shard, created, max_len, jobs and notes), VISTA-JOURNAL.md.
 RECORD_WAVES = (
-    ("ns-27b-e-20261028-s000", 0, 0, "2026-10-28", 49152,
+    ("20261028-s000", 0, 0, "2026-10-28", 49152,
      {"note": "smoke shard, 498 papers; 4 cut at the context limit, so the rest ran at 65,536"}),
-    ("ns-27b-e-20261028", 1, 84, "2026-10-28", 65536, {"bodies": "shards-20261028"}),
-    ("ns-27b-e-20261030", 85, 103, "2026-10-30", 65536,
+    ("20261028", 1, 84, "2026-10-28", 65536, {"bodies": "shards-20261028"}),
+    ("20261030", 85, 103, "2026-10-30", 65536,
      {"bodies": "run-20261030/shards-20261030", "jobs": "1110622-1110640; s100 again as 1111029",
       "input": "staging/sync-parse-20261030/vista-ready.tsv, ns-pond main 76ae0fc"}),
-    ("ns-27b-e-20261031", 104, 136, "2026-10-31", 65536,
+    ("20261031", 104, 136, "2026-10-31", 65536,
      {"bodies": "run-20261031/shards-20261031",
       "jobs": "1112034-1112063; s134-s136 as slots freed", "input": "run-20261031/articles.tsv"}),
 )
 SHARD_DIRS = (NS / "shards-20261028", NS / "run-20261030/shards-20261030",
               NS / "run-20261031/shards-20261031")
 EVIDENCE_RUN = dict(
-    run_id="ns-ev1-20261102", kind="model", stage="evidence", source="ns-27b",
+    kind="model", stage="evidence", source="ns-27b",
     pipeline="pondie astra-distill ev1", version="ev1-full", model="numind/NuExtract3",
     # ev1-full/adapter-final (tag v1)
     adapter="jdkent/nuextract3-ns-evidence@ea9be65e535cec75ba9a03dc637352b96d07e9b6",
@@ -90,11 +94,8 @@ def _shard(name: str) -> int:
     return int(name[1:])
 
 
-def _wave(shard: int) -> str:
-    return next(run_id for run_id, first, last, *_ in RECORD_WAVES if first <= shard <= last)
-
-
 def _write(out: Path, run: dict, rows: Iterator[dict]) -> Counter:
+    run = dict(run, run_id=Run(**{**run, "run_id": "", "kind": RunKind(run["kind"])}).minted_id)
     (out / f"{run['run_id']}.run.json").write_text(json.dumps(run, indent=1))
     counts: Counter = Counter()
     with gzip.open(out / f"{run['run_id']}.jsonl.gz", "wt", encoding="utf-8",
@@ -102,6 +103,7 @@ def _write(out: Path, run: dict, rows: Iterator[dict]) -> Counter:
         for row in rows:
             counts[row["status"]] += 1
             handle.write(json.dumps(row, ensure_ascii=False) + "\n")
+    print(run["run_id"], dict(counts))
     return counts
 
 
@@ -183,27 +185,25 @@ def record_runs(out: Path, papers: Papers) -> Dict[str, Tuple[str, str]]:
     manifest = _manifest(SET / "manifest.tsv")
     hashes = text_hashes(papers, manifest)
     print("text:", dict(Counter(how for _, how in hashes.values())))
-    for run_id, first, last, created, max_len, extra in RECORD_WAVES:
-        run = dict(RECORD_RUN, run_id=run_id, created_at=created,
-                   config=dict(VLLM_E, max_len=max_len, shards=f"s{first:03d}-s{last:03d}",
-                               collect=str(SET), **extra))
+    waves = [dict(wave=wave, shards=f"s{first:03d}-s{last:03d}", created=created,
+                  max_len=max_len, **extra)
+             for wave, first, last, created, max_len, extra in RECORD_WAVES]
+    run = dict(RECORD_RUN, config=dict(VLLM_E, waves=waves, collect=str(SET)))
 
-        def rows(run_id=run_id):
-            for row in manifest:
-                if _wave(_shard(row["shard"])) != run_id:
-                    continue
-                sid, article_id = row["sid"], row["article_id"]
-                out_row = {"article_id": article_id, "base_study_id": sid,
-                           "text_sha256": hashes.get(sid, (None,))[0]}
-                if row["status"] == "no_prediction":
-                    out_row.update(status="skipped", reason=f"no prediction: {row['note']}")
-                elif row["status"] in ("valid", "invalid"):
-                    record = json.loads((SET / "records" / f"{sid}.extraction.json").read_text())
-                    out_row.update(status="ok", record=record)
-                else:
-                    out_row.update(status="failed", reason=f"{row['status']}: {row['note']}")
-                yield out_row
-        print(run_id, dict(_write(out, run, rows())))
+    def rows():
+        for row in manifest:
+            sid, article_id = row["sid"], row["article_id"]
+            out_row = {"article_id": article_id, "base_study_id": sid,
+                       "text_sha256": hashes.get(sid, (None,))[0]}
+            if row["status"] == "no_prediction":
+                out_row.update(status="skipped", reason=f"no prediction: {row['note']}")
+            elif row["status"] in ("valid", "invalid"):
+                record = json.loads((SET / "records" / f"{sid}.extraction.json").read_text())
+                out_row.update(status="ok", record=record)
+            else:
+                out_row.update(status="failed", reason=f"{row['status']}: {row['note']}")
+            yield out_row
+    _write(out, run, rows())
     return hashes
 
 
@@ -225,7 +225,7 @@ def evidence_run(out: Path, hashes: Dict[str, Tuple[str, str]]) -> None:
                                record=json.loads(
                                    (SET_EV1 / "records" / f"{sid}.extraction.json").read_text()))
             yield out_row
-    print(EVIDENCE_RUN["run_id"], dict(_write(out, EVIDENCE_RUN, rows())))
+    _write(out, EVIDENCE_RUN, rows())
 
 
 def normalize_run(out: Path) -> None:
@@ -240,15 +240,20 @@ def normalize_run(out: Path) -> None:
         for row in rows:
             per_study.setdefault(row["study"], {}).setdefault(name, []).append(row)
     sid_to_article = {row["sid"]: row["article_id"] for row in _manifest(SET / "manifest.tsv")}
+    vocabulary = manifest["vocab"] | {k: manifest["inputs"][k] for k in
+                                      ("task_labels", "contrast_sets", "medical_decisions")}
     run = dict(
-        run_id="astra-norm-20261031", kind="model", stage="normalize", source="ns-27b",
-        pipeline="taskCategories astra_build_combined.sh", version=manifest["built"],
-        model="SapBERT + MiniLM + MONDO + taskcat", code_commit=f"pondie@{manifest['pondie_commit']}",
+        kind="model", stage="normalize", source="ns-27b",
+        pipeline="taskCategories astra_build_combined.sh", version="astra-norm",
+        model="SapBERT + MiniLM + MONDO + taskcat",
+        # The build fitted its classifier, citation index and contrast sets, then assigned
+        # with them: the build is the fit.
+        fit=fingerprint("fit", manifest["built"], manifest["code_sha256"],
+                        manifest["parameters"], vocabulary),
+        code_commit=f"pondie@{manifest['pondie_commit']}",
         machine="beast (CPU)", created_at=manifest["built"],
-        config={"vocabulary": manifest["vocab"] | {k: manifest["inputs"][k] for k in
-                                                    ("task_labels", "contrast_sets",
-                                                     "medical_decisions")},
-                "parameters": manifest["parameters"], "code_sha256": manifest["code_sha256"],
+        config={"vocabulary": vocabulary, "parameters": manifest["parameters"],
+                "code_sha256": manifest["code_sha256"], "built": manifest["built"],
                 "build": str(build), "records": manifest["inputs"]["record_dir"]})
     skipped = Counter()
 
@@ -264,7 +269,8 @@ def normalize_run(out: Path) -> None:
                 continue
             yield {"article_id": sid_to_article[sid], "base_study_id": sid, "status": "ok",
                    "record_digest": record_digest(record), "record": per_study.get(sid, {})}
-    print(run["run_id"], dict(_write(out, run, rows())), "left out:", dict(skipped))
+    _write(out, run, rows())
+    print("left out:", dict(skipped))
 
 
 def main() -> None:

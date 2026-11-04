@@ -88,7 +88,17 @@ def test_a_run_id_names_one_run_for_good(tmp_path):
             catalog.record_run(_run(adapter="another/adapter"))
 
 
-def test_two_runs_of_one_model_have_one_identity():
-    assert _run(run_id="r1", config={"shards": [1]}).identity == \
-        _run(run_id="r2", config={"shards": [2]}, machine="ls6").identity
+def test_two_runs_of_one_model_have_one_identity_and_one_id():
+    first, again = (_run(run_id="r1", config={"shards": [1]}),
+                    _run(run_id="r2", config={"shards": [2]}, machine="ls6",
+                         pipeline="ns-pond offload", code_commit="abc"))
+    assert first.identity == again.identity and first.minted_id == again.minted_id
     assert _run().identity != _run(prompt_version="v2").identity
+    assert _run(stage="normalize", fit="f1").minted_id != _run(stage="normalize", fit="f2").minted_id
+
+
+def test_a_rerun_is_kept_under_the_run_it_repeats(tmp_path):
+    with Catalog.open(tmp_path / "cat") as catalog:
+        catalog.record_run(_run())
+        with pytest.raises(ValueError, match="is run r1"):
+            catalog.record_run(_run(run_id="r2", machine="ls6"))
