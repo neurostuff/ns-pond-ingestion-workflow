@@ -1,4 +1,5 @@
-"""The curated TSV's entries win; a scraped record joins one only by an id or a full name."""
+"""Only the curated TSV makes the dictionary; a scraped record joins an entry by an id or a full
+name, or is a candidate."""
 
 from __future__ import annotations
 
@@ -18,7 +19,8 @@ def curated():
 
 
 def test_the_curated_tsv_merges_into_one_entry_per_row(curated):
-    sources, aliases = merge(curated)
+    sources, aliases, candidates = merge(curated)
+    assert not candidates
     assert [s.id for s in sources] == sorted(r.record_id for r in curated)
     adni = next(s for s in sources if s.id == "adni")
     assert (adni.part_of, adni.rrids, adni.providers) == ("loni_ida", ["SCR_003007"],
@@ -30,8 +32,8 @@ def test_a_record_sharing_an_rrid_joins_the_curated_entry_and_adds_no_aliases(cu
     scraped = Record(provider="scicrunch", record_id="SCR_003007", name="ADNI portal",
                      aliases=[("ADNI portal", "name"), ("AP", "defined")], rrids=["SCR_003007"],
                      url="https://example.org")
-    sources, aliases = merge([*curated, scraped])
-    assert len(sources) == len(curated)
+    sources, aliases, candidates = merge([*curated, scraped])
+    assert (len(sources), candidates) == (len(curated), [])
     adni = next(s for s in sources if s.id == "adni")
     assert adni.providers == ["curated", "scicrunch"]
     assert adni.url == "http://adni-info.org/"
@@ -40,27 +42,16 @@ def test_a_record_sharing_an_rrid_joins_the_curated_entry_and_adds_no_aliases(cu
 
 def test_a_record_joins_by_a_full_name_but_never_by_its_acronym(curated):
     named = Record(provider="jpnd", record_id="jpnd_adni", name="Alzheimers Disease "
-                   "Neuroimaging Initiative", aliases=[("ADNI", "defined")])
+                   "Neuroimaging Initiative", aliases=[("ADNI", "defined")], rrids=["SCR_1"])
     lookalike = Record(provider="jpnd", record_id="jpnd_other", name="Another Dementia "
                        "Network Initiative", aliases=scraped_aliases(
                            ["Another Dementia Network Initiative"], ["ADNI"]))
-    sources, aliases = merge([*curated, named, lookalike])
-    ids = {s.id for s in sources}
-    assert "jpnd_adni" not in ids and "jpnd_other" in ids
-    assert ("jpnd_other", "ADNI", "defined") in aliases
-
-
-def test_two_new_records_of_one_data_source_merge(curated):
-    first = Record(provider="re3data", record_id="r3d1", name="Example Brain Bank",
-                   aliases=scraped_aliases(["Example Brain Bank"], ["EBB"]), re3data_ids=["r3d1"])
-    second = Record(provider="scicrunch", record_id="SCR_1", name="Example Brain Bank",
-                    aliases=scraped_aliases(["Example Brain Bank", "EBBank"], []), rrids=["SCR_1"])
-    sources, aliases = merge([*curated, second, first])
-    bank = next(s for s in sources if s.id == "r3d1")
-    assert (bank.rrids, bank.re3data_ids, bank.providers) == (["SCR_1"], ["r3d1"],
-                                                             ["re3data", "scicrunch"])
-    assert [(a, t) for i, a, t in aliases if i == "r3d1"] == [
-        ("EBB", "defined"), ("EBBank", "qualified"), ("Example Brain Bank", "name")]
+    sources, aliases, candidates = merge([*curated, named, lookalike])
+    assert [c.record_id for c in candidates] == ["jpnd_other"]
+    assert {s.id for s in sources} == {r.record_id for r in curated}
+    adni = next(s for s in sources if s.id == "adni")
+    assert (adni.providers, adni.rrids) == (["curated", "jpnd"], ["SCR_003007", "SCR_1"])
+    assert aliases == merge(curated)[1]
 
 
 def test_scraped_aliases_are_given_the_precise_tiers():
@@ -74,6 +65,6 @@ def test_a_part_of_naming_no_entry_is_refused():
 
 
 def test_the_digest_follows_the_aliases_only(curated):
-    _, aliases = merge(curated)
+    aliases = merge(curated)[1]
     assert digest(aliases) == digest(list(reversed(aliases)))
     assert digest(aliases) != digest(aliases[1:])

@@ -1,8 +1,9 @@
 """Records from each catalogue, merged into one dictionary of data sources and aliases.
 
-The curated TSV is reviewed by hand, so its entries, ids and tiers win. A record from another
-catalogue joins the entry sharing its RRID, its re3data id or one of its names; one that joins
-none is an entry of its own, under its catalogue's id.
+The curated TSV is reviewed by hand, and it alone makes the dictionary: matched unreviewed,
+the catalogues' entries are mostly software, atlases and institutions (PR-190-Data-Sources).
+A record from another catalogue joins the curated entry sharing its RRID, its re3data id or
+one of its names; one that joins none is a candidate for the TSV.
 """
 
 from __future__ import annotations
@@ -26,7 +27,7 @@ TIER_COLUMNS = {
     "defined": "acronyms_defined",
     "qualified": "qualified_names",
 }
-#: Merge order: an earlier provider's entry is the one a later record joins.
+#: The providers, in the order their records are read.
 PROVIDERS = ("curated", "re3data", "scicrunch", "jpnd")
 #: The tiers of an entry's aliases a record's name joins it by: a full name, or an acronym
 #: that names nothing else. A record joins by its own full names only, never its acronyms.
@@ -82,9 +83,9 @@ def split(cell: Optional[str]) -> List[str]:
 
 
 def scraped_aliases(names: Iterable[str], acronyms: Iterable[str]) -> List[Tuple[str, str]]:
-    """Tiers for aliases nobody reviewed, chosen to be precise: a name of two words or more is
-    a `name`; a one-word name is `qualified`; an acronym is `defined`, so it counts only
-    where the paper gives a full name too."""
+    """The tiers proposed for a record's aliases, which nobody reviewed: a name of two words or
+    more is a `name`; a one-word name is `qualified`; an acronym is `defined`. A record joins a
+    curated entry by its `name` aliases, and a candidate is shown with all of them."""
     out = []
     for name in names:
         name = re.sub(r"\s+", " ", name).strip()
@@ -119,25 +120,39 @@ def curated_records(path: Path = CURATED) -> List[Record]:
     ]
 
 
-def merge(records: Sequence[Record]) -> Tuple[List[DataSource], List[Tuple[str, str, str]]]:
-    """(data sources, aliases as (data source id, alias, tier)), each sorted."""
+def merge(records: Sequence[Record]) -> Tuple[List[DataSource], List[Tuple[str, str, str]],
+                                             List[Record]]:
+    """(data sources, aliases as (data source id, alias, tier), candidates), each sorted.
+
+    Only the curated TSV makes entries and aliases: a record from another catalogue that
+    joins a curated entry adds its ids and provenance, and one that joins none is a
+    candidate for a person to add to the TSV."""
     order = {name: i for i, name in enumerate(PROVIDERS)}
     records = sorted(records, key=lambda r: (order.get(r.provider, len(order)), r.record_id))
     sources: Dict[str, DataSource] = {}
     aliases: Dict[str, Dict[Tuple[str, str], None]] = {}
-    curated = set()
     by_id: Dict[Tuple[str, str], str] = {}
+    candidates: List[Record] = []
 
-    def index(source_id: str, record: Record) -> None:
+    for record in (r for r in records if r.provider == "curated"):
+        if record.record_id in sources:
+            raise ValueError(f"two data sources are given the id {record.record_id!r}")
+        sources[record.record_id] = DataSource(
+            id=record.record_id, name=record.name, kinds=sorted(set(record.kinds)),
+            modalities=sorted(set(record.modalities)), url=record.url,
+            url_source=record.url_source, rrids=sorted(set(record.rrids)),
+            re3data_ids=sorted(set(record.re3data_ids)), part_of=record.part_of,
+            providers=["curated"])
+        aliases[record.record_id] = dict.fromkeys(record.aliases)
         for rrid in record.rrids:
-            by_id.setdefault(("rrid", rrid), source_id)
+            by_id.setdefault(("rrid", rrid), record.record_id)
         for r3d in record.re3data_ids:
-            by_id.setdefault(("re3data", r3d), source_id)
+            by_id.setdefault(("re3data", r3d), record.record_id)
         for name in [record.name, *(a for a, tier in record.aliases if tier in JOINED_BY)]:
             if len(key(name)) >= MIN_JOIN_KEY:
-                by_id.setdefault(("key", key(name)), source_id)
+                by_id.setdefault(("key", key(name)), record.record_id)
 
-    for record in records:
+    for record in (r for r in records if r.provider != "curated"):
         joined = next(
             (by_id[k] for k in [*(("rrid", r) for r in record.rrids),
                                 *(("re3data", r) for r in record.re3data_ids),
@@ -148,34 +163,19 @@ def merge(records: Sequence[Record]) -> Tuple[List[DataSource], List[Tuple[str, 
             None,
         )
         if joined is None:
-            if record.record_id in sources:
-                raise ValueError(f"two data sources are given the id {record.record_id!r}")
-            sources[record.record_id] = DataSource(
-                id=record.record_id, name=record.name, kinds=[], modalities=[], url="",
-                url_source="", rrids=[], re3data_ids=[], part_of=record.part_of, providers=[])
-            aliases[record.record_id] = {}
-            if record.provider == "curated":
-                curated.add(record.record_id)
-            joined = record.record_id
+            candidates.append(record)
+            continue
         source = sources[joined]
         source.providers = sorted({*source.providers, record.provider})
         source.rrids = sorted({*source.rrids, *record.rrids})
         source.re3data_ids = sorted({*source.re3data_ids, *record.re3data_ids})
-        if joined not in curated or record.provider == "curated":
-            source.kinds = sorted({*source.kinds, *record.kinds})
-            source.modalities = sorted({*source.modalities, *record.modalities})
-            if not source.url and record.url:
-                source.url = record.url
-                source.url_source = record.url_source or record.provider
-            aliases[joined].update(dict.fromkeys(record.aliases))
-        index(joined, record)
 
     unknown = {s.part_of for s in sources.values() if s.part_of} - set(sources)
     if unknown:
         raise ValueError(f"part_of names no data source: {sorted(unknown)}")
     rows = sorted((source_id, alias, tier) for source_id, held in aliases.items()
                   for alias, tier in held)
-    return [sources[k] for k in sorted(sources)], rows
+    return [sources[k] for k in sorted(sources)], rows, candidates
 
 
 def digest(aliases: Sequence[Tuple[str, str, str]]) -> str:

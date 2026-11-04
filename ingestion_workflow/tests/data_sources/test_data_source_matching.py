@@ -60,6 +60,52 @@ def test_lower_case_prose_is_not_a_full_name():
     assert not names.find("Methods\nadolescent brain cognitive development is slow.\n")["matches"]
 
 
+#: Sentences from the papers sampled for PR-190-Data-Sources, and how each names its source.
+RELATIONS = [
+    ("The data used in this study were obtained from the OpenNeuro database with accession "
+     "number of ds000030.", "openneuro", "used"),
+    ("Neuroimaging data from this study has been uploaded to OpenNeuro. "
+     "doi:10.18112/openneuro.ds004219.v1.0.0", "openneuro", "deposited"),
+    ("Thresholded and unthresholded images are available on Neurovault: "
+     "https://neurovault.org/collections/15045/.", "neurovault", "deposited"),
+    ("Based on the ADNI protocol, high-resolution 3-dimensional T1-weighted images were "
+     "acquired.", "adni", "borrowed"),
+    ("The MRI scanning sequences were taken from the protocol developed by the Alzheimer's "
+     "Disease Neuroimaging Initiative for use with scanners.", "adni", "borrowed"),
+    ("The present study used the social cognition paradigm from the Human Connectome Project "
+     "(HCP).", "hcp", "borrowed"),
+    ("80 subjects were retrieved from the publicly available Human Connectome Project (HCP) "
+     "dataset.", "hcp", "used"),
+]
+
+
+@pytest.mark.parametrize("sentence, data_source, status", RELATIONS)
+def test_a_hit_s_sentence_says_how_the_paper_names_its_source(curated, sentence, data_source,
+                                                              status):
+    (match,) = curated.find(f"Methods\n{sentence}\n")["matches"]
+    assert (match["data_source_id"], match["status"]) == (data_source, status)
+
+
+def test_a_use_anywhere_in_the_used_sections_makes_the_match_used(curated):
+    text = ("Methods\nData were obtained from the ADNI database.\n"
+            "Scans followed the ADNI protocol.\n")
+    (match,) = curated.find(text)["matches"]
+    assert match["status"] == "used"
+    assert sorted(e["relation"] for e in match["examples"]) == ["borrowed", "use"]
+
+
+def test_a_name_inside_a_url_is_not_a_hit(curated):
+    text = ("Methods\nMotion was inspected with ArtRepair "
+            "(http://cibsr.stanford.edu/tools/human-brain-project/artrepair-software.html).\n")
+    assert not curated.find(text)["matches"]
+
+
+def test_a_funder_in_the_acknowledgments_is_mentioned(curated):
+    text = "Methods\nx\nAcknowledgments\nFunded by AMED Brain/Minds Beyond (no. 19189621).\n"
+    (match,) = curated.find(text)["matches"]
+    assert (match["data_source_id"], match["status"]) == ("brain_minds_beyond", "mentioned")
+
+
 def test_sections_are_read_from_markdown_and_numbered_headings():
     marks = sections("Title\n## 2. Materials and methods\nx\n### References\ny\n")
     assert [name for _, name in marks] == ["front", "methods", "references"]

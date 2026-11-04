@@ -1,5 +1,6 @@
 """The dictionary and the matches, as the TSVs neurostore's `manage data-sources` reads:
-`data_sources.tsv` for `load`, `paper_entities.tsv` for `link-matches`."""
+`data_sources.tsv` for `load`, `paper_entities.tsv` for `link-matches`; and
+`candidates.tsv`, the catalogue records that join no curated entry, for review."""
 
 from __future__ import annotations
 
@@ -9,6 +10,8 @@ from typing import Dict, List
 
 SOURCES_COLUMNS = ("id", "name", "roles", "modality", "hosted_by", "rrid", "re3data_id", "url",
                    "url_source")
+CANDIDATE_COLUMNS = ("provider", "record_id", "name", "aliases", "kinds", "modalities", "url",
+                     "rrids", "re3data_ids")
 MATCH_COLUMNS = ("paper", "pmid", "doi", "year", "source", "entity", "status", "n_hits",
                  "sections", "forms")
 CHUNK = 900
@@ -28,6 +31,17 @@ def source_rows(catalog) -> List[Dict[str, str]]:
              "rrid": "|".join(s["rrids"]), "re3data_id": "|".join(s["re3data_ids"]),
              "url": s["url"], "url_source": s["url_source"]}
             for s in catalog.data_sources()]
+
+
+def candidate_rows(catalog) -> List[Dict[str, str]]:
+    from .merge import Record, merge
+
+    candidates = merge([Record.from_dict(r) for r in catalog.data_source_records()])[2]
+    return [{"provider": r.provider, "record_id": r.record_id, "name": r.name,
+             "aliases": "|".join(f"{alias}:{tier}" for alias, tier in r.aliases),
+             "kinds": "|".join(r.kinds), "modalities": "|".join(r.modalities), "url": r.url,
+             "rrids": "|".join(r.rrids), "re3data_ids": "|".join(r.re3data_ids)}
+            for r in candidates]
 
 
 def match_rows(ctx) -> List[Dict[str, str]]:
@@ -74,10 +88,12 @@ def match_rows(ctx) -> List[Dict[str, str]]:
 
 
 def export(ctx, out: Path) -> Dict[str, int]:
-    """Write both TSVs into `out`; {file: rows}."""
+    """Write the three TSVs into `out`; {file: rows}."""
     out.mkdir(parents=True, exist_ok=True)
     return {
         "data_sources.tsv": _write(out / "data_sources.tsv", SOURCES_COLUMNS,
                                    source_rows(ctx.catalog)),
         "paper_entities.tsv": _write(out / "paper_entities.tsv", MATCH_COLUMNS, match_rows(ctx)),
+        "candidates.tsv": _write(out / "candidates.tsv", CANDIDATE_COLUMNS,
+                                 candidate_rows(ctx.catalog)),
     }

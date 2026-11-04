@@ -4,6 +4,10 @@ Tiers, most to least trusted: `name` (a full name), `safe` (an acronym that name
 else), `context` (an acronym counted only near a dataset word), `defined` (counted only when
 the paper also gives the full name) and `qualified` (an ordinary word, counted only beside a
 dataset word, an OpenNeuro accession, or the full name).
+
+Each hit's sentence says how the paper names it: the paper's data came from it (`use`), the
+paper put its own data there (`deposit`), or the paper took a protocol, pipeline, template or
+task from it (`borrowed`). A hit inside a URL does not count.
 """
 
 from __future__ import annotations
@@ -68,11 +72,34 @@ HEADING = re.compile(
     + r")\**\s*:?\**$",
     re.I,
 )
-#: A data source named in these sections was used; in these, only mentioned.
-USED = {"front", "abstract", "methods", "results", "data_availability", "acknowledgments"}
-MENTIONED = {"intro", "discussion", "conclusion"}
-#: A match's status, from the sections it is named in.
-STATUSES = ("used", "mentioned", "references_only", "unsectioned")
+#: A data source named in these sections was used; in these, only mentioned. Funders are
+#: named in the acknowledgments.
+USED = {"front", "abstract", "methods", "results", "data_availability"}
+MENTIONED = {"intro", "discussion", "conclusion", "acknowledgments"}
+#: A match's status: from how its hits in the USED sections name it, else from the sections
+#: it is named in.
+STATUSES = ("used", "deposited", "borrowed", "mentioned", "references_only", "unsectioned")
+RELATIONS = ("use", "deposit", "borrowed")
+
+#: How far back a hit's sentence is read.
+SENTENCE = 160
+#: "deposited on", "uploaded to", "available via", "shared with" the data source.
+DEPOSIT_BEFORE = re.compile(
+    r"\b(?:deposited|uploaded|shared|submitted|archived|available|accessible|released|stored|"
+    r"hosted)\b[^.;]{0,60}?\b(?:on|at|in|via|through|to|with|into)\s+(?:the\s+|an?\s+)?"
+    r"(?:[\w-]+\s+){0,2}$", re.I)
+_TAKEN = (r"protocols?|pipelines?|paradigms?|templates?|atlas(?:es)?|toolbox|parcellations?|"
+          r"guidelines|sequences?|tasks?|preprocessing|ROIs?|networks?|software")
+#: "the ADNI protocol", "the HCP (Glasser 2013) pipeline", "the IXI-549 tissue probability
+#: map template".
+BORROWED_AFTER = re.compile(r"\s*(?:\([^)]{1,40}\)\s*)?(?:[\w'’-]+\s+){0,3}?(?:" + _TAKEN
+                            + r")\b", re.I)
+#: "the protocol developed by the", "the social cognition paradigm from the", "scan parameters
+#: were based on the".
+BORROWED_BEFORE = re.compile(
+    r"\b(?:" + _TAKEN + r"|parameters|procedures?|recommendations)\s+(?:[\w-]+\s+){0,3}?"
+    r"(?:of|from|by|in|used (?:in|by)|developed by|adapted from|based on|described by|"
+    r"provided by)\s+(?:the\s+)?$", re.I)
 
 
 def key(s: str) -> str:
@@ -110,6 +137,24 @@ def section_at(marks: List[Tuple[int, str]], offset: int) -> str:
 
 def snippet(text: str, start: int, end: int) -> str:
     return re.sub(r"\s+", " ", text[max(0, start - SNIPPET): end + SNIPPET])
+
+
+def in_url(text: str, start: int) -> bool:
+    """Whether the hit at `start` is part of a URL ("…/human-brain-project/artrepair…")."""
+    token = max(text.rfind(c, 0, start) for c in " \n\t(<[") + 1
+    before = text[token:start]
+    return "/" in before or before.lower().startswith(("www.", "http"))
+
+
+def relation(text: str, start: int, end: int) -> str:
+    """How the sentence around a hit names its data source, one of RELATIONS."""
+    lo = max(text.rfind(". ", 0, start) + 2, text.rfind("\n", 0, start) + 1, start - SENTENCE)
+    before = text[lo:start]
+    if BORROWED_AFTER.match(text, end) or BORROWED_BEFORE.search(before):
+        return "borrowed"
+    if DEPOSIT_BEFORE.search(before):
+        return "deposit"
+    return "use"
 
 
 def qualified(text: str, start: int, end: int) -> bool:
@@ -166,9 +211,12 @@ class Dictionary:
                 raw.append((found, m.group(), tier, m.start(), m.end(),
                             section_at(marks, m.start())))
         defined = {h[0] for h in raw if h[2] == "name" and h[5] != "references"}
+        raw.sort(key=lambda h: (h[3], h[4]))
 
         hits = defaultdict(list)
         for found, form, tier, start, end, sec in raw:
+            if in_url(text, start):
+                continue
             if tier == "defined" and found not in defined:
                 continue
             if (tier == "context" and found not in defined
@@ -177,28 +225,40 @@ class Dictionary:
                 continue
             if tier == "qualified" and found not in defined and not qualified(text, start, end):
                 continue
-            hits[found].append((form, tier, start, end, sec))
+            held = hits[found]
+            # "the paradigm from the Human Connectome Project (HCP)": an acronym defining the
+            # name just before it is named as that name is
+            previous = held[-1] if held else None
+            if previous and start - previous[3] <= 3 and text[previous[3]:start].strip() in "(":
+                how = previous[5]
+            else:
+                how = relation(text, start, end)
+            held.append((form, tier, start, end, sec, how))
 
         matches = []
         for found, hs in sorted(hits.items()):
             secs = Counter(h[4] for h in hs)
-            if not sectioned:
-                status = "unsectioned"
-            elif USED & secs.keys():
-                status = "used"
+            read = {h[5] for h in hs if not sectioned or h[4] in USED}
+            if "use" in read:
+                status = "used" if sectioned else "unsectioned"
+            elif "deposit" in read:
+                status = "deposited"
+            elif read:
+                status = "borrowed"
             elif MENTIONED & secs.keys():
                 status = "mentioned"
             else:
                 status = "references_only"
-            ranked = sorted(hs, key=lambda h: (h[4] not in USED, h[4] == "references", h[2]))
+            ranked = sorted(hs, key=lambda h: (h[4] not in USED, h[5] != "use",
+                                               h[4] == "references", h[2]))
             matches.append({
                 "data_source_id": found,
                 "status": status,
                 "n_hits": len(hs),
                 "sections": dict(secs.most_common()),
                 "forms": sorted({h[0] for h in hs}),
-                "examples": [{"form": form, "tier": tier, "section": sec, "start": start,
-                          "end": end, "snippet": snippet(text, start, end)}
-                         for form, tier, start, end, sec in ranked[:MAX_SNIPPETS]],
+                "examples": [{"form": form, "tier": tier, "section": sec, "relation": how,
+                              "start": start, "end": end, "snippet": snippet(text, start, end)}
+                             for form, tier, start, end, sec, how in ranked[:MAX_SNIPPETS]],
             })
         return {"sectioned": sectioned, "matches": matches}

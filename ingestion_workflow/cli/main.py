@@ -1417,13 +1417,15 @@ def data_sources_pull(
         typer.echo("scicrunch left out: set scicrunch_api_key to pull it", err=True)
     with _catalog(settings) as catalog:
         try:
-            held = pull(catalog, found, provider or [p for p in PROVIDERS if p in found])
+            held, candidates = pull(catalog, found,
+                                    provider or [p for p in PROVIDERS if p in found])
         except ValueError as exc:
             raise typer.BadParameter(str(exc)) from None
         sources, aliases = catalog.data_sources(), catalog.data_source_aliases()
     for name, count in held.items():
         typer.echo(f"{name:>10}: {count:,} records")
-    typer.echo(f"{len(sources):,} data sources, {len(aliases):,} aliases")
+    typer.echo(f"{len(sources):,} data sources, {len(aliases):,} aliases; {candidates:,} records "
+               "join no curated entry (`export` writes them to candidates.tsv)")
 
 
 @data_sources_app.command("export")
@@ -1432,8 +1434,9 @@ def data_sources_export(
                                          "paper_entities.tsv into."),
     config: Optional[Path] = ConfigOption,
 ) -> None:
-    """Write the dictionary for neurostore's `manage data-sources load` and the matches of the
-    papers sync wrote for `manage data-sources link-matches`."""
+    """Write the dictionary for neurostore's `manage data-sources load`, the matches of the
+    papers sync wrote for `manage data-sources link-matches`, and the catalogue records that
+    join no curated entry, for review."""
     from ingestion_workflow.data_sources.export import export
 
     settings = _settings(config)

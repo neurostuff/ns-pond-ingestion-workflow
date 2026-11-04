@@ -19,7 +19,9 @@ from ..plan import StagePlan, Work
 from ..stage import Context
 
 #: Bump when what is read, or how a match is found, changes.
-DATASOURCES_VERSION = 1
+#: 2: each hit's relation (use, deposit, borrowed); no hits inside URLs; the acknowledgments
+#:    only mention.
+DATASOURCES_VERSION = 2
 
 #: Why every article waits: the catalog holds no dictionary yet.
 NO_DICTIONARY = "no data sources pulled: run `ingest data-sources pull`"

@@ -96,13 +96,19 @@ def test_the_paper_names_adni_and_is_read_again_only_when_the_dictionary_changes
     pull(catalog, CURATED_ONLY, [])  # the same dictionary again
     assert _plan(ctx, catalog, paper)[1].fresh == 1
 
-    extra = Record(provider="jpnd", record_id="jpnd_ni", name="Data Collection Study",
-                   aliases=[("Data Collection Study", "name")])
-    pull(catalog, {**CURATED_ONLY, "jpnd": lambda: [extra]}, ["jpnd"])
-    assert len(_plan(ctx, catalog, paper)[1].pending) == 1
+    # a scraped record is a candidate: the dictionary, and so every paper, stays as it was
+    scraped = Record(provider="jpnd", record_id="jpnd_ni", name="Data Collection Study",
+                     aliases=[("Data Collection Study", "name")])
+    assert pull(catalog, {**CURATED_ONLY, "jpnd": lambda: [scraped]}, ["jpnd"])[1] == 1
+    assert _plan(ctx, catalog, paper)[1].fresh == 1
     # a later pull of another catalogue keeps the records of this one
     pull(catalog, {**CURATED_ONLY, "re3data": list}, ["re3data"])
-    assert "jpnd_ni" in {s["id"] for s in catalog.data_sources()}
+    assert [r["record_id"] for r in catalog.data_source_records("jpnd")] == ["jpnd_ni"]
+
+    reviewed = Record(provider="curated", record_id="dcs", name="Data Collection Study",
+                      aliases=[("Data Collection Study", "name")])
+    pull(catalog, {"curated": lambda: [*curated_records(), reviewed]}, [])
+    assert len(_plan(ctx, catalog, paper)[1].pending) == 1
 
 
 def test_export_writes_what_neurostore_loads_and_links(env, paper, tmp_path):
@@ -112,6 +118,7 @@ def test_export_writes_what_neurostore_loads_and_links(env, paper, tmp_path):
     written = export(ctx, tmp_path / "out")
     assert written["paper_entities.tsv"] == 1
     assert written["data_sources.tsv"] == len(curated_records())
+    assert written["candidates.tsv"] == 0
     with open(tmp_path / "out" / "paper_entities.tsv", newline="") as f:
         (row,) = csv.DictReader(f, delimiter="\t")
     assert (row["paper"], row["pmid"], row["entity"], row["status"]) == (
