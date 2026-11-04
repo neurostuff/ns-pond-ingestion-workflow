@@ -300,7 +300,7 @@ def test_a_wiley_pdf_is_read_into_the_articles_pdf_text(tmp_path, slept, evidenc
 
 def test_a_wiley_pdf_that_cannot_be_read_fails_as_the_pdf_text_and_names_its_download(
         tmp_path, evidence):
-    settings = _settings(tmp_path, pdf_extract_workers=1)
+    settings = _settings(tmp_path, pdf_extract_workers=1, pdf_engines=["docling"])
     ctx, refs = _catalog(settings, SERVED_DOI, evidence=evidence)
     _downloaded(ctx, refs[0], DownloadSource.WILEY, PDF_MAGIC + b"1.4 truncated")
 
