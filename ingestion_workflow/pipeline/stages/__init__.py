@@ -1,6 +1,7 @@
 """The stages, in the order they run."""
 
 from .analyses import AnalysesStage
+from .datasources import DataSourcesStage
 from .download import DownloadStage
 from .extract import ExtractStage
 from .linkprobe import LinkprobeStage
@@ -55,9 +56,12 @@ from .upload import UploadStage
 #: `record`, `evidence` and `normalize` are the schema extraction, its evidence and its
 #: terms' normalization, one artifact per extractor family. They run away from ns-pond
 #: and are imported (`ingest offload import`), so a run leaves them out unless named.
+#: `datasources` searches the text of each paper sync wrote for the data sources
+#: `ingest data-sources pull` keeps in the catalog. No stage reads it:
+#: `ingest data-sources export` writes its matches for neurostore.
 STAGE_ORDER = ("download", "extract", "reflist", "references", "links", "linkprobe", "passages",
                "metadata", "notices", "triage", "analyses", "prose", "resolve", "roles", "space",
-               "sync", "record", "evidence", "normalize", "upload")
+               "sync", "record", "evidence", "normalize", "upload", "datasources")
 
 #: Stages that exist only when prose is switched on.
 PROSE_STAGES = ("passages", "prose", "resolve")
@@ -77,6 +81,7 @@ STAGE_TYPES = {
     "normalize": NormalizeStage,
     "triage": TriageStage,
     "analyses": AnalysesStage,
+    "datasources": DataSourcesStage,
     "passages": PassagesStage,
     "prose": ProseStage,
     "references": ReferencesStage,
@@ -113,6 +118,7 @@ def build(names, settings):
 
 __all__ = [
     "AnalysesStage",
+    "DataSourcesStage",
     "DownloadStage",
     "EvidenceStage",
     "ExtractStage",

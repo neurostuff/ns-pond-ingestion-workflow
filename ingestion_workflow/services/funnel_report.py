@@ -306,9 +306,9 @@ def stage_graph(prose: bool) -> List[StageNode]:
 
 
 def trunk(graph: Sequence[StageNode]) -> List[str]:
-    """The chain from the last stage back to the first: the path an upload takes."""
+    """The chain from upload back to the first stage: the path an upload takes."""
     by_name = {node.name: node for node in graph}
-    chain = [graph[-1].name]
+    chain = ["upload"]
     while by_name[chain[-1]].upstream:
         chain.append(by_name[chain[-1]].upstream)
     return chain[::-1]
