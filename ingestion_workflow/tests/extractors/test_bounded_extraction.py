@@ -70,6 +70,7 @@ def env(tmp_path, monkeypatch, evidence):
         cache_root=tmp_path / "c",
         catalog_root=tmp_path / "k",
         download_sources=["pdf"],
+        pdf_engines=["docling"],
         pdf_extract_memory_mb=MEMORY_MB,
         pdf_extract_timeout_s=TIMEOUT_S,
     )
