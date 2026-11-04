@@ -28,8 +28,12 @@ elsevier_cache_root: "/tmp/elsevier_cache"  # Optional override for Elsevier cac
 pdf_cache_root: null  # Optional override for downloaded-PDF cache root directory
 pmc_cache_root: null  # Optional override for the cache of XML fetched from NCBI's PMC
 europepmc_cache_root: null  # Optional override for the cache of XML fetched from Europe PMC
+pdf_engines:  # Ordered PDF readers: each PDF is read by the first that can read it. An engine that cannot run at all stops the extract stage instead
+  - mineru  # needs the `mineru` extra and a GPU with 7000 MiB free
+  - docling
+mineru_extract_memory_mb: 16384  # Resident memory (MB) a MinerU worker, with its vLLM engine, may reach before it is killed and that article failed; MinerU's own settings (MINERU_HOME, MINERU_MODEL_SOURCE) come from the environment
 pdf_extract_workers: null  # Docling worker processes for PDF extraction; None means one per CUDA device, or 1 on CPU
-pdf_extract_memory_mb: 8192  # Resident memory (MB) a PDF extraction worker may reach before it is killed and that article failed
+pdf_extract_memory_mb: 8192  # Resident memory (MB) a Docling worker may reach before it is killed and that article failed
 pdf_extract_timeout_s: 600.0  # Seconds one PDF extraction may run before its worker is killed and that article failed; the first article a worker reads also loads its models
 ace_max_workers: 4  # Maximum number of parallel workers dedicated to ACE downloads
 # node_path: "/path/to/node/bin"  # Directory holding node (or the binary), put first on PATH. ACE/readabilipy needs node >= 20.19. Also INGEST_NODE_PATH

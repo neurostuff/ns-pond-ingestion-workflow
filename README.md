@@ -45,6 +45,20 @@ set `node_path` in the settings file or `INGEST_NODE_PATH` to the directory
 holding a newer node. With ACE enabled, `ingest run` stops at the start and
 names the node version it found when that node is too old.
 
+PDFs are read by MinerU first and by Docling only when MinerU cannot read one
+(`pdf_engines`). MinerU is the `mineru` extra and needs a GPU with 7 GB free;
+without either the extract stage stops and leaves its PDFs pending. Its vLLM
+must match the CUDA the driver runs, so name the build: for CUDA 12.9,
+
+```bash
+pip install -e '.[mineru]' 'vllm==0.28.0+cu129' 'torch==2.13.0+cu129' \
+  --extra-index-url https://wheels.vllm.ai/0.28.0/cu129 \
+  --extra-index-url https://download.pytorch.org/whl/cu129
+export MINERU_HOME=/path/to/models MINERU_MODEL_SOURCE=local MINERU_MODEL_VLM_ENGINE=vllm
+```
+
+Setting `pdf_engines: [docling]` reads every PDF with Docling instead.
+
 When the text readability keeps holds under half of the running prose of a page
 with two or more body section headings, ACE extraction builds it again two ways,
 without readability (each paragraph once, without the page's menus) and without

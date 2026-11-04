@@ -139,3 +139,40 @@ def test_a_killed_workers_replacement_keeps_its_gpu():
 
     assert "memory limit" in str(by_item[0][1])
     assert by_item[1] == ("5", None)
+
+
+def start_and_hang(pid_file):
+    """Starts a process that outlives this one unless killed with it, as vLLM's engine does."""
+    import subprocess
+    import sys
+
+    engine = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(600)"])
+    Path(pid_file).write_text(str(engine.pid))
+    time.sleep(3600)
+
+
+def _gone(pid: int) -> bool:
+    try:
+        with open(f"/proc/{pid}/stat") as handle:
+            return handle.read().split()[2] == "Z"
+    except FileNotFoundError:
+        return True
+
+
+@pytest.mark.skipif(not Path("/proc").is_dir(), reason="reads /proc")
+def test_a_killed_worker_takes_what_it_started_with_it(tmp_path):
+    """MinerU's vLLM engine, orphaned, kept 5.4 GB of its GPU."""
+    pid_file = tmp_path / "engine.pid"
+
+    ((_, _, error),) = bounded_map(
+        [str(pid_file)], start_and_hang, (), workers=1,
+        limits=Limits(memory_mb=MEMORY_MB, timeout_s=3.0),
+        context=multiprocessing.get_context("spawn"),
+    )
+
+    assert "time limit" in str(error)
+    engine = int(pid_file.read_text())
+    deadline = time.monotonic() + 5
+    while not _gone(engine) and time.monotonic() < deadline:
+        time.sleep(0.1)
+    assert _gone(engine)

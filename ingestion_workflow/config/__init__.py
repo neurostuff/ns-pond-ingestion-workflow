@@ -656,12 +656,14 @@ class Settings(BaseSettings):
             "engine that cannot run at all stops the extract stage instead"
         ),
     )
-    mineru_command: str = Field(
-        default="mineru-kit",
+    mineru_extract_memory_mb: int = Field(
+        # A MinerU worker and its vLLM engine held 7.8 GB on 12-page PDFs.
+        default=16384,
+        gt=0,
         description=(
-            "MinerU's `mineru-kit` executable, in the environment MinerU is installed "
-            "in; MinerU's own settings (MINERU_HOME, MINERU_MODEL_SOURCE) come from "
-            "the environment"
+            "Resident memory (MB) a MinerU worker, with its vLLM engine, may reach "
+            "before it is killed and that article failed; MinerU's own settings "
+            "(MINERU_HOME, MINERU_MODEL_SOURCE) come from the environment"
         ),
     )
     pdf_extract_workers: Optional[int] = Field(
@@ -675,7 +677,7 @@ class Settings(BaseSettings):
         default=8192,
         gt=0,
         description=(
-            "Resident memory (MB) a PDF extraction worker may reach before it is killed "
+            "Resident memory (MB) a Docling worker may reach before it is killed "
             "and that article failed"
         ),
     )

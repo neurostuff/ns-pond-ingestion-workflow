@@ -1,5 +1,5 @@
-"""MinerU as the first PDF engine: its middle JSON read into text and tables, the runs of
-its CLI, and the hand-over to Docling.
+"""MinerU as the first PDF engine: its middle JSON read into text and tables, its workers,
+and the hand-over to Docling.
 
 `data/mineru/ymdzsl62jjjp.json` is MinerU 4.0.12's middle JSON (`--tier advanced
 --ocr-mode ocr`) for PMC4733342, cut to a few blocks of each kind.
@@ -8,19 +8,13 @@ its CLI, and the hand-over to Docling.
 from __future__ import annotations
 
 import json
-import stat
-import sys
 from pathlib import Path
 
 import pytest
 from ingestion_workflow.clients.model_server import ModelUnavailable
 from ingestion_workflow.config import Settings
-from ingestion_workflow.extractors import mineru_convert
-from ingestion_workflow.extractors.mineru_convert import (
-    mark_header_rows,
-    read_middle_json,
-    run_mineru,
-)
+from ingestion_workflow.extractors import mineru_convert, pdf_extractor
+from ingestion_workflow.extractors.mineru_convert import mark_header_rows, read_middle_json
 from ingestion_workflow.extractors.pdf_extractor import PdfExtractor, _extract_mineru_article
 from ingestion_workflow.models import (
     DownloadedFile,
@@ -117,88 +111,27 @@ def test_the_article_keeps_signed_coordinates(tmp_path):
     assert Path(content.tables[0].raw_content_path).suffix == ".html"
 
 
-# -- the CLI --------------------------------------------------------------------
-
-#: Reads its inputs in order and stops on one whose target is named bad*, as
-#: `mineru-kit` 4.0.12 stops on a PDF it cannot read; each run is logged.
-FAKE_MINERU = """#!{python}
-import json, pathlib, sys
-args = sys.argv[2:]
-out = pathlib.Path(args[args.index("--output") + 1])
-inputs = [pathlib.Path(a) for a in args[:args.index("--output")]]
-with open(pathlib.Path(sys.argv[0]).with_suffix(".runs"), "a") as runs:
-    runs.write(" ".join(p.stem for p in inputs) + "\\n")
-for pdf in inputs:
-    if pdf.resolve().name.startswith("{fail}"):
-        print("Error: Failed to parse", pdf)
-        sys.exit(1)
-    answer = {{"pages": [], "from": pdf.resolve().name}}
-    (out / (pdf.stem + ".json")).write_text(json.dumps(answer))
-"""
+# -- the workers -------------------------------------------------------------------
 
 
-def _fake_mineru(tmp_path: Path, fail: str = "bad") -> Path:
-    command = tmp_path / "bin" / "mineru-kit"
-    command.parent.mkdir()
-    command.write_text(FAKE_MINERU.format(python=sys.executable, fail=fail))
-    command.chmod(command.stat().st_mode | stat.S_IEXEC)
-    return command
+def no_parser(slot, gpus):
+    """Stands in for a worker's start: no GPU, no model."""
 
 
-def _runs(command: Path) -> list:
-    return command.with_suffix(".runs").read_text().splitlines()
-
-
-def test_a_run_that_stops_on_a_pdf_is_started_again_without_it(tmp_path):
-    command = _fake_mineru(tmp_path)
-    pdfs = [_pdf(tmp_path / name) for name in ("good0.pdf", "bad1.pdf", "good2.pdf")]
-
-    read = run_mineru(pdfs, tmp_path / "work", str(command), gpu=0)
-
-    assert read[0]["from"] == "good0.pdf" and read[2]["from"] == "good2.pdf"
-    assert read[1].startswith("MinerU stopped on this PDF")
-    assert _runs(command) == ["0 1 2", "2"]
-
-
-def test_a_file_pdfium_cannot_open_never_reaches_minerU(tmp_path):
-    command = _fake_mineru(tmp_path)
-    broken = tmp_path / "broken.pdf"
-    broken.write_bytes(b"%PDF-1.4 not a document")
-
-    read = run_mineru([broken, _pdf(tmp_path / "good.pdf")], tmp_path / "work", str(command), 0)
-
-    assert read[0].startswith("PDFium cannot open the file")
-    assert _runs(command) == ["1"]
-
-
-def test_minerU_that_reads_nothing_twice_is_unavailable(tmp_path):
-    command = _fake_mineru(tmp_path, fail="")  # every name starts with ""
-    pdfs = [_pdf(tmp_path / f"p{n}.pdf") for n in range(3)]
-
-    with pytest.raises(ModelUnavailable, match="two runs in a row"):
-        run_mineru(pdfs, tmp_path / "work", str(command), gpu=0)
-    assert len(_runs(command)) == 2
-
-
-def test_a_missing_command_is_unavailable(tmp_path):
-    with pytest.raises(ModelUnavailable, match="not found"):
-        run_mineru([_pdf(tmp_path / "a.pdf")], tmp_path / "work",
-                   str(tmp_path / "no-such-mineru"), gpu=0)
-
-
-def test_no_free_gpu_is_unavailable(monkeypatch):
-    monkeypatch.setattr(mineru_convert, "free_cuda_devices", lambda min_free_mib: [])
-
-    with pytest.raises(ModelUnavailable, match="no GPU"):
-        mineru_convert.mineru_gpus()
-
-
-# -- the engines in order ---------------------------------------------------------
+def fake_mineru(download, root):
+    """Stands in for a worker's parse: MIDDLE for a PDF named good*, else MinerU's error."""
+    path = Path(download.files[0].file_path)
+    if not path.name.startswith("good"):
+        raise ValueError(f"MinerU cannot read {path.name}")
+    return _extract_mineru_article(download, MIDDLE, root)
 
 
 def _extractor(tmp_path, monkeypatch, engines, docling=None):
+    monkeypatch.setattr(mineru_convert, "mineru_gpus", lambda: [0])
+    monkeypatch.setattr(pdf_extractor, "_start_mineru_worker", no_parser)
+    monkeypatch.setattr(pdf_extractor, "_extract_mineru_pdf", fake_mineru)
     settings = Settings(cache_root=tmp_path / "cache", data_root=tmp_path / "data",
-                        pdf_engines=engines, mineru_command="mineru-kit")
+                        pdf_engines=engines)
     extractor = PdfExtractor(settings=settings)
     called = []
 
@@ -210,32 +143,47 @@ def _extractor(tmp_path, monkeypatch, engines, docling=None):
     return extractor, called
 
 
+def _read_by_docling(download):
+    return ExtractedContent(slug=download.identifier.slug, source=DownloadSource.PDF)
+
+
+def test_no_free_gpu_is_unavailable(monkeypatch):
+    monkeypatch.setattr(mineru_convert, "free_cuda_devices", lambda min_free_mib: [])
+
+    with pytest.raises(ModelUnavailable, match="no GPU"):
+        mineru_convert.mineru_gpus()
+
+
+def test_minerU_not_installed_is_unavailable(monkeypatch):
+    monkeypatch.setattr(mineru_convert.importlib.util, "find_spec", lambda name: None)
+
+    with pytest.raises(ModelUnavailable, match="not installed"):
+        mineru_convert.mineru_gpus()
+
+
+# -- the engines in order ---------------------------------------------------------
+
+
 def test_docling_reads_only_what_mineru_could_not(tmp_path, monkeypatch):
-    monkeypatch.setattr(mineru_convert, "run_on_gpus",
-                        lambda pdfs, work, command: {0: MIDDLE, 1: "MinerU stopped on this PDF"})
-    extractor, called = _extractor(
-        tmp_path, monkeypatch, ["mineru", "docling"],
-        docling=lambda d: ExtractedContent(slug=d.identifier.slug, source=DownloadSource.PDF))
-    downloads = [_download(_pdf(tmp_path / "a.pdf"), "10.1/a"),
-                 _download(_pdf(tmp_path / "b.pdf"), "10.1/b")]
+    extractor, called = _extractor(tmp_path, monkeypatch, ["mineru", "docling"],
+                                   docling=_read_by_docling)
+    downloads = [_download(_pdf(tmp_path / "good.pdf"), "10.1/a"),
+                 _download(_pdf(tmp_path / "bad.pdf"), "10.1/b")]
 
     first, second = extractor.extract(downloads)
 
     assert called == ["10.1/b"]
     assert first.text_source == {"method": "mineru", "reason": "first of pdf_engines"}
     assert first.tables
-    assert second.text_source == {"method": "docling",
-                                  "reason": "after mineru: MinerU stopped on this PDF"}
+    assert second.text_source["method"] == "docling"
+    assert second.text_source["reason"].startswith("after mineru: MinerU extraction raised")
+    assert "MinerU cannot read bad.pdf" in second.text_source["reason"]
 
 
 def test_docling_alone_never_runs_mineru(tmp_path, monkeypatch):
-    def no_mineru(*args):
-        raise AssertionError("MinerU ran")
-
-    monkeypatch.setattr(mineru_convert, "run_on_gpus", no_mineru)
-    extractor, called = _extractor(
-        tmp_path, monkeypatch, ["docling"],
-        docling=lambda d: ExtractedContent(slug=d.identifier.slug, source=DownloadSource.PDF))
+    extractor, called = _extractor(tmp_path, monkeypatch, ["docling"],
+                                   docling=_read_by_docling)
+    monkeypatch.setattr(mineru_convert, "mineru_gpus", lambda: pytest.fail("MinerU ran"))
 
     (content,) = extractor.extract([_download(_pdf(tmp_path / "a.pdf"), "10.1/a")])
 
@@ -245,12 +193,22 @@ def test_docling_alone_never_runs_mineru(tmp_path, monkeypatch):
 
 def test_minerU_unavailable_stops_rather_than_handing_everything_to_docling(
         tmp_path, monkeypatch):
-    def unavailable(*args):
+    def unavailable():
         raise ModelUnavailable("MinerU: no GPU has 7000 MiB free")
 
-    monkeypatch.setattr(mineru_convert, "run_on_gpus", unavailable)
     extractor, called = _extractor(tmp_path, monkeypatch, ["mineru", "docling"])
+    monkeypatch.setattr(mineru_convert, "mineru_gpus", unavailable)
 
     with pytest.raises(ModelUnavailable):
         extractor.extract([_download(_pdf(tmp_path / "a.pdf"))])
+    assert called == []
+
+
+def test_minerU_that_reads_none_of_a_batch_is_unavailable(tmp_path, monkeypatch):
+    """A worker that cannot start fails every PDF alike: that is MinerU's fault, not theirs."""
+    extractor, called = _extractor(tmp_path, monkeypatch, ["mineru", "docling"])
+    downloads = [_download(_pdf(tmp_path / f"bad{n}.pdf"), f"10.1/{n}") for n in range(2)]
+
+    with pytest.raises(ModelUnavailable, match="read none of 2 PDFs"):
+        extractor.extract(downloads)
     assert called == []

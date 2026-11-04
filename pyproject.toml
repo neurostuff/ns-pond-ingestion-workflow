@@ -69,6 +69,10 @@ test = [
 lint = [
   "ruff>=0.6",
 ]
+# The first of pdf_engines; its vLLM needs a GPU (README).
+mineru = [
+  "mineru[full]==4.0.12",
+]
 
 [project.scripts]
 ingest = "ingestion_workflow.cli:app"

@@ -1,46 +1,36 @@
-"""MinerU PDF conversion: running its CLI, and reading its middle JSON into text and tables.
+"""MinerU PDF conversion: parsing a PDF, and reading its middle JSON into text and tables.
 
 MinerU's advanced tier reads each page from its image with a vision-language model, and
-`--ocr-mode ocr` takes the prose from the image too, so a text layer that maps the minus
-to 2 and `=` to 5 reaches neither its tables nor its text, where Docling reads that layer.
-MinerU runs as its own program, from its own environment: its torch and vLLM builds are
-not Docling's.
+`ocr` mode takes the prose from the image too, so a text layer that maps the minus to 2
+and `=` to 5 reaches neither its tables nor its text, where Docling reads that layer.
 
-One run loads its models once, for every PDF it is given, so a GPU gets one run over its
-share. A PDF MinerU cannot read stops the run at that PDF and leaves the rest unread
-(`mineru-kit` 4.0.12), so each PDF is first opened with PDFium, and a run that stops
-anyway is started again on the PDFs it had not reached, without the one it stopped on.
+A worker process holds one parser, pinned to one GPU, and parses PDF after PDF with it;
+the model loads on the first. MinerU is the `mineru` extra (README).
 """
 
 from __future__ import annotations
 
-import json
+import importlib.util
 import logging
 import os
-import signal
-import subprocess
-import threading
+import sys
 from dataclasses import dataclass, field
 from io import StringIO
+from multiprocessing.util import Finalize
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 from ingestion_workflow.clients.model_server import ModelUnavailable
 from ingestion_workflow.extractors.docling_convert import free_cuda_devices
 
 logger = logging.getLogger(__name__)
 
-#: The tier and modes the comparison against Docling measured
+#: The tier and mode the comparison against Docling measured
 #: (wiki PR-189-MinerU-PDF-Extractor).
-MINERU_ARGS = ("--tier", "advanced", "--ocr-mode", "ocr", "--format", "middle_json")
+TIER = "advanced"
+OCR_MODE = "ocr"
 #: MinerU's vLLM engine held 6.9 GiB of an 8 GiB card.
 MIN_FREE_GPU_MIB = 7000
-#: Loading the models took about a minute, and the slowest PDF in the comparison a minute;
-#: a run past this budget is taken as stuck on the PDF it had reached.
-STARTUP_SECONDS = 600
-SECONDS_PER_PDF = 300
-#: The tail of a failed run's output kept in its error.
-_LOG_TAIL = 2000
 
 #: Blocks that are page furniture, not the article.
 _FURNITURE = {"header", "footer", "page_number", "aside_text"}
@@ -48,8 +38,8 @@ _FURNITURE = {"header", "footer", "page_number", "aside_text"}
 #: body (text read off the picture, or values read off a chart) goes nowhere.
 _FIGURES = {"image", "chart"}
 
-#: What `run_mineru` gives for each PDF: its middle JSON, or why MinerU read none.
-Read = Union[Dict[str, Any], str]
+#: This worker process's parser (`open_parser`).
+_parser: Any = None
 
 
 @dataclass
@@ -69,124 +59,30 @@ class MineruDocument:
 
 
 def mineru_gpus() -> List[int]:
-    """The GPUs with room for a MinerU run; MinerU does not run on a CPU."""
+    """The GPUs with room for a MinerU worker; MinerU does not run on a CPU."""
+    if importlib.util.find_spec("mineru") is None:
+        raise ModelUnavailable("MinerU is not installed (the `mineru` extra)")
     gpus = free_cuda_devices(MIN_FREE_GPU_MIB)
     if not gpus:
         raise ModelUnavailable(f"MinerU: no GPU has {MIN_FREE_GPU_MIB} MiB free")
     return gpus
 
 
-def unreadable(pdf: Path) -> Optional[str]:
-    """Why PDFium cannot open `pdf`, or None when it can."""
-    import pypdfium2
+def open_parser() -> None:
+    """This worker's parser, closed when the worker exits, which frees its GPU."""
+    global _parser
+    from mineru.parser import MinerUParser
 
-    try:
-        pypdfium2.PdfDocument(str(pdf)).close()
-    except Exception as exc:  # noqa: BLE001 - PDFium's errors name the file's fault
-        return f"PDFium cannot open the file: {exc}"
-    return None
-
-
-def run_mineru(
-    pdfs: Sequence[Path],
-    work_dir: Path,
-    command: str,
-    gpu: int,
-) -> Dict[int, Read]:
-    """Each PDF's middle JSON, or why MinerU read none, by position in `pdfs`.
-
-    Raises `ModelUnavailable` when MinerU cannot run at all: its command is missing, or
-    two runs in a row read nothing."""
-    inputs, outputs = work_dir / "in", work_dir / "out"
-    inputs.mkdir(parents=True, exist_ok=True)
-    outputs.mkdir(parents=True, exist_ok=True)
-    out: Dict[int, Read] = {}
-    pending: List[int] = []
-    for index, pdf in enumerate(pdfs):
-        why = unreadable(pdf)
-        if why:
-            out[index] = why
-            continue
-        link = inputs / f"{index}.pdf"
-        if link.is_symlink() or link.exists():
-            link.unlink()
-        link.symlink_to(Path(pdf).resolve())
-        pending.append(index)
-
-    stalled = False
-    while pending:
-        returncode, log = _run(command, [inputs / f"{i}.pdf" for i in pending], outputs, gpu)
-        read = [i for i in pending if (outputs / f"{i}.json").is_file()]
-        for index in read:
-            out[index] = json.loads((outputs / f"{index}.json").read_text(encoding="utf-8"))
-        pending = [i for i in pending if i not in out]
-        if not pending:
-            break
-        if returncode == 0:
-            for index in pending:
-                out[index] = "MinerU finished without writing this PDF's JSON"
-            break
-        if not read and stalled:
-            raise ModelUnavailable(f"MinerU read nothing in two runs in a row: {log}")
-        stalled = not read
-        # Inputs are read in the order given, so the run stopped on the first unread one.
-        out[pending.pop(0)] = f"MinerU stopped on this PDF: {log}"
-    return out
+    # vLLM compiles kernels with the ninja installed beside this Python.
+    os.environ["PATH"] = os.pathsep.join([str(Path(sys.executable).parent),
+                                          os.environ.get("PATH", "")])
+    _parser = MinerUParser(tier=TIER, parse_mode=OCR_MODE)
+    Finalize(_parser, _parser.close, exitpriority=10)
 
 
-def _run(command: str, pdfs: Sequence[Path], outputs: Path, gpu: int) -> Tuple[int, str]:
-    """One `mineru-kit parse` over `pdfs` on `gpu`: its return code and its output's tail."""
-    env = dict(os.environ, CUDA_VISIBLE_DEVICES=str(gpu))
-    # vLLM compiles kernels with the ninja installed beside MinerU.
-    env["PATH"] = os.pathsep.join([str(Path(command).parent), env.get("PATH", "")])
-    argv = [command, "parse", *map(str, pdfs), "--output", str(outputs), *MINERU_ARGS]
-    timeout = STARTUP_SECONDS + SECONDS_PER_PDF * len(pdfs)
-    try:
-        # Its own session, so a stuck run is killed with the vLLM engine it started,
-        # which would otherwise keep the GPU.
-        process = subprocess.Popen(argv, env=env, stdout=subprocess.PIPE,
-                                   stderr=subprocess.STDOUT, text=True, start_new_session=True)
-    except FileNotFoundError as exc:
-        raise ModelUnavailable(f"MinerU: {command} not found ({exc})") from exc
-    try:
-        log, _ = process.communicate(timeout=timeout)
-    except subprocess.TimeoutExpired:
-        os.killpg(process.pid, signal.SIGKILL)
-        log, _ = process.communicate()
-        return -1, f"timed out after {timeout} s: {(log or '')[-_LOG_TAIL:].strip()}"
-    return process.returncode, (log or "")[-_LOG_TAIL:].strip()
-
-
-def run_on_gpus(
-    pdfs: Sequence[Path],
-    work_dir: Path,
-    command: str,
-) -> Dict[int, Read]:
-    """`run_mineru` over `pdfs`, split across the free GPUs, one run on each at a time."""
-    gpus = mineru_gpus()
-    shares = {gpu: list(range(n, len(pdfs), len(gpus))) for n, gpu in enumerate(gpus)}
-    out: Dict[int, Read] = {}
-    errors: List[BaseException] = []
-    lock = threading.Lock()
-
-    def share(gpu: int, indices: List[int]) -> None:
-        try:
-            read = run_mineru([pdfs[i] for i in indices], work_dir / f"gpu{gpu}", command, gpu)
-        except BaseException as exc:  # noqa: BLE001 - raised again below, in this thread
-            errors.append(exc)
-            return
-        with lock:
-            out.update({indices[local]: answer for local, answer in read.items()})
-
-    threads = [threading.Thread(target=share, args=(gpu, indices), daemon=True)
-               for gpu, indices in shares.items() if indices]
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join()
-    if errors:
-        raise errors[0]
-    return out
+def parse_pdf(pdf: Path) -> Dict[str, Any]:
+    """MinerU's middle JSON for one PDF, by this worker's parser."""
+    return _parser.parse(str(pdf)).middle_json.to_dict()
 
 
 def read_middle_json(middle: Mapping[str, Any]) -> MineruDocument:
@@ -336,15 +232,15 @@ def table_frame(html: str) -> Optional[Any]:
 
 __all__ = [
     "MIN_FREE_GPU_MIB",
-    "MINERU_ARGS",
+    "OCR_MODE",
+    "TIER",
     "MineruDocument",
     "MineruTable",
     "mark_header_rows",
     "mineru_gpus",
+    "open_parser",
+    "parse_pdf",
     "read_middle_json",
-    "run_mineru",
-    "run_on_gpus",
     "table_frame",
     "table_text",
-    "unreadable",
 ]

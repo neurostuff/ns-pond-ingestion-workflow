@@ -16,7 +16,6 @@ from __future__ import annotations
 import logging
 import os
 import re
-import tempfile
 import threading
 import time
 from collections import Counter
@@ -31,6 +30,7 @@ from urllib.parse import urljoin, urlsplit
 
 import requests
 
+from ingestion_workflow.clients.model_server import ModelUnavailable
 from ingestion_workflow.clients.openalex import (
     LocationLookupFailed,
     OaLocation,
@@ -870,30 +870,43 @@ class PdfExtractor(BaseExtractor):
     def _extract_with_mineru(
         self, download_results: List[DownloadResult], extraction_root: Path
     ) -> List[Any]:
-        """Each PDF's content as MinerU read it, or why MinerU read none."""
-        from ingestion_workflow.extractors.mineru_convert import run_on_gpus
+        """Each PDF's content as MinerU read it, or why MinerU read none.
+
+        Raises `ModelUnavailable` when MinerU read none of two or more PDFs: then its
+        workers, not the PDFs, are at fault."""
+        from ingestion_workflow.extractors.mineru_convert import mineru_gpus
 
         answers: List[Any] = ["no PDF file in the download"] * len(download_results)
-        found = [(index, _pdf_file(d)) for index, d in enumerate(download_results)]
-        found = [(index, Path(f.file_path)) for index, f in found if f is not None]
+        found = [index for index, d in enumerate(download_results) if _pdf_file(d)]
         if not found:
             return answers
-        extraction_root.mkdir(parents=True, exist_ok=True)
-        with tempfile.TemporaryDirectory(prefix="mineru-", dir=extraction_root) as work:
-            read = run_on_gpus([pdf for _, pdf in found], Path(work),
-                               self.settings.mineru_command)
-        for local, middle in read.items():
-            index = found[local][0]
-            if isinstance(middle, str):
-                answers[index] = middle
-                continue
-            try:
-                answers[index] = _extract_mineru_article(
-                    download_results[index], middle, extraction_root)
-            except Exception as exc:  # noqa: BLE001 - this PDF's answer, not the run's
-                logger.exception("MinerU's output for %s could not be read",
-                                 download_results[index].identifier.slug)
-                answers[index] = f"its output could not be read: {exc}"
+        gpus = mineru_gpus()
+        logger.info("PDF extraction: %d MinerU worker(s) over GPU(s) %s", len(gpus), gpus)
+        contents = self._run_extraction_pipeline(
+            [download_results[index] for index in found],
+            extraction_root=extraction_root,
+            worker=_extract_mineru_pdf,
+            worker_count=len(gpus),
+            limits=Limits(
+                memory_mb=self.settings.mineru_extract_memory_mb,
+                timeout_s=self.settings.pdf_extract_timeout_s,
+            ),
+            worker_initializer=_start_mineru_worker,
+            worker_initargs=(gpus,),
+            source_name="MinerU",
+            failure_message="MinerU extraction did not produce a result.",
+            failure_builder=_build_failure_content,
+        )
+        read = 0
+        for index, content in zip(found, contents):
+            if _read_nothing(content):
+                answers[index] = content.error_message
+            else:
+                answers[index] = content
+                read += 1
+        if not read and len(found) > 1:
+            raise ModelUnavailable(
+                f"MinerU read none of {len(found)} PDFs: {answers[found[0]]}")
         return answers
 
     def _extract_with_docling(
@@ -1018,6 +1031,23 @@ def _merge_split_coordinate_columns(frame: Any) -> Any:
             int(whole),
         )
     return result
+
+
+def _start_mineru_worker(slot: int, gpus: List[int]) -> None:
+    """One GPU for this worker, then its MinerU parser."""
+    from ingestion_workflow.extractors.mineru_convert import open_parser
+
+    _pin_worker_to_gpu(slot, gpus)
+    open_parser()
+
+
+def _extract_mineru_pdf(download_result: DownloadResult, extraction_root: Path | str) -> Any:
+    """One PDF read by this worker's MinerU parser into text plus per-table files."""
+    from ingestion_workflow.extractors.mineru_convert import parse_pdf
+
+    pdf = _pdf_file(download_result)
+    middle = parse_pdf(Path(pdf.file_path))
+    return _extract_mineru_article(download_result, middle, extraction_root)
 
 
 def _pin_worker_to_gpu(slot: int, gpus: List[int]) -> None:
