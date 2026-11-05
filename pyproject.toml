@@ -57,13 +57,13 @@ dependencies = [
   # LinkSource), and LicenseId spelled as its member names (`cc_by`; paper-parse 0.11.0),
   # and the `normalized` sidecar on every extracted value, which `normalization` writes.
   # And Bibliography.venue, the paper's OpenAlex source and how it was identified
-  # (services.venues). Pinned to the commit of neurostuff/study_schema#57, to be repinned
-  # at its merge.
-  "study-schema @ git+https://github.com/neurostuff/study_schema.git@ad83df883435d366ea4327e294f69fed67673f14",
+  # (services.venues). Pinned to study_schema main at the merge of neurostuff/study_schema#59
+  # (after #57 and #58), the commit pondie pins.
+  "study-schema @ git+https://github.com/neurostuff/study_schema.git@2937ab19e3e0ddef49e4fb214164a461d05a6201",
   # The astra-distill models' paper prompt, compact record format and frozen schema, which
   # `ingest offload export` builds requests with and `pull` restores records with. Pinned to
-  # the merge of neurostuff/pondie#32.
-  "pondie-astra @ git+https://github.com/neurostuff/pondie.git@08fbbed3050de62613043544779f8986c6ad111b#subdirectory=packages/pondie-astra",
+  # the merge of neurostuff/pondie#34, the same commit as the normalize extra's pondie.
+  "pondie-astra @ git+https://github.com/neurostuff/pondie.git@b3b8602399ac6661969baac4cc447c471d129a18#subdirectory=packages/pondie-astra",
   # Fetches the private adapters `ingest offload push` copies to a machine.
   "huggingface_hub>=0.24",
 ]
@@ -96,12 +96,11 @@ merge-ls6 = ["torch==2.11.0", "transformers==5.17.0", "peft==0.21.0", "accelerat
 # sidecar shape, and the record's deterministic fixes (`normalize_assign.repair`), which
 # normalize gives every record and `ingest offload import` a record the schema refuses. pondie
 # reads the schema from its study_schema checkout (`PONDIE_SCHEMA_DIR`). Pinned to the merge
-# of neurostuff/pondie#33, which pins neurostuff/study_schema#56's merge (b7efbdd), not the
-# commit above: the two pins conflict until pondie is repinned to study_schema#57. scikit-learn
+# of neurostuff/pondie#34, which pins the same study_schema commit as above. scikit-learn
 # is pinned to the version the fixed fits were pickled with. spaCy's en_core_web_sm, pondie's negation parser, is a separate download:
 # python -m spacy download en_core_web_sm
 normalize = [
-  "pondie[encoders] @ git+https://github.com/neurostuff/pondie.git@70e1b6b5ab2efe73a91d62623c8c9f9e67fc8de4",
+  "pondie[encoders] @ git+https://github.com/neurostuff/pondie.git@b3b8602399ac6661969baac4cc447c471d129a18",
   "scikit-learn==1.9.1",
   "scipy>=1.11",
   "numpy>=1.26",
