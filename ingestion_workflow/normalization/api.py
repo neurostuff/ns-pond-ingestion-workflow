@@ -30,8 +30,9 @@ from .taskcat.identity import CardBuilder
 
 HERE = Path(__file__).resolve().parent
 
-#: The fixed fits and inputs a fit is made from, by path inside the fixed bundle, with their sha256. Fetch them
-#: once into a directory and pass it as `fixed_dir` (or NORMALIZE_FIXED_DIR); see the PR / wiki for where.
+#: The fixed fits and inputs a fit is made from, by path inside the fixed bundle, with their sha256. They are the
+#: Hugging Face model repo FIXED_REPO at FIXED_REVISION (private: a quoted-sentence table is in it), fetched by
+#: `fixed_from_hub`; a local copy can be passed as `fixed_dir` (or NORMALIZE_FIXED_DIR) instead.
 FIXED = {
     "routeB_tfidf.pkl": "bbd8b5709b38e9d36d436fb851238abdfef3adbdc254cd1876ba735768829cdb",
     "citation_role_lineage_clf.pkl": "969b996259dcce59a0206860c67a41b366287e0b59b2314fa302168dfdce07d4",
@@ -40,6 +41,9 @@ FIXED = {
     "taskextractor/discovered_origins.json": "c0ed8de866e70f9b8c27b4fe6c55bff395d4a6cdaf5468dff6351b3b29ca081e",
     "manifest.jsonl": "888ce6fcaa5f07e7b9c4816b08394d579c1fcfa7ae64ce7a2984f4e270d248b5",
 }
+FIXED_REPO = "neurostuff/astra-normalization-fixed"
+#: The repo commit holding FIXED, pinned when it was uploaded. None: not uploaded yet.
+FIXED_REVISION = None
 #: The fixed files a fit directory carries for assignment; the rest are read only while fitting.
 CARRIED = ("routeB_tfidf.pkl", "citation_role_lineage_clf.pkl")
 
@@ -104,6 +108,27 @@ def verify_fixed(fixed_dir):
     return fixed_dir
 
 
+def fixed_from_hub(repo=FIXED_REPO, revision=None):
+    """The fixed bundle from the Hub at a pinned revision, hash-checked. Reads the stored login or HF_TOKEN."""
+    revision = revision or FIXED_REVISION
+    if revision is None:
+        raise ValueError(f"{repo} has no pinned revision yet: pass fixed_dir, or set NORMALIZE_FIXED_DIR")
+    from huggingface_hub import snapshot_download
+
+    return verify_fixed(snapshot_download(repo, revision=revision, allow_patterns=sorted(FIXED)))
+
+
+def column_major(pair):
+    """A pickled (vectorizer, linear classifier) with its coefficients stored column-major, so `X @ coef_.T` reads
+    them in place: row-major, scipy copies the whole matrix on every call (route B's 174 classes: most of its
+    time). The same numbers, multiplied in the same order."""
+    import numpy as np
+
+    vec, clf = pair
+    clf.coef_ = np.asfortranarray(clf.coef_)
+    return vec, clf
+
+
 def body_of(document):
     """The extraction record inside a document that wraps it as {"study": record}, or the record itself."""
     inner = document.get("study") if isinstance(document, dict) else None
@@ -145,14 +170,16 @@ def fit(records_, texts, bibliographies, out_dir, *, fixed_dir=None, identifiers
 
     records_, texts, bibliographies: mappings article id -> extraction record / the parse's text / ns-pond's
     `references` artifact payload (None when the article has none). They are read twice, so a lazy mapping
-    that loads on access works. identifiers: article -> {"pmid", "doi"}, so a corpus paper another paper cites
+    that loads on access works. fixed_dir: a local copy of the fixed bundle; omitted, NORMALIZE_FIXED_DIR, else
+    the Hub's pinned revision. identifiers: article -> {"pmid", "doi"}, so a corpus paper another paper cites
     lends that paper its labels; papers in the fixed manifest are known without it. rows_dir, given, receives
     the corpus's own rows (task_labels.jsonl, contrast_sets.jsonl), which the fit itself does not keep."""
-    fixed_dir = verify_fixed(fixed_dir or os.environ["NORMALIZE_FIXED_DIR"])
+    fixed_dir = fixed_dir or os.environ.get("NORMALIZE_FIXED_DIR")
+    fixed_dir = verify_fixed(fixed_dir) if fixed_dir else fixed_from_hub()
     out_dir = Path(out_dir); out_dir.mkdir(parents=True, exist_ok=True)
     articles = sorted(records_)
-    route_b = pickle.load(open(fixed_dir / "routeB_tfidf.pkl", "rb"))
-    lineage = pickle.load(open(fixed_dir / "citation_role_lineage_clf.pkl", "rb"))
+    route_b = column_major(pickle.load(open(fixed_dir / "routeB_tfidf.pkl", "rb")))
+    lineage = column_major(pickle.load(open(fixed_dir / "citation_role_lineage_clf.pkl", "rb")))
     _W.update(records=records_, texts=texts, bibliographies=bibliographies, cb=CardBuilder(route_b),
               sch=records.schemas(), final={})
     log(f"pass one: {len(articles)} articles")
@@ -250,10 +277,10 @@ class Fit:
         self.dir = d
         self.manifest = json.loads((d / "manifest.json").read_text())
         self.fit_id = self.manifest["fit_id"]
-        self.cb = CardBuilder(pickle.load(open(d / "fixed/routeB_tfidf.pkl", "rb")))
+        self.cb = CardBuilder(column_major(pickle.load(open(d / "fixed/routeB_tfidf.pkl", "rb"))))
         self.sch = records.schemas()
-        self.lineage = pickle.load(open(d / "fixed/citation_role_lineage_clf.pkl", "rb"))
-        self.classifier = pickle.load(open(d / "labels/contrast_classifier.pkl", "rb"))
+        self.lineage = column_major(pickle.load(open(d / "fixed/citation_role_lineage_clf.pkl", "rb")))
+        self.classifier = column_major(pickle.load(open(d / "labels/contrast_classifier.pkl", "rb")))
         with gzip.open(d / "citations/index.json.gz", "rt") as f:
             self.index = json.load(f)
         p = self.manifest["parameters"]
@@ -273,6 +300,7 @@ def load(fit_dir):
 def assign(r, article, text, bibliography, f, with_medical=True):
     """One record's derived rows under a fit: medical links, task labels, conditions, contrasts, set assignment."""
     links = medical.links(r, article, text) if with_medical else None
+    f.cb.memo = {}                  # pass two asks route B about the same tasks as pass one
     rows, _ = records.read(r, article, f.cb, f.sch)
     refs = citations.score_lineage(citations.task_refs(r, article, text, citations.bib_from_references(bibliography)),
                                    f.lineage)
@@ -283,6 +311,7 @@ def assign(r, article, text, bibliography, f, with_medical=True):
     final = {(t["study"], t["task"]): labels.decide(t, cn[(t["study"], t["task"])], route_c.get((t["study"], t["task"])),
                                                     f.cb.L, f.classifier) for t in rows["tasks"]}
     rows2, _ = records.read(r, article, f.cb, f.sch, final)
+    f.cb.memo = None
     docs = contrasts.documents(r, article, rows2["contrasts"], text)
     assigned = f.sets.assign(docs, f.encoder)
     return {"medical": links, "labels": final, "conditions": rows2["conditions"], "contrasts": rows2["contrasts"],

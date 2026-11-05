@@ -48,10 +48,12 @@ def fold(s):
 def vocabularies():
     """MONDO, the MONDO->ONVOC crosswalk, ONVOC's disorder branches and the encoded MONDO index, loaded once."""
     from pondie.normalization.medical_condition import Index
+    from pondie.vocabularies.folding import singular
     from pondie.vocabularies.mondo import load_mondo, onvoc_crosswalk
     from pondie.vocabularies.onvoc import load_onvoc
 
     vocab = load_mondo()
+    singular("disorders")           # WordNet, loaded here rather than on the first record's first head
     return vocab, onvoc_crosswalk(), load_onvoc().scoped(("disorders",)), Index(vocab).build()
 
 

@@ -4,6 +4,7 @@ Routes:   A lexical on paradigm_term / name / description; B procedure classifie
           procedure text with task names masked; B decides only >= TB. Card assembly (facets, citations, authors)
           is not ported: nothing in the normalization reads it.
 """
+import json
 import re
 
 from .decompose import Decomposer
@@ -24,6 +25,7 @@ class CardBuilder:
         """`route_b`: the (vectorizer, classifier) pair of `routeB_tfidf.pkl`, or None for route A only."""
         self.L = Lexicon(); self.D = Decomposer(self.L); self.TB = TB
         self.B = route_b
+        self.memo = None   # a dict: identity() answers a mention it has seen from it (one article's two passes)
         self._mask = re.compile("|".join(sorted({pt.pattern for pt, _, _ in self.L.patterns}, key=len, reverse=True)), re.I)
 
     def fam(self, k):
@@ -48,6 +50,14 @@ class CardBuilder:
         return clf.classes_[i], float(pr[i])
 
     def identity(self, t):
+        if self.memo is None:
+            return self._identity(t)
+        k = json.dumps(t, sort_keys=True, default=str)
+        if k not in self.memo:
+            self.memo[k] = self._identity(t)
+        return self.memo[k]
+
+    def _identity(self, t):
         kind = t.get("entity_kind")
         A, src = None, None
         for s, txt in (("paradigm_term", t.get("paradigm_term")), ("name", t.get("name"))):
