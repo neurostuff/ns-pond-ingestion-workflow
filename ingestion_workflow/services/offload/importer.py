@@ -12,6 +12,9 @@ evidence); `record_digest` is `record_digest()` of the record the stage read: th
 (evidence), or the evidence record, the record itself when evidence was skipped
 (normalize). A `base_study_id` is found through the `neurostore` alias.
 
+A record or evidence row's legacy per-field normalizations (`drop_siblings`) are dropped
+before anything is checked: the schema refuses them, and normalize makes them again.
+
 A row is refused, and recorded `failed` with the reason, when its text hash is not the
 parse's, it names a parse key the parse does not have, the record it read is not the
 article's current record of the run's source, or its record fails study_schema's
@@ -21,6 +24,7 @@ whose article the catalog does not know is counted and left out.
 
 from __future__ import annotations
 
+import copy
 import gzip
 import json
 import logging
@@ -35,6 +39,7 @@ from ingestion_workflow.pipeline.stages.offloaded import (
     NO_RECORD,
     OFFLOADED_STAGES,
     Parse,
+    drop_siblings,
     evidence_fingerprint,
     normalize_fingerprint,
     normalize_input,
@@ -175,6 +180,9 @@ class _Importer:
         payload = row.get("record")
         if not isinstance(payload, dict):
             return self.refuse(article_id, "the row holds no record")
+        if stage != "normalize":
+            payload = copy.deepcopy(payload)  # the caller's row is left as it was
+            drop_siblings(payload)
         if stage == "normalize":
             why = self.upstream_problem(row, record)
             if why:

@@ -43,6 +43,23 @@ def record_digest(record: Mapping[str, Any]) -> str:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
+def drop_siblings(record: Dict[str, Any]) -> int:
+    """Remove the per-field normalizations study_schema#56 replaced with sidecars, in place;
+    how many were removed. The 27B's records carry them (pondie-astra restores the pre-#56
+    shape), and the schema refuses them; what they said, normalize makes again."""
+    dropped = 0
+    for group in record.get("groups") or []:
+        if not isinstance(group, dict):
+            continue
+        dropped += group.pop("age_unit_normalized", None) is not None
+        # every distribution (sex, gender, race, handedness, ...) carried one per category
+        for slot in group.values():
+            for entry in slot if isinstance(slot, list) else ():
+                if isinstance(entry, dict):
+                    dropped += entry.pop("category_normalized", None) is not None
+    return dropped
+
+
 def _key(value: Any) -> Optional[str]:
     if isinstance(value, dict):
         value = value.get("value")
@@ -391,6 +408,7 @@ __all__ = [
     "evidence_fingerprint",
     "normalize_fingerprint",
     "normalize_input",
+    "drop_siblings",
     "parse_check",
     "parse_keys",
     "record_digest",

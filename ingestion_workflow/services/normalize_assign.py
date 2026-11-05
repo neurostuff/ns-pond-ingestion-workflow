@@ -24,6 +24,7 @@ from typing import Any, Callable, Dict, Iterable, Iterator, Optional, Sequence, 
 
 from ingestion_workflow.catalog import Artifact, Catalog, Run, RunKind
 from ingestion_workflow.pipeline.stage import recorded_path
+from ingestion_workflow.pipeline.stages.offloaded import drop_siblings
 
 #: The pipeline a normalize run made in-process is filed under.
 PIPELINE = "ns-pond normalize"
@@ -88,22 +89,6 @@ def assign(record: Dict[str, Any], text: str, bibliography: Optional[dict], fit_
     from ingestion_workflow.normalization import normalize_record
 
     return normalize_record(record, text, bibliography, str(fit_dir), article_id=article_id)
-
-
-def drop_siblings(record: Dict[str, Any]) -> int:
-    """Remove the per-field normalizations study_schema#56 replaced with sidecars, in place;
-    how many were removed."""
-    dropped = 0
-    for group in record.get("groups") or []:
-        if not isinstance(group, dict):
-            continue
-        dropped += group.pop("age_unit_normalized", None) is not None
-        # every distribution (sex, gender, race, handedness, ...) carried one per category
-        for slot in group.values():
-            for entry in slot if isinstance(slot, list) else ():
-                if isinstance(entry, dict):
-                    dropped += entry.pop("category_normalized", None) is not None
-    return dropped
 
 
 def apply_derived(record: Dict[str, Any]) -> None:

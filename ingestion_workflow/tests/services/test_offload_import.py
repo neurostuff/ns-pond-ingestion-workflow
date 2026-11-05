@@ -31,6 +31,15 @@ from ingestion_workflow.services.offload.importer import (
 
 DATA = Path(__file__).resolve().parents[1] / "data" / "offload"
 RECORD = json.loads((DATA / "26klegjq7mhi.extraction.json").read_text())
+
+def as_kept(record):
+    """`record` as import keeps it: without the legacy siblings the schema refuses."""
+    from ingestion_workflow.pipeline.stages.offloaded import drop_siblings
+
+    record = json.loads(json.dumps(record))
+    drop_siblings(record)
+    return record
+
 TEXT_SHA256 = "067a69b2021e98a832a2f32080848e5e58b7337dffed66dc3ac895cca3f5d680"
 KEY = "analysis#840c7bec806dd3ad"
 ARTICLE, BASE_STUDY = "26klegjq7mhi", "tS8tSUXeybTo"
@@ -164,7 +173,8 @@ def test_evidence_must_be_built_on_the_article_s_current_record(ctx):
     import_run(ctx.catalog, evidence_run, [_row(record_digest=record_digest(moved))])
     assert ctx.catalog.artifact(ARTICLE, "evidence", "ns-27b").error == RECORD_MOVED
 
-    import_run(ctx.catalog, evidence_run, [_row(record_digest=record_digest(RECORD))])
+    import_run(ctx.catalog, evidence_run,
+               [_row(record_digest=record_digest(as_kept(RECORD)))])
     evidence = ctx.catalog.artifact(ARTICLE, "evidence", "ns-27b")
     assert evidence.ok and evidence.run_id == "ns-ev1-20261102"
     # the record's maker, not the evidence model's, is the record's provenance
@@ -175,7 +185,7 @@ def test_evidence_must_be_built_on_the_article_s_current_record(ctx):
 
 def test_a_new_record_makes_its_evidence_and_normalization_stale(ctx):
     import_run(ctx.catalog, _run(), [_row()])
-    digest = record_digest(RECORD)
+    digest = record_digest(as_kept(RECORD))
     import_run(ctx.catalog, _run(stage="evidence", run_id="ev"), [_row(record_digest=digest)])
     import_run(ctx.catalog, _run(stage="normalize", run_id="norm", model="SapBERT + MONDO",
                                  config={"vocabulary": {"mondo": "2026-09-01"}}),
@@ -195,12 +205,13 @@ def test_a_new_record_makes_its_evidence_and_normalization_stale(ctx):
 def test_a_normalization_of_another_record_is_refused(ctx):
     import_run(ctx.catalog, _run(), [_row()])
     import_run(ctx.catalog, _run(stage="normalize", run_id="norm"),
-               [{"article_id": ARTICLE, "status": "ok", "record_digest": record_digest(RECORD),
+               [{"article_id": ARTICLE, "status": "ok",
+                 "record_digest": record_digest(as_kept(RECORD)),
                  "record": {"tasks": []}}])
     # normalize reads the evidence record, so a record with none is not yet normalized
     assert ctx.catalog.artifact(ARTICLE, "normalize", "ns-27b").error == NO_RECORD
     import_run(ctx.catalog, _run(stage="evidence", run_id="ev"),
-               [_row(record_digest=record_digest(RECORD))])
+               [_row(record_digest=record_digest(as_kept(RECORD)))])
     import_run(ctx.catalog, _run(stage="normalize", run_id="norm"),
                [{"article_id": ARTICLE, "status": "ok", "record_digest": "0" * 64,
                  "record": {"tasks": []}}])
