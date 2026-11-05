@@ -1,0 +1,858 @@
+atlas_id	atlas_name	atlas_def_chars	atlas_concept_count	scope_class	match_type	match_level	hedtsk_id	hed_task_name	hed_variation_id	hed_variation_name	notes
+trm_4f244f46ebf58		4	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5667451917a34	2-stage decision task	778		paradigm	exact	task	hedtsk_two_stage_decision	Two-Stage Decision Task			Primary match from hed_task_to_atlas.tsv
+trm_5667441c338a7	2nd-order rule acquisition	571		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_523c7a0a73cf5	aberrant behavior checklist - community	594	5	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4ebd44cd88360	abstract/concrete judgment: bilingual	152	5	paradigm	none						Bilingual abstract/concrete judgment, no HED counterpart
+trm_4f24126c22011	abstract/concrete task	71		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_551f151f7347e	acquired equivalence	210	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb94981d	action imitation task	343	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949846	action observation task	72	1	paradigm	related	task	hedtsk_imitation_inhibition	Imitation-Inhibition Task			Primary match from hed_task_to_atlas.tsv
+trm_551b15af981c6	action-perception loop	4	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c8989e1f3df7	acupuncture task	126	2	physiological	none						Physiological procedure, outside the catalog's scope
+trm_56674e49d15e9	Adaptation of marshmellow test	691		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_56674133b666c	adaptive n-back task	368	4	paradigm	exact	variation	hedtsk_n_back	N-Back Task	hedvar_n_back__adaptive_n_back	Adaptive N-Back	
+trm_523df616da8a6	adolescent symptom inventory	253	11	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_5586ff878155d	Adult ADHD Clinical Diagnostic Scale	419	6	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_55a6a79b55c8b	Adult ADHD Self-Report Scale	199		questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_4a57abb949858	adult attachment interview	75		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_523ca67b786d5	adult behavior checklist	210	2	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_56a2a665baeb1	Adult's Penn Word Memory Test Delayed Memory	681		battery	none						Standardized test battery, outside the catalog's scope
+tsk_STbROQuOk0Qo5	Aesthetic Exprience Questionnaire (AEQ)	389		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4da88b8b60ffb	alternating runs paradigm	106	1	paradigm	exact	variation	hedtsk_task_switching	Task Switching Task	hedvar_task_switching__alternating_runs_aabb	Alternating Runs (AABB)	
+trm_502abd109f255	ambiguous figure task	128	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5798fa39b4315	American National Adult Reading Test	309	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f244f0286947	analogical reasoning task	120	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5667488d52ccc	Angling Risk Task	761	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_zhAW4G31jTPrw	Angling Risk Task – Always Sunny	637	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da88bd4412da	animal naming task	89	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_551f0857e1db8	ANT task	596	1	paradigm	exact	task	hedtsk_attention_network	Attention Network Task			Duplicate of trm_4da6304c9aa23
+tsk_4a57abb949869	antisaccade/prosaccade task	173	2	paradigm	exact	task	hedtsk_anti_saccade	Anti-Saccade Task			Primary match from hed_task_to_atlas.tsv
+tsk_L1akyyjEGdiUs	Anxiety Sensitivity Index - 3 (ASI-3)	459	2	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_502ad907e3299	apparent verticality judgment	107	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_50f5822624e53	articulatory suppression task	117	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f244a88013ae	artificial grammar learning task	246		paradigm	exact	task	hedtsk_artificial_grammar_learning	Artificial Grammar Learning Task			Primary match from hed_task_to_atlas.tsv
+trm_553ec64e6cb1b	associative memory encoding task	393	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_56a2a8d78dd39	Ataxia	355	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_50df0d8dc717b	attention bias	217		paradigm	close	task	hedtsk_dot_probe	Dot-Probe Task			Primary match from hed_task_to_atlas.tsv
+trm_4da6304c9aa23	attention networks test	345	4	paradigm	exact	task	hedtsk_attention_network	Attention Network Task			Primary match from hed_task_to_atlas.tsv
+trm_4f241614d4a25	attention switching task	1003	1	paradigm	related	task	hedtsk_task_switching	Task Switching Task			Attention switching, a broader construct
+trm_551f06a08dcc4	attentional blink paradigm	337	1	paradigm	close	task	hedtsk_rapid_serial_visual_presentation	Rapid Serial Visual Presentation Task			Attentional blink is an RSVP paradigm
+tsk_YrmQX6rtPeujt	attribute amnesia	223		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5550e5011ce10	audio narrative	303		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949889	audio-visual target detection task	226	4	paradigm	none						Audio-visual target detection, no HED counterpart
+trm_551b1b6f6a262	auditory masking task	102	1	paradigm	exact	task	hedtsk_auditory_masking	Auditory Masking Task			Primary match from hed_task_to_atlas.tsv
+trm_551b1460e89a3	auditory scene perception	80	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f240e7f989f8	auditory temporal discrimination task	93	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_525d847e2bd0b	autism diagnostic interview - revised	248	16	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da891a546d8c	autism diagnostic observation schedule	214	6	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_51d6fe3f3942f	autism spectrum quotient	1433	5	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f244d2a54e27	autobiographical memory task	256	2	paradigm	exact	task	hedtsk_autobiographical_memory	Autobiographical Memory Task			Primary match from hed_task_to_atlas.tsv
+trm_4c40d2a93ea15	AX-CPT task	558	4	paradigm	exact	variation	hedtsk_continuous_performance	Continuous Performance Task	hedvar_continuous_performance__ax_cpt_context_processing	AX-CPT (Context Processing)	
+trm_515495b718cd6	AX-DPX	352	2	paradigm	close	variation	hedtsk_continuous_performance	Continuous Performance Task	hedvar_continuous_performance__ax_cpt_context_processing	AX-CPT (Context Processing)	AX-DPX is a CPT variant, not a dot-probe task
+tsk_4a57abb94989b	backward digit span task	228	4	paradigm	exact	variation	hedtsk_digit_span	Digit Span Task	hedvar_digit_span__backward_digit_span	Backward Digit Span	
+trm_4a3fd79d09b6d	backward masking	226	3	paradigm	exact	task	hedtsk_visual_masking	Visual Masking Task			Primary match from hed_task_to_atlas.tsv
+trm_4d559bcd67c18	balloon analogue risk task	400	12	paradigm	exact	task	hedtsk_balloon_analog_risk	Balloon Analog Risk Task			Primary match from hed_task_to_atlas.tsv
+trm_55a6a8e81b7f4	Barratt Impulsiveness Scale	406	3	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_523e10cad0ce6	battelle developmental inventory	248	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_553e77887abc7	Becker-Degroot-Marschak (BDM) procedure	282	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_523f58d91f2c0	beery-buktenica developmental test of visual-motor integration	358	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_56a9137d9dce1	behavioral approach/inhibition systems	419	4	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4d54b8361e93e	behavioral investment allocation strategy	330		paradigm	none						Investment allocation, unrelated to shooter bias
+tsk_4a57abb9498ab	behavioral rating inventory of executive function	529	7	questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_4a57abb9498bc	Benton facial recognition test	53	1	paradigm	none						Benton test measures face identity, not emotion
+trm_5696a599bfcb6	Bickel Titrator	266		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_523f5c17d7edb	big five questionnaire	267	5	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_50f72fafa53ec	big/little circle	431	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f244f997615c	bimanual coordination task	108	1	paradigm	close	variation	hedtsk_motor_sequence_learning	Motor Sequence Learning Task	hedvar_motor_sequence_learning__bimanual_coordination	Bimanual Coordination	Atlas entry is bimanual coordination in general, not sequence learning
+trm_58a5d31f5c72d	Biological Motion Perception (Passive Viewing) Paradigm	137		paradigm	close	task	hedtsk_biological_motion_perception	Biological Motion Perception Task			Passive-viewing variant
+trm_4f245326e2eaf	biological motion task	150	1	paradigm	exact	task	hedtsk_biological_motion_perception	Biological Motion Perception Task			Primary match from hed_task_to_atlas.tsv
+trm_579640ddba2c0	Birkbeck Reversible Sentence Comprehension Test	109	1	paradigm	none						Birkbeck test is a clinical instrument
+tsk_4a57abb9498ce	Birmingham object recognition battery	555	4	battery	none						Standardized test battery, outside the catalog's scope
+trm_5519c4bb1d1ee	Bistability	139	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_553fce5d21da7	Bistable percept paradigm	285		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4b7497a289534	block design test	209	1	paradigm	none						Block design is a WAIS subtest, not a face localizer
+tsk_4a57abb9498df	block tapping test	267	1	paradigm	close	task	hedtsk_corsi_block_tapping	Corsi Block-Tapping Task			Same paradigm under a different name
+trm_551f0757982bc	Blocked channel-selection task	4	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5879199fde201	body image self-reflection task	454		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb9498ef	boston naming test	214	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_ovuQxhbAPPMLs	Boston Naming Test	881		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c898a20eb254	braille reading task	55	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c898a680e424	breath-holding	92		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_55a6a52537c2b	Brief Psychiatric Rating Scale	482		questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_NrSniDhXY2NKm	Brief Risk-Resilience Index for Screening (BRISC)	760	2	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_56a915461cd91	brief self control scale	142	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_52405b6f7ebe9	brief symptom inventory	281	9	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4da88c5302e06	Brixton spatial anticipation test	28		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_523dfd5b7a9f1	broad autism phenotype questionnaire	394	3	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_524055ac4fecf	broader phenotype autism symptom scale	263	4	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4da6331cdeeb5	California Verbal Learning Test	28	1	paradigm	close	task	hedtsk_rey_auditory_verbal_learning	Rey Auditory Verbal Learning Task			CVLT, same word-list paradigm
+tsk_4a57abb949900	California Verbal Learning Test-II	245	4	paradigm	close	task	hedtsk_rey_auditory_verbal_learning	Rey Auditory Verbal Learning Task			CVLT-II
+tsk_4a57abb949912	Cambridge Face Memory Test	110	1	paradigm	exact	task	hedtsk_cambridge_face_memory	Cambridge Face Memory Task			Primary match from hed_task_to_atlas.tsv
+trm_4d54b2cc0f943	Cambridge Gambling Task	312	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da880ff8fd4a	Cambridge Neuropsychological Test Automated Battery 	808		battery	none						Standardized test battery, outside the catalog's scope
+trm_4f242042e5805	Cambridge risk task	271	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4e6a2f61b17b0	capsaicin-evoked pain	157	1	physiological	none						Physiological procedure, outside the catalog's scope
+trm_4da88bff0507c	CatBat task	292	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f24112057e90	categorization task	74	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949923	category fluency test	245	4	paradigm	exact	variation	hedtsk_verbal_fluency	Verbal Fluency Task	hedvar_verbal_fluency__semantic_category_fluency	Semantic / Category Fluency	
+tsk_37y3EdRertJba	CAToon (cognitive and affective Theory of Mind Cartoon Task)	2016		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da86c6808ddd	Cattell's Culture Fair Intelligence Test	190		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5258346e72223	Center for Epidemiologic Studies Depression Scale	198	8	questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_iSDZtD6pTyB2c	center of mass approximation	225		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5154906cbead5	Change Detection Task	460	4	paradigm	exact	task	hedtsk_change_detection	Change Detection Task			Primary match from hed_task_to_atlas.tsv
+trm_57c0c015b603c	Chapman Infrequency Scale	4		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_57c0c570473d3	Chapman Magical Ideation Scale	259		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_57c0c146e0019	Chapman Perceptual Aberration Scale	259		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_57c0c1af018a5	Chapman Physical Anhedonia Scale	291		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_57c0c186b07d4	Chapman Social Anhedonia Scale	300		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4c898a8fd3afb	chewing/swallowing	198	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_l7ApDPhpQkcmT	Chicken Game task	980		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_524b4a402c87e	Child Behavior Checklist	396	11	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_5255c99be1e53	Children's Communication Checklist	233	11	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_52167db323438	Children's Memory Scale	433	6	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_525c56680c13c	Children's Psychiatric Rating Scale	648	8	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_52602c143d3a9	Children's Yale-Brown Obsessive Compulsive Scale	87	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4b843655d5d75	chimeric animal Stroop task	230	1	paradigm	close	task	hedtsk_stroop_color_word	Stroop Color-Word Task			Chimeric animal Stroop
+tsk_4a57abb949934	choice reaction time task	223	4	paradigm	related	task	hedtsk_serial_reaction_time	Serial Reaction Time Task			Choice RT is a component, not the SRT paradigm
+trm_4d55a2bbcfdff	choice task between risky and non-risky options	152	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4ebc9d2e397f2	classification probe without feedback	181	5	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb9499a8	Clinical Evaluation of Language Fundamentals-3	128	7	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5798d2693915d	clock drawing task	133	4	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_56675359b663a	Cognitive Reflection Test	225	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_551b0c616de16	coherent motion	4	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_55217860a9dea	Coherent/Incoherent discourse distinction task	87	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4e6a44ee854f8	cold pressor test	147	1	physiological	none						Physiological procedure, outside the catalog's scope
+trm_4e664d3718e1b	cold stimulation 	126		physiological	none						Physiological procedure, outside the catalog's scope
+trm_4f244c1f6b53f	color naming task	4		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da633fe917c4	Color Trails Test	254	2	paradigm	exact	variation	hedtsk_trail_making	Trail Making Task	hedvar_trail_making__color_trails	Color Trails Test	
+tsk_4a57abb9499b8	color-discrimination task	229	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4b1968619b00b	color-word stroop task	269	2	paradigm	exact	task	hedtsk_stroop_color_word	Stroop Color-Word Task			Primary match from hed_task_to_atlas.tsv
+trm_5542841f3dcd5	color-word stroop with task switching	512	2	paradigm	close	task	hedtsk_stroop_color_word	Stroop Color-Word Task			Stroop with task switching
+trm_5667492c555b7	Columbia Card Task	670	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_52718631bc934	Communication and Symbolic Behavior Scales Development Profile	193	8	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_eDRFWNl1ktVsf	Compensatory Tracking Task	348		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da86ad02b3ea	complex span test	240	4	paradigm	close	task	hedtsk_operation_span	Operation Span Task			Complex span, the family OSPAN belongs to
+trm_553fd2fc7a648	complex trait judgment task	461		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_526027c99b726	Comprehensive Test of Phonological Processing	314	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4cacf3fbc503b	conditional stop signal task	155	9	paradigm	close	task	hedtsk_stop_signal	Stop-Signal Task			Conditional variant
+trm_4f24194bce29f	conjunction search task	102		paradigm	exact	variation	hedtsk_visual_search	Visual Search Task	hedvar_visual_search__conjunction_search	Conjunction Search	
+trm_525c4cb94bfff	Conners 3rd Edition	504	9	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_524b563fb87c8	Conners Comprehensive Behavior Rating Scales	232	5	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_553fc858cacc5	consensus decision-making task	520	1	paradigm	none						Consensus decision making, not effort-based
+tsk_LURJ93Bk1echa	Consideration of Future Consequences Scale	241	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_3ICXMd8R3ekcb	contextual bandit	622		paradigm	exact	variation	hedtsk_multi_armed_bandit	Multi-Armed Bandit Task	hedvar_multi_armed_bandit__contextual_bandit	Contextual Bandit	
+trm_4f24492504ca0	contextual cueing task	287	2	paradigm	exact	task	hedtsk_contextual_cueing	Contextual Cueing Task			Primary match from hed_task_to_atlas.tsv
+trm_553e73e29cf7d	contextual semantic priming task	1040	1	paradigm	close	task	hedtsk_semantic_priming	Semantic Priming Task			Primary match from hed_task_to_atlas.tsv
+trm_57c0c34e61fdf	Continuous Performance Task	4		paradigm	exact	task	hedtsk_continuous_performance	Continuous Performance Task			Primary match from hed_task_to_atlas.tsv
+trm_551f0c294ce23	Continuous Performance Test - AX version	558	1	paradigm	exact	variation	hedtsk_continuous_performance	Continuous Performance Task	hedvar_continuous_performance__ax_cpt_context_processing	AX-CPT (Context Processing)	
+tsk_4a57abb9499c7	continuous recognition paradigm	525	3	paradigm	exact	variation	hedtsk_old_new_recognition_memory	Old/New Recognition Memory Task	hedvar_old_new_recognition_memory__continuous_recognition	Continuous Recognition	
+tsk_zaClbCwuCeWt2	Continuous Tapping Task	228		paradigm	close	task	hedtsk_finger_tapping	Finger Tapping Task			Continuous tapping
+trm_5519c85ed1e8d	contour integration task	142	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_551b0bb59173d	contour interpolation task	105	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_502be67697201	contrast detection task	115	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_551efdcd10677	contrast sensitivity test	132	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_mUMzkG2xVn82g	Convex Time Budgets	505	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4fbd2ac1cd035	copying task	56		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5521752956bb2	Corpus analysis	51	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_r8koF3we48jcA	correlated bandits	502		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da881dace79c	Corsi Blocks	1093		paradigm	exact	task	hedtsk_corsi_block_tapping	Corsi Block-Tapping Task			Primary match from hed_task_to_atlas.tsv
+trm_50240427b4c1b	counterconditioning	116	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da631be60291	counting Stroop task	102		paradigm	exact	variation	hedtsk_stroop_color_word	Stroop Color-Word Task	hedvar_stroop_color_word__counting_stroop	Counting Stroop	
+trm_4c898b02722d2	Counting/Calculation	94		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_QEgcdL3G9d3fp	Couple Coercion Scale	195	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_zj7EaCdOZ1dae	Couples Conflict Task	618	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f240d346320c	covert naming task	49		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5346927710e88	Covert verb generation task	91		paradigm	close	task	hedtsk_verb_generation	Verb Generation Task			Covert form
+trm_512e7621189ad	criteria task	724		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_551b0e17c6c76	cross modality	4	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_553e77e53497d	cue approach task	463	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_9UB5vNDvAKzYw	cue-based expectancy paradigm combining emotion regulation task			paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_kQEU3vjgDNcJP	cue-based expectation task	137		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c898b29660b0	cued explicit recognition	200	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb9499d5	cups task	402	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f24189031a4a	cyberball task	153		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_eDDTJCIrL19Qj	Daily Inventory of Stressful Events (DISE)	674	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4c898b4b463aa	deception task	86	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c898b8c2d071	deductive reasoning task	84	6	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5023ef8eab626	delay conditioning	262	1	paradigm	close	variation	hedtsk_pavlovian_fear_conditioning	Pavlovian Fear Conditioning Task	hedvar_pavlovian_fear_conditioning__delay_conditioning	Delay Conditioning	Atlas entry is delay conditioning in general, not fear-specific
+trm_566748c929afc	Delay Discounting Titration	453		paradigm	close	task	hedtsk_delay_discounting	Delay Discounting Task			Titration procedure
+trm_5736095d91380	delayed intention task	229	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb9499e3	delayed match to sample task	226	7	paradigm	exact	task	hedtsk_delayed_match_to_sample	Delayed Match-to-Sample Task			Primary match from hed_task_to_atlas.tsv
+trm_4fba85a597ca9	delayed memory task	197	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb9499f1	delayed nonmatch to sample task	234	3	paradigm	close	task	hedtsk_delayed_match_to_sample	Delayed Match-to-Sample Task			Non-match rule
+tsk_4a57abb9499ff	delayed recall test	154	4	paradigm	close	task	hedtsk_free_recall	Free Recall Task			Delayed recall
+trm_4dadbdd0b2b8c	delayed response task	28		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4e8dd3831f0cc	deterministic classification	173	7	paradigm	close	variation	hedtsk_probabilistic_classification_learning	Probabilistic Classification Learning Task	hedvar_probabilistic_classification_learning__deterministic_version	Deterministic Version	Atlas definition describes feedback-driven classification learning in general
+trm_5519c2d8d7b1d	Deviance Detection	55	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4d559d2703bae	devil's task	443	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da87e9c79847	dichotic listening task	139	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_55a6a95f66508	Dickman Impulsivity Inventory	571	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_56674d6aa9faf	Dietary Decisions Task	497	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5272806688e63	Differential Ability Scales	385	9	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da89077f19ae	digit cancellation task	190	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949a0d	digit span task	218	4	paradigm	exact	task	hedtsk_digit_span	Digit Span Task			Primary match from hed_task_to_atlas.tsv
+tsk_4a57abb949a25	digit/symbol coding test	370	4	paradigm	close	task	hedtsk_digit_symbol_substitution	Digit Symbol Substitution Task			Digit/symbol coding
+trm_566747c3d757f	Dimensions task	614		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da87f383435b	directed forgetting task	275	4	paradigm	exact	task	hedtsk_directed_forgetting	Directed Forgetting Task			Primary match from hed_task_to_atlas.tsv
+trm_55217a446eb3b	Discourse content questions	4	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_551f07a281283	Distraction paradigm (capture)	1	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c898bbab4fd4	divided auditory attention	212	3	paradigm	none						Divided auditory attention, no HED counterpart
+tsk_wmFvpdB0Y6UYl	Donation task	73		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949a33	doors and people test	214	7	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5696abecf2569	DOSPERT 	440	4	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f244ad7dcde7	dot motion task	131	4	paradigm	exact	task	hedtsk_random_dot_kinematogram	Random Dot Kinematogram Task			Primary match from hed_task_to_atlas.tsv
+trm_4da86c2a70a7d	dot pattern expectancy task	280	4	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c898be57fcbc	drawing	64	2	paradigm	none						Generic drawing, not mirror tracing
+trm_4fbd2e5614028	drawing from memory task	95		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4e5e7ac84c2e5	dual sensitization	196	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da634216ebbc	dual-task paradigm	45	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4ebc98cc77e7b	dual-task weather prediction	500	13	paradigm	close	task	hedtsk_probabilistic_classification_learning	Probabilistic Classification Learning Task			Dual-task weather prediction
+trm_56a9166421494	duckworth's short grit scale	213	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_5298e7a465b41	Early Childhood Behavioral Questionnaire	363	11	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_5298ed1336e43	Early Development Interview (EDI)	250	4	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da8911e715e3	Early Social and Communication Scales	178	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_56aac5f6e4702	Eating questionnaire	103	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4c898c0786246	eating/drinking	4	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_57c0bf6b14b90	Eckblad and Chapman's Hypomanic Personality Scale	4		questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_c6667oSpAnrBT	Ecological Momentary Assessment of Stressful Events	505	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949a41	Edinburgh Handedness Inventory	486	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4e68e08950157	electric stimulation	116	1	physiological	none						Physiological procedure, outside the catalog's scope
+trm_4b749b8829eee	embedded figures test	258	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_551efd8a98162	emotion expression identification	100	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_A1AEVp7clZsCB	Emotion Identification Task	511	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_550b5b066d37b	emotion processing fMRI task paradigm	1117	5	imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+trm_50f734f86b11a	Emotion Recognition Task	867	2	paradigm	close	task	hedtsk_facial_emotion_recognition	Facial Emotion Recognition Task			Primary match from hed_task_to_atlas.tsv
+trm_56bbead1a7ed4	Emotion Regulation Questionnaire	250	1	questionnaire	none						Emotion Regulation Questionnaire is a self-report scale
+tsk_EeJGKBAbpHkIm	Emotion Regulation Strategies Scale	471		questionnaire	none						Emotion Regulation Strategies Scale is a self-report scale
+trm_56bbea82c12bb	Emotion Regulation Task	510		paradigm	exact	task	hedtsk_emotion_regulation	Emotion Regulation Task			Primary match from hed_task_to_atlas.tsv
+trm_5873d0be34b8f	emotional localizer fMRI task paradigm	722		imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+trm_4da890594742a	emotional regulation task	114	8	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c898c33ee5f8	encoding task	85	10	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_wiCMUNujvVRCR	Enumeration task	138		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c898c8bf1b4f	episodic recall	411	3	paradigm	close	task	hedtsk_free_recall	Free Recall Task			Episodic recall
+trm_59ed1f7a0ac9c	episodic recombination paradigm	990	4	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949a4f	Eriksen flanker task	536	7	paradigm	exact	task	hedtsk_eriksen_flanker	Eriksen Flanker Task			Primary match from hed_task_to_atlas.tsv
+tsk_nzi0bkdoO8a23	error awareness task	1389		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5262c98a09546	Expressive One Word-Picture Vocabulary Test	232	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5298f15fe0fcf	Expressive One-Word Picture Vocabulary Test	349		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_52602e2e0c43b	Expressive Vocabulary Test	96	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949a5d	extradimensional shift task	398	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_55217b48995ce	Eye tracking paradigms	75	1	paradigm	related	task	hedtsk_self_paced_reading	Self-Paced Reading Task			Eye-tracking reading methods
+trm_55a6ae8f44ac3	Eysenck Personality Questionnaire	314		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_551efdfd1a356	Face Identification task	4	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f24247912761	face matching task	233	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c898cb4ada49	face monitor/discrimination	266		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949a6a	face n-back task	197	7	paradigm	close	task	hedtsk_n_back	N-Back Task			Face n-back; no matching HED variation
+trm_4f2421a62cdf8	face working memory task	212		paradigm	none						Face working memory, not the Cambridge Face Memory Test
+tsk_xQrUFIhZsBUFE	Facial Expression Display Task	115		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_02fiuOOFboHmh	facial expression observation	57		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_JaF5u33GgYRT3	Facial Expression Observing Task	143		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4HuWbAQzF0tgZ	facial expression of emotion	64		paradigm	close	task	hedtsk_facial_emotion_recognition	Facial Emotion Recognition Task			Facial expression of emotion
+trm_5090b32d6b376	facial recognition task	213		paradigm	none						Face identity recognition, not emotion recognition
+tsk_4a57abb949a78	Fagerstrom Test for Nicotine Dependence	84		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f2456027809f	false belief task	625	1	paradigm	exact	task	hedtsk_false_belief	False Belief Task			Primary match from hed_task_to_atlas.tsv
+trm_5845a809e30d5	False Belief task	1298	1	paradigm	exact	task	hedtsk_false_belief	False Belief Task			Duplicate of trm_4f2456027809f
+trm_4f241fe40a950	fame judgment task	132		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_59cd03eeeab30	Fictitious event ordering	303		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_551b0d687ee33	figure ground task	75		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c898da401420	film viewing	107		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c898f079d05e	finger tapping task	70	3	paradigm	exact	task	hedtsk_finger_tapping	Finger Tapping Task			Primary match from hed_task_to_atlas.tsv
+trm_4f24226fa2903	Fitts task	201	1	paradigm	none						Fitts law pointing, not finger tapping
+trm_56ab12e0f1a61	Five Facet Mindfulness Questionnaire	105	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_qBdQueJHSouuF	Five-Trial Adjusting Delay Discounting Task	836	1	paradigm	exact	variation	hedtsk_delay_discounting	Delay Discounting Task	hedvar_delay_discounting__5_trial_adjusting_delay	5-Trial Adjusting Delay	
+trm_4c898f72228f3	fixation task	35	5	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c898f8f297ac	flashing checkerboard	38		imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+trm_4c898fad429ed	flexion/extension	81	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_qsprWaphqkwim	fMRI Facial Emotion Paradigm	728	2	imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+tsk_ORAzdOO86kNfM	fMRI localizer for the frontotemporal language system	521	1	imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+trm_5798cb6027f28	following commands	231	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_rjSJbUa5Jk2Mb	Food viewing (passive)	129	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4fbd2dc0273d9	foreshortened view task	137		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949a85	forward digit span task	176	2	paradigm	exact	variation	hedtsk_digit_span	Digit Span Task	hedvar_digit_span__forward_digit_span	Forward Digit Span	
+trm_4c898fc6722f4	free word list recall	99	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_m9ZOG13yjvsPV	Frustration in Timed Backwards Math	497	6	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_553e85265f51e	functional localizer fMRI tasks	536	9	imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+tsk_5UPYiqtoX3yUf	Future Events Structured Interview	596	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_gskvlEiCHg899	Future Orientation Scale of the Time Perspective Survey (child version)	623	2	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_56a915fe77945	future time perspective questionnaire	342	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_550b5c1a7f4db	gambling fMRI task paradigm	1805		imaging_protocol	related	task	hedtsk_iowa_gambling	Iowa Gambling Task			Generic gambling fMRI paradigm
+trm_4f24496a80587	gambling task	71		paradigm	related	task	hedtsk_iowa_gambling	Iowa Gambling Task			Generic gambling task
+trm_551b14d7d5882	gating	4	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f241c8d4a75c	gender discrimination task	116		paradigm	close	variation	hedtsk_biological_motion_perception	Biological Motion Perception Task	hedvar_biological_motion_perception__gender_identity_discrimination	Gender/Identity Discrimination	
+trm_4f24237f2ed47	general knowledge task	203		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_BuPIiFcjBo2aX	Generalization of Instrumental Avoidance Task	1394		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_p7cabUkVvQPBS	Generalized Self-Efficacy Scale	525	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4da890f978492	Glasgow Coma Scale	392		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4f241d7adf14e	global-local task	173	4	paradigm	exact	task	hedtsk_navon	Navon Task			Primary match from hed_task_to_atlas.tsv
+trm_569d6eef27433	gm Paradigm	71		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_k6MaDfNGbHqDx	Go-No-Go Zoo Task	676	1	paradigm	close	task	hedtsk_go_no_go	Go/No-Go Task			Child version
+tsk_tTKd4o04KpUDA	Go-NoGo fMRI paradigm	860	1	imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+tsk_4a57abb949a93	go/no-go task	389	3	paradigm	exact	task	hedtsk_go_no_go	Go/No-Go Task			Primary match from hed_task_to_atlas.tsv
+tsk_7f8coV4TPvTeZ	Godin Leisure-Time Exercise Questionnaire	512		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_50f741a965470	Graded Naming Test	800	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c898ff0bea97	grasping task	181	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949aa1	Gray Oral Reading Test - 4	400	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5887c029d46f4	Gustatory stimulation with liquid tastes or flavors 	1397	1	physiological	none						Physiological procedure, outside the catalog's scope
+trm_529911569b592	Halstead-Reitan Battery	478	1	battery	none						Standardized test battery, outside the catalog's scope
+trm_559e2af1cc0ce	Hamilton Psychiatric Rating Scale for Depression	563		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_586fd907e4fc6	hand chirality recognition	57	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_586fd8a2c77ca	hand side  recognition	56		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da88c205b16b	haptic illusion task	95	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da88c904862b	Hayling sentence completion test	359	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4e5662373bc89	heat sensitization/adaptation	158	2	physiological	none						Physiological procedure, outside the catalog's scope
+trm_4e550887d92de	heat stimulation	117	1	physiological	none						Physiological procedure, outside the catalog's scope
+tsk_o32s7ULZu8ATo	Hidden Path Learning Task	434		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_58335e885873f	Hidden State Decision Making Task	638	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5696bb7166121	hierarchical rule task	156		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_EaAMakeLSEYxm	Hierarchical Task	717	1	paradigm	none						Hierarchical task, too generic to place
+trm_56674f71483b0	Holt and Laury Risk Titrator	457	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949aae	Hooper visual organization test	225	4	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_55a6a860a7088	Hopkins Symptom Checklist	364		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_586fd4fd8754a	horizontal checkerboard	293		imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+trm_50b40bca8cf83	Hungry Donkey Task	500	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_55a6c92db12b0	Hypomanic Personality Scale	166		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_56a91e3e982f9	I7 impulsiveness and venturesomeness questionnaire	279	3	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_5798d0fbe2bd1	ideational praxis task	592	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5667436296862	image monitoring	181		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c899005b11d5	imagined movement	75	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c89903149aeb	imagined objects/scenes	128	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4fba857ad04ac	immediate memory task	194	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949abc	immediate recall test	189	3	paradigm	close	task	hedtsk_free_recall	Free Recall Task			Immediate recall
+tsk_H2hu4WmHYl8Tu	Immersive Virtual Reality Assay for Target: Regulation of Cognition (Behavioral and Self-Report)	672	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_Sgb6i1nFqMVjQ	Immersive Virtual Reality Assay for Target: Regulation of Emotion (Behavioral and Self-Report)	803	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_ZaJZLqgqcXCLq	Immersive Virtual Reality Assay for Target: Regulation of Self-Reflection (Behavioral and Self-Report)	622	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_50b6660b1b847	Implicit Association Task	596	3	paradigm	exact	task	hedtsk_implicit_association	Implicit Association Task			Primary match from hed_task_to_atlas.tsv
+trm_565a2e79b22f2	incentive modulated antisaccade task	2526	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_50df0dd9d0b6f	Incidental encoding task	226		paradigm	close	variation	hedtsk_paired_associates_learning	Paired Associates Learning Task	hedvar_paired_associates_learning__incidental_vs_intentional_encoding	Incidental vs. Intentional Encoding	Atlas entry is incidental encoding in general, not paired associates
+trm_4d8a48e403c78	inductive reasoning aptitude	48	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_50f73d557c967	Information Sampling Task	1558	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f2414059baa8	instrumental learning task	60		paradigm	exact	task	hedtsk_instrumental_conditioning	Instrumental Conditioning Task			Primary match from hed_task_to_atlas.tsv
+trm_551b17b190582	intensity for somatosensory stimulation	4	1	physiological	none						Physiological procedure, outside the catalog's scope
+trm_5667476fc14dd	Inter-dimensional/Extra-dimensional Shift Task	971		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_551f0713a5a17	Inter-modal selective attention task	57	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4eb1f3a8ec119	intermodal preferential looking paradigm	320	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_3KF7rOdrBGivs	Internal menu choice task	469		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_nHhIFQgl91Nkc	Internal Self-Efficacy Task	755	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949aca	International Affective Picture System	51	1	paradigm	close	task	hedtsk_affective_picture_viewing	Affective Picture Viewing Task			Primary match from hed_task_to_atlas.tsv
+tsk_QlXQe5gup7UFj	International Physical Activity Questionnaire – Short Form (IPAQ-SF)	440	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_Rpfz9hVRPtUcq	Interoceptive Attentiveness fMRI Task	812	1	imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+tsk_YShVp2KOuWrSS	Interval Estimation Task	447		paradigm	related	task	hedtsk_intentional_binding	Intentional Binding Task			Primary match from hed_task_to_atlas.tsv
+tsk_4a57abb949ad7	intradimensional shift task	346	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949ae5	Iowa Gambling Task	1005	2	paradigm	exact	task	hedtsk_iowa_gambling	Iowa Gambling Task			Primary match from hed_task_to_atlas.tsv
+tsk_4a57abb949af3	Ishihara plates for color blindness	361	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c8990480ad0f	isometric force	95	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da869646e5d1	item recognition task	172		paradigm	close	task	hedtsk_sternberg_item_recognition	Sternberg Item Recognition Task			Item recognition
+trm_529ce04b778b6	Joint Attention / Social and Nonsocial Orienting Task	252	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_529ce3d22be3e	Judgment of Line Orientation Task	134		paradigm	none						Judgment of Line Orientation, shares only the abbreviation JOL
+tsk_4a57abb949b00	Kanizsa figures	327	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_529ce6ecb35f8	Kaufman Brief Intelligence Test	209	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c40d4054f38b	keep-track task	341	4	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_OA90UJX5qwTyc	Kessler Psychological Distress Scale (K6+)	596	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_56bbee951f161	Kirby Delay Discounting Task	209	2	paradigm	close	task	hedtsk_delay_discounting	Delay Discounting Task			Kirby monetary choice
+trm_5346938eed092	Landmark task	484		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_550b54a8b30f4	language processing fMRI task paradigm	1728	3	imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+tsk_KVUZHlsv8pesh	Language Rule Learning	4074		paradigm	none						Language rule learning, no HED counterpart
+trm_551b0c0a742d2	lateral facilitation	4	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5262cb3d852c0	Leiter International Performance Scale	1266	10	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4fbd2b16e7aff	length match task	132		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f241001dfcee	letter case judgment task	79		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da86c8bb3b04	letter comparison task	114		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949b0e	letter fluency test 	106	2	paradigm	exact	variation	hedtsk_verbal_fluency	Verbal Fluency Task	hedvar_verbal_fluency__phonemic_letter_fluency_fas	Phonemic / Letter Fluency (FAS)	
+tsk_PNUOMlNOAajsT	letter matching task	300		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5696a9cfe45b1	letter memory	248		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949b1c	letter n-back task	184	1	paradigm	close	variation	hedtsk_n_back	N-Back Task	hedvar_n_back__verbal_n_back	Verbal N-Back	Letter n-back is the verbal form
+tsk_4a57abb949b2b	letter naming task	131	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c3e0a9576c3b	letter number sequencing	88	5	paradigm	exact	variation	hedtsk_digit_span	Digit Span Task	hedvar_digit_span__letter_number_sequencing	Letter-Number Sequencing	
+tsk_4a57abb949b38	lexical decision task	459	2	paradigm	exact	task	hedtsk_lexical_decision	Lexical Decision Task			Primary match from hed_task_to_atlas.tsv
+trm_55217a9f473f0	Listening and reading task	77	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c40d1d16071e	listening span task	177	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f24258b51e2c	living-nonliving task	127	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5176cf9d3d512	living/nonliving judgment on mirror-reversed and plain-text words	302		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_551b1004bc652	local computation	4	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f24154867d84	logical reasoning task	165	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_529d087705bfa	Loneliness Rating Scale	140	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4da891794859f	MacArthur Communicative Development Inventories	261	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_552181d7be45e	Manipulation of coherence and cohesion	100	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_55218116cbf40	Manipulation of individual words	108	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_551efeacb9deb	Manipulation of ISI	116	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_55217e77441b0	Manipulation of language and non-verbal behaviors	85	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_55492d262a847	Manipulation of predictability	4		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_55217d7fbfdba	Manipulation of predictability and acceptability	112	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_50f852c084fde	match to sample visual search	986	1	paradigm	related	task	hedtsk_delayed_match_to_sample	Delayed Match-to-Sample Task			Match-to-sample embedded in visual search
+trm_4da87b8bf1511	matching familiar figures test	221	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949b46	matching pennies game 	542	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949b54	Maudsley Obsessive Compulsive Inventory	234	2	questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_uh2RnLbc0PU3v	Maze	610	1	paradigm	none						Spatial maze, not the psycholinguistic Maze task
+trm_51a637dfeffd5	McGurk effect	152	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_56a2a74ab3ef6	Measured Emotion Differentiation Test	1084		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4e5d07565b68e	mechanical stimulation	124	1	physiological	none						Physiological procedure, outside the catalog's scope
+trm_4fb4175126374	meditation task	159	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_mFS3uwUMAhXxe	Memory encoding task	91		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f2457d94fd93	memory guided saccade task	230		paradigm	exact	variation	hedtsk_anti_saccade	Anti-Saccade Task	hedvar_anti_saccade__memory_guided_anti_saccade	Memory-Guided Anti-Saccade	
+trm_4da869e68b5c4	memory span test	28		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f24179122380	mental arithmetic task	112		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f240edf92865	mental imagery task	45		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c8990810541d	mental rotation task	113	2	paradigm	exact	task	hedtsk_mental_rotation	Mental Rotation Task			Primary match from hed_task_to_atlas.tsv
+tsk_xxVr20Bf4zyme	Mental time travel task	164		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f241ab50513b	mentalizing task	224		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4b9568b2865c2	MicroCog	111	5	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c89909cc1f33	micturition task	87		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_56abcba3df89b	Mindful Attention and Awareness Scale	129	3	questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_zfiXINJdIc1DM	Mindstrong for Regulation of Cognition	588	4	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_kBYLTvZx59uOC	Mindstrong for Regulation of Emotion	764	2	paradigm	none						Mindstrong is a mobile assessment product
+tsk_aojKzJ2tvdhGZ	Mindstrong for Regulation of Self-Focused Reflection	649	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949bb1	Mini Mental State Examination	452	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4fbd2d71adf87	minimal feature match task 	155		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_55a6c80b2c1d6	Minnesota Multiphasic Personality Inventory	555		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_5176cf2c19e89	mirror reading task	114		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f244a67d5b17	mirror tracing task	99		paradigm	exact	task	hedtsk_mirror_tracing	Mirror Tracing Task			Primary match from hed_task_to_atlas.tsv
+trm_4e8dd3dfd9fff	mixed event-related probe	280		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4cacee4a1d875	mixed gambles task	457	10	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_RXmB56vrYW66T	Mnemonic similarity task	464		paradigm	exact	task	hedtsk_mnemonic_similarity	Mnemonic Similarity Task			Primary match from hed_task_to_atlas.tsv
+trm_4da891d43240c	modified Erickson Scale of Communication Attitudes	114		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4f23fc8c42d28	monetary incentive delay task	137		paradigm	exact	task	hedtsk_monetary_incentive_delay	Monetary Incentive Delay Task			Primary match from hed_task_to_atlas.tsv
+trm_57964b8a66aed	Montreal Cognitive Assessment	523	7	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_57ebe6583f52d	Moral Dilemma Task	223		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da890a9bd7a3	Morris water maze	174	1	paradigm	close	task	hedtsk_virtual_morris_water_maze	Virtual Morris Water Maze Task			Primary match from hed_task_to_atlas.tsv
+trm_553fc63a54ae6	motion discrimination task	155		paradigm	close	variation	hedtsk_random_dot_kinematogram	Random Dot Kinematogram Task	hedvar_random_dot_kinematogram__multi_alternative_motion_discrimination	Multi-Alternative Motion Discrimination	
+trm_5536be03400e7	Motion processing	4	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_uzbPk1YB47Iqd	motivational go/no-go learning task	1545	5	paradigm	close	task	hedtsk_go_no_go	Go/No-Go Task			Adds reward motivation
+trm_550b53d7dd674	motor fMRI task paradigm	1007	8	imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+trm_50f72e93ea9e3	Motor Screening Task	394	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_56bbe45003cf7	Motor Selective Stop Signal Task	243	3	paradigm	close	task	hedtsk_stop_signal	Stop-Signal Task			Motor-selective variant
+tsk_4a57abb949bbf	motor sequencing task	72	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5975f939336c0	motorphotic	376		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_55217bd86ee12	Mouse tracking paradigms	77		paradigm	none						Mouse tracking is a measurement method
+tsk_jbg1oF4D9OTkO	movie watching task	67		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5262d6d7b2097	Mullen Scales of Early Learning	230	4	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5535623c2536a	Muller-Lyer Illusion	51	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f244fee7d195	multi-attribute decision making task	171		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_553eb28436233	multi-attribute reward-guided decision task	911		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_558c324478d22	Multi-class n-back task	73		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_558c33e7714ba	multi-object localizer task	209		imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+trm_5696b61ff253e	multi-source interference task	116		paradigm	related	task	hedtsk_eriksen_flanker	Eriksen Flanker Task			MSIT combines flanker, Simon and Stroop conflict; not a listed flanker variation
+tsk_2wRB9XpiA4xMN	Multidimensional Assessment of Interoceptive Awareness	989	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_55a6aa62c54f8	Multidimensional Personality Questionnaire	281		questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_tp1574mCRYbWD	Multidimensional Personality Questionnaire: Control vs. Impulsivity Scale	577	2	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_5696c2c063222	Multiplication task	166		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f2419c4a1646	multisource interference task	73		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_551b0cdcde976	multistability	4	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c8990b07a037	music comprehension/production	64	4	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949bcd	n-back task	190	8	paradigm	exact	task	hedtsk_n_back	N-Back Task			Primary match from hed_task_to_atlas.tsv
+trm_4c8990c87035d	naming (covert)	76	2	paradigm	close	task	hedtsk_picture_naming	Picture Naming Task			Covert naming
+trm_4c8990e187dc7	naming (overt)	75	4	paradigm	close	task	hedtsk_picture_naming	Picture Naming Task			Overt naming
+trm_552174863d51e	Naming tasks	31	1	paradigm	related	task	hedtsk_picture_naming	Picture Naming Task			Generic naming-task grouping
+tsk_tlatUto2tMCYC	Narrative-based Pain Empathy Task	318		physiological	none						Physiological procedure, outside the catalog's scope
+trm_5798f94752841	NART-R	351	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5798f5c57048d	National Adult Reading Test	836	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f241173868a3	navigation task	55		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f244d64e45bc	negative priming task	260	1	paradigm	close	variation	hedtsk_stroop_color_word	Stroop Color-Word Task	hedvar_stroop_color_word__negative_priming_stroop	Negative Priming Stroop	Atlas entry is the general negative priming paradigm; the Catalog's row is its Stroop form
+trm_597249e1ec9d3	network traversal task	151		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_UwGwPHdQkMJqi	NIH Self-Efficacy Scale	481	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_50eb69a57bc96	NIH Toolbox 2-Minute Walk Endurance Test	346	1	battery	none						Standardized test battery, outside the catalog's scope
+trm_50eb585f62f24	NIH Toolbox 4-Meter Walk Gait Speed Test 	376	2	battery	none						Standardized test battery, outside the catalog's scope
+trm_50eb4d3d96ff8	NIH Toolbox 9-Hole Pegboard Dexterity Test	358	1	battery	none						Standardized test battery, outside the catalog's scope
+trm_50eb115b6c476	NIH Toolbox Dimensional Change Card Sort Test	731	2	battery	none						Standardized test battery, outside the catalog's scope
+trm_50f38098952cb	NIH Toolbox Dynamic Visual Acuity Test	1637	2	battery	none						Standardized test battery, outside the catalog's scope
+trm_50f3c003327c4	NIH Toolbox General Life Satisfaction Survey	531	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_50eb51c2cd9fe	NIH Toolbox Grip Strength Test	511	1	battery	none						Standardized test battery, outside the catalog's scope
+trm_50f37767e2958	NIH Toolbox Hearing Handicap Inventory	559	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_50f374718a91c	NIH Toolbox Hearing Threshold Test	476		battery	none						Standardized test battery, outside the catalog's scope
+trm_50eb17385e9a6	NIH Toolbox List Sorting Working Memory Test	472	2	battery	none						Standardized test battery, outside the catalog's scope
+trm_50f5bfef58abb	NIH Toolbox Meaning and Purpose Survey	371	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_50f383e76e03b	NIH Toolbox Odor Identification Test	622	1	battery	none						Standardized test battery, outside the catalog's scope
+trm_50eb3b2d1de11	NIH Toolbox Oral Reading Recognition Test	410	2	battery	none						Standardized test battery, outside the catalog's scope
+trm_50eb461d446e1	NIH Toolbox Oral Symbol Digit Test	699	1	battery	none						Standardized test battery, outside the catalog's scope
+trm_50f385a8269ce	NIH Toolbox Pain Intensity Survey	308		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_50f3862422509	NIH Toolbox Pain Interference Survey	399		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4da88cb222308	NIH Toolbox Picture Sequence Memory Test	843	1	battery	none						Standardized test battery, outside the catalog's scope
+trm_50eb0dc6668e1	NIH Toolbox Picture Vocabulary Test	485	2	battery	none						Standardized test battery, outside the catalog's scope
+trm_50f3bc06cae36	NIH Toolbox Positive Affect Survey	468	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_50eb54d78841b	NIH Toolbox Standing Balance Test	586	1	battery	none						Standardized test battery, outside the catalog's scope
+trm_50f379c6c9ea9	NIH Toolbox Taste Intensity Test	960	1	battery	none						Standardized test battery, outside the catalog's scope
+trm_50f37f231aa4c	NIH Toolbox Vision-Related Quality of Life Survey	480	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_50f37caf81432	NIH Toolbox Visual Acuity Test	1196	1	battery	none						Standardized test battery, outside the catalog's scope
+trm_50eb0a01bfd05	NIH Toolbox Words-in Noise Test	599	1	battery	none						Standardized test battery, outside the catalog's scope
+tsk_4a57abb949bdb	nine-hole peg test	182	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4d55997cd3edb	non-choice task	533	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_xFpgex9zOvlOu	Non-instrumental information seeking task	1221		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c8990f59266f	non-painful electrical stimulation	58	1	physiological	none						Physiological procedure, outside the catalog's scope
+trm_4c89910b7f8bc	non-painful thermal stimulation	68	2	physiological	none						Physiological procedure, outside the catalog's scope
+trm_55295382db2c5	non-spatial cuing paradigm	286	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da88b17b985b	nonword repetition task	113	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_551eff0fdab74	Novelty detection task	4	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_502420a682976	NPU-threat test	141	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_553ec40d44c51	Numerical Working Memory Task	129		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f2457454e458	numerosity estimation task	39	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da88bb3c2462	object alternation task	136		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_551b107c5c111	object classification	4	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4fbd2c18e1dd9	object decision task	99		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4ebd477ab5a11	object n-back	65		paradigm	exact	variation	hedtsk_n_back	N-Back Task	hedvar_n_back__fractal_object_n_back	Fractal/Object N-Back	
+trm_4f2448d02d4d9	object naming task	165		paradigm	close	task	hedtsk_picture_naming	Picture Naming Task			Object naming
+trm_4ebd47b8bab6b	object one-back task	65	5	paradigm	none						Object one-back, an n-back variant already covered by the n-back entry
+trm_551b0ee81fb6b	object perception task	4	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_553fbba5d5327	Object Rating Task	97		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_551b0f2b930ab	object recognition task	271	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f2421c391b83	object working memory task	139		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949be9	object-discrimination task	410	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c3e0add96550	oculomotor delayed response	80	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f2452adb7d23	odd-even task	88		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949bf6	oddball task	290	6	paradigm	exact	task	hedtsk_oddball	Oddball Task			Primary match from hed_task_to_atlas.tsv
+trm_4c89912c79030	olfactory monitoring/discrimination	179	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_50f84bbdcfa4e	One Touch Stockings of Cambridge	1251	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_50240f06af135	operant task	132	3	paradigm	exact	task	hedtsk_instrumental_conditioning	Instrumental Conditioning Task			Alias entry of trm_4f2414059baa8
+trm_4c40d10cd776e	operation span task	273	2	paradigm	exact	task	hedtsk_operation_span	Operation Span Task			Primary match from hed_task_to_atlas.tsv
+tsk_pmvG0R2l7APPE	optogenetic stimulation	150		physiological	none						Physiological procedure, outside the catalog's scope
+trm_4fbd2b4bb165c	orientation match task	97	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5798d7ba0197d	orientation test	187		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c89913f80802	orthographic discrimination	173	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f24250e0137e	orthographic task	51		paradigm	related	variation	hedtsk_semantic_priming	Semantic Priming Task	hedvar_semantic_priming__orthographic_priming	Orthographic Priming	Atlas entry is any task requiring letter-structure processing; orthographic priming is one such task
+tsk_i6bcjHSADB30O	Other evaluation task	108		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4fbd2b964d3ec	overlapping figures task	93		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_534690b0e9dc5	Overt word repetition	76	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_GxjZBNiJorj1K	P300 BCI	589	2	paradigm	related	task	hedtsk_oddball	Oddball Task			P300 brain-computer interface
+trm_4da87fb28978e	Paced Auditory Serial Addition Test	116		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c8991c5beb0a	pain monitor/discrimination task	77	1	physiological	none						Physiological procedure, outside the catalog's scope
+tsk_vbkfbu486lzDr	Pain-matrix narrative localizer	112		imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+trm_4da88a2a63d97	paired associate learning	306	1	paradigm	exact	task	hedtsk_paired_associates_learning	Paired Associates Learning Task			Primary match from hed_task_to_atlas.tsv
+trm_4c8991e6e8597	paired associate recall	195	2	paradigm	close	task	hedtsk_paired_associates_learning	Paired Associates Learning Task			Recall phase of PAL
+tsk_4a57abb949c04	pantomime task	130	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_551b06cf9783b	Parallel/serial search	259	1	paradigm	close	task	hedtsk_visual_search	Visual Search Task			Parallel/serial search framing
+tsk_dwOdvcER9RnBx	Parent Cognition Scale	439	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_alz5hjlUXp4WY	Parent-Child Coercion Scale	132	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_HJI7NLY38yZgx	Parent-Child Interaction Protocol	982	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_m9ORBitZNadcZ	Parent-Rated Stress (NIH Perceived Stress Scale)	347	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4f24572cb42e4	parity judgment task	91		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949ce9	Parrott Scale	110		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_50b65ef129e23	Partial Report Procedure	506	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f241fd47f16b	passive avoidance task	147		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c8991fadfe01	passive listening	221	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c899211a965c	passive viewing	383	1	paradigm	related	task	hedtsk_affective_picture_viewing	Affective Picture Viewing Task			Generic passive viewing, not affective specifically
+tsk_Y0LwjRqYtJSQO	Patient health questionnaire (PHQ-9)	19		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4da86cb034ff6	pattern comparison task	382	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c898acd1f28e	pavlovian conditioning task	450	5	paradigm	close	task	hedtsk_pavlovian_fear_conditioning	Pavlovian Fear Conditioning Task			Primary match from hed_task_to_atlas.tsv
+trm_5262d903ae91d	PDD Behavior Inventory	653	8	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_5266bebe14d2e	Peabody Picture Vocabulary Test	128	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_osfnJ7DNe8DB0	Pearlin Mastery Scale	402	2	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_50b55d8a6da00	PEBL Perceptual Vigilance Task	340	1	paradigm	close	task	hedtsk_psychomotor_vigilance	Psychomotor Vigilance Task			Primary match from hed_task_to_atlas.tsv
+trm_50f9952c2311a	Penn Conditional Exclusion Test	606	1	battery	none						Standardized test battery, outside the catalog's scope
+trm_4b4a537644d76	Penn continuous performance task	550	3	battery	close	task	hedtsk_continuous_performance	Continuous Performance Task			Penn implementation
+trm_56a2a6ce24586	Penn Emotion Recognition Task	709	1	battery	close	task	hedtsk_facial_emotion_recognition	Facial Emotion Recognition Task			Penn implementation
+trm_50f99e56117fe	Penn Face Memory Test	335	1	battery	close	task	hedtsk_cambridge_face_memory	Cambridge Face Memory Task			Penn face memory instrument
+trm_56a2a622cdfbd	Penn Facial Memory Test Delayed Memory	703		battery	none						Standardized test battery, outside the catalog's scope
+trm_569fc84bd541d	Penn Fractal N-Back	746	2	battery	none						Standardized test battery, outside the catalog's scope
+trm_56a2a5f8315c5	Penn Matrix Reasoning Test	1007		battery	none						Standardized test battery, outside the catalog's scope
+trm_56a2abffcfae3	Penn Motor Praxis	457		battery	none						Standardized test battery, outside the catalog's scope
+trm_56a2a6ad6edee	Penn Visual Object Learning Test	1126		battery	none						Standardized test battery, outside the catalog's scope
+trm_56a2a98785453	Penn Visual Object Learning Test Delayed Memory	935		battery	none						Standardized test battery, outside the catalog's scope
+trm_5696e10fcd36a	Penn Vocabulary Test	47		battery	none						Standardized test battery, outside the catalog's scope
+trm_50f998dcbfcc8	Penn Word Memory Test	394	2	battery	none						Standardized test battery, outside the catalog's scope
+trm_56a2a7750ffd0	Pennâs Logical Reasoning Test	549		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_551b05e03be48	perceptual closure task	173	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_553ebfc390256	perceptual discrimination task	286	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_551b0e6b88363	perceptual organization	4	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4e6114e7b1ff2	phasic pain stimulation	216	1	physiological	none						Physiological procedure, outside the catalog's scope
+trm_4f24479b0db8f	phoneme detection task	105		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f241be43458e	phonemic fluency task	108		paradigm	close	variation	hedtsk_verbal_fluency	Verbal Fluency Task	hedvar_verbal_fluency__phonemic_letter_fluency_fas	Phonemic / Letter Fluency (FAS)	
+trm_4f2414a1bab77	phonetic discrimination task	77		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c89922cb6402	phonological discrimination	165	4	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f241b751c5a0	phonological task	75		paradigm	related	task	hedtsk_phonological_awareness	Phonological Awareness Task			Generic phonological task
+trm_5206bf053acf4	Piaget's Water Jar Task	378	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949cfb	picture naming task	74	3	paradigm	exact	task	hedtsk_picture_naming	Picture Naming Task			Primary match from hed_task_to_atlas.tsv
+trm_4dadbfd771a54	picture-word Stroop test	203		paradigm	close	task	hedtsk_stroop_color_word	Stroop Color-Word Task			Picture-word Stroop
+trm_4c89924414c69	pitch/monitor discrimination	333	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5585c83d15fad	Pittsburgh Sleep Quality Index	494	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_U9gDp8utahAfO	Pittsburgh Stress Battery	441	1	battery	none						Standardized test battery, outside the catalog's scope
+tsk_Jb7hdmvDY3rLV	pleasantness rating task	159		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5696b316c220a	Plus-minus	109		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_zMlmDcfxjld0K	point subtraction aggression paradigm	109		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c89926767870	pointing task	92	4	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da87fdd7820e	Porteus maze test	122	1	paradigm	related	task	hedtsk_virtual_radial_arm_maze	Virtual Radial Arm Maze Task			Porteus maze, a planning maze
+trm_4fbd2b6fd33c5	position of gap match task	93		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949d09	Positive and Negative Affect Scale	742	3	questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_bc6vIpoShChdF	Positive and Negative Affect Schedule (PANAS)- Child Version	505	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_pl4uqVGM1uj3Z	Positive and Negative Images Task	148		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949d17	Posner cueing task	309	5	paradigm	exact	task	hedtsk_posner_spatial_cueing	Posner Spatial Cueing Task			Primary match from hed_task_to_atlas.tsv
+trm_553e6b8e33da4	predictive-inference helicopter task	722		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5266bc6473fd8	Preschool Language Scale	190	2	questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_KRl3zbyaJcKWM	prisoner's dilemma (PD)	1366		paradigm	exact	task	hedtsk_prisoners_dilemma	Prisoner's Dilemma Task			Primary match from hed_task_to_atlas.tsv
+trm_4cacf22a22d80	Probabilistic classification task	386	9	paradigm	exact	task	hedtsk_probabilistic_classification_learning	Probabilistic Classification Learning Task			Primary match from hed_task_to_atlas.tsv
+trm_4d54b61a14a14	Probabilistic gambling task	454	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da6318f7381b	probabilistic reversal learning task	142	1	paradigm	close	task	hedtsk_reversal_learning	Reversal Learning Task			Probabilistic variant
+trm_5667483dcc371	Probabilistic Selection Task	1316	1	paradigm	exact	task	hedtsk_probabilistic_selection	Probabilistic Selection Task			Primary match from hed_task_to_atlas.tsv
+trm_4f241325579c6	problem solving task	57		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f244860c702c	prospective memory task	187		paradigm	exact	task	hedtsk_prospective_memory	Prospective Memory Task			Primary match from hed_task_to_atlas.tsv
+tsk_VokAidevRX1Vs	prospective sequential decision making task	423		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f24550fc5f38	prototype distortion task	184		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949d25	pseudoword naming task	340	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_51c453f64d2a6	psychological refractory period (PRP) paradigm	235	3	paradigm	exact	task	hedtsk_psychological_refractory_period	Psychological Refractory Period Task			Primary match from hed_task_to_atlas.tsv
+trm_502985b4baaed	psychophysics task	137		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da88b63787d6	pursuit rotor task	436		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_GdteOhkqZJLYg	Pursuit Tracking Task	294		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949d32	pyramids and palm trees task	317	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f2417d4a63ae	random number generation task	65		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4b86c2e871b14	rapid automatized naming test	389	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_QN7TaO3lQgQpv	Rapid Marital Interaction Coding System (RMICS)	758	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4b86dbcd8ff78	rapid serial object transformation	291	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949879	rapid serial visual presentation task	203	3	paradigm	exact	task	hedtsk_rapid_serial_visual_presentation	Rapid Serial Visual Presentation Task			Primary match from hed_task_to_atlas.tsv
+trm_50f8516279419	Rapid Visual Information Processing	663	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f24211a03b07	Raven's Advanced Progressive Matrices	4		paradigm	close	task	hedtsk_ravens_progressive_matrices	Raven's Progressive Matrices Task			Advanced form; definition absent
+tsk_SJ4Q7gOYfy25Y	Raven’s Progressive Matrices Test	492	1	paradigm	exact	task	hedtsk_ravens_progressive_matrices	Raven's Progressive Matrices Task			Primary match from hed_task_to_atlas.tsv
+trm_551efd39a74dd	Re-entrant processing	4	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_50f84e8ab7af8	Reaction Time	585	1	paradigm	none						Generic reaction time entry
+trm_4c8a82ba8a538	reading (covert)	99		paradigm	none						Covert reading, not a span task
+trm_4c8a82eeaa58f	reading (overt)	88	2	paradigm	none						Overt reading, not a span task
+trm_4c40d168898db	reading span task	592	2	paradigm	exact	variation	hedtsk_operation_span	Operation Span Task	hedvar_operation_span__reading_span_rspan	Reading Span (RSPAN)	
+trm_4f2420b042165	reappraisal task	71		paradigm	exact	variation	hedtsk_emotion_regulation	Emotion Regulation Task	hedvar_emotion_regulation__reinterpretation_reappraisal	Reinterpretation/Reappraisal	
+trm_4f2411c91ae5e	recall test	83	1	paradigm	close	task	hedtsk_free_recall	Free Recall Task			Primary match from hed_task_to_atlas.tsv
+trm_4f241fb95918f	recency judgment task	180		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_zcuAj6VrsFmfV	Reciprocal Artwork Evaluation Task	340		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c8a830dec136	recitation/repetition (covert)	136	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c8a8329cb8ff	recitation/repetition (overt)	133	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949d40	recognition memory test	2015	2	paradigm	exact	task	hedtsk_old_new_recognition_memory	Old/New Recognition Memory Task			Primary match from hed_task_to_atlas.tsv
+trm_5519c329eb334	Regularity and Change Detection	4	1	paradigm	related	task	hedtsk_change_detection	Change Detection Task			Regularity and change detection
+trm_565a31fa6f444	regulated heat stimulation	588	1	physiological	none						Physiological procedure, outside the catalog's scope
+trm_550b5a47aa23e	relational processing fMRI task paradigm	1869	6	imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+trm_4f2454dfca337	relational reasoning task	4		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_dn4ejmrGGaUAZ	Relative Reinforcing Efficacy Purchase Task	533	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da63146f12d7	remember/know task	28		paradigm	exact	task	hedtsk_remember_know	Remember/Know Task			Primary match from hed_task_to_atlas.tsv
+tsk_ZMTNk4Oce5b2j	Remote Associates Test	843		paradigm	exact	task	hedtsk_remote_associates	Remote Associates Task			Primary match from hed_task_to_atlas.tsv
+trm_4da88b3b0cbcc	response mapping task	28		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_54e69c642d89b	rest eyes closed	104		paradigm	exact	variation	hedtsk_rest	Rest Task	hedvar_rest__eyes_closed_rest	Eyes-Closed Rest	
+trm_4c8a834779883	rest eyes open	102		paradigm	exact	variation	hedtsk_rest	Rest Task	hedvar_rest__eyes_open_rest	Eyes-Open Rest	
+trm_558c4d3105abf	retinotopic mapping task	187		imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+trm_551b0fd03d7d8	retinotopic representation	4	1	imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+trm_4da87f81bc2c8	retrieval-induced forgetting task	28		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949d4e	reversal learning task	337	2	paradigm	exact	task	hedtsk_reversal_learning	Reversal Learning Task			Primary match from hed_task_to_atlas.tsv
+trm_5181fb7bf350b	reversal weather prediction	545		paradigm	close	task	hedtsk_probabilistic_classification_learning	Probabilistic Classification Learning Task			Reversal weather prediction
+trm_4da88ae0f2952	Rey Auditory Verbal Learning Task	591	1	paradigm	exact	task	hedtsk_rey_auditory_verbal_learning	Rey Auditory Verbal Learning Task			Primary match from hed_task_to_atlas.tsv
+trm_4da880396c76b	Rey-Ostereith Complex Figure Test	28		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da8914987ee2	Reynell Developmental Language Scales	270	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4d949c5b0e380	rhyme verification task	146	6	paradigm	related	task	hedtsk_phonological_awareness	Phonological Awareness Task			Primary match from hed_task_to_atlas.tsv
+tsk_22KTtBdDDjZrU	Risk Preferences Task	473	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_d9vPgovlo7aJU	risky decision-making under social influence	252		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949d5b	risky gains task	585	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_wPIAFIkSlX3Tm	risky lotteries task	684		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da8885b33375	Rivermead Behavioural Memory Test	162		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_58ab8a6131c5a	route learning	1448		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_566db10532583	roving somatosensory oddball task	491		paradigm	close	task	hedtsk_oddball	Oddball Task			Somatosensory roving oddball
+trm_4e5bb14d814a8	rubber hand illusion	403	2	paradigm	close	task	hedtsk_body_ownership_illusion	Body Ownership Illusion Task			Primary match from hed_task_to_atlas.tsv
+trm_551f0b18d7ca0	Running Memory	93	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949d69	Salthouse and Babcock Listening Span task 	276	4	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4b75ea4ddd896	same-different task	709	4	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_55a6a36d9c3f9	Scale for the Assessment of Negative Symptoms	520		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_55a6cffbcb5f7	Scale for the Assessment of Positive Symptoms	517		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4da6327154fd4	scene recognition task	114	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_56ac06bac9334	Selection-Optimization-Compensation (SOC) questionnaire 	431	3	questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_4a57abb949d76	selective attention task	92	2	paradigm	none						Generic selective attention entry
+tsk_29IL64WzhiO9u	Self evaluation task	93		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_551b153bc78fc	self monitoring task	4	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c40d325977f0	self ordered pointing task	147	5	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_56a91ed5f1ccc	self regulation questionnaire	563		questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_4a57abb949d84	semantic anomaly judgement task	345	4	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949d92	semantic association task	110	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f2412d4c3b88	semantic classification task	138	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f240cb09f8e5	semantic decision task	75		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f241bd52b509	semantic fluency task	69		paradigm	close	variation	hedtsk_verbal_fluency	Verbal Fluency Task	hedvar_verbal_fluency__semantic_category_fluency	Semantic / Category Fluency	
+trm_4f241c0737cc0	semantic memory task	77		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f240d7664628	semantic relatedness task	79		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f241b50caaf7	semantic task	65		paradigm	related	task	hedtsk_semantic_priming	Semantic Priming Task			Generic semantic task
+trm_526943e3cbaaf	Sensory Profile	856	9	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949d9f	sentence completion test	530		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f241e8a01052	sentence-picture matching task	109		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5521807e50549	Sentence/discourse content test	85	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_558c35979a284	Sentence/nonword language localizer	202		imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+trm_551f0cc82ed49	Sequence encoding	111	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c8a83cac75f5	sequence recall/learning	137	2	paradigm	close	task	hedtsk_motor_sequence_learning	Motor Sequence Learning Task			Primary match from hed_task_to_atlas.tsv
+trm_551f103b3edeb	Sequence reproduction	151	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4e8a0dd29ec7b	sequential shape matching	369	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f241c735e7f6	serial reaction time task	4	1	paradigm	exact	task	hedtsk_serial_reaction_time	Serial Reaction Time Task			Primary match from hed_task_to_atlas.tsv
+tsk_4a57abb949dad	set-shifting task	172	4	paradigm	close	task	hedtsk_task_switching	Task Switching Task			Set shifting
+trm_4f2456932f11b	shadowing task	128		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5696c3fa0061a	Shift Task	243	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_56a2b7c08a279	Short Penn Continuous Performance Test-Number and Letter Version	688		battery	none						Standardized test battery, outside the catalog's scope
+trm_4f24239cc239e	short-term memory task	4		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_HfEOU5RLqcxAD	SIDES Affect Dysregulation Scale (Child-Reported)	385	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_4a57abb949dbb	Simon task	264	7	paradigm	exact	task	hedtsk_simon	Simon Task			Primary match from hed_task_to_atlas.tsv
+tsk_4a57abb949dc8	simple reaction time task	436	2	paradigm	related	task	hedtsk_serial_reaction_time	Serial Reaction Time Task			Simple RT is a component, not the SRT paradigm
+trm_551f0b9654d23	Simple span task	175	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_55c686e0824e8	Single item food choice task	1731	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4ebc728326a13	single-task weather prediction 	448	9	paradigm	close	task	hedtsk_probabilistic_classification_learning	Probabilistic Classification Learning Task			Single-task weather prediction
+trm_4fbd2af083332	size match task	79		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_553e88a66b676	social bargaining fMRI task	592		imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+trm_550b557e5f90e	social cognition (theory of mind) fMRI task paradigm	1111	7	imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+trm_521687032f822	Social Communication Questionnaire	886	3	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_525c4a78089ad	Social Competence Questionnaire	56	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_Ncknr0soiM4IV	social decision-making task	251		paradigm	none						Social decision making, not effort-based
+trm_553fbbf79ebc5	social influence for food preferences task	623		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_ec4xbqynlG1uR	Social influence on emotion task	939		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_553eb45e2b709	social judgment of faces task	342	6	paradigm	none						Social judgment of faces, unrelated to judgments of learning
+trm_4f2453ce33f16	social judgment task	210		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5873d014bcfc8	Social localizer fMRI task paradigm	1331		imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+trm_58c80c3376c95	Social Norm Processing Task	239	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5208fe678c652	Social Responsiveness Scale	703	5	questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_ASxfTzukfK3Te	social vs physical perception task	492		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949dd6	source memory test	386	4	paradigm	exact	task	hedtsk_source_memory	Source Memory Task			Primary match from hed_task_to_atlas.tsv
+trm_50df1c0d946b8	Space Fortress	1068		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_50df1dd534ff2	Space Fortress with Oddball	71		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949de3	span/supra-span test	200	4	paradigm	close	variation	hedtsk_digit_span	Digit Span Task	hedvar_digit_span__supra_span_lists	Supra-Span Lists	
+trm_551f0634b2607	Spatial cuing paradigm	211	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4dadbe225bdf1	spatial delayed response task	307	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5873ce8e77d1d	spatial localizer fMRI task paradigm	1259		imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+trm_4c8a83f27ac55	spatial location/discrimination	145	1	paradigm	none						Spatial localization, no HED counterpart
+tsk_4a57abb949df1	spatial n-back task	309	2	paradigm	exact	variation	hedtsk_n_back	N-Back Task	hedvar_n_back__spatial_n_back	Spatial N-Back	
+trm_50f733d7305a1	Spatial Recognition Memory	950	1	paradigm	close	task	hedtsk_old_new_recognition_memory	Old/New Recognition Memory Task			Spatial recognition memory
+trm_4da86b539924c	spatial span test	547	1	paradigm	close	task	hedtsk_corsi_block_tapping	Corsi Block-Tapping Task			Atlas spatial span test
+trm_558c36935a0e9	spatial working memory localizer task	204		imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+trm_4f2453b806fe1	spatial working memory task	1159	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5519c3eaa3fb7	Speech Detection	4		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f24135453d65	spelling task	50	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949dfe	Spielberger's State-Trait Anxiety Questionnaire	169		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_5873cd1c9d4c4	standard localizer fMRI task paradigm	650		imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+trm_56bbe12994926	Stanford Leisure-Time Activity Categorical Item	187		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_526af65b16c82	Stanford-Binet Intelligence Scales	516	5	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_FV3SD73LtdfUc	State-Trait Anger Expression Inventory–2 (STAXI-2)	453		questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_4a57abb949e0c	Sternberg delayed recognition task	160	3	paradigm	close	task	hedtsk_sternberg_item_recognition	Sternberg Item Recognition Task			Delayed recognition form
+trm_56674c7c2fa4f	Sternberg Directed Forgetting	447		paradigm	close	task	hedtsk_directed_forgetting	Directed Forgetting Task			Sternberg directed forgetting
+trm_551f0a8b5ba2c	Sternberg Item Recognition Task	278	3	paradigm	exact	task	hedtsk_sternberg_item_recognition	Sternberg Item Recognition Task			Primary match from hed_task_to_atlas.tsv
+trm_56674987c8f0c	Sternberg Recent Probes	340	4	paradigm	exact	variation	hedtsk_sternberg_item_recognition	Sternberg Item Recognition Task	hedvar_sternberg_item_recognition__recent_probes_sternberg	Recent-Probes Sternberg	
+trm_56a9123fe580f	stimulus selective stop signal task	172	6	paradigm	close	task	hedtsk_stop_signal	Stop-Signal Task			Stimulus-selective variant
+trm_4da890cf99b9e	Stockings of Cambridge Task	461	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949e1a	stop signal task	369	8	paradigm	exact	task	hedtsk_stop_signal	Stop-Signal Task			Primary match from hed_task_to_atlas.tsv
+trm_558c3350c6a9f	Stop signal task with dot motion discrimination	80		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5181f83b77fa4	stop signal task with letter naming	110	5	paradigm	close	task	hedtsk_stop_signal	Stop-Signal Task			Stop-signal with letter naming
+trm_5181f863d24f4	stop signal task with pseudo word naming	110	5	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_553fcbbe974ba	stop signal walking task with stroop	440	1	paradigm	close	task	hedtsk_stop_signal	Stop-Signal Task			Walking stop-signal with Stroop
+trm_4f2447dfa5947	stop-change task	138		paradigm	exact	variation	hedtsk_stop_signal	Stop-Signal Task	hedvar_stop_signal__stop_change	Stop-Change Task	
+tsk_4a57abb949e27	Stroop task	176	4	paradigm	related	task	hedtsk_emotional_stroop	Emotional Stroop Task			Primary match from hed_task_to_atlas.tsv
+tsk_ZnDT4SbTZ2Bye	Stroop-like Arrows Task	728	3	paradigm	close	task	hedtsk_stroop_color_word	Stroop Color-Word Task			Arrow Stroop-like task
+tsk_4a57abb949e35	Structured Clinical Interview for Diagnostic and Statistical Manual of Mental Disorders (DSM-IV)	495	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c8a840d6f969	subjective emotional picture discrimination	189	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_552184243d7ab	Surface properties of object paradigms	183	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da86cfe8cf1b	sustained attention to response task	118	3	paradigm	exact	task	hedtsk_sustained_attention_to_response	Sustained Attention to Response Task			Primary match from hed_task_to_atlas.tsv
+trm_50b66c50ca2ac	Symbol Counter Task	825		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949e44	symbol-digit substitution	491		paradigm	exact	task	hedtsk_digit_symbol_substitution	Digit Symbol Substitution Task			Primary match from hed_task_to_atlas.tsv
+tsk_4a57abb949e5b	Symptom Checklist-90-Revised 	274	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_5873e2469dd0d	synatcting and semantic fMRI task paradigm	667		imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+trm_4e31d031bc8c2	synchrony judgment task	183	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949e7c	syntactic acceptability judgement task	158	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c8a842512a33	syntactic discrimination	194	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f244a453522b	syntactic task	63		paradigm	related	task	hedtsk_sentence_comprehension	Sentence Comprehension Task			Generic syntactic task
+trm_4c8a843d8d352	tactile monitor/discrimination	336	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_534692ef3b5df	Tapping task	288		paradigm	close	task	hedtsk_finger_tapping	Finger Tapping Task			Generic tapping
+trm_4f242499b8952	target detection task	297	3	paradigm	related	task	hedtsk_rapid_serial_visual_presentation	Rapid Serial Visual Presentation Task			Generic target detection
+trm_566745bbf272a	task switching (3x2)	549	1	paradigm	close	task	hedtsk_task_switching	Task Switching Task			3x2 design
+tsk_n4koOyLJMyobG	task-set learning	205		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949e8a	task-switching 	172	2	paradigm	exact	task	hedtsk_task_switching	Task Switching Task			Primary match from hed_task_to_atlas.tsv
+trm_55a6cb4f951ea	Temperament and Character Inventory	437		questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_4a57abb949e98	temporal discounting task	123	6	paradigm	exact	task	hedtsk_delay_discounting	Delay Discounting Task			Primary match from hed_task_to_atlas.tsv
+trm_4e31d69b7f422	temporal order judgment task	304	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_56a919a478935	ten item personality questionnaire	408		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_52713c85c0bd2	Test of Adolescent and Adult Language	425	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_527138126fb20	Test of Early Language Development	235	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_527143a263937	Test of Language Development	263	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da86cdbd9eeb	test of variables of attention	105	2	paradigm	exact	variation	hedtsk_continuous_performance	Continuous Performance Task	hedvar_continuous_performance__tova_test_of_variables_of_attention	TOVA (Test of Variables of Attention)	
+tsk_4a57abb949ea5	Test of Word Reading Efficiency	360	2	paradigm	none						TOWRE is a standardized reading-fluency test
+trm_56a91a3082c31	theories of willpower scale	338		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4c8a8467304e2	theory of mind task	172	3	paradigm	close	task	hedtsk_false_belief	False Belief Task			Generic theory-of-mind entry
+trm_4e5fcd75efb58	thermal grill illusion	181		physiological	none						Physiological procedure, outside the catalog's scope
+trm_54f93101b2fd8	think/no-think task	131		paradigm	exact	task	hedtsk_think_no_think	Think/No-Think Task			Primary match from hed_task_to_atlas.tsv
+tsk_lihqGPC9Y8ge0	Thirst perception	123		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_50c0f3e6c596e	Time Wall	333		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_55218536d1710	Time-series of response time	52	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949eb3	Tobacco Craving Questionnaire	690		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4ebc6a6b75ebf	tone counting	120	6	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5519c5f2ad56f	Tone Detection (JND)	151	1	paradigm	related	task	hedtsk_auditory_masking	Auditory Masking Task			Tone detection threshold
+trm_5519c2645167e	Tone Matching	232	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c8a84825c4e4	tone monitor/discrimination	196	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4e6112759926e	tonic pain stimulation	236	1	physiological	none						Physiological procedure, outside the catalog's scope
+trm_4da87e7282f92	Tower of Hanoi	308	3	paradigm	related	task	hedtsk_tower_of_london	Tower of London Task			Tower of Hanoi, a sibling planning task
+trm_4da87e439c411	Tower of London	138	2	paradigm	exact	task	hedtsk_tower_of_london	Tower of London Task			Primary match from hed_task_to_atlas.tsv
+trm_5696bcf1b5c64	Tower of London Imagine	149		paradigm	close	task	hedtsk_tower_of_london	Tower of London Task			Imagined-move variant
+trm_4a3fd79d0b3d7	trace conditioning	168	1	paradigm	close	variation	hedtsk_pavlovian_fear_conditioning	Pavlovian Fear Conditioning Task	hedvar_pavlovian_fear_conditioning__trace_conditioning	Trace Conditioning	Atlas entry is trace conditioning in general, not fear-specific
+tsk_4a57abb949ec0	Trail Making Test A and B	466	3	paradigm	exact	task	hedtsk_trail_making	Trail Making Task			Primary match from hed_task_to_atlas.tsv
+trm_551f1491a2fe8	Transitive inference task	323	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_56aa9833c4be2	treatment self-regulation questionnaire	517		questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_QyZsV96fiVlT1	tri-modal roving stimulus paradigm	332		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_Qa4kXAzvUyaGL	Trier Social Stress Test	563		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_uzol7erTzr9Ix	Trust game (TG)	1497		paradigm	exact	task	hedtsk_trust_game	Trust Game Task			Primary match from hed_task_to_atlas.tsv
+trm_55c691909c580	Two item food choice task	2366		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_Jdo0KE737b9N8	Two-Stage Task	688	1	paradigm	exact	task	hedtsk_two_stage_decision	Two-Stage Decision Task			Duplicate of trm_5667451917a34
+trm_553e8882e3cb6	Ultimatum Game (UG)	185		paradigm	exact	task	hedtsk_ultimatum_game	Ultimatum Game Task			Primary match from hed_task_to_atlas.tsv
+trm_4b86c473a7166	underlining test	284	4	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949ece	Unified Parkinson's Disease Rating Scale	413		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4f242172aea5d	updating task	250		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_56a91a92043bc	UPPS-P Impulsivity Scale	270	1	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4da88ec6735ad	Uznadze haptic illusion task	200	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_QM81yNuuioVho	value-based decision making	184		paradigm	none						Value-based choice, not effort-based
+trm_4af89b3a925ca	Vandenberg & Kuse Tasks	313	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f24183fe80c6	verb generation task	82		paradigm	exact	task	hedtsk_verb_generation	Verb Generation Task			Primary match from hed_task_to_atlas.tsv
+trm_552174d3b61fb	Verbal description of visual depiction	61	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f240f1c740da	verbal fluency task	48		paradigm	exact	task	hedtsk_verbal_fluency	Verbal Fluency Task			Primary match from hed_task_to_atlas.tsv
+tsk_ccTKYnmv7tOZY	Verbal Interference Test	795	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f2457a8b0bc8	verbal working memory task	752	1	paradigm	none						Verbal working memory, not old/new recognition
+trm_5519c7f17de9f	Vernier discrimination task	74	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_586fd45d1bd21	vertical checkerboard	270		imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+trm_4c8a84afdd863	vibrotactile monitor/discrimination	83	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c8a84d4c4157	video games	4		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_161qcskOyTlfY	Video-Mediated Affective Recall	531	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da88a8e13f26	vigilance	28		paradigm	related	task	hedtsk_psychomotor_vigilance	Psychomotor Vigilance Task			Vigilance as a construct entry
+trm_52717a95a3b03	Vineland Adaptive Behavior Scales	285	6	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_2lU25qYLrwkfj	violation-of-expectation task	1189		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949edb	visual alignment task 	196	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_50f7370ace495	Visual Analogue Scales	399	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c8a84f20dde2	visual attention task	399	5	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_551b0dc4e4359	visual illusion susceptibility	4	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_50f9daf1c3834	Visual Object Learning Test 	361	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da886fc2bc46	Visual Patterns Test	403		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c8a85534241d	visual pursuit/tracking	112	3	paradigm	none						Smooth pursuit, not multiple object tracking
+trm_4f2447fe67fb9	visual search task	4	3	paradigm	exact	task	hedtsk_visual_search	Visual Search Task			Primary match from hed_task_to_atlas.tsv
+tsk_1eLUszKc87tI1	Visual short term memory task	181		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_NOaQmzjqHM4iO	Visual Statistical Learning	721		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_55217c8179b00	Visual world paradigm	91	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f24108555294	visually guided saccade task	60	1	paradigm	close	variation	hedtsk_anti_saccade	Anti-Saccade Task	hedvar_anti_saccade__prosaccade_control_condition	Prosaccade (Control Condition)	
+tsk_iLPEMA3QRsS3K	Visuomotor rotation task	1251		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949ee9	visuospatial cueing task	182	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5696b180169bd	Volatile Bandit	179		paradigm	close	task	hedtsk_multi_armed_bandit	Multi-Armed Bandit Task			Primary match from hed_task_to_atlas.tsv
+trm_5106f4dfe08b1	WAIS Arithmetic	318	1	battery	none						Standardized test battery, outside the catalog's scope
+trm_5106f82530aff	WAIS Comprehension	322		battery	none						Standardized test battery, outside the catalog's scope
+trm_5106eee90937a	WAIS Digit Span	466	4	battery	close	task	hedtsk_digit_span	Digit Span Task			WAIS subtest form
+trm_51071fc87a61f	WAIS Object Assembly	113		battery	none						Standardized test battery, outside the catalog's scope
+trm_51070ae889d95	WAIS Picture Arrangement	87	1	battery	none						Standardized test battery, outside the catalog's scope
+trm_5107067241007	WAIS Picture Completion	260	1	battery	none						Standardized test battery, outside the catalog's scope
+trm_510703e93367e	WAIS Similarities	223		battery	none						Standardized test battery, outside the catalog's scope
+trm_5106f17025386	WAIS Vocabulary	333	1	battery	none						Standardized test battery, outside the catalog's scope
+trm_5106eae236c21	WAIS-Information	185	1	battery	none						Standardized test battery, outside the catalog's scope
+tsk_4a57abb949ef7	Warrington's Face/Word Recognition Test	810		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f2449bdcb0b1	Wason card selection task	99	2	paradigm	exact	task	hedtsk_wason_selection	Wason Selection Task			Primary match from hed_task_to_atlas.tsv
+trm_4b94affc43245	Wechsler Abbreviated Scale of Intelligence	481	7	questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_4a57abb949f12	Wechsler Adult Intelligence Scale - Revised	239	6	questionnaire	none						Self-report instrument, outside the catalog's scope
+tsk_4a57abb949f04	Wechsler Adult Intelligence Scale-Revised	379		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4da6338803ed2	Wechsler Intelligence Scale for Children - Revised	143		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4b94b12bf0eb2	Wechsler Memory Scale Fourth Edition	2000	5	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4c8a8575d1e55	whistling	114	1	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_53c4465b0466f	why/how task	788	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_569989ef8cff4	willingness to wait task	435		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4b86c55f3d5df	WISC-R Mazes	69	4	battery	none						Standardized test battery, outside the catalog's scope
+tsk_4a57abb949f21	Wisconsin card sorting test	516	5	paradigm	exact	task	hedtsk_wisconsin_card_sorting	Wisconsin Card Sorting Task			Primary match from hed_task_to_atlas.tsv
+tsk_4a57abb949f2f	word attack	215	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f240fbdf1601	word comprehension task	55		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4da633dbb5817	word fluency test	28		paradigm	close	task	hedtsk_verbal_fluency	Verbal Fluency Task			Word fluency
+tsk_4a57abb949f3d	word generation task	772	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+tsk_4a57abb949f4a	word identification	270	4	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4ebd482eba5b1	word one-back task	79	9	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5798c6a933abc	word recognition task	224	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c8a858da803d	word stem completion (covert)	78	2	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4c8a85a4564b2	word stem completion (overt)	77	3	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_4f241ee9c4e37	word-picture matching task	4		paradigm	none						Word-picture matching, definition absent
+trm_4b65e5e2ab3ca	word-picture verification task	263	2	paradigm	none						Word-picture verification, a comprehension check
+trm_550b50095d4a3	working memory fMRI task paradigm	1417	11	imaging_protocol	none						Imaging protocol label, not an experimental paradigm
+trm_5696d061adfb5	WRAT-4 Math Computation	63		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_5696d0a4902df	WRAT-4 Word Reading	59		paradigm	none						WRAT-4 is a standardized reading test
+trm_4c8a85c5c75eb	writing task	68	4	paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_59668f09db813	Yellow Light Game	2481		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_558702243da12	Young Mania Rating Scale	669		questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_56a91e92eab46	zimbardo time perspective inventory	270	4	questionnaire	none						Self-report instrument, outside the catalog's scope
+trm_4da89089ce0af	zoo map test	190		paradigm	none						Experimental paradigm with no counterpart in the 103-task catalog
+trm_56abebfe9aaa3	Zuckerman Sensation Seeking Scale	423		questionnaire	none						Self-report instrument, outside the catalog's scope

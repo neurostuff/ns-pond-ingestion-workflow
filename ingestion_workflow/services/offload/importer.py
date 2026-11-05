@@ -8,18 +8,31 @@ per article:
 
 `record` is the stage's output: the extraction record, the record with its evidence, or
 the normalization of a record. `text_sha256` is the text the model read (record,
-evidence); `record_digest` is `record_digest()` of the record the stage read (evidence,
-normalize). A `base_study_id` is found through the `neurostore` alias.
+evidence); `record_digest` is `record_digest()` of the record the stage read: the record
+(evidence), or the evidence record, the record itself when evidence was skipped
+(normalize). A `base_study_id` is found through the `neurostore` alias.
+
+A record or evidence row's legacy per-field normalizations (`drop_siblings`) are dropped
+before anything is checked: the schema refuses them, and normalize makes them again.
 
 A row is refused, and recorded `failed` with the reason, when its text hash is not the
 parse's, it names a parse key the parse does not have, the record it read is not the
 article's current record of the run's source, or its record fails study_schema's
 extraction-record schema. A refusal never replaces an OK artifact of another run. A row
 whose article the catalog does not know is counted and left out.
+
+A record the schema refuses is first given pondie's deterministic fixes, the ones normalize
+runs on every record (`normalize_assign.repair`), without the paper's text, which import
+does not read. When the fixed record passes and names the same parse keys, it is kept, and
+its summary's `repaired` names the fixes that changed it. A record the schema accepts is kept
+as the model wrote it. The fixes need pondie and its study_schema checkout (the `normalize`
+extra); where they cannot load, a refused record stays refused and the report says why.
 """
 
 from __future__ import annotations
 
+import copy
+import functools
 import gzip
 import json
 import logging
@@ -34,13 +47,16 @@ from ingestion_workflow.pipeline.stages.offloaded import (
     NO_RECORD,
     OFFLOADED_STAGES,
     Parse,
+    drop_siblings,
     evidence_fingerprint,
     normalize_fingerprint,
+    normalize_input,
     parse_check,
     parse_keys,
     record_digest,
     record_fingerprint,
 )
+from ingestion_workflow.services.normalize_assign import repair
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +85,9 @@ class ImportReport:
     kept: int = 0
     #: Rows whose base study's article is not their `article_id`'s; the base study's wins.
     disagree: int = 0
+    #: Refused records not given pondie's fixes, and why they could not run.
+    unrepaired: int = 0
+    unrepaired_why: Optional[str] = None
 
     def lines(self) -> List[str]:
         out = [f"run {self.run_id}: {self.stage} / {self.source}, {self.rows:,} rows",
@@ -81,6 +100,9 @@ class ImportReport:
                        "their article_id; the base study's was taken")
         if self.kept:
             out.append(f"  {self.kept:,} refusals left an OK artifact of another run in place")
+        if self.unrepaired:
+            out.append(f"  {self.unrepaired:,} refused records were not given pondie's fixes: "
+                       f"{self.unrepaired_why}")
         return out
 
 
@@ -120,6 +142,30 @@ def _schema_problem(record: Any) -> Optional[str]:
 
 
 _VALIDATOR = None
+
+
+@functools.lru_cache(maxsize=1)
+def _fixes_unavailable() -> Optional[str]:
+    """Why pondie's fixes cannot run here, or None when they can."""
+    try:
+        import pondie.extraction.record.fix  # noqa: F401
+    except (ImportError, RuntimeError) as exc:  # RuntimeError: no study_schema checkout
+        return f"{type(exc).__name__}: {exc}"[:300]
+    return None
+
+
+def _repaired(record: Dict[str, Any], parse: Optional[Parse]) -> Optional[tuple]:
+    """(`record` with pondie's fixes, the fixes that changed it) when the schema accepts
+    that and its parse keys are `record`'s, else None."""
+    fixed = copy.deepcopy(record)
+    try:
+        fired = repair(fixed, parse.path if parse is not None else None, "")
+    except Exception:  # noqa: BLE001 - this record's failure: it stays refused
+        logger.warning("pondie's fixes failed on a refused record", exc_info=True)
+        return None
+    if _schema_problem(fixed) is None and parse_keys(fixed) == parse_keys(record):
+        return fixed, fired
+    return None
 
 
 def stamp(record: Dict[str, Any], run: Run, text_sha256: Optional[str]) -> Dict[str, Any]:
@@ -173,6 +219,9 @@ class _Importer:
         payload = row.get("record")
         if not isinstance(payload, dict):
             return self.refuse(article_id, "the row holds no record")
+        if stage != "normalize":
+            payload = copy.deepcopy(payload)  # the caller's row is left as it was
+            drop_siblings(payload)
         if stage == "normalize":
             why = self.upstream_problem(row, record)
             if why:
@@ -188,8 +237,11 @@ class _Importer:
         why = parse_check(parse, text_sha256, keys)
         if why is None and stage == "evidence":
             why = self.upstream_problem(row, record)
+        fired: List[str] = []
         if why is None:
             why = _schema_problem(payload)
+            if why and stage == "record":
+                why, payload, fired = self.repair(why, payload, parse)
         if why:
             return self.refuse(article_id, why)
         maker = run if stage == "record" else self.run_of(record)
@@ -198,10 +250,24 @@ class _Importer:
                    "record_digest": record_digest(payload),
                    "analyses": len(payload.get("analyses") or []),
                    "coordinate_sets": len(payload.get("coordinate_sets") or [])}
+        if fired:
+            summary["repaired"] = fired
         fp = (record_fingerprint(run, text_sha256, keys) if stage == "record"
               else evidence_fingerprint(run, text_sha256, record))
         return Outcome(article_id, stage, run.source, Status.OK, fingerprint=fp,
                        payload=payload, summary=summary, run_id=run.run_id)
+
+    def repair(self, why: str, record: Dict[str, Any],
+               parse: Optional[Parse]) -> tuple:
+        """(None, the fixed record, the fixes) when pondie's fixes make `record` valid, else
+        (`why`, `record`, [])."""
+        unavailable = _fixes_unavailable()
+        if unavailable:
+            self.report.unrepaired += 1
+            self.report.unrepaired_why = unavailable
+            return why, record, []
+        fixed = _repaired(record, parse)
+        return (None, *fixed) if fixed is not None else (why, record, [])
 
     @staticmethod
     def upstream_problem(row: Mapping[str, Any], record: Optional[Artifact]) -> Optional[str]:
@@ -230,13 +296,16 @@ class _Importer:
         ids = sorted({article_id for article_id, _ in resolved})
         synced = catalog.artifacts(ids, "sync")
         records = catalog.artifacts(ids, "record") if run.stage != "record" else {}
+        evidence = catalog.artifacts(ids, "evidence") if run.stage == "normalize" else {}
         mine = catalog.artifacts(ids, run.stage)
         outcomes = []
         for article_id, row in resolved:
             parse = (Parse.of(catalog.root, synced.get(article_id, {}).get(""))
                      if run.stage != "normalize" else None)
-            outcome = self.outcome(article_id, row, parse,
-                                   records.get(article_id, {}).get(run.source))
+            read = records.get(article_id, {}).get(run.source)
+            if run.stage == "normalize":
+                read = normalize_input(evidence.get(article_id, {}).get(run.source), read)
+            outcome = self.outcome(article_id, row, parse, read)
             held = mine.get(article_id, {}).get(run.source)
             if (outcome.status is Status.FAILED and held is not None and held.ok
                     and held.run_id != run.run_id):

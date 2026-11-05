@@ -199,7 +199,8 @@ def test_extract_reports_failure_when_no_pdf_file(tmp_path):
 
     content = extractor.extract([download_result])[0]
 
-    assert content.error_message == "No PDF file in download result."
+    assert content.error_message == (
+        "mineru: no PDF file in the download; docling: No PDF file in download result.")
     assert content.tables == []
 
 

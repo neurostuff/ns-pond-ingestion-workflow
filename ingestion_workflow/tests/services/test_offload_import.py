@@ -1,7 +1,9 @@
 """`ingest offload import`: what it keeps, what it refuses, and when what it kept goes stale.
 
 The record is a real one: article 26klegjq7mhi of the 27B's collected set (beast
-`ns-collect/set-20261101`), with its parse's text hash and its one key.
+`ns-collect/set-20261101`), with its parse's text hash and its one key. So is the one the
+schema refuses until pondie's fixes give its analysis a model: lcvqelwnalmx, the smallest of
+the 84 refused records of that set the fixes make valid.
 """
 
 from __future__ import annotations
@@ -17,6 +19,7 @@ from ingestion_workflow.config import Settings
 from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.stages.offloaded import (
     AWAITS_IMPORT,
+    NO_RECORD,
     EvidenceStage,
     NormalizeStage,
     RecordStage,
@@ -25,13 +28,26 @@ from ingestion_workflow.pipeline.stages.offloaded import (
 from ingestion_workflow.services.offload.importer import (
     RECORD_MOVED,
     SCHEMA_INVALID,
+    _schema_problem,
     import_run,
 )
 
 DATA = Path(__file__).resolve().parents[1] / "data" / "offload"
 RECORD = json.loads((DATA / "26klegjq7mhi.extraction.json").read_text())
+
+def as_kept(record):
+    """`record` as import keeps it: without the legacy siblings the schema refuses."""
+    from ingestion_workflow.pipeline.stages.offloaded import drop_siblings
+
+    record = json.loads(json.dumps(record))
+    drop_siblings(record)
+    return record
+
 TEXT_SHA256 = "067a69b2021e98a832a2f32080848e5e58b7337dffed66dc3ac895cca3f5d680"
 KEY = "analysis#840c7bec806dd3ad"
+NO_MODEL = json.loads((DATA / "lcvqelwnalmx.extraction.json").read_text())
+NO_MODEL_PARSE = DATA / "paper-lcvqelwnalmx" / "parse" / "coordinate_parse.json"
+NO_MODEL_KEY = "analysis#5fa7d67fee70b632"
 ARTICLE, BASE_STUDY = "26klegjq7mhi", "tS8tSUXeybTo"
 
 
@@ -92,6 +108,30 @@ def test_a_record_is_kept_with_its_run_in_place_of_the_placeholder(ctx):
         "extractor_model": "Qwen/Qwen3.8-27B", "extractor_version": "ns-27b-e-20261031",
         "source_text_hash": TEXT_SHA256, "extraction_date": "2026-10-31"}
     assert _plan(ctx, RecordStage(ctx.settings)).fresh == 1
+    # a record the schema accepts is kept as the model wrote it
+    assert "repaired" not in kept.summary
+    assert kept.summary["record_digest"] == record_digest(as_kept(RECORD))
+
+
+def test_a_record_pondie_s_fixes_make_valid_is_kept_repaired(ctx, tmp_path):
+    from ingestion_workflow.services.offload.importer import _fixes_unavailable
+
+    if _fixes_unavailable():
+        pytest.skip(_fixes_unavailable())
+    assert "'model_estimation' is a required property" in _schema_problem(as_kept(NO_MODEL))
+    parse = json.loads(NO_MODEL_PARSE.read_text())
+    (tmp_path / "pond" / BASE_STUDY / "parse" / "coordinate_parse.json").write_text(
+        json.dumps(parse))
+    report = import_run(ctx.catalog, _run(), [_row(record=copy.deepcopy(NO_MODEL),
+                                                   text_sha256=parse["text_sha256"])])
+    assert report.recorded == {"ok": 1} and not report.refused
+    kept = ctx.catalog.artifact(ARTICLE, "record", "ns-27b")
+    assert "missing_models" in kept.summary["repaired"]
+    assert kept.summary["parse_keys"] == [NO_MODEL_KEY]
+    payload = ctx.catalog.payload(kept)
+    assert _schema_problem(payload) is None
+    assert payload["analyses"][0]["model_estimation"]
+    assert _plan(ctx, RecordStage(ctx.settings)).fresh == 1
 
 
 def test_a_record_naming_a_key_the_parse_lacks_is_refused(ctx):
@@ -116,6 +156,20 @@ def test_a_record_study_schema_refuses_is_refused(ctx):
     record["analyses"][0]["invented"] = 1
     import_run(ctx.catalog, _run(), [_row(record=record)])
     assert ctx.catalog.artifact(ARTICLE, "record", "ns-27b").error.startswith(SCHEMA_INVALID)
+
+
+def test_a_refused_record_stays_refused_where_pondie_s_fixes_cannot_load(ctx, monkeypatch):
+    from ingestion_workflow.services.offload import importer
+
+    monkeypatch.setattr(importer, "_fixes_unavailable",
+                        lambda: "ModuleNotFoundError: No module named 'pondie'")
+    record = copy.deepcopy(RECORD)
+    record["analyses"][0]["invented"] = 1
+    report = import_run(ctx.catalog, _run(), [_row(record=record)])
+    assert ctx.catalog.artifact(ARTICLE, "record", "ns-27b").error.startswith(SCHEMA_INVALID)
+    assert report.unrepaired == 1
+    assert "1 refused records were not given pondie's fixes: ModuleNotFoundError" in \
+        "\n".join(report.lines())
 
 
 def test_an_article_the_catalog_does_not_know_is_left_out(ctx):
@@ -163,7 +217,8 @@ def test_evidence_must_be_built_on_the_article_s_current_record(ctx):
     import_run(ctx.catalog, evidence_run, [_row(record_digest=record_digest(moved))])
     assert ctx.catalog.artifact(ARTICLE, "evidence", "ns-27b").error == RECORD_MOVED
 
-    import_run(ctx.catalog, evidence_run, [_row(record_digest=record_digest(RECORD))])
+    import_run(ctx.catalog, evidence_run,
+               [_row(record_digest=record_digest(as_kept(RECORD)))])
     evidence = ctx.catalog.artifact(ARTICLE, "evidence", "ns-27b")
     assert evidence.ok and evidence.run_id == "ns-ev1-20261102"
     # the record's maker, not the evidence model's, is the record's provenance
@@ -174,7 +229,7 @@ def test_evidence_must_be_built_on_the_article_s_current_record(ctx):
 
 def test_a_new_record_makes_its_evidence_and_normalization_stale(ctx):
     import_run(ctx.catalog, _run(), [_row()])
-    digest = record_digest(RECORD)
+    digest = record_digest(as_kept(RECORD))
     import_run(ctx.catalog, _run(stage="evidence", run_id="ev"), [_row(record_digest=digest)])
     import_run(ctx.catalog, _run(stage="normalize", run_id="norm", model="SapBERT + MONDO",
                                  config={"vocabulary": {"mondo": "2026-09-01"}}),
@@ -193,6 +248,14 @@ def test_a_new_record_makes_its_evidence_and_normalization_stale(ctx):
 
 def test_a_normalization_of_another_record_is_refused(ctx):
     import_run(ctx.catalog, _run(), [_row()])
+    import_run(ctx.catalog, _run(stage="normalize", run_id="norm"),
+               [{"article_id": ARTICLE, "status": "ok",
+                 "record_digest": record_digest(as_kept(RECORD)),
+                 "record": {"tasks": []}}])
+    # normalize reads the evidence record, so a record with none is not yet normalized
+    assert ctx.catalog.artifact(ARTICLE, "normalize", "ns-27b").error == NO_RECORD
+    import_run(ctx.catalog, _run(stage="evidence", run_id="ev"),
+               [_row(record_digest=record_digest(as_kept(RECORD)))])
     import_run(ctx.catalog, _run(stage="normalize", run_id="norm"),
                [{"article_id": ARTICLE, "status": "ok", "record_digest": "0" * 64,
                  "record": {"tasks": []}}])
