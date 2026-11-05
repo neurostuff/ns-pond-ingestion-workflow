@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import copy
 import json
+import re
 import shutil
 from datetime import timedelta
 from pathlib import Path
@@ -132,6 +133,8 @@ def test_the_normalized_record_goes_with_its_three_runs_as_kept(ctx, neurostore)
     assert not {"config", "bundle_id", "imported_at"} & set(runs[0])
     assert runs[2]["fit"] == "fit-ee8b3879" and runs[0]["kind"] == "model"
     assert sent["pipeline"]["version"] == "ns-27b-e+ns-ev1+astra-norm"
+    # what `feature_filter=<name>:...` accepts (neurostore utils.validate_pipeline_name)
+    assert re.fullmatch(r"[A-Za-z][A-Za-z0-9]*", sent["pipeline"]["name"])
     kept = ctx.catalog.artifact(ARTICLE, "record_upload", "ns-27b")
     assert kept.ok and kept.summary["runs"] == [RECORD_RUN.run_id, EVIDENCE_RUN.run_id,
                                                 NORMALIZE_RUN.run_id]

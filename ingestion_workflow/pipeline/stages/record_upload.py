@@ -27,8 +27,9 @@ NO_CHAIN = "waits for a fresh record, evidence and normalization of one source"
 NO_PARSE_UPLOADED = "waits for its current parse's upload"
 #: The fields of a kept run neurostore does not take: how ns-pond ran it, not what made it.
 NOT_SENT = ("config", "bundle_id", "imported_at")
-#: The pipeline neurostore files the record's config under.
-PIPELINE = "ns-pond"
+#: The pipeline neurostore files the record's config under. Letters and digits only:
+#: `feature_filter` refuses any other name (neurostore `utils.validate_pipeline_name`).
+PIPELINE = "NsPond"
 
 
 def sent_run(run: Run) -> Dict[str, Any]:
