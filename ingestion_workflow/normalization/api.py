@@ -30,8 +30,9 @@ from .taskcat.identity import CardBuilder
 
 HERE = Path(__file__).resolve().parent
 
-#: The fixed fits and inputs a fit is made from, by path inside the fixed bundle, with their sha256. Fetch them
-#: once into a directory and pass it as `fixed_dir` (or NORMALIZE_FIXED_DIR); see the PR / wiki for where.
+#: The fixed fits and inputs a fit is made from, by path inside the fixed bundle, with their sha256. They are the
+#: Hugging Face model repo FIXED_REPO at FIXED_REVISION (private: a quoted-sentence table is in it), fetched by
+#: `fixed_from_hub`; a local copy can be passed as `fixed_dir` (or NORMALIZE_FIXED_DIR) instead.
 FIXED = {
     "routeB_tfidf.pkl": "bbd8b5709b38e9d36d436fb851238abdfef3adbdc254cd1876ba735768829cdb",
     "citation_role_lineage_clf.pkl": "969b996259dcce59a0206860c67a41b366287e0b59b2314fa302168dfdce07d4",
@@ -40,6 +41,9 @@ FIXED = {
     "taskextractor/discovered_origins.json": "c0ed8de866e70f9b8c27b4fe6c55bff395d4a6cdaf5468dff6351b3b29ca081e",
     "manifest.jsonl": "888ce6fcaa5f07e7b9c4816b08394d579c1fcfa7ae64ce7a2984f4e270d248b5",
 }
+FIXED_REPO = "neurostuff/astra-normalization-fixed"
+#: The repo commit holding FIXED, pinned when it was uploaded. None: not uploaded yet.
+FIXED_REVISION = None
 #: The fixed files a fit directory carries for assignment; the rest are read only while fitting.
 CARRIED = ("routeB_tfidf.pkl", "citation_role_lineage_clf.pkl")
 
@@ -104,6 +108,16 @@ def verify_fixed(fixed_dir):
     return fixed_dir
 
 
+def fixed_from_hub(repo=FIXED_REPO, revision=None):
+    """The fixed bundle from the Hub at a pinned revision, hash-checked. Reads the stored login or HF_TOKEN."""
+    revision = revision or FIXED_REVISION
+    if revision is None:
+        raise ValueError(f"{repo} has no pinned revision yet: pass fixed_dir, or set NORMALIZE_FIXED_DIR")
+    from huggingface_hub import snapshot_download
+
+    return verify_fixed(snapshot_download(repo, revision=revision, allow_patterns=sorted(FIXED)))
+
+
 def body_of(document):
     """The extraction record inside a document that wraps it as {"study": record}, or the record itself."""
     inner = document.get("study") if isinstance(document, dict) else None
@@ -145,10 +159,12 @@ def fit(records_, texts, bibliographies, out_dir, *, fixed_dir=None, identifiers
 
     records_, texts, bibliographies: mappings article id -> extraction record / the parse's text / ns-pond's
     `references` artifact payload (None when the article has none). They are read twice, so a lazy mapping
-    that loads on access works. identifiers: article -> {"pmid", "doi"}, so a corpus paper another paper cites
+    that loads on access works. fixed_dir: a local copy of the fixed bundle; omitted, NORMALIZE_FIXED_DIR, else
+    the Hub's pinned revision. identifiers: article -> {"pmid", "doi"}, so a corpus paper another paper cites
     lends that paper its labels; papers in the fixed manifest are known without it. rows_dir, given, receives
     the corpus's own rows (task_labels.jsonl, contrast_sets.jsonl), which the fit itself does not keep."""
-    fixed_dir = verify_fixed(fixed_dir or os.environ["NORMALIZE_FIXED_DIR"])
+    fixed_dir = fixed_dir or os.environ.get("NORMALIZE_FIXED_DIR")
+    fixed_dir = verify_fixed(fixed_dir) if fixed_dir else fixed_from_hub()
     out_dir = Path(out_dir); out_dir.mkdir(parents=True, exist_ok=True)
     articles = sorted(records_)
     route_b = pickle.load(open(fixed_dir / "routeB_tfidf.pkl", "rb"))
