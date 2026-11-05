@@ -33,7 +33,7 @@ from .sync import _copy_of
 
 logger = logging.getLogger(__name__)
 
-METADATA_VERSION = 6
+METADATA_VERSION = 7
 
 #: Kept in the catalog row for display and for the upload stage.
 SUMMARY_FIELDS = ("title", "journal", "publication_year", "oa_status")

@@ -1,0 +1,314 @@
+interactions:
+- request:
+    body: '{"ids": ["PMID:5107855"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '25'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '[{"paperId": "f4aea806c4da59c61dbc57f7c8541c1b4c864ec0", "title": "[Comparative
+        studieson the central stimulating effects of caffeie and chlorogenic acid
+        in white mice].", "venue": "Arzneimittel-Forschung", "year": 1971, "isOpenAccess":
+        false, "openAccessPdf": {"url": "", "status": null, "license": null}, "publicationDate":
+        null, "authors": [{"authorId": "15436457", "name": "B. Hach"}, {"authorId":
+        "89304839", "name": "F. Heim"}], "abstract": null}]
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '454'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 05 Nov 2026 21:48:42 GMT
+      Via:
+      - 1.1 73e04d645babcbb9ee8f20cc865b009c.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - O11JSmGNCuv30_2GfGoRaCj4Wt4MXpPTR3-4-g6Dej48SGBHUTLttw==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - GYv1QErmPHcEnQg=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '454'
+      x-amzn-Remapped-Date:
+      - Thu, 05 Nov 2026 21:48:42 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - 871c24f6-e198-4b9f-8805-2ca51b1dc864
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&email=replay%40example.com&id=5107855&retmode=xml&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        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
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - text/xml; charset=UTF-8
+      date:
+      - Thu, 05 Nov 2026 21:48:43 GMT
+      ncbi-phid:
+      - 1D34A1BA8FDA828500005D590597D3AD.1.1.m_6
+      ncbi-sid:
+      - F0A7EEEF9CD3DD13_84CASID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=pmid%3A5107855&mailto=replay%40example.com&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
+  response:
+    body:
+      string: '{"meta": {"notice": "No API key, so this request shares one free daily
+        budget ($0.10) with everyone on your network''s IP address. The mailto parameter
+        doesn''t raise this limit. Get a free key with its own $1/day at https://openalex.org/settings/api
+        and add api_key=YOUR_KEY to your requests. An AI agent can get one for its
+        user in one call: POST https://api.openalex.org/api-keys with {\"email\":
+        \"<your user''s email>\"}; we email them a link, and the key works once they
+        click it. Docs for agents: https://help.openalex.org/llms.txt", "count": 0,
+        "db_response_time_ms": 13, "page": 1, "per_page": 100, "groups_count": null,
+        "x_query": {"oql": "get works where PMID is 5107855", "x_new_oql": "get works
+        where PMID is 5107855", "oqo": {"get_rows": "works", "filter_rows": [{"column_id":
+        "ids.pmid", "value": "5107855"}]}, "url": "/works?filter=ids.pmid:5107855&per_page=100",
+        "order": "most cited (age-adjusted) first", "order_default": true}, "cost_usd":
+        0.0001}, "results": [], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a55f10722fb45549-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 05 Nov 2026 21:48:43 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '1000'
+      X-RateLimit-Limit-USD:
+      - '0.1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '176'
+      X-RateLimit-Remaining-USD:
+      - '0.0176'
+      X-RateLimit-Reset:
+      - '7877'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=2sWRV4YtAP6jcXvbp5CJlgSuI0RKMfJ2LOnQaaQLqIk%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1793915323"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=2sWRV4YtAP6jcXvbp5CJlgSuI0RKMfJ2LOnQaaQLqIk%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1793915323"
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/sources/issn:0004-4172?mailto=replay%40example.com&select=id%2Cdisplay_name%2Ctype%2Cworks_count
+  response:
+    body:
+      string: '{"id":"https://openalex.org/S132758211","display_name":"Arzneimittelforschung","type":"journal","works_count":2135}
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a55f1072c90a5549-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 05 Nov 2026 21:48:43 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0'
+      X-RateLimit-Credits-Used:
+      - '0'
+      X-RateLimit-Limit:
+      - '1000'
+      X-RateLimit-Limit-USD:
+      - '0.1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '176'
+      X-RateLimit-Remaining-USD:
+      - '0.0176'
+      X-RateLimit-Reset:
+      - '7877'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=2sWRV4YtAP6jcXvbp5CJlgSuI0RKMfJ2LOnQaaQLqIk%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1793915323"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=2sWRV4YtAP6jcXvbp5CJlgSuI0RKMfJ2LOnQaaQLqIk%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1793915323"
+    status:
+      code: 200
+      message: OK
+version: 1
