@@ -120,6 +120,11 @@ prose_api_base: null  # Its server, apart from the table model's; defaults to ll
 #     su_per_node_hour: 3.0  # check TACC's current rate for gpu-a100
 #     su_cap: 50
 
+# ===== Normalization =====
+normalize_fit_dir: null  # The saved normalization fit the normalize stage assigns with (`ingest normalize fit` prints it). Unset, normalize waits for an import
+normalize_workers: 1  # Processes the normalize stage assigns articles in (forked; ~5 s each)
+normalize_fixed_dir: null  # A local copy of the fixed fits `ingest normalize fit` builds on. Unset, the pinned Hub revision is fetched, with HF_TOKEN. Also NORMALIZE_FIXED_DIR
+
 # ===== Parallelism =====
 max_workers: 4  # Maximum number of parallel workers for concurrent operations
 

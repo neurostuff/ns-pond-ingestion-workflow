@@ -4,16 +4,17 @@ Three sets on beast, each made outside ns-pond:
 
 * `record`: the 27B's records (`ns-collect/set-20261101`, pondie `vista/collect_ns.py`),
   one run: its waves of Vista jobs ran one model on one prompt, and are listed in its
-  config. It is the run `configs/offload/ns-27b-e.json` makes, so a rerun joins it. `extraction_metadata` there is the placeholder
-  `vista-compact` / `0`; import stamps the run instead.
+  config. It is the run `configs/offload/ns-27b-e.json` makes, so a rerun joins it.
+  `extraction_metadata` there is the placeholder `vista-compact` / `0`; import stamps the
+  run instead.
 * `evidence`: those records with ev1-full's evidence (`ns-collect/set-20261101-ev1`,
   pondie `vista/ns_ev1_merge.py`).
 * `normalize`: the normalization build `astra_norm/out_all2/current`, per study the rows
   of its derived tables. Only the studies it built from a 27B record are written; the
   rest were Astra's, and the catalog holds no Astra record.
 
-Each run is kept under its `minted_id`. The runs are rebuilt from pondie's job configs and `VISTA-JOURNAL.md` (RUNS below). The
-text a record was made from is the `Text:` of the prompt its shard sent: when it is the
+Each run is kept under its `minted_id`. The runs are rebuilt from pondie's job configs
+and `VISTA-JOURNAL.md` (RUNS below). The text a record was made from is the `Text:` of the prompt its shard sent: when it is the
 parse's text file, decoded as the prompt builder read it, the row carries the file's
 sha256, which is the parse's `text_sha256`; otherwise the prompt text's own, and import
 refuses it. Evidence and normalization rows carry `record_digest` of the record they
@@ -42,7 +43,7 @@ from typing import Dict, Iterator, Optional, Tuple
 
 from ingestion_workflow.catalog import Run, RunKind
 from ingestion_workflow.catalog.fingerprint import fingerprint
-from ingestion_workflow.pipeline.stages.offloaded import record_digest
+from ingestion_workflow.pipeline.stages.offloaded import drop_siblings, record_digest
 
 AGENTS = Path("/data/james/agents/astra-distill")
 SET = AGENTS / "ns-collect/set-20261101"
@@ -60,7 +61,8 @@ RECORD_RUN = dict(
     # r3-27b-full/adapter-final: QLoRA nf4 r=64, 1 epoch on train v5, step 776 (tag v1).
     adapter="jdkent/qwen3.8-27b-ns-record@dbfd846bd3e1259039eb2f3117dc12bd733c640a",
     # The prompt pondie-astra packaged from vista/tasks.py and bodies_ns.py, byte for byte.
-    prompt_version="astra-distill v5 paper prompt (pondie-astra prompt.prompt_of, user_content q27)",
+    prompt_version=("astra-distill v5 paper prompt "
+                    "(pondie-astra prompt.prompt_of, user_content q27)"),
     schema_version="extraction-record (pondie-astra frozen schema, sha256 27f8cf61)",
     code_commit="pondie@a963c94", machine="vista gh (GH200)", created_at="2026-10-28")
 #: (wave, first shard, last shard, created, max_len, jobs and notes), VISTA-JOURNAL.md.
@@ -221,6 +223,7 @@ def evidence_run(out: Path, hashes: Dict[str, Tuple[str, str]]) -> None:
                                       "or no text")
             else:
                 base = json.loads((SET / "records" / f"{sid}.extraction.json").read_text())
+                drop_siblings(base)  # as import keeps the record
                 out_row.update(status="ok", record_digest=record_digest(base),
                                record=json.loads(
                                    (SET_EV1 / "records" / f"{sid}.extraction.json").read_text()))

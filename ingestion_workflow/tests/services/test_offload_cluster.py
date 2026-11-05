@@ -29,6 +29,15 @@ DATA = Path(__file__).resolve().parents[1] / "data" / "offload"
 SPEC_FILE = Path(__file__).resolve().parents[3] / "configs" / "offload" / "ns-27b-e.json"
 PRED = json.loads((DATA / "26klegjq7mhi.pred.json").read_text())
 RECORD = json.loads((DATA / "26klegjq7mhi.extraction.json").read_text())
+
+def as_kept(record):
+    """`record` as import keeps it: without the legacy siblings the schema refuses."""
+    from ingestion_workflow.pipeline.stages.offloaded import drop_siblings
+
+    record = json.loads(json.dumps(record))
+    drop_siblings(record)
+    return record
+
 ARTICLE = "26klegjq7mhi"
 NOW = datetime(2026, 11, 4, 15, 0, tzinfo=timezone.utc)
 #: What Vista's sbatch --parsable printed for the 2026-11-04 smoke job: TACC's banner first.
@@ -213,7 +222,7 @@ def test_pull_imports_a_completed_shard_as_the_record_the_collected_set_holds(wo
     assert record["extraction_metadata"]["extractor_version"] == bundle.run["run_id"]
     strip = ("local_id", "extraction_metadata")
     assert {k: v for k, v in record.items() if k not in strip} == \
-        {k: v for k, v in RECORD.items() if k not in strip}
+        {k: v for k, v in as_kept(RECORD).items() if k not in strip}
     state = BundleDir(world["bundle"]).state()
     assert state.imported["s000"] == {"ok": 1, "elapsed_s": 1979}
     assert world["catalog"].run(bundle.run["run_id"]).adapter == bundle.spec.adapter
@@ -321,7 +330,7 @@ def test_pull_merges_ev1_s_answer_into_the_record_as_the_ev1_set_did(world):
     merged = world["catalog"].payload(kept)
     strip = ("local_id", "extraction_metadata")
     assert {k: v for k, v in merged.items() if k not in strip} == \
-        {k: v for k, v in EV1_RECORD.items() if k not in strip}
+        {k: v for k, v in as_kept(EV1_RECORD).items() if k not in strip}
     # the record's maker stays its provenance
     assert merged["extraction_metadata"]["extractor_version"] == "ns-27b-e-20261031"
 

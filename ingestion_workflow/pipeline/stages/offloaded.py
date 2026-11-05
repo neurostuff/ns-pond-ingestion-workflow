@@ -1,12 +1,15 @@
 """The stages run away from ns-pond: `record`, `evidence` and `normalize`.
 
 Each holds, per article and extractor family (the source), what a run made on a cluster or
-on beast, imported by `ingest offload import`. No stage here calls a model yet, so a plan
-never has work: what is missing or stale waits for an import.
+on beast, imported by `ingest offload import`. `record` and `evidence` never run here, so
+their plans never have work. `normalize` runs in-process once `normalize_fit_dir` names a
+saved fit; without one it too waits for an import.
 
     record      run identity + text_sha256 + the parse keys the record points at
     evidence    run identity + text_sha256 + the record's fingerprint and content, same source
-    normalize   run identity + the record's content + the vocabulary release
+    normalize   run identity + the content of the record it read + the vocabulary release
+
+`normalize` reads the evidence record, or the record itself when evidence was skipped.
 
 A parse change that keeps the keys a record points at leaves the record fresh.
 """
@@ -25,6 +28,7 @@ from ..stage import Context, recorded_path
 
 #: Why an article has no fresh output of an offloaded stage.
 AWAITS_IMPORT = "waits for an offload import"
+NO_NORMALIZE_INPUT = "waits for an evidence record (or a skipped evidence run's record)"
 NO_PARSE = "no coordinate parse"
 NO_RECORD = "no record of this source"
 
@@ -37,6 +41,23 @@ def record_digest(record: Mapping[str, Any]) -> str:
     held = {k: v for k, v in record.items() if k != "extraction_metadata"}
     raw = json.dumps(held, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def drop_siblings(record: Dict[str, Any]) -> int:
+    """Remove the per-field normalizations study_schema#56 replaced with sidecars, in place;
+    how many were removed. The 27B's records carry them (pondie-astra restores the pre-#56
+    shape), and the schema refuses them; what they said, normalize makes again."""
+    dropped = 0
+    for group in record.get("groups") or []:
+        if not isinstance(group, dict):
+            continue
+        dropped += group.pop("age_unit_normalized", None) is not None
+        # every distribution (sex, gender, race, handedness, ...) carried one per category
+        for slot in group.values():
+            for entry in slot if isinstance(slot, list) else ():
+                if isinstance(entry, dict):
+                    dropped += entry.pop("category_normalized", None) is not None
+    return dropped
 
 
 def _key(value: Any) -> Optional[str]:
@@ -208,20 +229,157 @@ class EvidenceStage(_OffloadedStage):
         return evidence_fingerprint(run, parse.text_sha256, record)
 
 
+def normalize_input(evidence: Optional[Artifact],
+                    record: Optional[Artifact]) -> Optional[Artifact]:
+    """The artifact normalize reads: the evidence record, or the record when evidence was
+    skipped. None while neither is there."""
+    if evidence is not None and evidence.status is Status.OK:
+        return evidence
+    if evidence is not None and evidence.status is Status.SKIPPED and record is not None \
+            and record.ok:
+        return record
+    return None
+
+
 class NormalizeStage(_OffloadedStage):
-    """The record's terms mapped to vocabularies, for the same source."""
+    """The record's terms mapped to vocabularies, for the same source, by the fit
+    `normalize_fit_dir` names (`ingestion_workflow.normalization`), one article at a time.
+    Its artifact is the whole record, its `normalized` sidecars written.
+
+    With a fit named, freshness is against the run that fit makes (`normalize_assign`): a
+    new fit, or new assign code, makes every earlier normalization stale. Without one, the
+    stage only holds imports, as `record` and `evidence` do."""
 
     name = "normalize"
-    requires = "record"
+    requires = "evidence"
+
+    def __init__(self, settings) -> None:
+        super().__init__(settings)
+        self._configured: Dict[str, Run] = {}
+        self._about: Optional[Dict[str, Any]] = None
+
+    @property
+    def fit_dir(self) -> Optional[Path]:
+        held = getattr(self.settings, "normalize_fit_dir", None)
+        return Path(held) if held else None
+
+    def configured_run(self, source: str) -> Optional[Run]:
+        """The run the named fit makes for `source`, or None when no fit is named."""
+        if self.fit_dir is None:
+            return None
+        if source not in self._configured:
+            from ingestion_workflow.services import normalize_assign
+            from ingestion_workflow.services.offload.export import ns_pond_commit
+
+            if self._about is None:
+                self._about = normalize_assign.describe(self.fit_dir)
+            self._configured[source] = normalize_assign.run_for(
+                source, self.fit_dir, ns_pond_commit(), self._about)
+        return self._configured[source]
 
     def inputs(self, ctx, ids, upstream):
-        return {article_id: {"records": upstream.get(article_id, {})} for article_id in ids}
+        """Each article's fresh evidence and records: normalizing a stale one is wasted."""
+        records = ctx.catalog.artifacts(ids, "record")
+        fresh_records = RecordStage(self.settings).fresh_sources(
+            ctx, ids, records, ctx.catalog.artifacts(ids, "sync"))
+        fresh_evidence = EvidenceStage(self.settings).fresh_sources(ctx, ids, upstream, records)
+
+        def only(held, fresh):
+            return {s: a for s, a in held.items() if s in fresh}
+
+        return {article_id: {
+            "evidence": only(upstream.get(article_id, {}), fresh_evidence.get(article_id, ())),
+            "records": only(records.get(article_id, {}), fresh_records.get(article_id, ())),
+        } for article_id in ids}
+
+    @staticmethod
+    def read_of(inputs, source) -> Optional[Artifact]:
+        return normalize_input(inputs.get("evidence", {}).get(source),
+                               inputs.get("records", {}).get(source))
 
     def expected(self, ctx, run, mine, inputs, source):
-        record = inputs.get("records", {}).get(source)
-        if record is None or not record.ok:
+        read = self.read_of(inputs, source)
+        if read is None:
             return None
-        return normalize_fingerprint(run, record, run.config.get("vocabulary"))
+        run = self.configured_run(source) or run
+        return normalize_fingerprint(run, read, run.config.get("vocabulary"))
+
+    def plan(self, ctx, refs, artifacts, upstream):
+        if self.fit_dir is None:
+            return super().plan(ctx, refs, artifacts, upstream)
+        plan = StagePlan(stage=self.name)
+        ids = [ref.id for ref in refs]
+        fresh = self.fresh_sources(ctx, ids, artifacts, upstream)
+        inputs = self.inputs(ctx, ids, upstream)
+        attempts: Dict[str, Dict[str, Any]] = {}
+        for ref in refs:
+            held = inputs[ref.id]
+            sources = sorted(set(held["evidence"]) | set(held["records"]))
+            due = [(s, self.read_of(held, s)) for s in sources if s not in fresh.get(ref.id, ())]
+            due = [(s, read) for s, read in due if read is not None]
+            if not due:
+                if fresh.get(ref.id):
+                    plan.fresh += 1
+                else:
+                    plan.wait(NO_NORMALIZE_INPUT, ref.id)
+                continue
+            for source, read in due:
+                run = self.configured_run(source)
+                fp = normalize_fingerprint(run, read, run.config.get("vocabulary"))
+                existing = artifacts.get(ref.id, {}).get(source)
+                if existing is not None and existing.fingerprint == fp:
+                    if source not in attempts:
+                        attempts[source] = ctx.catalog.attempt_counts(ids, self.name, source)
+                    count, last = attempts[source].get(ref.id, (0, None))
+                    if not ctx.should_attempt(existing, count, last, self.name, source):
+                        plan.permanent += 1
+                        continue
+                plan.pending.append(Work(ref=ref, source=source, fingerprint=fp, upstream=read))
+        return plan
+
+    def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
+        """Each work's input assigned against the fit, `normalize_workers` at once: forked
+        processes, which share the fit once it is loaded here."""
+        if self.fit_dir is None or not works:
+            return
+        from ingestion_workflow.services import normalize_assign as na
+
+        synced = ctx.catalog.artifacts(sorted({w.article_id for w in works}), "sync")
+        kept: Dict[str, Run] = {}
+        for work in works:
+            if work.source not in kept:
+                run = self.configured_run(work.source)
+                # A rerun of a kept run is that run, as it was first kept.
+                kept[work.source] = ctx.catalog.record_run(ctx.catalog.run_like(run) or run)
+
+        def jobs():
+            for work in works:
+                sync = synced.get(work.article_id, {}).get("")
+                if sync is None or not sync.ok:
+                    yield work, None
+                    continue
+                yield work, (ctx.catalog.payload(work.upstream),
+                             na.text_of(ctx.catalog.root, sync),
+                             na.bibliography_of(ctx.catalog, work.article_id,
+                                                na.text_source(ctx.catalog.root, sync)),
+                             str(self.fit_dir), work.article_id,
+                             na.parse_of(ctx.catalog.root, sync))
+
+        workers = max(1, int(getattr(self.settings, "normalize_workers", 1) or 1))
+        for work, (normalized, error) in na.assign_all(jobs(), workers, NO_PARSE):
+            run = kept[work.source]
+            if error is not None:
+                failed = Outcome.failure(work.article_id, self.name, work.source, error,
+                                         fingerprint=work.fingerprint)
+                failed.run_id = run.run_id
+                yield failed
+                continue
+            yield Outcome(work.article_id, self.name, work.source, Status.OK,
+                          fingerprint=work.fingerprint, payload=normalized,
+                          summary={"record_digest": work.upstream.summary.get("record_digest"),
+                                   "read": work.upstream.stage, "fit": run.fit,
+                                   "vocabulary": run.config.get("vocabulary")},
+                          run_id=run.run_id)
 
 
 def parse_check(parse: Optional[Parse], text_sha256: Optional[str],
@@ -242,6 +400,7 @@ __all__ = [
     "AWAITS_IMPORT",
     "EvidenceStage",
     "NO_PARSE",
+    "NO_NORMALIZE_INPUT",
     "NO_RECORD",
     "NormalizeStage",
     "OFFLOADED_STAGES",
@@ -249,6 +408,8 @@ __all__ = [
     "RecordStage",
     "evidence_fingerprint",
     "normalize_fingerprint",
+    "normalize_input",
+    "drop_siblings",
     "parse_check",
     "parse_keys",
     "record_digest",
