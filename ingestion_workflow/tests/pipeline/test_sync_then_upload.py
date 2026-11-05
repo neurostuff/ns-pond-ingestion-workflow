@@ -163,7 +163,8 @@ def _prose_article(env, monkeypatch, pmid, neurostore=None, doi=None, *, evidenc
 
 
 def test_sync_runs_before_upload_and_upload_reads_what_sync_wrote():
-    assert STAGE_ORDER[-6:] == ("sync", "record", "evidence", "normalize", "upload", "datasources")
+    assert STAGE_ORDER[-7:] == ("sync", "record", "evidence", "normalize", "upload",
+                                "record_upload", "datasources")
     settings = Settings()
     assert [type(s) for s in build(["upload", "sync"], settings)] == [SyncStage, UploadStage]
     for name in STAGE_ORDER:
