@@ -100,7 +100,7 @@ def world(tmp_path, monkeypatch):
     spec = spec.model_copy(update={"adapter_sha256": hashlib.sha256(b"weights").hexdigest()})
     fetched = []
 
-    def fetch(adapter_ref, sha, cache, token):
+    def fetch(adapter_ref, sha, cache):
         fetched.append(adapter_ref)
         return adapter
     monkeypatch.setattr(R, "fetch_adapter", fetch)
@@ -122,7 +122,7 @@ def world(tmp_path, monkeypatch):
 
 
 def _push(w):
-    return R.push(w["remote"], w["bundle"], hf_cache=Path("/nonexistent"), hf_token=None)
+    return R.push(w["remote"], w["bundle"], hf_cache=Path("/nonexistent"))
 
 
 def test_push_copies_the_bundle_its_scripts_and_the_adapter_once(world):

@@ -107,21 +107,21 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def fetch_adapter(adapter: str, expected_sha256: str, cache: Path,
-                  token: Optional[str]) -> Path:
-    """The adapter's files at its commit, downloaded here and checked against the bundle."""
+def fetch_adapter(adapter: str, expected_sha256: str, cache: Path) -> Path:
+    """The adapter's files at its commit, downloaded here (with HF_TOKEN from the
+    environment) and checked against the bundle."""
     from huggingface_hub import snapshot_download
 
     repo, commit = split_ref(adapter)
     local = Path(snapshot_download(repo, revision=commit, allow_patterns=list(ADAPTER_FILES),
-                                   cache_dir=str(cache), token=token))
+                                   cache_dir=str(cache)))
     found = _sha256(local / "adapter_model.safetensors")
     if found != expected_sha256:
         raise RemoteError(f"{adapter}: sha256 {found}, the spec names {expected_sha256}")
     return local
 
 
-def push(remote: Remote, root: Path, *, hf_cache: Path, hf_token: Optional[str]) -> List[str]:
+def push(remote: Remote, root: Path, *, hf_cache: Path) -> List[str]:
     """Copy the bundle, its job scripts and (once per commit) its adapter to the machine."""
     held = BundleDir(root)
     bundle = held.bundle()
@@ -130,7 +130,7 @@ def push(remote: Remote, root: Path, *, hf_cache: Path, hf_token: Optional[str])
     there = remote.run(f"sha256sum {shlex.quote(target)}/adapter_model.safetensors "
                        f"2>/dev/null || true").split()
     if there[:1] != [spec.adapter_sha256]:
-        local = fetch_adapter(spec.adapter, spec.adapter_sha256, hf_cache, hf_token)
+        local = fetch_adapter(spec.adapter, spec.adapter_sha256, hf_cache)
         staged = root / ".adapter"
         staged.mkdir(exist_ok=True)
         for name in ADAPTER_FILES:   # the Hub cache holds symlinks; rsync copies files
