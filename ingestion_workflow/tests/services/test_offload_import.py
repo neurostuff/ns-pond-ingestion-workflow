@@ -17,6 +17,7 @@ from ingestion_workflow.config import Settings
 from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.stages.offloaded import (
     AWAITS_IMPORT,
+    NO_RECORD,
     EvidenceStage,
     NormalizeStage,
     RecordStage,
@@ -193,6 +194,13 @@ def test_a_new_record_makes_its_evidence_and_normalization_stale(ctx):
 
 def test_a_normalization_of_another_record_is_refused(ctx):
     import_run(ctx.catalog, _run(), [_row()])
+    import_run(ctx.catalog, _run(stage="normalize", run_id="norm"),
+               [{"article_id": ARTICLE, "status": "ok", "record_digest": record_digest(RECORD),
+                 "record": {"tasks": []}}])
+    # normalize reads the evidence record, so a record with none is not yet normalized
+    assert ctx.catalog.artifact(ARTICLE, "normalize", "ns-27b").error == NO_RECORD
+    import_run(ctx.catalog, _run(stage="evidence", run_id="ev"),
+               [_row(record_digest=record_digest(RECORD))])
     import_run(ctx.catalog, _run(stage="normalize", run_id="norm"),
                [{"article_id": ARTICLE, "status": "ok", "record_digest": "0" * 64,
                  "record": {"tasks": []}}])
