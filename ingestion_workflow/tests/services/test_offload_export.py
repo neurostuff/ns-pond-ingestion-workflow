@@ -97,6 +97,10 @@ def test_the_spec_makes_the_run_the_backfill_kept():
 
     kept = Run(**{**backfill.RECORD_RUN, "run_id": "", "kind": RunKind.MODEL})
     assert kept.identity == _spec_run().identity
+    # ev1 was sent each record as it was extracted; the catalog sends it with its keys
+    # sorted, so that is another prompt, and another run
+    ev1 = Run(**{**backfill.EVIDENCE_RUN, "run_id": "", "kind": RunKind.MODEL})
+    assert ev1.adapter == EV1_SPEC.adapter and ev1.prompt_version != EV1_SPEC.prompt_version
 
 
 def test_a_rerun_of_missing_papers_is_the_kept_run(ctx, tmp_path, fake_tokens):
@@ -171,3 +175,50 @@ def test_shards_are_balanced_longest_first_within_their_size():
     out = shard(rows, size=3)
     assert [len(s) for s in out] == [3, 2]
     assert sorted(sum(r["n_input_tokens"] for r in s) for s in out) == [12, 15]
+
+
+EV1_SPEC = load_spec(Path(__file__).resolve().parents[3] / "configs" / "offload" / "ns-ev1.json")
+EV1_SENT = json.loads((DATA / "26klegjq7mhi.ev1.body.json").read_text())
+
+
+def _recorded(ctx, status="ok"):
+    from ingestion_workflow.catalog import Run, RunKind
+
+    sent = json.loads((DATA / "paper-26klegjq7mhi/parse/coordinate_parse.json").read_text())
+    import_run(ctx.catalog, Run("ns-27b-e-20261031", RunKind.MODEL, "record", "ns-27b",
+                                model=SPEC.model, adapter=SPEC.adapter, created_at="2026-10-31"),
+               [{"article_id": ARTICLE, "status": status, "text_sha256": sent["text_sha256"],
+                 "record": RECORD if status == "ok" else None, "reason": "too long"}])
+
+
+def test_the_evidence_request_is_the_one_the_ev1_run_sent(ctx, tmp_path, fake_tokens):
+    from ingestion_workflow.pipeline.stages.offloaded import record_digest
+
+    _synced(ctx, ARTICLE, _paper(tmp_path / "pond", ARTICLE))
+    _recorded(ctx)
+    report = export(ctx, EV1_SPEC, "ls6", workers=1, now=NOW)
+    (row,) = _rows(report.bundle)
+    # The catalog keeps records with their keys sorted (blobs are content-addressed), so the
+    # record ev1 is shown is the one it was sent with its keys sorted; the text is unchanged.
+    head, sent_record = EV1_SENT["prompt"].split("\n\nRecord:\n")
+    assert row["content"] == head + "\n\nRecord:\n" + json.dumps(
+        json.loads(sent_record), sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    assert row["chat_template_kwargs"] == {"enable_thinking": False,
+                                           "template": EV1_SENT["template"]}
+    held = ctx.catalog.payload(ctx.catalog.artifact(ARTICLE, "record", "ns-27b"))
+    assert row["record_digest"] == record_digest(held) == record_digest(RECORD)
+    (kept,) = BundleDir(report.bundle).records("s000").read_text().splitlines()
+    assert json.loads(kept) == {"article_id": ARTICLE, "record": held}
+
+
+def test_evidence_waits_for_a_record_and_a_skipped_record_skips_it(ctx, tmp_path, fake_tokens):
+    from ingestion_workflow.services.offload.export import NO_CURRENT_RECORD, RECORD_SKIPPED
+
+    _synced(ctx, ARTICLE, _paper(tmp_path / "pond", ARTICLE))
+    report = export(ctx, EV1_SPEC, "ls6", workers=1, now=NOW)
+    assert report.bundle is None and report.left_out == {NO_CURRENT_RECORD: 1}
+    _recorded(ctx, status="skipped")
+    report = export(ctx, EV1_SPEC, "ls6", workers=1, now=NOW)
+    (row,) = [json.loads(line) for line in BundleDir(report.bundle).skipped.read_text()
+              .splitlines()]
+    assert report.shards == [] and row["status"] == "skipped" and row["reason"] == RECORD_SKIPPED

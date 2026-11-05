@@ -6,6 +6,7 @@ A bundle is a directory, the same on both sides:
     bundle.json              Bundle: the run, its spec, the machine, its shards
     inputs/<shard>.jsonl     InputRow per article, the request already built
     skipped.jsonl            articles left out (over the context), imported as skipped
+    records/<shard>.jsonl    the record each evidence request was built from (ns-pond only)
     results/<shard>.jsonl    ResultRow per article, written by the job (cluster/job.py)
     state.json               BundleState: jobs submitted and shards imported (ns-pond only)
 
@@ -93,8 +94,10 @@ class InputRow(BaseModel):
     article_id: str
     base_study_id: Optional[str] = None
     text_sha256: str
-    #: The parse keys the prompt listed.
+    #: The parse keys the prompt listed (record), or the record names (evidence).
     parse_keys: List[str]
+    #: `record_digest` of the record an evidence request was built from.
+    record_digest: Optional[str] = None
     n_input_tokens: int
     #: The user message and chat template arguments, as the model is sent them.
     content: str
@@ -137,6 +140,9 @@ class BundleDir:
 
     def inputs(self, shard: str) -> Path:
         return self.root / "inputs" / f"{shard}.jsonl"
+
+    def records(self, shard: str) -> Path:
+        return self.root / "records" / f"{shard}.jsonl"
 
     def results(self, shard: str) -> Path:
         return self.root / "results" / f"{shard}.jsonl"

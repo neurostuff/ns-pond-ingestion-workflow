@@ -282,3 +282,62 @@ def test_the_job_id_is_read_past_tacc_s_banner():
     assert R.sbatch_job_id(SBATCH.format(job=1122428)) == "1122428"
     assert R.sbatch_job_id("1122428;vista\n") == "1122428"
     assert R.sbatch_job_id("sbatch: error: invalid partition\n") is None
+
+
+EV1_PRED = json.loads((DATA / "26klegjq7mhi.ev1.pred.json").read_text())
+EV1_RECORD = json.loads((DATA / "26klegjq7mhi.ev1.extraction.json").read_text())
+
+
+def _evidence_bundle(world):
+    """The record imported, then an evidence bundle of it pushed and submitted."""
+    from ingestion_workflow.catalog import Run, RunKind
+    from ingestion_workflow.services.offload.importer import import_run
+
+    sent = json.loads((DATA / "paper-26klegjq7mhi/parse/coordinate_parse.json").read_text())
+    import_run(world["catalog"], Run("ns-27b-e-20261031", RunKind.MODEL, "record", "ns-27b",
+                                     model="Qwen/Qwen3.8-27B", created_at="2026-10-31"),
+               [{"article_id": ARTICLE, "status": "ok", "text_sha256": sent["text_sha256"],
+                 "record": RECORD}])
+    spec = load_spec(SPEC_FILE.with_name("ns-ev1.json")).model_copy(
+        update={"adapter_sha256": hashlib.sha256(b"weights").hexdigest(),
+                "model_revision": load_spec(SPEC_FILE).model_revision, "model": "Qwen/Qwen3.8-27B"})
+    bundle = export(world["ctx"], spec, "vista", workers=1, now=NOW + timedelta(minutes=1)).bundle
+    R.push(world["remote"], bundle, hf_cache=Path("/nonexistent"))
+    R.submit(world["remote"], bundle, yes=False)
+    (job,) = BundleDir(bundle).state().jobs.values()
+    there = Path(world["remote"].bundle_dir(BundleDir(bundle).bundle()))
+    (there / "results").mkdir(exist_ok=True)
+    (there / "results/s000.jsonl").write_text(json.dumps(_result(
+        prediction=EV1_PRED["prediction"], prompt_tokens=EV1_PRED["prompt_tokens"])) + "\n")
+    world["cluster"].states[job] = "COMPLETED"
+    return bundle
+
+
+def test_pull_merges_ev1_s_answer_into_the_record_as_the_ev1_set_did(world):
+    bundle = _evidence_bundle(world)
+    pull(world["remote"], bundle, world["catalog"])
+    kept = world["catalog"].artifact(ARTICLE, "evidence", "ns-27b")
+    assert kept.ok, kept.error
+    merged = world["catalog"].payload(kept)
+    strip = ("local_id", "extraction_metadata")
+    assert {k: v for k, v in merged.items() if k not in strip} == \
+        {k: v for k, v in EV1_RECORD.items() if k not in strip}
+    # the record's maker stays its provenance
+    assert merged["extraction_metadata"]["extractor_version"] == "ns-27b-e-20261031"
+
+
+def test_evidence_of_a_record_replaced_since_export_is_refused(world):
+    from ingestion_workflow.catalog import Run, RunKind
+    from ingestion_workflow.services.offload.importer import RECORD_MOVED, import_run
+
+    bundle = _evidence_bundle(world)
+    newer = json.loads(json.dumps(RECORD))
+    newer["analyses"][0]["name"]["value"] = "a later run's name"
+    sent = json.loads((DATA / "paper-26klegjq7mhi/parse/coordinate_parse.json").read_text())
+    import_run(world["catalog"], Run("ns-27b-e-20261105", RunKind.MODEL, "record", "ns-27b",
+                                     model="Qwen/Qwen3.8-27B", prompt_version="v6",
+                                     created_at="2026-11-05"),
+               [{"article_id": ARTICLE, "status": "ok", "text_sha256": sent["text_sha256"],
+                 "record": newer}])
+    pull(world["remote"], bundle, world["catalog"])
+    assert world["catalog"].artifact(ARTICLE, "evidence", "ns-27b").error == RECORD_MOVED

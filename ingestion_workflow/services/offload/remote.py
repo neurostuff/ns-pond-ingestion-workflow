@@ -149,7 +149,8 @@ def push(remote: Remote, root: Path, *, hf_cache: Path) -> List[str]:
                "merge_script": f"{remote.bundle_dir(bundle)}/merge.py"}
     (root / "cluster.json").write_text(json.dumps(cluster, indent=1), "utf-8")
     remote.run(f"mkdir -p {shlex.quote(remote.bundle_dir(bundle))}/logs")
-    remote.put(root, remote.bundle_dir(bundle), exclude=("results/", "state.json", ".adapter"))
+    remote.put(root, remote.bundle_dir(bundle),
+               exclude=("results/", "records/", "state.json", ".adapter"))
     state = held.state()
     state.pushed_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     held.save(state)
@@ -305,7 +306,6 @@ def group_pins(group: str) -> Dict[str, str]:
     pins. Read from the file, since an editable install's metadata keeps the groups it was
     installed with."""
     import tomllib
-
     from packaging.requirements import Requirement
 
     pyproject = Path(__file__).resolve().parents[3] / "pyproject.toml"
