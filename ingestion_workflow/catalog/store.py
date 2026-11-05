@@ -43,11 +43,13 @@ from .models import (
     ArticleRef,
     Artifact,
     Outcome,
+    Run,
+    RunKind,
     Status,
     field_of,
     utcnow,
 )
-from .schema import DDL, PRAGMAS, SCHEMA_VERSION
+from .schema import CURRENT_DDL, DDL, PRAGMAS, SCHEMA_VERSION
 
 logger = logging.getLogger(__name__)
 
@@ -168,6 +170,7 @@ class Catalog:
             conn.execute(
                 "INSERT INTO meta(key, value) VALUES('schema_version', ?)", (str(SCHEMA_VERSION),)
             )
+        conn.executescript(CURRENT_DDL)
         return catalog
 
     def backup(self, target: Path | str) -> Path:
@@ -185,10 +188,11 @@ class Catalog:
 
         Under the write lock, the version is read again: a process that opened
         the catalog while another migrated it waits here, then finds it current.
-        A copy is taken next, beside the catalog, because the rewrite drops the
-        spellings it replaces; without the copy nothing is migrated. The data
-        and the new version commit together, so a failed migration leaves the
-        catalog as it was.
+        A copy is taken next, beside the catalog, when a step rewrites rows (before
+        v4), because the rewrite drops the spellings it replaces; without the copy
+        nothing is migrated. v5 only adds, so it takes no copy. The data and the
+        new version commit together, so a failed migration leaves the catalog as
+        it was.
         """
         with self._write() as conn:
             version = int(conn.execute(
@@ -198,16 +202,29 @@ class Catalog:
             # `backup` reads through a second connection, as sqlite cannot back up
             # from the one holding the write lock. That lock keeps any write out
             # between the copy and the rewrite.
-            copy = self.backup(self.root / f"catalog.pre-v{version}.sqlite")
-            logger.warning("catalog: schema %d -> %d; backed up to %s",
-                           version, SCHEMA_VERSION, copy)
+            if version < 4:
+                copy = self.backup(self.root / f"catalog.pre-v{version}.sqlite")
+                logger.warning("catalog: schema %d -> %d; backed up to %s",
+                               version, SCHEMA_VERSION, copy)
+            else:
+                logger.warning("catalog: schema %d -> %d", version, SCHEMA_VERSION)
             if version < 3:
                 self._canonical_doi_aliases(conn)
             if version < 4:
                 self._bucket_aliases(conn)
+            if version < 5:
+                self._add_run_ids(conn)
             conn.execute(
                 "UPDATE meta SET value=? WHERE key='schema_version'", (str(SCHEMA_VERSION),)
             )
+
+    @staticmethod
+    def _add_run_ids(conn: sqlite3.Connection) -> None:
+        """Give artifacts a `run_id`, null for every row already there: ns-pond ran them.
+        The `runs` table is made by the DDL, which every open runs."""
+        columns = {row["name"] for row in conn.execute("PRAGMA table_info(artifacts)")}
+        if "run_id" not in columns:
+            conn.execute("ALTER TABLE artifacts ADD COLUMN run_id TEXT")
 
     def _bucket_aliases(self, conn: sqlite3.Connection) -> Dict[str, int]:
         """Hold each id in the bucket it belongs to: the version of record's, a preprint's
@@ -1186,6 +1203,69 @@ class Catalog:
 
     # -- exclusions ----------------------------------------------------------
 
+    # -- data sources --------------------------------------------------------
+
+    def replace_data_sources(
+        self,
+        records: Mapping[str, Sequence[Mapping[str, Any]]],
+        sources: Sequence[Mapping[str, Any]],
+        aliases: Sequence[Tuple[str, str, str]],
+        digest: str,
+    ) -> None:
+        """Replace the records of each provider in `records`, and the whole merged dictionary,
+        together. `sources` are `DataSource` fields; `digest` is the aliases' digest."""
+        now = utcnow()
+        columns = ("id", "name", "kinds", "modalities", "url", "url_source", "rrids",
+                   "re3data_ids", "part_of", "providers")
+        with self._write() as conn:
+            for provider, held in records.items():
+                conn.execute("DELETE FROM data_source_records WHERE provider=?", (provider,))
+                conn.executemany(
+                    "INSERT INTO data_source_records(provider, record_id, record, pulled_at) "
+                    "VALUES(?, ?, ?, ?)",
+                    [(provider, r["record_id"], json.dumps(r, sort_keys=True), now)
+                     for r in held])
+            conn.execute("DELETE FROM data_sources")
+            conn.execute("DELETE FROM data_source_aliases")
+            conn.executemany(
+                f"INSERT INTO data_sources({', '.join(columns)}) "
+                f"VALUES({', '.join('?' * len(columns))})",
+                [tuple(json.dumps(s[c]) if isinstance(s[c], list) else s[c] for c in columns)
+                 for s in sources])
+            conn.executemany(
+                "INSERT INTO data_source_aliases(data_source_id, alias, tier) VALUES(?, ?, ?)",
+                aliases)
+            conn.execute(
+                "INSERT OR REPLACE INTO meta(key, value) VALUES('data_sources_digest', ?)",
+                (digest,))
+
+    def data_source_records(self, provider: Optional[str] = None) -> List[Dict[str, Any]]:
+        """The records each pull stored, of one provider or all."""
+        query = "SELECT record FROM data_source_records"
+        rows = (self._conn.execute(query + " WHERE provider=? ORDER BY record_id", (provider,))
+                if provider else
+                self._conn.execute(query + " ORDER BY provider, record_id"))
+        return [json.loads(row["record"]) for row in rows]
+
+    def data_sources(self) -> List[Dict[str, Any]]:
+        out = []
+        for row in self._conn.execute("SELECT * FROM data_sources ORDER BY id"):
+            out.append({k: json.loads(row[k]) if k in ("kinds", "modalities", "rrids",
+                                                          "re3data_ids", "providers")
+                        else row[k] for k in row.keys()})
+        return out
+
+    def data_source_aliases(self) -> List[Tuple[str, str, str]]:
+        return [tuple(row) for row in self._conn.execute(
+            "SELECT data_source_id, alias, tier FROM data_source_aliases "
+            "ORDER BY data_source_id, alias, tier")]
+
+    def data_sources_digest(self) -> Optional[str]:
+        """The digest of the aliases the last pull stored; None before any pull."""
+        row = self._conn.execute(
+            "SELECT value FROM meta WHERE key='data_sources_digest'").fetchone()
+        return row["value"] if row else None
+
     # -- searches ------------------------------------------------------------
 
     def record_search(
@@ -1423,6 +1503,7 @@ class Catalog:
                     json.dumps(outcome.summary, separators=(",", ":")),
                     outcome.error,
                     now,
+                    outcome.run_id,
                 )
             )
             attempts.append(
@@ -1440,12 +1521,13 @@ class Catalog:
                 """
                 INSERT INTO artifacts
                     (article_id, stage, source, status, fingerprint, blob,
-                     summary, error, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     summary, error, updated_at, run_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(article_id, stage, source) DO UPDATE SET
                     status=excluded.status, fingerprint=excluded.fingerprint,
                     blob=excluded.blob, summary=excluded.summary,
-                    error=excluded.error, updated_at=excluded.updated_at
+                    error=excluded.error, updated_at=excluded.updated_at,
+                    run_id=excluded.run_id
                 WHERE NOT (artifacts.status = 'ok' AND excluded.status <> 'ok'
                            AND artifacts.stage IN ({keep}))
                 """.format(keep=",".join("'%s'" % s for s in KEEPS_LAST_OK)),
@@ -1456,6 +1538,47 @@ class Catalog:
                 "VALUES (?, ?, ?, ?, ?, ?)",
                 attempts,
             )
+
+    # -- runs ----------------------------------------------------------------
+
+    def record_run(self, run: Run) -> Run:
+        """Keep `run`, stamped with when it was imported, and return the run as kept. A run
+        already kept under its id must be the same run, and a run is kept under one id: an
+        id names one run for good, and a rerun is the run it repeats, as first kept."""
+        held = self.run(run.run_id)
+        if held is not None:
+            if held.identity != run.identity:
+                raise ValueError(f"run {run.run_id} is already kept, as another run")
+            return held
+        same = self.run_like(run)
+        if same is not None:
+            raise ValueError(f"run {run.run_id} is run {same.run_id}, already kept")
+        kept = Run(**{**run.__dict__, "kind": RunKind(run.kind),
+                      "imported_at": run.imported_at or utcnow()})
+        with self._write() as conn:
+            conn.execute(
+                "INSERT INTO runs (run_id, kind, stage, source, pipeline, version, model, "
+                "adapter, prompt_version, schema_version, fit, code_commit, machine, config, "
+                "bundle_id, created_at, imported_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (kept.run_id, kept.kind.value, kept.stage, kept.source, kept.pipeline,
+                 kept.version, kept.model, kept.adapter, kept.prompt_version,
+                 kept.schema_version, kept.fit, kept.code_commit, kept.machine,
+                 json.dumps(kept.config, sort_keys=True), kept.bundle_id, kept.created_at,
+                 kept.imported_at))
+        return kept
+
+    def run(self, run_id: str) -> Optional[Run]:
+        row = self._conn.execute("SELECT * FROM runs WHERE run_id=?", (run_id,)).fetchone()
+        return _run(row) if row else None
+
+    def run_like(self, run: Run) -> Optional[Run]:
+        """The kept run `run` repeats: the one with its identity, if any."""
+        return next((held for held in self.runs() if held.identity == run.identity), None)
+
+    def runs(self) -> List[Run]:
+        return [_run(row) for row in self._conn.execute(
+            "SELECT * FROM runs ORDER BY created_at, run_id")]
 
     #: The stage under which `attempts` holds that a provider was asked for an article's ids.
     LOOKUP_STAGE = "id_lookup"
@@ -1679,7 +1802,13 @@ def _artifact(row: sqlite3.Row) -> Artifact:
         summary=json.loads(row["summary"]) if row["summary"] else {},
         error=row["error"],
         updated_at=row["updated_at"],
+        run_id=row["run_id"],
     )
+
+
+def _run(row: sqlite3.Row) -> Run:
+    return Run(**{**dict(row), "kind": RunKind(row["kind"]),
+                  "config": json.loads(row["config"]) if row["config"] else {}})
 
 
 def _chunks(items: Sequence[str], size: int) -> Iterator[Sequence[str]]:

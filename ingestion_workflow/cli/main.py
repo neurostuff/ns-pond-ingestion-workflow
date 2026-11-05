@@ -1325,6 +1325,227 @@ def report_funnel_ids(
         typer.echo("\t".join(row))
 
 
+@report_app.command("coverage")
+def report_coverage(
+    out: Optional[Path] = typer.Option(
+        None, "--json", help="JSON export to write; default <catalog>/coverage.json."),
+    catalog: Optional[Path] = CatalogOption,
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Articles by stage, source, run, model and status, and the uploaded studies that
+    changed since their upload, by stage. Writes the JSON export too."""
+    from ingestion_workflow.services import coverage
+
+    root = _catalog_root(catalog, config)
+    found = coverage.coverage(root)
+    for line in coverage.render(found):
+        typer.echo(line)
+    typer.echo(f"\n-> {coverage.write_json(found, out or coverage.default_json(root))}")
+
+
+# -- runs --------------------------------------------------------------------
+
+runs_app = typer.Typer(help="The runs of the stages made away from ns-pond.",
+                       no_args_is_help=True)
+app.add_typer(runs_app, name="runs")
+
+
+@runs_app.command("list")
+def runs_list(
+    catalog: Optional[Path] = CatalogOption,
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Each run kept: its id, stage, source, model and adapter, when it ran and was
+    imported, and its articles by status. Read-only."""
+    from ingestion_workflow.services import coverage
+
+    found = coverage.coverage(_catalog_root(catalog, config))
+    for run in found["runs"]:
+        counts = ", ".join(f"{n:,} {status}" for status, n in sorted(run["articles"].items()))
+        typer.echo(f"{run['run_id']}  {run['kind']} {run['stage']}/{run['source']}  "
+                   f"ran {run['created_at']}  imported {run['imported_at']}")
+        typer.echo(f"  {run['version'] or '-'}  model {run['model'] or '-'}  "
+                   f"adapter {run['adapter'] or '-'}  prompt {run['prompt_version'] or '-'}"
+                   + (f"  fit {run['fit']}" if run.get("fit") else "")
+                   + f"  on {run['machine'] or '-'}")
+        typer.echo(f"  articles: {counts or 'none'}")
+    if not found["runs"]:
+        typer.echo("no runs kept.")
+
+
+# -- offload -----------------------------------------------------------------
+
+offload_app = typer.Typer(help="Stages run away from ns-pond: record, evidence, normalize.",
+                          no_args_is_help=True)
+app.add_typer(offload_app, name="offload")
+
+
+@offload_app.command("import")
+def offload_import(
+    run_file: Path = typer.Argument(..., help="The run, as JSON with the runs table's fields."),
+    results: List[Path] = typer.Argument(..., help="Its results, as JSON lines."),
+    catalog: Optional[Path] = CatalogOption,
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Record a run's results: one artifact per article, with the run as its provenance.
+
+    A row is refused, and recorded failed with the reason, when its text hash is not the
+    parse's, it names a parse key the parse lacks, the record it read is not the
+    article's current one, or its record fails study_schema's schema. Writes the coverage
+    JSON after."""
+    from ingestion_workflow.services import coverage
+    from ingestion_workflow.services.offload import importer as offload
+
+    root = _catalog_root(catalog, config)
+    run = offload.load_run(run_file)
+    with Catalog.open(root) as held:
+        report = offload.import_run(held, run, offload.read_rows(results))
+    for line in report.lines():
+        typer.echo(line)
+    typer.echo(f"coverage -> {coverage.write_json(coverage.coverage(root), coverage.default_json(root))}")
+
+
+MachineOption = typer.Option(..., "--machine", "-m", help="A machine named in `machines:`.")
+BundleArgument = typer.Argument(..., help="The bundle's directory, as export printed it.")
+
+
+def _remote(settings: Settings, name: str):
+    from ingestion_workflow.services.offload.remote import Remote
+
+    if name not in settings.machines:
+        raise typer.BadParameter(f"no machine {name!r} in the settings' machines: "
+                                 f"{', '.join(settings.machines) or 'none'}")
+    return Remote(name, settings.machines[name])
+
+
+def _bundle_remote(settings: Settings, bundle: Path):
+    from ingestion_workflow.services.offload.contract import BundleDir
+
+    return _remote(settings, BundleDir(bundle).bundle().machine)
+
+
+def _say(lines) -> None:
+    for line in lines:
+        typer.echo(line)
+
+
+def _offload(step):
+    """Run one offload step; a closed connection or a refusal ends the command, not a trace."""
+    from ingestion_workflow.services.offload.remote import RemoteError
+
+    try:
+        return step()
+    except (RemoteError, ValueError) as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1)
+
+
+@offload_app.command("export")
+def offload_export(
+    spec_file: Path = typer.Argument(..., help="The run to make (configs/offload/<name>.json)."),
+    machine: str = MachineOption,
+    articles: Optional[Path] = typer.Option(
+        None, "--articles", help="Article ids, one per line, in place of every article due."),
+    limit: int = typer.Option(0, "--limit", help="At most this many articles (0: all)."),
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Write a bundle of the articles whose record of the spec's source is not fresh."""
+    from ingestion_workflow.services.offload.contract import load_spec
+    from ingestion_workflow.services.offload.export import export
+
+    settings = _settings(config)
+    _remote(settings, machine)
+    spec = load_spec(spec_file)
+    wanted = None if articles is None else articles.read_text("utf-8").split()
+    with _catalog(settings) as catalog:
+        report = _offload(lambda: export(_context(settings, catalog, []), spec, machine,
+                                         articles=wanted, limit=limit,
+                                         workers=settings.max_workers))
+    _say(report.lines())
+
+
+@offload_app.command("setup")
+def offload_setup(
+    spec_file: Path = typer.Argument(..., help="The run whose model the machine must hold."),
+    machine: str = MachineOption,
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Check that the machine has what a job needs: the environments, the base model, the
+    directories and the partition."""
+    from ingestion_workflow.services.offload.contract import load_spec
+    from ingestion_workflow.services.offload.remote import check
+
+    spec = load_spec(spec_file)
+    lines = _offload(lambda: check(_remote(_settings(config), machine), spec.model,
+                                   spec.model_revision))
+    _say(lines)
+    if any(line.startswith("FAIL") for line in lines):
+        raise typer.Exit(1)
+
+
+@offload_app.command("push")
+def offload_push(bundle: Path = BundleArgument, config: Optional[Path] = ConfigOption) -> None:
+    """Copy the bundle, its job scripts and its adapter (once per commit) to its machine."""
+    from ingestion_workflow.services.offload.remote import push
+
+    settings = _settings(config)
+    _say(_offload(lambda: push(_bundle_remote(settings, bundle), bundle,
+                               hf_cache=settings.cache_root / "hf")))
+
+
+@offload_app.command("submit")
+def offload_submit(
+    bundle: Path = BundleArgument,
+    yes: bool = typer.Option(False, "--yes", help="Submit over the machine's SU cap."),
+    again: List[str] = typer.Option([], "--again", help="Submit this shard again (resumes it)."),
+    partition: Optional[str] = typer.Option(None, "--partition",
+                                             help="In place of the machine's."),
+    time: Optional[str] = typer.Option(None, "--time",
+                                       help="Each job's limit, in place of the spec's."),
+    shards: int = typer.Option(0, "--shards", help="Submit at most this many shards (0: all)."),
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Submit the bundle's shards not yet submitted, as many as the machine's queue has room
+    for. Prints the estimate first, and refuses one over the SU cap without --yes."""
+    from ingestion_workflow.services.offload.remote import submit
+
+    settings = _settings(config)
+    _say(_offload(lambda: submit(_bundle_remote(settings, bundle), bundle, yes=yes, again=again,
+                                 partition=partition, time=time, limit_shards=shards)))
+
+
+@offload_app.command("status")
+def offload_status(bundle: Path = BundleArgument, config: Optional[Path] = ConfigOption) -> None:
+    """Each shard's job, from sacct, and whether it is imported."""
+    from ingestion_workflow.services.offload.contract import BundleDir
+    from ingestion_workflow.services.offload.remote import job_states
+
+    held = BundleDir(bundle)
+    state = held.state()
+    states = _offload(lambda: job_states(_bundle_remote(_settings(config), bundle), state.jobs))
+    for shard in [s.name for s in held.bundle().shards]:
+        job = states.get(shard)
+        done = state.imported.get(shard)
+        typer.echo(f"{shard}  " + (f"job {state.jobs[shard]} {job['state']} {job['elapsed']}"
+                                   if job else "not submitted")
+                   + (f"  imported {done}" if done else ""))
+
+
+@offload_app.command("pull")
+def offload_pull(bundle: Path = BundleArgument, config: Optional[Path] = ConfigOption) -> None:
+    """Fetch and import each shard whose job completed; writes the coverage JSON after."""
+    from ingestion_workflow.services import coverage
+    from ingestion_workflow.services.offload.pull import pull
+
+    settings = _settings(config)
+    remote = _bundle_remote(settings, bundle)
+    with _catalog(settings) as catalog:
+        _say(_offload(lambda: pull(remote, bundle, catalog)))
+    root = settings.catalog_root
+    written = coverage.write_json(coverage.coverage(root), coverage.default_json(root))
+    typer.echo(f"coverage -> {written}")
+
+
 # -- searches ----------------------------------------------------------------
 
 searches_app = typer.Typer(
@@ -1386,6 +1607,64 @@ def searches_manifest(
     path = out or settings.data_root / "manifests" / f"search-{search_id}.jsonl"
     Identifiers([identifiers[i] for i in ids]).save(path)
     typer.echo(f"{len(ids):,} articles -> {path}")
+
+
+# -- data sources ------------------------------------------------------------
+
+data_sources_app = typer.Typer(
+    help="The data sources (studies, consortia, repositories) the datasources stage searches "
+         "papers for.", no_args_is_help=True,
+)
+app.add_typer(data_sources_app, name="data-sources")
+
+
+@data_sources_app.command("pull")
+def data_sources_pull(
+    provider: Optional[List[str]] = typer.Option(
+        None, "--provider", "-p",
+        help="A catalogue to pull (repeatable): re3data, scicrunch or jpnd. Default all; the "
+             "curated TSV is read every time.",
+    ),
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Pull the catalogues into the catalog and rebuild the dictionary from every record held."""
+    from ingestion_workflow.data_sources.merge import PROVIDERS
+    from ingestion_workflow.data_sources.providers import pullers
+    from ingestion_workflow.data_sources.pull import pull
+
+    settings = _settings(config)
+    found = pullers(settings)
+    if not provider and "scicrunch" not in found:
+        typer.echo("scicrunch left out: set scicrunch_api_key to pull it", err=True)
+    with _catalog(settings) as catalog:
+        try:
+            held, candidates = pull(catalog, found,
+                                    provider or [p for p in PROVIDERS if p in found])
+        except ValueError as exc:
+            raise typer.BadParameter(str(exc)) from None
+        sources, aliases = catalog.data_sources(), catalog.data_source_aliases()
+    for name, count in held.items():
+        typer.echo(f"{name:>10}: {count:,} records")
+    typer.echo(f"{len(sources):,} data sources, {len(aliases):,} aliases; {candidates:,} records "
+               "join no curated entry (`export` writes them to candidates.tsv)")
+
+
+@data_sources_app.command("export")
+def data_sources_export(
+    out: Path = typer.Argument(..., help="Directory to write data_sources.tsv and "
+                                         "paper_entities.tsv into."),
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Write the dictionary for neurostore's `manage data-sources load`, the matches of the
+    papers sync wrote for `manage data-sources link-matches`, and the catalogue records that
+    join no curated entry, for review."""
+    from ingestion_workflow.data_sources.export import export
+
+    settings = _settings(config)
+    with _catalog(settings) as catalog:
+        written = export(_context(settings, catalog, []), out)
+    for name, rows in written.items():
+        typer.echo(f"{rows:>9,} rows -> {out / name}")
 
 
 def main() -> None:

@@ -1,0 +1,243 @@
+{
+  "header": {
+    "artifact_kind": "parsed_paper",
+    "schema_version": "0.11.0",
+    "article_id": "26klegjq7mhi",
+    "identifiers": {
+      "pmid": "30069597",
+      "pmcid": null,
+      "doi": "10.1007/s00441-018-2899-6",
+      "alternative_pmids": null,
+      "alternative_pmcids": null,
+      "alternative_dois": null,
+      "preprint_dois": null,
+      "preprint_pmids": null,
+      "preprint_pmcids": null,
+      "publication_status": "published"
+    },
+    "producer": {
+      "name": "ns-pond-ingestion-workflow",
+      "version": "paper_parse.13",
+      "stage": "sync",
+      "model": null,
+      "prompt_version": null
+    },
+    "inputs": [
+      {
+        "artifact_kind": "extraction",
+        "fingerprint": "94317945d000ae6ed984262c7e3ccf29",
+        "producer_version": null
+      },
+      {
+        "artifact_kind": "metadata",
+        "fingerprint": "332149c08e89ee8e039c5dd241546499",
+        "producer_version": null
+      },
+      {
+        "artifact_kind": "triage",
+        "fingerprint": "20cc7c926e47569c94747214cbec6058",
+        "producer_version": null
+      },
+      {
+        "artifact_kind": "references",
+        "fingerprint": "937b160cf224b0528ed40aab2d2759e3",
+        "producer_version": null
+      },
+      {
+        "artifact_kind": "links",
+        "fingerprint": "c683666405078e6bf803e2b14a4177e2",
+        "producer_version": null
+      }
+    ],
+    "created_at": null,
+    "neurostore_base_study_id": "tS8tSUXeybTo"
+  },
+  "source": "ace",
+  "source_reason": null,
+  "text_copy": {
+    "route": "publisher",
+    "version": "vor",
+    "license": {
+      "license_id": "all_rights_reserved",
+      "determination": "stated",
+      "stated_by": "publisher_page",
+      "stated_as": "2018 Springer-Verlag GmbH Germany, part of Springer Nature"
+    },
+    "url": null,
+    "preprint_server": null,
+    "access": "unrecorded"
+  },
+  "reported_copies": null,
+  "text_path": "processed/ace/text.txt",
+  "text_sha256": "067a69b2021e98a832a2f32080848e5e58b7337dffed66dc3ac895cca3f5d680",
+  "text_length": 40321,
+  "bibliography": {
+    "title": "Imaging neuropeptide effects on human brain function",
+    "authors": [
+      {
+        "name": "Arthur Lefevre",
+        "orcid": "0000-0003-2847-0859",
+        "openalex_id": "A5065342764",
+        "affiliations": [
+          {
+            "text": "Schaller Research Group on Neuropeptides, German Cancer Research Center, Heidelberg, Germany",
+            "institutions": [
+              {
+                "ror": "04cdgtt98",
+                "name": "German Cancer Research Center",
+                "country": "DE"
+              }
+            ]
+          },
+          {
+            "text": "Schaller Research Group on Neuropeptides, German Cancer Research Center, Heidelberg, Germany",
+            "institutions": [
+              {
+                "ror": "04cdgtt98",
+                "name": "German Cancer Research Center",
+                "country": "DE"
+              }
+            ]
+          }
+        ],
+        "corresponding": true,
+        "emails": [
+          "a.lefevre@dkfz.de"
+        ]
+      },
+      {
+        "name": "Rene Hurlemann",
+        "orcid": "0000-0003-2628-565X",
+        "openalex_id": "A5011557766",
+        "affiliations": [
+          {
+            "text": "Department of Psychiatry and Division of Medical Psychology, University of Bonn, 53105, Bonn, Germany",
+            "institutions": [
+              {
+                "ror": "041nas322",
+                "name": "University of Bonn",
+                "country": "DE"
+              }
+            ]
+          }
+        ],
+        "corresponding": false,
+        "emails": null
+      },
+      {
+        "name": "Valery Grinevich",
+        "orcid": "0000-0002-6337-8866",
+        "openalex_id": "A5025600506",
+        "affiliations": [
+          {
+            "text": "Central Institute of Mental Health, Mannheim, Germany",
+            "institutions": [
+              {
+                "ror": "01hynnt93",
+                "name": "Central Institute of Mental Health",
+                "country": "DE"
+              }
+            ]
+          },
+          {
+            "text": "Schaller Research Group on Neuropeptides, German Cancer Research Center, Heidelberg, Germany",
+            "institutions": [
+              {
+                "ror": "04cdgtt98",
+                "name": "German Cancer Research Center",
+                "country": "DE"
+              }
+            ]
+          }
+        ],
+        "corresponding": false,
+        "emails": null
+      }
+    ],
+    "authors_provider": "openalex",
+    "correspondence_emails": null,
+    "journal": "Cell and Tissue Research",
+    "publication_year": 2018,
+    "volume": null,
+    "issue": null,
+    "pages": null,
+    "abstract": "The discovery of prosocial effects of oxytocin (OT) opened new directions for studying neuropeptide effects on the human brain. However, despite obvious effects of OT on neural responses as reported in numerous studies, other peptides have received less attention. Therefore, we will only briefly summarize evidence of OT effects on human functional magnetic resonance imaging (fMRI) and primarily focus on OT's sister neuropeptide arginine-vasopressin by presenting our own coordinated-based activation likelihood estimation meta-analysis. In addition, we will recapitulate rather limited data on few other neuropeptides, including pharmacological and genetic fMRI studies. Finally, we will review experiments with external neuropeptide administration to patients afflicted with mental disorders, such as autism or schizophrenia. In conclusion, despite remaining uncertainty regarding the penetrance of exogenous neuropeptides through the blood-brain barrier, it is evident that neuropeptides simultaneously influence the activity of limbic and cortical areas, indicating that these systems have a good potential for therapeutic drug development. Hence, this calls for further systematic studies of a wide spectrum of known and less known neuropeptides to understand their normal function in the brain and, subsequently, to tackle their potential contribution for pathophysiological mechanisms of mental disorders.",
+    "abstract_provider": "pubmed",
+    "language": [
+      "eng"
+    ],
+    "publication_types": [
+      "Journal Article",
+      "Review"
+    ],
+    "keywords": [
+      "ALE",
+      "Human",
+      "Neuropeptides",
+      "Oxytocin",
+      "Vasopressin",
+      "fMRI"
+    ],
+    "license": {
+      "license_id": "all_rights_reserved",
+      "determination": "stated",
+      "stated_by": "publisher_page",
+      "stated_as": "2018 Springer-Verlag GmbH Germany, part of Springer Nature"
+    },
+    "oa_status": "closed",
+    "corrections": [],
+    "provider": "semantic_scholar"
+  },
+  "is_meta_analysis": false,
+  "is_meta_analysis_basis": null,
+  "sections": [
+    {
+      "kind": "introduction",
+      "heading": null,
+      "start_char": 0,
+      "end_char": 18595
+    },
+    {
+      "kind": "discussion",
+      "heading": null,
+      "start_char": 18595,
+      "end_char": 19792
+    },
+    {
+      "kind": "references",
+      "heading": null,
+      "start_char": 19792,
+      "end_char": 40321
+    }
+  ],
+  "supplements": null,
+  "links": [
+    {
+      "url": "https://brainmap.org/ale",
+      "has_nifti": null,
+      "occurrences": [
+        {
+          "found_by": "text",
+          "start_char": 9270,
+          "end_char": 9299,
+          "reference_id": null
+        }
+      ]
+    },
+    {
+      "url": "http://isyslab.info/NeuroPep",
+      "has_nifti": null,
+      "occurrences": [
+        {
+          "found_by": "text",
+          "start_char": 11419,
+          "end_char": 11448,
+          "reference_id": null
+        }
+      ]
+    }
+  ],
+  "references": [],
+  "citations": null,
+  "tables": []
+}

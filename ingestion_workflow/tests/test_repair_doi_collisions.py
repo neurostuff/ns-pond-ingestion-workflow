@@ -118,7 +118,7 @@ def test_a_doi_the_named_owner_no_longer_holds_is_not_dropped(version_two, tmp_p
 def test_the_repair_runs_only_before_the_migration(version_two):
     root, table = version_two
     Catalog.open(root).close()
-    with pytest.raises(SystemExit, match="already at schema version 4"):
+    with pytest.raises(SystemExit, match="already at schema version 5"):
         repair.run(root, apply=True, table=table, out=io.StringIO())
 
 

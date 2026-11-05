@@ -12,6 +12,7 @@ REPLAY_EMAIL = "replay@example.com"
 
 # Sent by clients: dropped from the request when recording.
 SECRET_REQUEST_HEADERS = (
+    "apikey",
     "authorization",
     "x-api-key",
     "x-els-apikey",

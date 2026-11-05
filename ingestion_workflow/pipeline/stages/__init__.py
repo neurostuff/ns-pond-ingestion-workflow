@@ -1,12 +1,14 @@
 """The stages, in the order they run."""
 
 from .analyses import AnalysesStage
+from .datasources import DataSourcesStage
 from .download import DownloadStage
 from .extract import ExtractStage
 from .linkprobe import LinkprobeStage
 from .links import LinksStage
 from .metadata import MetadataStage
 from .notices import NoticesStage
+from .offloaded import OFFLOADED_STAGES, EvidenceStage, NormalizeStage, RecordStage
 from .passages import PassagesStage
 from .prose import ProseStage
 from .references import ReferencesStage
@@ -50,15 +52,22 @@ from .upload import UploadStage
 #:
 #: `sync` writes the corpus copy and the coordinate parse, and `upload` then
 #: posts that parse to neurostore's study_schema ingester.
+#:
+#: `record`, `evidence` and `normalize` are the schema extraction, its evidence and its
+#: terms' normalization, one artifact per extractor family. They run away from ns-pond
+#: and are imported (`ingest offload import`), so a run leaves them out unless named.
+#: `datasources` searches the text of each paper sync wrote for the data sources
+#: `ingest data-sources pull` keeps in the catalog. No stage reads it:
+#: `ingest data-sources export` writes its matches for neurostore.
 STAGE_ORDER = ("download", "extract", "reflist", "references", "links", "linkprobe", "passages",
                "metadata", "notices", "triage", "analyses", "prose", "resolve", "roles", "space",
-               "sync", "upload")
+               "sync", "record", "evidence", "normalize", "upload", "datasources")
 
 #: Stages that exist only when prose is switched on.
 PROSE_STAGES = ("passages", "prose", "resolve")
 
 #: Stages a run without `--stage` leaves out.
-OPT_IN_STAGES = ("reflist",)
+OPT_IN_STAGES = ("reflist", *OFFLOADED_STAGES)
 
 STAGE_TYPES = {
     "download": DownloadStage,
@@ -67,8 +76,12 @@ STAGE_TYPES = {
     "linkprobe": LinkprobeStage,
     "metadata": MetadataStage,
     "notices": NoticesStage,
+    "record": RecordStage,
+    "evidence": EvidenceStage,
+    "normalize": NormalizeStage,
     "triage": TriageStage,
     "analyses": AnalysesStage,
+    "datasources": DataSourcesStage,
     "passages": PassagesStage,
     "prose": ProseStage,
     "references": ReferencesStage,
@@ -105,16 +118,21 @@ def build(names, settings):
 
 __all__ = [
     "AnalysesStage",
+    "DataSourcesStage",
     "DownloadStage",
+    "EvidenceStage",
     "ExtractStage",
     "LinkprobeStage",
     "LinksStage",
     "MetadataStage",
     "NoticesStage",
+    "NormalizeStage",
+    "OFFLOADED_STAGES",
     "OPT_IN_STAGES",
     "PROSE_STAGES",
     "PassagesStage",
     "ProseStage",
+    "RecordStage",
     "ReferencesStage",
     "ReflistStage",
     "ResolveStage",

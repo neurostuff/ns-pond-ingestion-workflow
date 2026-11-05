@@ -55,6 +55,12 @@ dependencies = [
   # LinkSource), and LicenseId spelled as its member names (`cc_by`; paper-parse 0.11.0).
   # Pinned to neurostuff/study_schema#55's head until it merges; then to its merge commit.
   "study-schema @ git+https://github.com/neurostuff/study_schema.git@488e1ee4eaf6221aba563a50f7d06c226cece75c",
+  # The astra-distill models' paper prompt, compact record format and frozen schema, which
+  # `ingest offload export` builds requests with and `pull` restores records with. Pinned to
+  # neurostuff/pondie#32's head until it merges.
+  "pondie-astra @ git+https://github.com/neurostuff/pondie.git@ee956b83f8bcdda49537fea091bef3f5b3eb3510#subdirectory=packages/pondie-astra",
+  # Fetches the private adapters `ingest offload push` copies to a machine.
+  "huggingface_hub>=0.24",
 ]
 
 [project.optional-dependencies]
@@ -73,6 +79,13 @@ lint = [
 mineru = [
   "mineru[full]==4.0.12",
 ]
+# The environments an offloaded job runs in on each machine, which `ingest offload setup`
+# checks: vLLM to serve (infer-*), and torch, peft and transformers to merge an adapter
+# (merge-*). They are built on the machine, not here; these pin what was built.
+infer-vista = ["vllm==0.28.0", "torch==2.13.0", "transformers==5.16.1"]
+merge-vista = ["torch==2.13.0", "transformers==5.17.0", "peft==0.21.0", "accelerate==1.15.0"]
+infer-ls6 = ["vllm==0.28.0", "torch==2.13.0", "transformers==5.16.1"]
+merge-ls6 = ["torch==2.11.0", "transformers==5.17.0", "peft==0.21.0", "accelerate==1.15.0"]
 
 [project.scripts]
 ingest = "ingestion_workflow.cli:app"
@@ -84,6 +97,9 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["ingestion_workflow*"]
+
+[tool.setuptools.package-data]
+"ingestion_workflow.data_sources" = ["curated.tsv"]
 
 [tool.ruff]
 target-version = "py39"
