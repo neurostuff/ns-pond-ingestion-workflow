@@ -1,7 +1,9 @@
 """`ingest offload import`: what it keeps, what it refuses, and when what it kept goes stale.
 
 The record is a real one: article 26klegjq7mhi of the 27B's collected set (beast
-`ns-collect/set-20261101`), with its parse's text hash and its one key.
+`ns-collect/set-20261101`), with its parse's text hash and its one key. So is the one the
+schema refuses until pondie's fixes give its analysis a model: lcvqelwnalmx, the smallest of
+the 84 refused records of that set the fixes make valid.
 """
 
 from __future__ import annotations
@@ -26,6 +28,7 @@ from ingestion_workflow.pipeline.stages.offloaded import (
 from ingestion_workflow.services.offload.importer import (
     RECORD_MOVED,
     SCHEMA_INVALID,
+    _schema_problem,
     import_run,
 )
 
@@ -42,6 +45,9 @@ def as_kept(record):
 
 TEXT_SHA256 = "067a69b2021e98a832a2f32080848e5e58b7337dffed66dc3ac895cca3f5d680"
 KEY = "analysis#840c7bec806dd3ad"
+NO_MODEL = json.loads((DATA / "lcvqelwnalmx.extraction.json").read_text())
+NO_MODEL_PARSE = DATA / "paper-lcvqelwnalmx" / "parse" / "coordinate_parse.json"
+NO_MODEL_KEY = "analysis#5fa7d67fee70b632"
 ARTICLE, BASE_STUDY = "26klegjq7mhi", "tS8tSUXeybTo"
 
 
@@ -102,6 +108,30 @@ def test_a_record_is_kept_with_its_run_in_place_of_the_placeholder(ctx):
         "extractor_model": "Qwen/Qwen3.8-27B", "extractor_version": "ns-27b-e-20261031",
         "source_text_hash": TEXT_SHA256, "extraction_date": "2026-10-31"}
     assert _plan(ctx, RecordStage(ctx.settings)).fresh == 1
+    # a record the schema accepts is kept as the model wrote it
+    assert "repaired" not in kept.summary
+    assert kept.summary["record_digest"] == record_digest(as_kept(RECORD))
+
+
+def test_a_record_pondie_s_fixes_make_valid_is_kept_repaired(ctx, tmp_path):
+    from ingestion_workflow.services.offload.importer import _fixes_unavailable
+
+    if _fixes_unavailable():
+        pytest.skip(_fixes_unavailable())
+    assert "'model_estimation' is a required property" in _schema_problem(as_kept(NO_MODEL))
+    parse = json.loads(NO_MODEL_PARSE.read_text())
+    (tmp_path / "pond" / BASE_STUDY / "parse" / "coordinate_parse.json").write_text(
+        json.dumps(parse))
+    report = import_run(ctx.catalog, _run(), [_row(record=copy.deepcopy(NO_MODEL),
+                                                   text_sha256=parse["text_sha256"])])
+    assert report.recorded == {"ok": 1} and not report.refused
+    kept = ctx.catalog.artifact(ARTICLE, "record", "ns-27b")
+    assert "missing_models" in kept.summary["repaired"]
+    assert kept.summary["parse_keys"] == [NO_MODEL_KEY]
+    payload = ctx.catalog.payload(kept)
+    assert _schema_problem(payload) is None
+    assert payload["analyses"][0]["model_estimation"]
+    assert _plan(ctx, RecordStage(ctx.settings)).fresh == 1
 
 
 def test_a_record_naming_a_key_the_parse_lacks_is_refused(ctx):
@@ -126,6 +156,20 @@ def test_a_record_study_schema_refuses_is_refused(ctx):
     record["analyses"][0]["invented"] = 1
     import_run(ctx.catalog, _run(), [_row(record=record)])
     assert ctx.catalog.artifact(ARTICLE, "record", "ns-27b").error.startswith(SCHEMA_INVALID)
+
+
+def test_a_refused_record_stays_refused_where_pondie_s_fixes_cannot_load(ctx, monkeypatch):
+    from ingestion_workflow.services.offload import importer
+
+    monkeypatch.setattr(importer, "_fixes_unavailable",
+                        lambda: "ModuleNotFoundError: No module named 'pondie'")
+    record = copy.deepcopy(RECORD)
+    record["analyses"][0]["invented"] = 1
+    report = import_run(ctx.catalog, _run(), [_row(record=record)])
+    assert ctx.catalog.artifact(ARTICLE, "record", "ns-27b").error.startswith(SCHEMA_INVALID)
+    assert report.unrepaired == 1
+    assert "1 refused records were not given pondie's fixes: ModuleNotFoundError" in \
+        "\n".join(report.lines())
 
 
 def test_an_article_the_catalog_does_not_know_is_left_out(ctx):

@@ -89,7 +89,9 @@ infer-ls6 = ["vllm==0.28.0", "torch==2.13.0", "transformers==5.16.1"]
 merge-ls6 = ["torch==2.11.0", "transformers==5.17.0", "peft==0.21.0", "accelerate==1.15.0"]
 # `ingestion_workflow.normalization`: task, condition, medical-condition and contrast-set
 # normalization of extraction records. pondie supplies the MONDO/ONVOC linker and the
-# sidecar shape, and the record's deterministic fixes (`normalize_assign.repair`). The pin
+# sidecar shape, and the record's deterministic fixes (`normalize_assign.repair`), which
+# normalize gives every record and `ingest offload import` a record the schema refuses. pondie
+# reads the schema from its study_schema checkout (`PONDIE_SCHEMA_DIR`). The pin
 # is neurostuff/pondie#33's head until it merges, on the merge of #31, which pins the same
 # study_schema commit as above. scikit-learn is pinned to the version the fixed fits were
 # pickled with. spaCy's en_core_web_sm, pondie's negation parser, is a separate download:
