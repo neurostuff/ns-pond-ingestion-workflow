@@ -100,7 +100,7 @@ def world(tmp_path, monkeypatch):
     spec = spec.model_copy(update={"adapter_sha256": hashlib.sha256(b"weights").hexdigest()})
     fetched = []
 
-    def fetch(adapter_ref, sha, cache, token):
+    def fetch(adapter_ref, sha, cache):
         fetched.append(adapter_ref)
         return adapter
     monkeypatch.setattr(R, "fetch_adapter", fetch)
