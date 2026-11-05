@@ -5,6 +5,11 @@ stage then assigns each article against it (`assign`). The run is the fit and th
 assigns: `fit` is the fit's id, which is its fingerprint, and `version` hashes the assign
 code, the vocabularies and pondie's commit, so a new fit or new assign code is a new run and
 every normalization made under the old one is stale.
+
+Before assigning, the record's old per-field normalizations are made again (`renormalize`):
+the siblings study_schema#56 removed (`age_unit_normalized`, `category_normalized`) are
+dropped, and pondie's `apply_normalized` writes each field's `normalized` sidecar, so the
+record holds to the schema pondie and this package pin.
 """
 
 from __future__ import annotations
@@ -20,6 +25,10 @@ from ingestion_workflow.pipeline.stage import recorded_path
 
 #: The pipeline a normalize run made in-process is filed under.
 PIPELINE = "ns-pond normalize"
+#: Bumped when `renormalize` changes what it does; part of the run's version.
+RENORMALIZE_VERSION = 1
+#: The group slots whose entries carried a `category_normalized` sibling before study_schema#56.
+CATEGORY_SLOTS = ("sex_distribution", "handedness_distribution")
 
 
 def describe(fit_dir: Path) -> Dict[str, Any]:
@@ -29,7 +38,7 @@ def describe(fit_dir: Path) -> Dict[str, Any]:
     manifest = json.loads((Path(fit_dir) / "manifest.json").read_text("utf-8"))
     vocabulary = api.vocab_versions()
     assigner = {"assign_code_sha256": api.digest(api.code_hashes()), "vocab": vocabulary,
-                "pondie_commit": api.pondie_commit()}
+                "pondie_commit": api.pondie_commit(), "renormalize": RENORMALIZE_VERSION}
     embedding = manifest["models"]["embedding"]
     return {"fit_id": manifest["fit_id"], "vocabulary": vocabulary,
             "version": "assign-" + api.digest(assigner)[:12],
@@ -81,11 +90,40 @@ def assign(record: Dict[str, Any], text: str, bibliography: Optional[dict], fit_
     return normalize_record(record, text, bibliography, str(fit_dir), article_id=article_id)
 
 
+def drop_siblings(record: Dict[str, Any]) -> int:
+    """Remove the per-field normalizations study_schema#56 replaced with sidecars, in place;
+    how many were removed."""
+    dropped = 0
+    for group in record.get("groups") or []:
+        if not isinstance(group, dict):
+            continue
+        dropped += group.pop("age_unit_normalized", None) is not None
+        for slot in CATEGORY_SLOTS:
+            for entry in group.get(slot) or []:
+                if isinstance(entry, dict):
+                    dropped += entry.pop("category_normalized", None) is not None
+    return dropped
+
+
+def apply_normalized(record: Dict[str, Any]) -> None:
+    """pondie's per-field normalizers, each writing its field's `normalized` sidecar."""
+    from pondie.normalization import apply_normalized as apply
+
+    apply(record)
+
+
+def renormalize(record: Dict[str, Any]) -> Dict[str, Any]:
+    """`record` with its old per-field normalizations made again as sidecars, in place."""
+    drop_siblings(record)
+    apply_normalized(record)
+    return record
+
+
 def _assign_one(job) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
     """(the normalized record, None), or (None, why it failed): a worker's whole answer."""
     record, text, bibliography, fit_dir, article_id = job
     try:
-        return assign(record, text, bibliography, Path(fit_dir), article_id), None
+        return assign(renormalize(record), text, bibliography, Path(fit_dir), article_id), None
     except Exception as exc:  # noqa: BLE001 - this article's failure
         return None, f"{type(exc).__name__}: {exc}"
 
@@ -150,5 +188,5 @@ def fit_corpus(catalog: Catalog, inputs: Dict[str, Artifact], out_dir: Path, *,
     return fit(records, texts, bibliographies, str(out_dir), **kw)
 
 
-__all__ = ["PIPELINE", "assign", "assign_all", "bibliography_of", "describe", "fit_corpus",
-           "run_for", "text_of", "text_source"]
+__all__ = ["PIPELINE", "assign", "assign_all", "bibliography_of", "describe", "drop_siblings",
+           "fit_corpus", "renormalize", "run_for", "text_of", "text_source"]

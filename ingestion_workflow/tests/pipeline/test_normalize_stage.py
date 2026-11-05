@@ -2,8 +2,8 @@
 
 The paper is article 26klegjq7mhi with its 27B record and ev1 evidence. The library
 (`ingestion_workflow.normalization`, tested on its own) is stood in for at
-`normalize_assign`'s two calls into it, `describe` and `assign`: what is checked here is
-what the stage reads, which run it records, and when it runs again.
+`normalize_assign`'s calls into it, `describe`, `assign` and pondie's `apply_normalized`:
+what is checked here is what the stage reads, which run it records, and when it runs again.
 """
 
 from __future__ import annotations
@@ -55,6 +55,10 @@ class Library:
                 "model": "taskcat + sentence-transformers/all-MiniLM-L6-v2@c9745ed",
                 "assigner": {"assign_code_sha256": "a" * 64}}
 
+    def apply_normalized(self, record):
+        for group in record.get("groups") or []:
+            group.setdefault("age_unit", {}).setdefault("normalized", [{"term": "years"}])
+
     def assign(self, record, text, bibliography, fit_dir, article_id):
         self.calls.append({"article_id": article_id, "text": text, "bibliography": bibliography,
                            "fit_dir": fit_dir, "record": copy.deepcopy(record)})
@@ -67,6 +71,7 @@ def library(monkeypatch):
     held = Library()
     monkeypatch.setattr(normalize_assign, "describe", held.describe)
     monkeypatch.setattr(normalize_assign, "assign", held.assign)
+    monkeypatch.setattr(normalize_assign, "apply_normalized", held.apply_normalized)
     return held
 
 
@@ -97,6 +102,14 @@ def _recorded(ctx, evidence="ok"):
                [{"article_id": ARTICLE, "text_sha256": PARSE["text_sha256"], **row}])
 
 
+def _renormalized(library, record):
+    """`record` as the stage hands it to the fit: its old normalizations made again."""
+    record = copy.deepcopy(record)
+    normalize_assign.drop_siblings(record)
+    library.apply_normalized(record)
+    return record
+
+
 def _plan(ctx, stage):
     return stage.plan(ctx, [ctx.catalog.ref(ARTICLE)],
                       ctx.catalog.artifacts([ARTICLE], stage.name),
@@ -123,7 +136,7 @@ def test_the_evidence_record_is_assigned_with_the_parse_s_text_under_the_named_f
     (call,) = library.calls
     evidence = ctx.catalog.artifact(ARTICLE, "evidence", "ns-27b")
     assert plan.pending[0].upstream.stage == "evidence"
-    assert call["record"] == ctx.catalog.payload(evidence)
+    assert call["record"] == _renormalized(library, ctx.catalog.payload(evidence))
     assert call["text"] == (DATA / "paper-26klegjq7mhi/processed/ace/text.txt").read_bytes() \
         .decode("utf-8")
     assert call["article_id"] == ARTICLE and call["bibliography"] is None
@@ -142,7 +155,7 @@ def test_a_skipped_evidence_run_s_article_is_normalized_from_its_record(ctx, lib
     _recorded(ctx, evidence="skipped")
     _normalize(ctx)
     (call,) = library.calls
-    assert record_digest(call["record"]) == record_digest(RECORD)
+    assert record_digest(call["record"]) == record_digest(_renormalized(library, RECORD))
     assert ctx.catalog.artifact(ARTICLE, "normalize", "ns-27b").summary["read"] == "record"
 
 
@@ -200,3 +213,16 @@ def test_workers_answer_in_order_and_share_the_first_job_s_loaded_fit(library):
     assert [rec["local_id"] for _, (rec, err) in out if rec] == ["a", "c", "d", "e"]
     # the first job ran here, before the fork; the rest in the workers
     assert [c["article_id"] for c in library.calls] == ["a"]
+
+
+def test_the_old_normalized_siblings_are_dropped_and_made_again_as_sidecars(ctx, library):
+    _recorded(ctx)
+    _normalize(ctx)
+    (call,) = library.calls
+    (group,) = call["record"]["groups"]
+    assert "age_unit_normalized" not in group and group["age_unit"]["normalized"]
+    for slot in normalize_assign.CATEGORY_SLOTS:
+        assert all("category_normalized" not in e for e in group.get(slot) or [])
+    (held,) = EVIDENCED["groups"]
+    assert "age_unit_normalized" in held  # the 27B's records carry them; the fixture is one
+    assert normalize_assign.drop_siblings(copy.deepcopy(EVIDENCED)) == 3
