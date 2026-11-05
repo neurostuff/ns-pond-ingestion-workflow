@@ -221,8 +221,7 @@ def test_the_old_normalized_siblings_are_dropped_and_made_again_as_sidecars(ctx,
     (call,) = library.calls
     (group,) = call["record"]["groups"]
     assert "age_unit_normalized" not in group and group["age_unit"]["normalized"]
-    for slot in normalize_assign.CATEGORY_SLOTS:
-        assert all("category_normalized" not in e for e in group.get(slot) or [])
+    assert "category_normalized" not in json.dumps(call["record"])
     (held,) = EVIDENCED["groups"]
     assert "age_unit_normalized" in held  # the 27B's records carry them; the fixture is one
     assert normalize_assign.drop_siblings(copy.deepcopy(EVIDENCED)) == 3

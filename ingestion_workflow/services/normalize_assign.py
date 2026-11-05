@@ -26,9 +26,7 @@ from ingestion_workflow.pipeline.stage import recorded_path
 #: The pipeline a normalize run made in-process is filed under.
 PIPELINE = "ns-pond normalize"
 #: Bumped when `renormalize` changes what it does; part of the run's version.
-RENORMALIZE_VERSION = 1
-#: The group slots whose entries carried a `category_normalized` sibling before study_schema#56.
-CATEGORY_SLOTS = ("sex_distribution", "handedness_distribution")
+RENORMALIZE_VERSION = 2
 
 
 def describe(fit_dir: Path) -> Dict[str, Any]:
@@ -98,8 +96,9 @@ def drop_siblings(record: Dict[str, Any]) -> int:
         if not isinstance(group, dict):
             continue
         dropped += group.pop("age_unit_normalized", None) is not None
-        for slot in CATEGORY_SLOTS:
-            for entry in group.get(slot) or []:
+        # every distribution (sex, gender, race, handedness, ...) carried one per category
+        for slot in group.values():
+            for entry in slot if isinstance(slot, list) else ():
                 if isinstance(entry, dict):
                     dropped += entry.pop("category_normalized", None) is not None
     return dropped
