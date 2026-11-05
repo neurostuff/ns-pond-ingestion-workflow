@@ -4,8 +4,9 @@ Fallback source for articles that neither PubMed Central (via pubget) nor
 Elsevier serve as XML. Candidate PDF URLs come from every open-access
 location OpenAlex lists and from Semantic Scholar's ``openAccessPdf``; each is
 tried in turn until one is a PDF. A location with only a landing page is
-followed through the PDF the page names in ``citation_pdf_url``. Parsing is
-Docling's, and it reads every downloaded PDF, whichever source fetched it.
+followed through the PDF the page names in ``citation_pdf_url``. Every
+downloaded PDF, whichever source fetched it, is read by the first of
+`pdf_engines` (MinerU, then Docling) that can read it.
 `fetch_pdf` and `store_pdf` are the fetching and storing the sources whose
 download is a PDF share.
 """
@@ -29,6 +30,7 @@ from urllib.parse import urljoin, urlsplit
 
 import requests
 
+from ingestion_workflow.clients.model_server import ModelUnavailable
 from ingestion_workflow.clients.openalex import (
     LocationLookupFailed,
     OaLocation,
@@ -534,7 +536,7 @@ def store_pdf(
 
 
 class PdfExtractor(BaseExtractor):
-    """Extractor that downloads open-access PDFs and parses them with Docling."""
+    """Extractor that downloads open-access PDFs and reads them with MinerU or Docling."""
 
     _SUPPORTED_IDS = {"doi", "pmid"}
 
@@ -830,15 +832,95 @@ class PdfExtractor(BaseExtractor):
         download_results: List[DownloadResult],
         progress_hook: Callable[[int], None] | None = None,
     ) -> List[ExtractionResult]:
+        """Read each PDF with the first of `pdf_engines` that reads it.
+
+        An engine that cannot read a PDF hands it to the next; one that cannot run at
+        all raises `ModelUnavailable` rather than handing every PDF on. Each text records
+        the engine that made it, and why, as its `text_source`."""
         extraction_root = Path(self.settings.data_root) / "extractions" / "pdf"
+        results: List[Optional[ExtractionResult]] = [None] * len(download_results)
+        passed_over: Dict[int, str] = {}
+        remaining = list(range(len(download_results)))
+        for engine in self.settings.pdf_engines:
+            if not remaining:
+                break
+            batch = [download_results[i] for i in remaining]
+            if engine == "mineru":
+                answers = self._extract_with_mineru(batch, extraction_root)
+            else:
+                answers = self._extract_with_docling(batch, extraction_root)
+            still = []
+            for index, answer in zip(remaining, answers):
+                if isinstance(answer, str):
+                    passed_over[index] = "; ".join(
+                        filter(None, [passed_over.get(index), f"{engine}: {answer}"]))
+                    still.append(index)
+                    continue
+                answer.text_source = {"method": engine, "reason": (
+                    f"after {passed_over[index]}" if index in passed_over
+                    else "first of pdf_engines")}
+                results[index] = answer
+                emit_progress(progress_hook)
+            remaining = still
+        for index in remaining:
+            results[index] = _build_failure_content(download_results[index], passed_over[index])
+            emit_progress(progress_hook)
+        return results
+
+    def _extract_with_mineru(
+        self, download_results: List[DownloadResult], extraction_root: Path
+    ) -> List[Any]:
+        """Each PDF's content as MinerU read it, or why MinerU read none.
+
+        Raises `ModelUnavailable` when MinerU read none of two or more PDFs: then its
+        workers, not the PDFs, are at fault."""
+        from ingestion_workflow.extractors.mineru_convert import mineru_gpus
+
+        answers: List[Any] = ["no PDF file in the download"] * len(download_results)
+        found = [index for index, d in enumerate(download_results) if _pdf_file(d)]
+        if not found:
+            return answers
+        gpus = mineru_gpus()
+        logger.info("PDF extraction: %d MinerU worker(s) over GPU(s) %s", len(gpus), gpus)
+        contents = self._run_extraction_pipeline(
+            [download_results[index] for index in found],
+            extraction_root=extraction_root,
+            worker=_extract_mineru_pdf,
+            worker_count=len(gpus),
+            limits=Limits(
+                memory_mb=self.settings.mineru_extract_memory_mb,
+                timeout_s=self.settings.pdf_extract_timeout_s,
+            ),
+            worker_initializer=_start_mineru_worker,
+            worker_initargs=(gpus,),
+            source_name="MinerU",
+            failure_message="MinerU extraction did not produce a result.",
+            failure_builder=_build_failure_content,
+        )
+        read = 0
+        for index, content in zip(found, contents):
+            if _read_nothing(content):
+                answers[index] = content.error_message
+            else:
+                answers[index] = content
+                read += 1
+        if not read and len(found) > 1:
+            raise ModelUnavailable(
+                f"MinerU read none of {len(found)} PDFs: {answers[found[0]]}")
+        return answers
+
+    def _extract_with_docling(
+        self, download_results: List[DownloadResult], extraction_root: Path
+    ) -> List[Any]:
+        """Each PDF's content as Docling read it, or why Docling read none."""
         gpus = usable_cuda_devices()
         worker_count = self._worker_count(gpus)
         logger.info(
-            "PDF extraction: %d worker(s) over %s",
+            "PDF extraction: %d Docling worker(s) over %s",
             worker_count,
             f"GPU(s) {gpus}" if gpus else "CPU",
         )
-        return self._run_extraction_pipeline(
+        contents = self._run_extraction_pipeline(
             download_results,
             extraction_root=extraction_root,
             worker=_extract_pdf_article,
@@ -854,8 +936,9 @@ class PdfExtractor(BaseExtractor):
             source_name="PDF",
             failure_message="PDF extraction did not produce a result.",
             failure_builder=_build_failure_content,
-            progress_hook=progress_hook,
         )
+        return [content.error_message if _read_nothing(content) else content
+                for content in contents]
 
     def _worker_count(self, gpus: List[int]) -> int:
         """How many Docling processes to run at once.
@@ -950,6 +1033,23 @@ def _merge_split_coordinate_columns(frame: Any) -> Any:
     return result
 
 
+def _start_mineru_worker(slot: int, gpus: List[int]) -> None:
+    """One GPU for this worker, then its MinerU parser."""
+    from ingestion_workflow.extractors.mineru_convert import open_parser
+
+    _pin_worker_to_gpu(slot, gpus)
+    open_parser()
+
+
+def _extract_mineru_pdf(download_result: DownloadResult, extraction_root: Path | str) -> Any:
+    """One PDF read by this worker's MinerU parser into text plus per-table files."""
+    from ingestion_workflow.extractors.mineru_convert import parse_pdf
+
+    pdf = _pdf_file(download_result)
+    middle = parse_pdf(Path(pdf.file_path))
+    return _extract_mineru_article(download_result, middle, extraction_root)
+
+
 def _pin_worker_to_gpu(slot: int, gpus: List[int]) -> None:
     """Give this worker process exactly one GPU, before torch is imported.
 
@@ -980,28 +1080,17 @@ def _extract_pdf_article(
     download_result: DownloadResult,
     extraction_root: Path | str,
 ) -> ExtractedContent:
-    """Convert one downloaded PDF into text plus per-table CSV files."""
-    from pubget._coordinate_space import _neurosynth_guess_space
-    from pubget._coordinates import _extract_coordinates_from_table
-
+    """Convert one downloaded PDF with Docling into text plus per-table CSV files."""
     from ingestion_workflow.extractors.docling_convert import (
         convert_pdf,
         normalize_text_tokens,
     )
-    from ingestion_workflow.extractors.utils import (
-        coordinate_from_row,
-        coordinate_space_from_guess,
-    )
 
-    slug = download_result.identifier.slug
-    pdf_file = next(
-        (f for f in download_result.files if f.file_type is FileType.PDF),
-        None,
-    )
+    pdf_file = _pdf_file(download_result)
     if pdf_file is None:
         return _build_failure_content(download_result, "No PDF file in download result.")
 
-    output_dir = Path(extraction_root) / safe_hash_stem(slug)
+    output_dir = Path(extraction_root) / safe_hash_stem(download_result.identifier.slug)
     tables_dir = output_dir / "tables"
     tables_dir.mkdir(parents=True, exist_ok=True)
 
@@ -1017,20 +1106,13 @@ def _extract_pdf_article(
     misread = symbols_as_digits(full_text)
     if misread:
         # The cells are read from the same layer, so the tables lost their signs too.
-        return ExtractedContent(
-            slug=slug,
-            source=DownloadSource.PDF,
-            identifier=download_result.identifier,
-            symbols_as_digits={**misread, "tables_set_aside": len(document.tables)},
-        )
+        return _set_aside(download_result, misread, len(document.tables))
 
-    article_space = coordinate_space_from_guess(_neurosynth_guess_space(full_text))
-
+    article_space = _article_space(full_text)
     extracted_tables: List[ExtractedTable] = []
     for index, table in enumerate(document.tables):
         caption = " ".join(_caption_texts(table, document)).strip()
         footer = " ".join(_footnote_texts(table, document)).strip()
-        table_id = sanitize_table_id(None, _table_label(caption), index)
 
         # Normalise the cells on the document, before either export reads them.
         # `normalize_text_tokens` turns Docling's minus glyphs into ASCII, and a
@@ -1041,10 +1123,6 @@ def _extract_pdf_article(
             cell.text = normalize_text_tokens(cell.text)
 
         frame = table.export_to_dataframe(doc=document).map(normalize_text_tokens)
-        frame = _merge_split_coordinate_columns(frame)
-        csv_path = tables_dir / f"{table_id}.csv"
-        frame.to_csv(csv_path, index=False)
-
         # HTML is what the serialiser reads best: `<th>` marks the header and
         # colspan/rowspan survive, where a DataFrame has neither. Docling
         # detects that structure and `export_to_dataframe` discards it, so a pdf
@@ -1052,44 +1130,159 @@ def _extract_pdf_article(
         # packed into one space-separated cell. The CSV stays, because
         # `_extract_coordinates_from_table` and `_merge_split_coordinate_columns`
         # both want the frame.
-        html_path = _write_table_html(table, document, tables_dir, table_id)
+        extracted_tables.append(_extracted_table(
+            download_result.identifier.slug, index, caption, footer, frame, tables_dir,
+            article_space,
+            lambda table_id, table=table: _write_table_html(table, document, tables_dir, table_id),
+        ))
 
+    return _pdf_content(download_result, full_text_path, extracted_tables, figure_captions)
+
+
+def _extract_mineru_article(
+    download_result: DownloadResult,
+    middle: Mapping[str, Any],
+    extraction_root: Path | str,
+) -> ExtractedContent:
+    """Read MinerU's middle JSON for one downloaded PDF into text plus per-table files."""
+    from ingestion_workflow.extractors.docling_convert import normalize_text_tokens
+    from ingestion_workflow.extractors.figure_captions import append_legends, dedupe
+    from ingestion_workflow.extractors.mineru_convert import (
+        read_middle_json,
+        table_frame,
+    )
+
+    output_dir = Path(extraction_root) / safe_hash_stem(download_result.identifier.slug)
+    tables_dir = output_dir / "tables"
+    tables_dir.mkdir(parents=True, exist_ok=True)
+
+    document = read_middle_json(middle)
+    full_text, figure_captions = append_legends(
+        normalize_text_tokens(document.text),
+        dedupe((fig_id, normalize_text_tokens(legend)) for fig_id, legend in document.captions),
+    )
+    full_text_path = output_dir / "article.txt"
+    full_text_path.write_text(full_text, encoding="utf-8")
+
+    misread = symbols_as_digits(full_text)
+    if misread:
+        return _set_aside(download_result, misread, len(document.tables))
+
+    article_space = _article_space(full_text)
+    extracted_tables: List[ExtractedTable] = []
+    for index, table in enumerate(document.tables):
+        html = normalize_text_tokens(table.html)
+        if "<table" not in html.lower():
+            # A caption whose body MinerU did not read: nothing to store but the caption,
+            # which the text holds.
+            continue
+
+        def write_html(table_id: str, html: str = html) -> Path:
+            path = tables_dir / f"{table_id}.html"
+            path.write_text(html, encoding="utf-8")
+            return path
+
+        extracted_tables.append(_extracted_table(
+            download_result.identifier.slug, index, normalize_text_tokens(table.caption),
+            normalize_text_tokens(table.footer), table_frame(html), tables_dir, article_space,
+            write_html,
+        ))
+
+    return _pdf_content(download_result, full_text_path, extracted_tables, figure_captions)
+
+
+def _read_nothing(content: ExtractedContent) -> bool:
+    """A failure that produced neither text nor tables, which the next engine may read."""
+    return bool(content.error_message) and not content.full_text_path and not content.tables
+
+
+def _pdf_file(download_result: DownloadResult) -> Optional[DownloadedFile]:
+    return next((f for f in download_result.files if f.file_type is FileType.PDF), None)
+
+
+def _article_space(full_text: str):
+    from pubget._coordinate_space import _neurosynth_guess_space
+
+    from ingestion_workflow.extractors.utils import coordinate_space_from_guess
+
+    return coordinate_space_from_guess(_neurosynth_guess_space(full_text))
+
+
+def _set_aside(
+    download_result: DownloadResult, misread: Dict[str, int], tables: int
+) -> ExtractedContent:
+    return ExtractedContent(
+        slug=download_result.identifier.slug,
+        source=DownloadSource.PDF,
+        identifier=download_result.identifier,
+        symbols_as_digits={**misread, "tables_set_aside": tables},
+    )
+
+
+def _pdf_content(
+    download_result: DownloadResult,
+    full_text_path: Path,
+    tables: List[ExtractedTable],
+    figure_captions: List[Dict[str, object]],
+) -> ExtractedContent:
+    return ExtractedContent(
+        slug=download_result.identifier.slug,
+        source=DownloadSource.PDF,
+        identifier=download_result.identifier,
+        full_text_path=full_text_path,
+        tables=tables,
+        has_coordinates=any(table.coordinates for table in tables),
+        figure_captions=figure_captions,
+    )
+
+
+def _extracted_table(
+    slug: str,
+    index: int,
+    caption: str,
+    footer: str,
+    frame: Optional[Any],
+    tables_dir: Path,
+    article_space: Any,
+    write_html: Callable[[str], Optional[Path]],
+) -> ExtractedTable:
+    """One table, its CSV and HTML written and its coordinates parsed from `frame`.
+
+    A table pandas could not read has no frame: it keeps its HTML and no coordinates."""
+    from pubget._coordinates import _extract_coordinates_from_table
+
+    from ingestion_workflow.extractors.utils import coordinate_from_row
+
+    table_id = sanitize_table_id(None, _table_label(caption), index)
+    csv_path = None
+    coordinates = []
+    if frame is not None:
+        frame = _merge_split_coordinate_columns(frame)
+        csv_path = tables_dir / f"{table_id}.csv"
+        frame.to_csv(csv_path, index=False)
         try:
             coordinates_frame = _extract_coordinates_from_table(frame)
         except Exception as exc:
             logger.warning("%s: coordinate parsing failed for %s: %s", slug, table_id, exc)
             coordinates_frame = None
-
-        coordinates = []
         if coordinates_frame is not None and not coordinates_frame.empty:
             for _, row in coordinates_frame.iterrows():
                 coord = coordinate_from_row(row, article_space)
                 if coord is not None:
                     coordinates.append(coord)
 
-        extracted_tables.append(
-            ExtractedTable(
-                table_id=table_id,
-                raw_content_path=html_path or csv_path,
-                table_number=index + 1,
-                caption=caption,
-                footer=footer,
-                coordinates=coordinates,
-                space=article_space,
-                metadata={
-                    "suspect_numeric_glyphs": _has_suspect_numerics(frame),
-                },
-            )
-        )
-
-    return ExtractedContent(
-        slug=slug,
-        source=DownloadSource.PDF,
-        identifier=download_result.identifier,
-        full_text_path=full_text_path,
-        tables=extracted_tables,
-        has_coordinates=any(table.coordinates for table in extracted_tables),
-        figure_captions=figure_captions,
+    html_path = write_html(table_id)
+    return ExtractedTable(
+        table_id=table_id,
+        raw_content_path=html_path or csv_path,
+        table_number=index + 1,
+        caption=caption,
+        footer=footer,
+        coordinates=coordinates,
+        space=article_space,
+        metadata={
+            "suspect_numeric_glyphs": frame is not None and _has_suspect_numerics(frame),
+        },
     )
 
 

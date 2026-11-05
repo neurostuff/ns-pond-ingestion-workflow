@@ -12,7 +12,7 @@ import logging
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, List, Literal, Mapping, Optional
 
 import yaml
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
@@ -684,6 +684,28 @@ class Settings(BaseSettings):
         default=None,
         description="Optional override for the cache of XML fetched from Europe PMC",
     )
+    pdf_engines: List[Literal["mineru", "docling"]] = Field(
+        # MinerU reads each page from its image, so a text layer that maps the minus to
+        # 2 does not reach its tables; Docling reads that layer. On PDFs set aside for
+        # such a layer MinerU recovered 98% of ACE's coordinates and Docling 15%, and on
+        # PDFs extract kept, 529 of 530 against 432 (wiki PR-189-MinerU-PDF-Extractor).
+        default_factory=lambda: ["mineru", "docling"],
+        min_length=1,
+        description=(
+            "Ordered PDF readers: each PDF is read by the first that can read it. An "
+            "engine that cannot run at all stops the extract stage instead"
+        ),
+    )
+    mineru_extract_memory_mb: int = Field(
+        # A MinerU worker and its vLLM engine held 7.8 GB on 12-page PDFs.
+        default=16384,
+        gt=0,
+        description=(
+            "Resident memory (MB) a MinerU worker, with its vLLM engine, may reach "
+            "before it is killed and that article failed; MinerU's own settings "
+            "(MINERU_HOME, MINERU_MODEL_SOURCE) come from the environment"
+        ),
+    )
     pdf_extract_workers: Optional[int] = Field(
         default=None,
         description=(
@@ -695,7 +717,7 @@ class Settings(BaseSettings):
         default=8192,
         gt=0,
         description=(
-            "Resident memory (MB) a PDF extraction worker may reach before it is killed "
+            "Resident memory (MB) a Docling worker may reach before it is killed "
             "and that article failed"
         ),
     )

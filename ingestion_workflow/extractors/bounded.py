@@ -6,8 +6,10 @@ batched with it went unrecorded. A child the parent can kill makes that one
 article's failure instead.
 
 A child serves one item after another, so a warm model is loaded once per child,
-not once per item. A child that is killed is replaced before the next item.
-Memory is read from /proc, so off Linux only the time limit holds.
+not once per item. A child that is killed is replaced before the next item, and is
+killed with its process group: vLLM's engine, which MinerU starts, outlives a child
+killed alone and keeps its GPU. Memory is read from /proc, so off Linux only the
+time limit holds.
 """
 
 from __future__ import annotations
@@ -15,6 +17,7 @@ from __future__ import annotations
 import logging
 import os
 import queue
+import signal
 import threading
 import time
 from dataclasses import dataclass
@@ -131,9 +134,8 @@ class _Child:
         except (OSError, ValueError):
             pass
         process.join(timeout=5)
-        if process.is_alive():
-            process.kill()
-            process.join()
+        _kill_group(process)
+        process.join()
         conn.close()
 
     def _start(self) -> None:
@@ -172,13 +174,24 @@ class _Child:
         with self._lock:
             process, conn = self._process, self._conn
             self._process = self._conn = None
-        process.kill()
+        _kill_group(process)
         process.join()
         conn.close()
         return process.exitcode
 
 
+def _kill_group(process) -> None:
+    """Kill the child and whatever it started, alive or orphaned."""
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except (ProcessLookupError, PermissionError):
+        # The group is empty; the child, if it is still there, goes alone.
+        if process.is_alive():
+            process.kill()
+
+
 def _serve(conn, worker, initializer, initargs) -> None:
+    os.setpgid(0, 0)
     if initializer is not None:
         initializer(*initargs)
     conn.send(_READY)

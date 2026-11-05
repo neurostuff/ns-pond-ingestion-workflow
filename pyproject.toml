@@ -75,6 +75,10 @@ test = [
 lint = [
   "ruff>=0.6",
 ]
+# The first of pdf_engines; its vLLM needs a GPU (README).
+mineru = [
+  "mineru[full]==4.0.12",
+]
 # The environments an offloaded job runs in on each machine, which `ingest offload setup`
 # checks: vLLM to serve (infer-*), and torch, peft and transformers to merge an adapter
 # (merge-*). They are built on the machine, not here; these pin what was built.
