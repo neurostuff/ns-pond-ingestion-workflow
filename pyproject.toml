@@ -58,8 +58,8 @@ dependencies = [
   "study-schema @ git+https://github.com/neurostuff/study_schema.git@b7efbdd6c465a00e2ef80d19b47acff6bb17471e",
   # The astra-distill models' paper prompt, compact record format and frozen schema, which
   # `ingest offload export` builds requests with and `pull` restores records with. Pinned to
-  # neurostuff/pondie#32's head until it merges.
-  "pondie-astra @ git+https://github.com/neurostuff/pondie.git@ee956b83f8bcdda49537fea091bef3f5b3eb3510#subdirectory=packages/pondie-astra",
+  # the merge of neurostuff/pondie#32.
+  "pondie-astra @ git+https://github.com/neurostuff/pondie.git@08fbbed3050de62613043544779f8986c6ad111b#subdirectory=packages/pondie-astra",
   # Fetches the private adapters `ingest offload push` copies to a machine.
   "huggingface_hub>=0.24",
 ]
