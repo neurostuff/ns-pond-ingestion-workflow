@@ -257,8 +257,7 @@ class UploadStage:
             while window or (queue and not self._stopped):
                 while queue and not self._stopped and len(window) < workers:
                     work, summary = queue.pop()
-                    path = Path(work.upstream.summary.get("path") or "")
-                    window[pool.submit(ingester.upload, path)] = (work, summary)
+                    window[pool.submit(self._send_one, ingester, work)] = (work, summary)
                 done, _ = wait(window, return_when=FIRST_COMPLETED)
                 for future in done:
                     work, summary = window.pop(future)
@@ -280,6 +279,10 @@ class UploadStage:
                             fingerprint=work.fingerprint, summary=summary))
                         continue
                     yield from self._record(work, self._outcome(work, artifact, summary, learned))
+
+    def _send_one(self, ingester, work: Work) -> Dict[str, Any]:
+        """Send one paper; its upload artifact."""
+        return ingester.upload(Path(work.upstream.summary.get("path") or ""))
 
     def _summary(self, synced: Optional[Artifact],
                  last: Optional[Dict[str, Any]]) -> Dict[str, Any]:

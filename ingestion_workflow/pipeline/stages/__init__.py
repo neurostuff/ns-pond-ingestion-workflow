@@ -18,6 +18,7 @@ from .roles import RolesStage
 from .space import SpaceStage
 from .sync import SyncStage
 from .triage import TriageStage
+from .record_upload import RecordUploadStage
 from .upload import UploadStage
 
 #: Canonical order. A stage may only require one that appears before it.
@@ -56,18 +57,21 @@ from .upload import UploadStage
 #: `record`, `evidence` and `normalize` are the schema extraction, its evidence and its
 #: terms' normalization, one artifact per extractor family. They run away from ns-pond
 #: and are imported (`ingest offload import`), so a run leaves them out unless named.
+#: `record_upload` then posts each source's normalized record, with its runs, once the
+#: article's parse is uploaded; it is left out unless named.
 #: `datasources` searches the text of each paper sync wrote for the data sources
 #: `ingest data-sources pull` keeps in the catalog. No stage reads it:
 #: `ingest data-sources export` writes its matches for neurostore.
 STAGE_ORDER = ("download", "extract", "reflist", "references", "links", "linkprobe", "passages",
                "metadata", "notices", "triage", "analyses", "prose", "resolve", "roles", "space",
-               "sync", "record", "evidence", "normalize", "upload", "datasources")
+               "sync", "record", "evidence", "normalize", "upload", "record_upload",
+               "datasources")
 
 #: Stages that exist only when prose is switched on.
 PROSE_STAGES = ("passages", "prose", "resolve")
 
 #: Stages a run without `--stage` leaves out.
-OPT_IN_STAGES = ("reflist", *OFFLOADED_STAGES)
+OPT_IN_STAGES = ("reflist", *OFFLOADED_STAGES, "record_upload")
 
 STAGE_TYPES = {
     "download": DownloadStage,
@@ -91,6 +95,7 @@ STAGE_TYPES = {
     "space": SpaceStage,
     "sync": SyncStage,
     "upload": UploadStage,
+    "record_upload": RecordUploadStage,
 }
 
 
@@ -143,6 +148,7 @@ __all__ = [
     "SpaceStage",
     "SyncStage",
     "TriageStage",
+    "RecordUploadStage",
     "UploadStage",
     "build",
 ]
