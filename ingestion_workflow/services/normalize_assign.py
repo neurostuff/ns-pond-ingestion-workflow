@@ -116,8 +116,8 @@ def repair(record: Dict[str, Any], parse: Optional[Path], text: str) -> List[str
     Each decides nothing a paper must settle: it repoints a cell at the same-named term its
     model reaches, scopes a term name two models share, names an analysis by its parse key,
     writes a reference a name settles. Over 3,000 ns-pond records they take the errors pondie's
-    checks find from 1,722 to 990, and on the 27B's val records raise cell F1 against Astra's
-    by 0.31 points."""
+    checks find from 1,722 to 973, and on the 27B's val records raise cell F1 against Astra's
+    by 0.44 points."""
     from dataclasses import replace
 
     from pondie.extraction.record import fix
