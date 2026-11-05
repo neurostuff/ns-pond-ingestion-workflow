@@ -91,7 +91,7 @@ merge-ls6 = ["torch==2.11.0", "transformers==5.17.0", "peft==0.21.0", "accelerat
 # pickled with. spaCy's en_core_web_sm, pondie's negation parser, is a separate download:
 # python -m spacy download en_core_web_sm
 normalize = [
-  "pondie[encoders] @ git+https://github.com/neurostuff/pondie.git@904be33cc3c92bd991143a6e77845a35fe75c248",
+  "pondie[encoders] @ git+https://github.com/neurostuff/pondie.git@cd328305673fec3aabbe66f05938e6393e5d439b",
   "scikit-learn==1.9.1",
   "scipy>=1.11",
   "numpy>=1.26",
