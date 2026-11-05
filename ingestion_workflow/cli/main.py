@@ -1325,6 +1325,85 @@ def report_funnel_ids(
         typer.echo("\t".join(row))
 
 
+@report_app.command("coverage")
+def report_coverage(
+    out: Optional[Path] = typer.Option(
+        None, "--json", help="JSON export to write; default <catalog>/coverage.json."),
+    catalog: Optional[Path] = CatalogOption,
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Articles by stage, source, run, model and status, and the uploaded studies that
+    changed since their upload, by stage. Writes the JSON export too."""
+    from ingestion_workflow.services import coverage
+
+    root = _catalog_root(catalog, config)
+    found = coverage.coverage(root)
+    for line in coverage.render(found):
+        typer.echo(line)
+    typer.echo(f"\n-> {coverage.write_json(found, out or coverage.default_json(root))}")
+
+
+# -- runs --------------------------------------------------------------------
+
+runs_app = typer.Typer(help="The runs of the stages made away from ns-pond.",
+                       no_args_is_help=True)
+app.add_typer(runs_app, name="runs")
+
+
+@runs_app.command("list")
+def runs_list(
+    catalog: Optional[Path] = CatalogOption,
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Each run kept: its id, stage, source, model and adapter, when it ran and was
+    imported, and its articles by status. Read-only."""
+    from ingestion_workflow.services import coverage
+
+    found = coverage.coverage(_catalog_root(catalog, config))
+    for run in found["runs"]:
+        counts = ", ".join(f"{n:,} {status}" for status, n in sorted(run["articles"].items()))
+        typer.echo(f"{run['run_id']}  {run['kind']} {run['stage']}/{run['source']}  "
+                   f"ran {run['created_at']}  imported {run['imported_at']}")
+        typer.echo(f"  {run['version'] or '-'}  model {run['model'] or '-'}  "
+                   f"adapter {run['adapter'] or '-'}  prompt {run['prompt_version'] or '-'}"
+                   + (f"  fit {run['fit']}" if run.get("fit") else "")
+                   + f"  on {run['machine'] or '-'}")
+        typer.echo(f"  articles: {counts or 'none'}")
+    if not found["runs"]:
+        typer.echo("no runs kept.")
+
+
+# -- offload -----------------------------------------------------------------
+
+offload_app = typer.Typer(help="Stages run away from ns-pond: record, evidence, normalize.",
+                          no_args_is_help=True)
+app.add_typer(offload_app, name="offload")
+
+
+@offload_app.command("import")
+def offload_import(
+    run_file: Path = typer.Argument(..., help="The run, as JSON with the runs table's fields."),
+    results: List[Path] = typer.Argument(..., help="Its results, as JSON lines."),
+    catalog: Optional[Path] = CatalogOption,
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Record a run's results: one artifact per article, with the run as its provenance.
+
+    A row is refused, and recorded failed with the reason, when its text hash is not the
+    parse's, it names a parse key the parse lacks, the record it read is not the
+    article's current one, or its record fails study_schema's schema. Writes the coverage
+    JSON after."""
+    from ingestion_workflow.services import coverage, offload_import as offload
+
+    root = _catalog_root(catalog, config)
+    run = offload.load_run(run_file)
+    with Catalog.open(root) as held:
+        report = offload.import_run(held, run, offload.read_rows(results))
+    for line in report.lines():
+        typer.echo(line)
+    typer.echo(f"coverage -> {coverage.write_json(coverage.coverage(root), coverage.default_json(root))}")
+
+
 # -- searches ----------------------------------------------------------------
 
 searches_app = typer.Typer(
