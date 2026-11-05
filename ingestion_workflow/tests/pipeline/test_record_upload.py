@@ -84,9 +84,11 @@ def _chain(ctx, normalized=None):
     import_run(ctx.catalog, EVIDENCE_RUN, [{"article_id": ARTICLE, "status": "ok",
                                             "text_sha256": PARSE["text_sha256"],
                                             "record_digest": digest, "record": EVIDENCED}])
+    # normalize is built on the evidence record
+    evidenced = ctx.catalog.payload(ctx.catalog.artifact(ARTICLE, "evidence", "ns-27b"))
     import_run(ctx.catalog, NORMALIZE_RUN, [{"article_id": ARTICLE, "status": "ok",
-                                             "record_digest": digest,
-                                             "record": normalized or EVIDENCED}])
+                                             "record_digest": record_digest(evidenced),
+                                             "record": normalized or evidenced}])
 
 
 def _parse_uploaded(ctx, neurostore):
