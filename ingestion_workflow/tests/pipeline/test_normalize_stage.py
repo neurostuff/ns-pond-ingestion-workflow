@@ -2,8 +2,10 @@
 
 The paper is article 26klegjq7mhi with its 27B record and ev1 evidence. The library
 (`ingestion_workflow.normalization`, tested on its own) is stood in for at
-`normalize_assign`'s calls into it, `describe`, `assign` and pondie's `apply_normalized`:
-what is checked here is what the stage reads, which run it records, and when it runs again.
+`normalize_assign`'s calls into it, `describe`, `assign` and pondie's `repair`,
+`apply_derived` and `apply_normalized`: what is checked here is what the stage reads, which
+run it records, and when it runs again. pondie's fixes themselves run on the paper at the
+end, where pondie is installed.
 """
 
 from __future__ import annotations
@@ -55,6 +57,11 @@ class Library:
                 "model": "taskcat + sentence-transformers/all-MiniLM-L6-v2@c9745ed",
                 "assigner": {"assign_code_sha256": "a" * 64}}
 
+    def repair(self, record, parse, text):
+        self.order = getattr(self, "order", []) + ["repaired"]
+        self.repaired = {"parse": parse, "text": text}
+        return []
+
     def apply_derived(self, record):
         self.order = getattr(self, "order", []) + ["derived"]
         for group in record.get("groups") or []:
@@ -77,6 +84,7 @@ def library(monkeypatch):
     held = Library()
     monkeypatch.setattr(normalize_assign, "describe", held.describe)
     monkeypatch.setattr(normalize_assign, "assign", held.assign)
+    monkeypatch.setattr(normalize_assign, "repair", held.repair)
     monkeypatch.setattr(normalize_assign, "apply_derived", held.apply_derived)
     monkeypatch.setattr(normalize_assign, "apply_normalized", held.apply_normalized)
     return held
@@ -113,6 +121,7 @@ def _renormalized(library, record):
     """`record` as the stage hands it to the fit: its old normalizations made again."""
     record = copy.deepcopy(record)
     normalize_assign.drop_siblings(record)
+    library.repair(record, None, "")
     library.apply_derived(record)
     library.apply_normalized(record)
     return record
@@ -213,7 +222,7 @@ def test_an_assign_that_raises_is_this_article_s_failure(ctx, library, monkeypat
 
 
 def test_workers_answer_in_order_and_share_the_first_job_s_loaded_fit(library):
-    jobs = [(k, None if k == "b" else ({"local_id": k}, "text", None, "/fits/f", k))
+    jobs = [(k, None if k == "b" else ({"local_id": k}, "text", None, "/fits/f", k, None))
             for k in ("a", "b", "c", "d", "e")]
     out = list(normalize_assign.assign_all(jobs, 2, "no parse"))
     assert [k for k, _ in out] == ["a", "b", "c", "d", "e"]
@@ -239,6 +248,28 @@ def test_derived_slots_replace_the_model_s_answer_before_the_fit_reads_them(ctx,
     _recorded(ctx)
     _normalize(ctx)
     (call,) = library.calls
-    # the stage's own pass, then the test's _renormalized: derived first each time
-    assert library.order[:2] == ["derived", "normalized"]
+    # the stage's own pass, then the test's _renormalized: repaired, then derived, each time
+    assert library.order[:3] == ["repaired", "derived", "normalized"]
     assert call["record"]["groups"][0]["is_healthy"] == {"value": True}
+
+
+def test_the_fixes_read_the_paper_s_own_parse_and_text(ctx, library):
+    _recorded(ctx)
+    _normalize(ctx)
+    paper = ctx.settings.ns_pond_root / BASE
+    assert library.repaired["parse"] == paper / "parse" / "coordinate_parse.json"
+    assert library.repaired["text"] == library.calls[0]["text"]
+
+
+def test_pondie_s_fixes_run_on_the_record_but_the_two_that_change_what_it_says():
+    """`unreachable` would delete a scanner no analysis points at; the stage keeps it."""
+    pytest.importorskip("pondie.extraction.record.fix")
+    record = copy.deepcopy(EVIDENCED)
+    normalize_assign.drop_siblings(record)
+    record.setdefault("devices", []).append({"local_id": "dev_unused"})
+    text = (DATA / "paper-26klegjq7mhi/processed/ace/text.txt").read_bytes().decode("utf-8")
+    fired = normalize_assign.repair(
+        record, DATA / "paper-26klegjq7mhi/parse/coordinate_parse.json", text)
+    assert "derived_ids" in fired
+    assert not set(fired) & normalize_assign.SKIPPED_REPAIRS
+    assert "dev_unused" in {d.get("local_id") for d in record["devices"]}

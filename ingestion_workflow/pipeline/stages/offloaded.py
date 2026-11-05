@@ -362,7 +362,8 @@ class NormalizeStage(_OffloadedStage):
                              na.text_of(ctx.catalog.root, sync),
                              na.bibliography_of(ctx.catalog, work.article_id,
                                                 na.text_source(ctx.catalog.root, sync)),
-                             str(self.fit_dir), work.article_id)
+                             str(self.fit_dir), work.article_id,
+                             na.parse_of(ctx.catalog.root, sync))
 
         workers = max(1, int(getattr(self.settings, "normalize_workers", 1) or 1))
         for work, (normalized, error) in na.assign_all(jobs(), workers, NO_PARSE):

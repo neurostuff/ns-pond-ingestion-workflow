@@ -8,19 +8,21 @@ every normalization made under the old one is stale.
 
 Before assigning, what code decides is decided again (`renormalize`): the siblings
 study_schema#56 removed (`age_unit_normalized`, `category_normalized`) are dropped; pondie's
-`apply_derived` fills the derived slots, replacing what the model answered there
-(`groups[].is_healthy` among them); and its `apply_normalized` writes each field's
-`normalized` sidecar. The record then holds to the schema pondie and this package pin, and
-the fit's medical step reads the derived `is_healthy`.
+deterministic fixes (`repair`) make the record's references and shapes agree with its schema
+and its parse; pondie's `apply_derived` fills the derived slots, replacing what the model
+answered there (`groups[].is_healthy` among them); and its `apply_normalized` writes each
+field's `normalized` sidecar. The record then holds to the schema pondie and this package
+pin, and the fit's medical step reads the derived `is_healthy`.
 """
 
 from __future__ import annotations
 
+import functools
 import json
 import socket
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, Iterator, Optional, Sequence, Tuple
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import Artifact, Catalog, Run, RunKind
 from ingestion_workflow.pipeline.stage import recorded_path
@@ -29,7 +31,13 @@ from ingestion_workflow.pipeline.stages.offloaded import drop_siblings
 #: The pipeline a normalize run made in-process is filed under.
 PIPELINE = "ns-pond normalize"
 #: Bumped when `renormalize` changes what it does; part of the run's version.
-RENORMALIZE_VERSION = 3
+RENORMALIZE_VERSION = 4
+
+#: pondie's fixes that `repair` leaves out, because they change what the record says rather
+#: than how it says it: `mirrored` writes a sign-reversed copy of an analysis the paper
+#: reported once (411 analyses over 191 of 3,000 ns-pond records), and `unreachable` deletes
+#: entities the paper states that no analysis points at (an sMRI acquisition, a scanner).
+SKIPPED_REPAIRS = frozenset({"mirrored", "unreachable"})
 
 
 def describe(fit_dir: Path) -> Dict[str, Any]:
@@ -68,6 +76,12 @@ def text_of(catalog_root: Path, sync: Artifact) -> str:
     return (study / paper["text_path"]).read_bytes().decode("utf-8")
 
 
+def parse_of(catalog_root: Path, sync: Artifact) -> Optional[Path]:
+    """The paper's coordinate parse, which the record's `source_table_analysis` keys name."""
+    parse = recorded_path(catalog_root, sync.summary["path"]) / "parse" / "coordinate_parse.json"
+    return parse if parse.is_file() else None
+
+
 def text_source(catalog_root: Path, sync: Artifact) -> Optional[str]:
     """The extraction source the parse was read from: whose `references` list it names."""
     study = recorded_path(catalog_root, sync.summary["path"])
@@ -91,6 +105,41 @@ def assign(record: Dict[str, Any], text: str, bibliography: Optional[dict], fit_
     return normalize_record(record, text, bibliography, str(fit_dir), article_id=article_id)
 
 
+def _skipped(body: Dict[str, Any], ctx: Any) -> list:
+    return []
+
+
+def repair(record: Dict[str, Any], parse: Optional[Path], text: str) -> List[str]:
+    """pondie's deterministic fixes over `record`, in place, but `SKIPPED_REPAIRS`; the names
+    of those that changed something.
+
+    Each decides nothing a paper must settle: it repoints a cell at the same-named term its
+    model reaches, scopes a term name two models share, names an analysis by its parse key,
+    writes a reference a name settles. Over 3,000 ns-pond records they take the errors pondie's
+    checks find from 1,722 to 973, and on the 27B's val records raise cell F1 against Astra's
+    by 0.44 points."""
+    from dataclasses import replace
+
+    from pondie.extraction.record import fix
+    from pondie.formats import text_index
+
+    sequence = tuple(
+        replace(step, apply=_skipped) if step.name in SKIPPED_REPAIRS else step
+        for step in fix.build_sequence())
+    ctx = fix.Context(schema=_extraction_schema(), parse=parse, table_map=None,
+                      text=text_index.normalize(text) if text else "")
+    log = fix.apply_all(record, ctx, sequence=sequence)
+    return log.fired()
+
+
+@functools.lru_cache(maxsize=1)
+def _extraction_schema():
+    from pondie import schema
+    from pondie.schema import reader
+
+    return reader.load(schema.EXTRACTION)
+
+
 def apply_derived(record: Dict[str, Any]) -> None:
     """pondie's derived-slot fills (`is_healthy`, `population_characteristics`), in place."""
     from pondie.normalization import apply_derived as apply
@@ -105,10 +154,13 @@ def apply_normalized(record: Dict[str, Any]) -> None:
     apply(record)
 
 
-def renormalize(record: Dict[str, Any]) -> Dict[str, Any]:
-    """`record` with its derived slots and per-field normalizations made again, in place.
-    In this order: the fit's medical step reads the derived `is_healthy`."""
+def renormalize(record: Dict[str, Any], parse: Optional[Path] = None,
+                text: str = "") -> Dict[str, Any]:
+    """`record` repaired, with its derived slots and per-field normalizations made again, in
+    place. In this order: the fixes read the record the model wrote, and the fit's medical
+    step reads the derived `is_healthy`."""
     drop_siblings(record)
+    repair(record, parse, text)
     apply_derived(record)
     apply_normalized(record)
     return record
@@ -116,9 +168,10 @@ def renormalize(record: Dict[str, Any]) -> Dict[str, Any]:
 
 def _assign_one(job) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
     """(the normalized record, None), or (None, why it failed): a worker's whole answer."""
-    record, text, bibliography, fit_dir, article_id = job
+    record, text, bibliography, fit_dir, article_id, parse = job
     try:
-        return assign(renormalize(record), text, bibliography, Path(fit_dir), article_id), None
+        record = renormalize(record, Path(parse) if parse else None, text)
+        return assign(record, text, bibliography, Path(fit_dir), article_id), None
     except Exception as exc:  # noqa: BLE001 - this article's failure
         return None, f"{type(exc).__name__}: {exc}"
 
@@ -183,5 +236,6 @@ def fit_corpus(catalog: Catalog, inputs: Dict[str, Artifact], out_dir: Path, *,
     return fit(records, texts, bibliographies, str(out_dir), **kw)
 
 
-__all__ = ["PIPELINE", "assign", "assign_all", "bibliography_of", "describe", "drop_siblings",
-           "fit_corpus", "renormalize", "run_for", "text_of", "text_source"]
+__all__ = ["PIPELINE", "SKIPPED_REPAIRS", "assign", "assign_all", "bibliography_of", "describe",
+           "drop_siblings", "fit_corpus", "parse_of", "renormalize", "repair", "run_for",
+           "text_of", "text_source"]
