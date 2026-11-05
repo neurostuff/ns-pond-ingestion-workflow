@@ -93,11 +93,14 @@ def normalize_fingerprint(run: Run, record: Artifact, vocabulary: Any) -> str:
 
 
 class Parse:
-    """What an offloaded stage reads of an article's coordinate parse: its text and keys."""
+    """What an offloaded stage reads of an article's coordinate parse: its text and keys, and
+    the file they were read from."""
 
-    def __init__(self, text_sha256: Optional[str], keys: Set[str]) -> None:
+    def __init__(self, text_sha256: Optional[str], keys: Set[str],
+                 path: Optional[Path] = None) -> None:
         self.text_sha256 = text_sha256
         self.keys = keys
+        self.path = path
 
     @classmethod
     def of(cls, catalog_root: Path, sync: Optional[Artifact]) -> Optional["Parse"]:
@@ -111,7 +114,7 @@ class Parse:
         except (OSError, ValueError):
             return None
         return cls(held.get("text_sha256"),
-                   {a["key"] for a in held.get("analyses") or [] if a.get("key")})
+                   {a["key"] for a in held.get("analyses") or [] if a.get("key")}, path)
 
 
 class _Runs:
