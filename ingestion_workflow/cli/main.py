@@ -1373,6 +1373,45 @@ def runs_list(
         typer.echo("no runs kept.")
 
 
+# -- normalize ---------------------------------------------------------------
+
+normalize_app = typer.Typer(help="The normalization fit the normalize stage assigns with.",
+                            no_args_is_help=True)
+app.add_typer(normalize_app, name="normalize")
+
+
+@normalize_app.command("fit")
+def normalize_fit(
+    out: Path = typer.Option(..., "--out", help="Where the fit is saved, as <out>/<fit_id>/."),
+    source: str = typer.Option("ns-27b", "--source", help="The records' extractor family."),
+    refit_of: Optional[str] = typer.Option(
+        None, "--refit-of", help="The fit this one replaces; recorded in its manifest."),
+    workers: int = typer.Option(1, "--workers", help="Processes for the per-article passes."),
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Fit task labels, the citation index and contrast sets over every article's
+    normalize input (its evidence record, or its record when evidence was skipped), and
+    save the fit. Prints its id; set normalize_fit_dir to <out>/<fit_id> to assign with it.
+    Reads the catalog only. A fit of the same corpus and code is the same fit."""
+    from ingestion_workflow.pipeline.stages.offloaded import normalize_input
+    from ingestion_workflow.services.normalize_assign import fit_corpus
+
+    settings = _settings(config)
+    with _catalog(settings) as held:
+        ids = sorted(held.article_ids_where_summary("record", "analyses"))
+        records, evidence = held.artifacts(ids, "record"), held.artifacts(ids, "evidence")
+        inputs = {}
+        for article_id in ids:
+            read = normalize_input(evidence.get(article_id, {}).get(source),
+                                   records.get(article_id, {}).get(source))
+            if read is not None:
+                inputs[article_id] = read
+        typer.echo(f"fitting over {len(inputs):,} articles of {source}")
+        fit_id = fit_corpus(held, inputs, out, fixed_dir=settings.normalize_fixed_dir,
+                            previous=refit_of, workers=workers, log=typer.echo)
+    typer.echo(f"{fit_id}  {Path(out) / fit_id}")
+
+
 # -- offload -----------------------------------------------------------------
 
 offload_app = typer.Typer(help="Stages run away from ns-pond: record, evidence, normalize.",

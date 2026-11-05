@@ -8,8 +8,12 @@ per article:
 
 `record` is the stage's output: the extraction record, the record with its evidence, or
 the normalization of a record. `text_sha256` is the text the model read (record,
-evidence); `record_digest` is `record_digest()` of the record the stage read (evidence,
-normalize). A `base_study_id` is found through the `neurostore` alias.
+evidence); `record_digest` is `record_digest()` of the record the stage read: the record
+(evidence), or the evidence record, the record itself when evidence was skipped
+(normalize). A `base_study_id` is found through the `neurostore` alias.
+
+A record or evidence row's legacy per-field normalizations (`drop_siblings`) are dropped
+before anything is checked: the schema refuses them, and normalize makes them again.
 
 A row is refused, and recorded `failed` with the reason, when its text hash is not the
 parse's, it names a parse key the parse does not have, the record it read is not the
@@ -20,6 +24,7 @@ whose article the catalog does not know is counted and left out.
 
 from __future__ import annotations
 
+import copy
 import gzip
 import json
 import logging
@@ -34,8 +39,10 @@ from ingestion_workflow.pipeline.stages.offloaded import (
     NO_RECORD,
     OFFLOADED_STAGES,
     Parse,
+    drop_siblings,
     evidence_fingerprint,
     normalize_fingerprint,
+    normalize_input,
     parse_check,
     parse_keys,
     record_digest,
@@ -173,6 +180,9 @@ class _Importer:
         payload = row.get("record")
         if not isinstance(payload, dict):
             return self.refuse(article_id, "the row holds no record")
+        if stage != "normalize":
+            payload = copy.deepcopy(payload)  # the caller's row is left as it was
+            drop_siblings(payload)
         if stage == "normalize":
             why = self.upstream_problem(row, record)
             if why:
@@ -230,13 +240,16 @@ class _Importer:
         ids = sorted({article_id for article_id, _ in resolved})
         synced = catalog.artifacts(ids, "sync")
         records = catalog.artifacts(ids, "record") if run.stage != "record" else {}
+        evidence = catalog.artifacts(ids, "evidence") if run.stage == "normalize" else {}
         mine = catalog.artifacts(ids, run.stage)
         outcomes = []
         for article_id, row in resolved:
             parse = (Parse.of(catalog.root, synced.get(article_id, {}).get(""))
                      if run.stage != "normalize" else None)
-            outcome = self.outcome(article_id, row, parse,
-                                   records.get(article_id, {}).get(run.source))
+            read = records.get(article_id, {}).get(run.source)
+            if run.stage == "normalize":
+                read = normalize_input(evidence.get(article_id, {}).get(run.source), read)
+            outcome = self.outcome(article_id, row, parse, read)
             held = mine.get(article_id, {}).get(run.source)
             if (outcome.status is Status.FAILED and held is not None and held.ok
                     and held.run_id != run.run_id):

@@ -399,6 +399,21 @@ class Settings(BaseSettings):
         default_factory=dict,
         description="The clusters offloaded stages run on, by name (`ingest offload --machine`)",
     )
+    normalize_fit_dir: Optional[Path] = Field(
+        default=None,
+        description=("The saved normalization fit the normalize stage assigns with "
+                     "(`ingest normalize fit` prints it). Unset, normalize waits for an import"),
+    )
+    normalize_workers: int = Field(
+        default=1,
+        description="Processes the normalize stage assigns articles in (forked; ~5 s each)",
+    )
+    normalize_fixed_dir: Optional[Path] = Field(
+        default=None,
+        validation_alias=AliasChoices("normalize_fixed_dir", "NORMALIZE_FIXED_DIR"),
+        description=("A local copy of the fixed fits `ingest normalize fit` builds on. Unset, "
+                     "the pinned Hub revision is fetched, with HF_TOKEN"),
+    )
 
     sync_overwrite: bool = Field(
         default=True,

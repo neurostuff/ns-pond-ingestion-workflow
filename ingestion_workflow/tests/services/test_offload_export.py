@@ -198,15 +198,20 @@ def test_the_evidence_request_is_the_one_the_ev1_run_sent(ctx, tmp_path, fake_to
     _recorded(ctx)
     report = export(ctx, EV1_SPEC, "ls6", workers=1, now=NOW)
     (row,) = _rows(report.bundle)
-    # The catalog keeps records with their keys sorted (blobs are content-addressed), so the
-    # record ev1 is shown is the one it was sent with its keys sorted; the text is unchanged.
+    # The catalog keeps records with their keys sorted (blobs are content-addressed) and
+    # without the legacy siblings (import drops them), so the record ev1 is shown is the one
+    # it was sent, so kept; the text is unchanged.
+    from ingestion_workflow.pipeline.stages.offloaded import drop_siblings
+
     head, sent_record = EV1_SENT["prompt"].split("\n\nRecord:\n")
+    shown = json.loads(sent_record)
+    drop_siblings(shown)
     assert row["content"] == head + "\n\nRecord:\n" + json.dumps(
-        json.loads(sent_record), sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+        shown, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
     assert row["chat_template_kwargs"] == {"enable_thinking": False,
                                            "template": EV1_SENT["template"]}
     held = ctx.catalog.payload(ctx.catalog.artifact(ARTICLE, "record", "ns-27b"))
-    assert row["record_digest"] == record_digest(held) == record_digest(RECORD)
+    assert row["record_digest"] == record_digest(held)
     (kept,) = BundleDir(report.bundle).records("s000").read_text().splitlines()
     assert json.loads(kept) == {"article_id": ARTICLE, "record": held}
 
