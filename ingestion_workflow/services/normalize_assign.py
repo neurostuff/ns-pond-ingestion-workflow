@@ -6,10 +6,12 @@ assigns: `fit` is the fit's id, which is its fingerprint, and `version` hashes t
 code, the vocabularies and pondie's commit, so a new fit or new assign code is a new run and
 every normalization made under the old one is stale.
 
-Before assigning, the record's old per-field normalizations are made again (`renormalize`):
-the siblings study_schema#56 removed (`age_unit_normalized`, `category_normalized`) are
-dropped, and pondie's `apply_normalized` writes each field's `normalized` sidecar, so the
-record holds to the schema pondie and this package pin.
+Before assigning, what code decides is decided again (`renormalize`): the siblings
+study_schema#56 removed (`age_unit_normalized`, `category_normalized`) are dropped; pondie's
+`apply_derived` fills the derived slots, replacing what the model answered there
+(`groups[].is_healthy` among them); and its `apply_normalized` writes each field's
+`normalized` sidecar. The record then holds to the schema pondie and this package pin, and
+the fit's medical step reads the derived `is_healthy`.
 """
 
 from __future__ import annotations
@@ -26,7 +28,7 @@ from ingestion_workflow.pipeline.stage import recorded_path
 #: The pipeline a normalize run made in-process is filed under.
 PIPELINE = "ns-pond normalize"
 #: Bumped when `renormalize` changes what it does; part of the run's version.
-RENORMALIZE_VERSION = 2
+RENORMALIZE_VERSION = 3
 
 
 def describe(fit_dir: Path) -> Dict[str, Any]:
@@ -104,6 +106,13 @@ def drop_siblings(record: Dict[str, Any]) -> int:
     return dropped
 
 
+def apply_derived(record: Dict[str, Any]) -> None:
+    """pondie's derived-slot fills (`is_healthy`, `population_characteristics`), in place."""
+    from pondie.normalization import apply_derived as apply
+
+    apply(record)
+
+
 def apply_normalized(record: Dict[str, Any]) -> None:
     """pondie's per-field normalizers, each writing its field's `normalized` sidecar."""
     from pondie.normalization import apply_normalized as apply
@@ -112,8 +121,10 @@ def apply_normalized(record: Dict[str, Any]) -> None:
 
 
 def renormalize(record: Dict[str, Any]) -> Dict[str, Any]:
-    """`record` with its old per-field normalizations made again as sidecars, in place."""
+    """`record` with its derived slots and per-field normalizations made again, in place.
+    In this order: the fit's medical step reads the derived `is_healthy`."""
     drop_siblings(record)
+    apply_derived(record)
     apply_normalized(record)
     return record
 

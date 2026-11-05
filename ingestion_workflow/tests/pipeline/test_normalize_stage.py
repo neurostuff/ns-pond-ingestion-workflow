@@ -55,7 +55,13 @@ class Library:
                 "model": "taskcat + sentence-transformers/all-MiniLM-L6-v2@c9745ed",
                 "assigner": {"assign_code_sha256": "a" * 64}}
 
+    def apply_derived(self, record):
+        self.order = getattr(self, "order", []) + ["derived"]
+        for group in record.get("groups") or []:
+            group["is_healthy"] = {"value": True}
+
     def apply_normalized(self, record):
+        self.order = getattr(self, "order", []) + ["normalized"]
         for group in record.get("groups") or []:
             group.setdefault("age_unit", {}).setdefault("normalized", [{"term": "years"}])
 
@@ -71,6 +77,7 @@ def library(monkeypatch):
     held = Library()
     monkeypatch.setattr(normalize_assign, "describe", held.describe)
     monkeypatch.setattr(normalize_assign, "assign", held.assign)
+    monkeypatch.setattr(normalize_assign, "apply_derived", held.apply_derived)
     monkeypatch.setattr(normalize_assign, "apply_normalized", held.apply_normalized)
     return held
 
@@ -106,6 +113,7 @@ def _renormalized(library, record):
     """`record` as the stage hands it to the fit: its old normalizations made again."""
     record = copy.deepcopy(record)
     normalize_assign.drop_siblings(record)
+    library.apply_derived(record)
     library.apply_normalized(record)
     return record
 
@@ -225,3 +233,12 @@ def test_the_old_normalized_siblings_are_dropped_and_made_again_as_sidecars(ctx,
     (held,) = EVIDENCED["groups"]
     assert "age_unit_normalized" in held  # the 27B's records carry them; the fixture is one
     assert normalize_assign.drop_siblings(copy.deepcopy(EVIDENCED)) == 3
+
+
+def test_derived_slots_replace_the_model_s_answer_before_the_fit_reads_them(ctx, library):
+    _recorded(ctx)
+    _normalize(ctx)
+    (call,) = library.calls
+    # the stage's own pass, then the test's _renormalized: derived first each time
+    assert library.order[:2] == ["derived", "normalized"]
+    assert call["record"]["groups"][0]["is_healthy"] == {"value": True}
