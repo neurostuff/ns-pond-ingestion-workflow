@@ -411,7 +411,8 @@ class Settings(BaseSettings):
     normalize_fixed_dir: Optional[Path] = Field(
         default=None,
         validation_alias=AliasChoices("normalize_fixed_dir", "NORMALIZE_FIXED_DIR"),
-        description="The fixed-fit bundle `ingest normalize fit` builds on (normalization.FIXED)",
+        description=("A local copy of the fixed fits `ingest normalize fit` builds on. Unset, "
+                     "the pinned Hub revision is fetched, with HF_TOKEN"),
     )
 
     sync_overwrite: bool = Field(
