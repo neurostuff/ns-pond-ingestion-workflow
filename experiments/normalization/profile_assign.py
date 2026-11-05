@@ -19,8 +19,15 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from corpus import astra_corpus  # noqa: E402
-
-from ingestion_workflow.normalization import api, citations, contrasts, labels, medical, records, sidecars  # noqa: E402
+from ingestion_workflow.normalization import (  # noqa: E402
+    api,
+    citations,
+    contrasts,
+    labels,
+    medical,
+    records,
+    sidecars,
+)
 
 
 def stages(r, article, text, bib, f, t):
