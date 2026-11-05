@@ -320,3 +320,18 @@ class Lexicon:
             if best:
                 return best[1:]
         return None
+
+    def mask(self, text):
+        """`text` folded as `match` folds it, with every lexicon phrase and pattern in it replaced by "taskname": the
+        words around a task's name, without the name the lexicon already read."""
+        if not text:
+            return ""
+        if not hasattr(self, "_phrases"):
+            self._phrases = sorted({p for p, *_ in self.entries}, key=len, reverse=True)
+        n = " " + _norm(text) + " "
+        for pat, *_ in self.patterns:
+            n = pat.sub(" taskname ", n)
+        for p in self._phrases:
+            if f" {p} " in n:
+                n = n.replace(f" {p} ", " taskname ")
+        return re.sub(r"\s+", " ", n).strip()

@@ -65,14 +65,22 @@ def versions():
     return {"mondo": fetch.version("mondo"), "negation_parser": bool(available())}
 
 
-def links(record, study, text):
-    """pondie Links for every group's `medical_condition` items, after the two repairs."""
+def abbreviations(text, study):
+    """The short forms this paper defines (pondie's `Abbreviations.for_paper`), or None without a text."""
+    from pondie.normalization import medical_condition as mc
+
+    return mc._store().for_paper(text, study) if text else None
+
+
+def links(record, study, text, store=None):
+    """pondie Links for every group's `medical_condition` items, after the two repairs. `store` the paper's
+    `abbreviations`, when the caller has them already."""
     from pondie.normalization import medical_condition as mc
     from pondie.normalization._records import value_of
     from pondie.vocabularies.phrases import NO_CONDITION, NOT_READ, absent, triage
 
     vocab, cw, onvoc, index = vocabularies()
-    store = mc._store().for_paper(text, study) if text else None
+    store = store if store is not None else abbreviations(text, study)
     out, staged = [], []
     for group in record.get("groups") or []:
         if not isinstance(group, dict):

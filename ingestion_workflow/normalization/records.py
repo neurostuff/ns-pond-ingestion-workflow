@@ -84,6 +84,36 @@ def condition_atoms(c, lab, fam):
     return {**n, "atoms": n["atoms"] + sorted(set(add)), "atoms_from_description": from_desc, "atoms_from_stimulus": sorted(set(add))}
 
 
+def expander(abbreviations, study):
+    """str -> the str with the paper's own short forms spelled out, from pondie's per-paper store
+    (`Abbreviations.for_paper`); without a store, the str as it is."""
+    if abbreviations is None:
+        return lambda s: s
+    from pondie.normalization.medical_condition import _expanded
+
+    return lambda s: _expanded(s, abbreviations, study)[0] if s else s
+
+
+def evidence(t, contrast_names, lexicon, expand):
+    """The contrast route's document for one task: its condition names, their atoms (with the description fallback),
+    the names of its contrasts, the conditions' descriptions and stimulus content, and the task's own name and
+    description with every lexicon task name masked, since the name route has already read those. Each with the
+    paper's abbreviations spelled out. Sections are joined by " || "; empty when the task says nothing."""
+    conds = [c for c in t.get("conditions") or [] if isinstance(c, dict)]
+    names = [expand(text(c.get("name"))) for c in conds]
+    descs = [expand(text(c.get("description"))) for c in conds]
+    atoms = sorted({a for c, n, d in zip(conds, names, descs)
+                    for a in condition_atoms({**c, "name": n, "description": d}, None, None)["atoms"]})
+    stim = [" ; ".join(str(x) for x in (v(c.get("stimulus_content")) or [])) for c in conds]
+    sections = [
+        " ".join(x for x in (" ; ".join(names), " ".join(a.replace(":", "_") for a in atoms),
+                             " ; ".join(expand(k) for k in contrast_names)) if x),
+        " ".join(x for x in (" ; ".join(d[:200] for d in descs if d), " ; ".join(x for x in stim if x)) if x),
+        " ".join(x for x in (lexicon.mask(expand(text(t.get("name")))),
+                             lexicon.mask(expand(text(t.get("description"))[:600]))) if x)]
+    return " || ".join(x for x in sections if x.strip())
+
+
 def token(atoms, phases):
     return ",".join(sorted(set(atoms) | {f"phase:{p}" for p in phases}))
 
@@ -96,11 +126,12 @@ def schemas():
             for t in tasks if t.get("id")}
 
 
-def read(r, study, CB, SCH, final=None):
+def read(r, study, CB, SCH, final=None, abbreviations=None):
     """One record -> its rows of the four tables (tasks, conditions, contrasts, analyses), and its counts.
 
     `CB` the task identity (taskcat.identity.CardBuilder), `SCH` `schemas()`, `final` the final task labels by
-    (study, task local_id): conditions and contrasts are read under those, not taskcat's own."""
+    (study, task local_id): conditions and contrasts are read under those, not taskcat's own. `abbreviations`, the
+    paper's own short forms (pondie `Abbreviations.for_paper`), are spelled out in each task's `evidence`."""
     final = final or {}
     T, Cn, K, A = ([] for _ in range(4))
     st = Counter()
@@ -277,4 +308,10 @@ def read(r, study, CB, SCH, final=None):
             # not in the build's table: which atoms the name did not give, for the sidecar's `also_read`
             "atoms_from_description": n["atoms_from_description"], "atoms_from_stimulus": n["atoms_from_stimulus"],
             "identity": f"{lab or fam or f'task:{study}/{cond_task[cid]}'}|{','.join(sorted(n['atoms'])) or n['residue'] or fold(nm)}"})
+    # ---- the contrast route's evidence, once the task's contrasts are read (not in the build's table)
+    expand = expander(abbreviations, study)
+    by_task = {t.get("local_id"): t for t in tasks}
+    for row in T:
+        names = [k["name"] for k in K if k["task"] == row["task"]]
+        row["evidence"] = evidence(by_task[row["task"]], names, CB.L, expand)
     return {"tasks": T, "conditions": Cn, "contrasts": K, "analyses": A}, st

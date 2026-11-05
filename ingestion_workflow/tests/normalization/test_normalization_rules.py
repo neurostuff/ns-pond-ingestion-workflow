@@ -17,8 +17,10 @@ from ingestion_workflow.normalization.taskcat.identity import CardBuilder
 
 DATA = json.loads((Path(__file__).parent / "data" / "astra_records.json").read_text())
 STUDIES = sorted(DATA)
-#: route B's own answer is carried on every task row; without its pickle it is absent
-WITHOUT_ROUTE_B = ("route_b", "agree")
+#: route B's own answer is carried on every task row; without its pickle it is absent.
+#: `evidence` is not in the build's table: the build's contrast route read condition names,
+#: atoms and contrast names only
+WITHOUT_ROUTE_B = ("route_b", "agree", "evidence")
 
 
 @pytest.fixture(scope="module")
@@ -54,6 +56,44 @@ def test_pass_two_under_the_builds_labels_is_the_builds(study, cb):
     assert plain(rows["contrasts"]) == build["contrasts"]
     assert plain(rows["analyses"]) == build["analyses"]
     assert build["contrasts"], "a fixture with no contrast tests nothing here"
+
+
+def evidence_of(study, cb, abbreviations=None):
+    rows, _ = records.read(
+        DATA[study]["record"], study, cb, records.schemas(), abbreviations=abbreviations
+    )
+    return {t["task"]: t["evidence"].split(" || ") for t in rows["tasks"]}
+
+
+def test_evidence_carries_descriptions_and_the_task_text_without_its_name(cb):
+    """PMC2532854's conditions are a code ("SWM") and two words; their descriptions say what
+    they are."""
+    names, described, task = evidence_of("AhxosLhYA5YG", cb)["tsk_swm"]
+    assert names.startswith("SWM ; vigilance ; fixation")
+    assert "+/- SWM (+)" in names                         # the contrast names
+    assert "Abstract line drawings appear in one of eight locations" in described
+    assert "a dot appears above figures" in described
+    assert task.startswith("spatial working memory and vigilance eighteen 20-second")
+
+
+def test_the_task_text_loses_the_names_the_name_route_read(cb):
+    """"2-back and 0-back WM tasks" is the n-back by name: the route sees "taskname", never
+    "2-back" again."""
+    *_, task = evidence_of("ya2RC6UYbibC", cb)["tsk_wm"]
+    assert task.startswith("taskname and taskname wm two experimental runs")
+    assert "back" not in task
+
+
+def test_the_papers_own_abbreviations_are_spelled_out(cb):
+    """The paper defines "spatial working memory (SWM)": the condition and contrast names are
+    read expanded."""
+    abbreviations = pytest.importorskip("pondie.vocabularies.abbreviations")
+    study = "AhxosLhYA5YG"
+    defined = DATA[study]["record"]["tasks"][0]["name"]["value"]
+    store = abbreviations.Abbreviations({}).for_paper(defined, study)
+    names, *_ = evidence_of(study, cb, store)["tsk_swm"]
+    assert names.startswith("spatial working memory ; vigilance ; fixation")
+    assert "+/- spatial working memory (+)" in names and "SWM" not in names
 
 
 def test_final_labels_change_what_pass_two_reads(cb):
