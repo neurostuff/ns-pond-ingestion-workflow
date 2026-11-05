@@ -1,0 +1,693 @@
+interactions:
+- request:
+    body: '{"ids": ["DOI:10.1002/mds.26295"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '34'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '[{"paperId": "2c774cbdbec79b1178d64d4c423ebb9e3a910b5b", "title": "Poster
+        Presentations", "venue": "Movement Disorders", "year": 2015, "isOpenAccess":
+        false, "openAccessPdf": {"url": "", "status": "CLOSED", "license": null, "disclaimer":
+        "Notice: The following paper fields have been elided by the publisher: {''abstract''}.
+        Paper or abstract available at https://api.unpaywall.org/v2/10.1002/mds.26295?email=<INSERT_YOUR_EMAIL>
+        or https://doi.org/10.1002/mds.26295, which is subject to the license by the
+        author or copyright owner provided with this content. Please go to the source
+        to verify the license and copyright information for your use."}, "publicationDate":
+        "2015-06-01", "authors": [{"authorId": "2405555", "name": "Mevludin Memedi"},
+        {"authorId": "3379201", "name": "Somayeh Aghanavesi"}, {"authorId": "47253081",
+        "name": "J. Westin"}], "abstract": null}]
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '866'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 05 Nov 2026 21:48:39 GMT
+      Via:
+      - 1.1 a183b6545fea485604515ba7931cb9b8.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - S-_kiwwQoCDz440VEHW5MlpdaNDQ4Tt9Ph2e2Vwa7JnDCJUUNNJJiA==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - GYv0wHBfPHcEFlg=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '866'
+      x-amzn-Remapped-Date:
+      - Thu, 05 Nov 2026 21:48:39 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - 56532e17-d38c-4b53-af9a-42a683a19ba4
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: GET
+    uri: https://api.crossref.org/works?filter=doi%3A10.1002%2Fmds.26295&rows=1&select=DOI%2Clicense
+  response:
+    body:
+      string: '{"status":"ok","message-type":"work-list","message-version":"1.0.0","message":{"facets":{},"total-results":1,"items":[{"DOI":"10.1002\/mds.26295","license":[{"start":{"date-parts":[[2015,6,15]],"date-time":"2015-06-15T00:00:00Z","timestamp":1434326400000},"content-version":"vor","delay-in-days":14,"URL":"http:\/\/onlinelibrary.wiley.com\/termsAndConditions#vor"}]}],"items-per-page":1,"query":{"start-index":0,"search-terms":null}}}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 05 Nov 2026 21:48:39 GMT
+      Transfer-Encoding:
+      - chunked
+      access-control-allow-headers:
+      - X-Requested-With, Accept, Accept-Encoding, Accept-Charset, Accept-Language,
+        Accept-Ranges, Cache-Control
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - Link
+      permissions-policy:
+      - interest-cohort=()
+      server:
+      - Jetty(9.4.40.v20210413)
+      strict-transport-security:
+      - max-age=31536000;
+      x-api-pool:
+      - public-array
+      x-concurrency-limit:
+      - '1'
+      x-rate-limit-interval:
+      - 1s
+      x-rate-limit-limit:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=doi%3A10.1002%2Fmds.26295&mailto=replay%40example.com&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
+  response:
+    body:
+      string: '{"meta": {"notice": "No API key, so this request shares one free daily
+        budget ($0.10) with everyone on your network''s IP address. The mailto parameter
+        doesn''t raise this limit. Get a free key with its own $1/day at https://openalex.org/settings/api
+        and add api_key=YOUR_KEY to your requests. An AI agent can get one for its
+        user in one call: POST https://api.openalex.org/api-keys with {\"email\":
+        \"<your user''s email>\"}; we email them a link, and the key works once they
+        click it. Docs for agents: https://help.openalex.org/llms.txt", "count": 4,
+        "db_response_time_ms": 17, "page": 1, "per_page": 100, "groups_count": null,
+        "x_query": {"oql": "get works where DOI is 10.1002/mds.26295", "x_new_oql":
+        "get works where DOI is 10.1002/mds.26295", "oqo": {"get_rows": "works", "filter_rows":
+        [{"column_id": "doi", "value": "10.1002/mds.26295"}]}, "url": "/works?filter=doi:10.1002%2Fmds.26295&per_page=100",
+        "order": "most cited (age-adjusted) first", "order_default": true}, "cost_usd":
+        0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W2183546547",
+        "doi": "https://doi.org/10.1002/mds.26295", "mag": "2183546547"}, "display_name":
+        "Rhythmic cueing with the Google Glass for patients with Parkinson''s disease",
+        "authorships": [{"author_position": "first", "author": {"id": "https://openalex.org/A5063739048",
+        "display_name": "Yan Zhao", "orcid": "https://orcid.org/0000-0002-5866-5932",
+        "observed_orcids": ["https://orcid.org/0000-0002-5866-5932"]}, "institutions":
+        [], "countries": [], "is_corresponding": false, "raw_author_name": "Yan Zhao",
+        "raw_affiliation_strings": [], "raw_orcid": "https://orcid.org/0000-0002-5866-5932",
+        "affiliations": []}, {"author_position": "middle", "author": {"id": "https://openalex.org/A5083581941",
+        "display_name": "Tjitske Heida", "orcid": "https://orcid.org/0000-0002-8382-6291",
+        "observed_orcids": ["https://orcid.org/0000-0002-8382-6291"]}, "institutions":
+        [], "countries": [], "is_corresponding": false, "raw_author_name": "Tjitske
+        Heida", "raw_affiliation_strings": [], "raw_orcid": "https://orcid.org/0000-0002-8382-6291",
+        "affiliations": []}, {"author_position": "middle", "author": {"id": "https://openalex.org/A5054128992",
+        "display_name": "Jorik H. Nonnekes", "orcid": "https://orcid.org/0000-0003-2434-1427",
+        "observed_orcids": ["https://orcid.org/0000-0003-2434-1427"]}, "institutions":
+        [], "countries": [], "is_corresponding": false, "raw_author_name": "Jorik
+        Nonnekes", "raw_affiliation_strings": [], "raw_orcid": "https://orcid.org/0000-0003-2434-1427",
+        "affiliations": []}, {"author_position": "last", "author": {"id": "https://openalex.org/A5061433891",
+        "display_name": "Richard J. A. Van Wezel", "orcid": "https://orcid.org/0000-0001-5753-7069",
+        "observed_orcids": ["https://orcid.org/0000-0001-5753-7069"]}, "institutions":
+        [], "countries": [], "is_corresponding": false, "raw_author_name": "Richard
+        van Wezel", "raw_affiliation_strings": [], "raw_orcid": "https://orcid.org/0000-0001-5753-7069",
+        "affiliations": []}], "publication_year": 2015, "abstract_inverted_index":
+        {"Objective:": [0], "To": [1, 104], "develop": [2], "and": [3, 49, 67, 85,
+        130, 157, 160, 198, 296, 305, 340], "test": [4], "applications": [5, 110],
+        "for": [6, 47, 112, 148, 286], "rhythmic": [7, 371], "cueing": [8, 109, 196,
+        201, 284, 372], "in": [9, 16, 79, 114, 123, 212, 294, 324], "the": [10, 31,
+        61, 94, 97, 100, 106, 124, 127, 149, 177, 180, 187, 191, 241, 246, 263, 282,
+        287, 297, 315, 331, 334, 351, 364], "Google": [11, 62, 150, 192, 288, 365],
+        "Glass": [12, 63, 193, 289, 366], "to": [13, 75, 138, 165, 184, 219, 231,
+        249, 272, 313, 356], "improve": [14, 76, 314], "gait": [15, 77, 235, 295],
+        "patients": [17, 174, 320, 329], "with": [18, 81, 134, 136, 172, 175, 281,
+        345], "Parkinson''s": [19], "disease": [20], "(PD).": [21], "Background:":
+        [22], "Smartglasses,": [23], "a": [24, 34, 115, 145, 169, 195, 370], "type":
+        [25], "of": [26, 33, 54, 96, 108, 132, 179, 189, 234, 240, 262, 299, 317,
+        333, 353, 359], "wearable": [27], "computer": [28], "that": [29, 70, 223,
+        291], "possesses": [30], "features": [32], "smart": [35], "phone": [36], "but":
+        [37], "can": [38, 64, 89], "be": [39, 311], "worn": [40], "like": [41, 60,
+        363], "conventional": [42], "glasses,": [43], "offer": [44], "new": [45, 140],
+        "possibilities": [46], "therapy": [48], "continuous": [50], "monitoring":
+        [51], "during": [52], "activities": [53, 358], "daily": [55, 360], "living.":
+        [56, 361], "In": [57, 168, 326], "particular,": [58], "smartglasses": [59,
+        88, 113, 355], "provide": [65], "visual": [66, 153, 338], "auditory": [68,
+        161], "cues": [69, 91, 164, 242, 339], "have": [71, 367], "long": [72], "been":
+        [73], "used": [74], "disturbances": [78], "people": [80, 133], "PD.": [82],
+        "Using": [83], "motion": [84], "feature": [86], "tracking,": [87], "personalize":
+        [90], "based": [92], "on": [93, 126], "state": [95], "user": [98, 101, 247],
+        "and/or": [99], "environment.": [102], "Methods:": [103], "approach": [105],
+        "design": [107], "(app)": [111], "user\u00adcentered": [116], "way,": [117],
+        "we": [118], "conducted": [119], "an": [120], "online": [121], "survey": [122,
+        264], "Netherlands": [125], "attitudes,": [128], "needs,": [129], "preferences":
+        [131], "PD": [135, 346], "respect": [137], "this": [139], "technology.": [141],
+        "We": [142], "then": [143], "developed": [144], "mobile": [146], "app": [147,
+        181, 285], "Glass,": [151], "using": [152, 190, 354], "(e.g.": [154, 162,
+        203], "flashing": [155], "square": [156], "optical": [158], "flow)": [159,
+        208], "metro\u00adnome)": [163], "modulate": [166], "gait.": [167, 214, 318],
+        "pilot": [170], "study": [171], "10": [173], "PD,": [176], "effectiveness":
+        [178], "was": [182, 301], "tested": [183], "investigate": [185], "1)": [186],
+        "feasibility": [188], "as": [194, 369], "device": [197], "2)": [199], "which":
+        [200], "modalities": [202], "audio,": [204], "visual,": [205], "or": [206],
+        "optic": [207, 341], "were": [209, 217, 243, 257, 265, 347], "most": [210],
+        "effective": [211], "improving": [213], "The": [215, 237, 260], "subjects":
+        [216], "asked": [218], "navigate": [220], "obstacle": [221], "courses": [222],
+        "simulate": [224], "real": [225], "life": [226], "situations,": [227], "including":
+        [228], "those": [229], "known": [230], "induce": [232], "freezing": [233],
+        "(FOG).": [236], "temporal": [238, 292], "frequency": [239, 298], "specified":
+        [244], "by": [245, 337], "according": [248], "their": [250, 276], "preferred":
+        [251, 330], "walking": [252], "speed.": [253], "Various": [254], "kinematic":
+        [255], "parameters": [256], "measured.": [258], "Results:": [259], "respondents":
+        [261], "overall": [266], "very": [267], "enthusiastic": [268], "about": [269,
+        350], "smartglasses''": [270], "potential": [271, 368], "help": [273], "them":
+        [274], "self\u00admanage": [275], "motor": [277], "symptoms.": [278], "Preliminary":
+        [279], "results": [280], "custom": [283], "showed": [290], "variability":
+        [293], "FOG": [300], "reduced.": [302], "Gait": [303], "velocity": [304],
+        "stride": [306], "length": [307], "need": [308], "not": [309], "necessarily":
+        [310], "increased": [312], "quality": [316], "Consequently,": [319], "gained":
+        [321], "more": [322], "confidence": [323], "walking.": [325], "descending":
+        [327], "order,": [328], "use": [332], "metronome,": [335], "followed": [336],
+        "flow.": [342], "Conclusions:": [343], "Patients": [344], "generally": [348],
+        "positive": [349], "prospect": [352], "facilitate": [357], "Smartglasses":
+        [362], "device.": [373]}, "primary_location": {"id": "pmh:oai:ris.utwente.nl:openaire_cris_publications/93a15ef8-a0e9-4d39-a727-49788821b237",
+        "doi": "https://doi.org/10.1002/mds.26295", "is_oa": false, "landing_page_url":
+        "https://research.utwente.nl/en/publications/93a15ef8-a0e9-4d39-a727-49788821b237",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4406922991", "display_name":
+        "University of Twente Research Information", "issn_l": null, "issn": null,
+        "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        null, "host_organization_name": null, "host_organization_lineage": [], "host_organization_lineage_names":
+        [], "type": "repository"}, "license": null, "license_id": null, "version":
+        "submittedVersion", "is_accepted": false, "is_published": false, "raw_source_name":
+        "Zhao, Y, Heida, T, Nonnekes, J H & van Wezel, R J A 2015, Rhythmic cueing
+        with the Google Glass for patients with Parkinson''s disease. in 19th International
+        Congress of Parkinson''s Disease and Movement Disorders. Wiley, Malden, pp.
+        138-138, 19th International Congress of Parkinson''s Disease and Movement
+        Disorders 2015, San Diego, California, United States, 14/06/15. https://doi.org/10.1002/mds.26295",
+        "raw_type": "info:eu-repo/semantics/conferenceObject"}, "best_oa_location":
+        null, "locations": [{"id": "pmh:oai:ris.utwente.nl:openaire_cris_publications/93a15ef8-a0e9-4d39-a727-49788821b237",
+        "doi": "https://doi.org/10.1002/mds.26295", "is_oa": false, "landing_page_url":
+        "https://research.utwente.nl/en/publications/93a15ef8-a0e9-4d39-a727-49788821b237",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4406922991", "display_name":
+        "University of Twente Research Information", "issn_l": null, "issn": null,
+        "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        null, "host_organization_name": null, "host_organization_lineage": [], "host_organization_lineage_names":
+        [], "type": "repository"}, "license": null, "license_id": null, "version":
+        "submittedVersion", "is_accepted": false, "is_published": false, "raw_source_name":
+        "Zhao, Y, Heida, T, Nonnekes, J H & van Wezel, R J A 2015, Rhythmic cueing
+        with the Google Glass for patients with Parkinson''s disease. in 19th International
+        Congress of Parkinson''s Disease and Movement Disorders. Wiley, Malden, pp.
+        138-138, 19th International Congress of Parkinson''s Disease and Movement
+        Disorders 2015, San Diego, California, United States, 14/06/15. https://doi.org/10.1002/mds.26295",
+        "raw_type": "info:eu-repo/semantics/conferenceObject"}, {"id": "pmh:ut:oai:ris.utwente.nl:publications/93a15ef8-a0e9-4d39-a727-49788821b237",
+        "doi": "https://doi.org/10.1002/mds.26295", "is_oa": false, "landing_page_url":
+        "https://research.utwente.nl/en/publications/93a15ef8-a0e9-4d39-a727-49788821b237",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4406922991", "display_name":
+        "University of Twente Research Information", "issn_l": null, "issn": null,
+        "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        null, "host_organization_name": null, "host_organization_lineage": [], "host_organization_lineage_names":
+        [], "type": "repository"}, "license": null, "license_id": null, "version":
+        "submittedVersion", "is_accepted": false, "is_published": false, "raw_source_name":
+        "19th International Congress of Parkinson''s Disease and Movement Disorders,
+        138 - 138", "raw_type": "info:eu-repo/semantics/conferencepaper"}, {"id":
+        "mag:2183546547", "doi": null, "is_oa": false, "landing_page_url": "https://pdxscholar.library.pdx.edu/ece_fac/343/",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S163027424", "display_name":
+        "Movement Disorders", "issn_l": "0885-3185", "issn": ["0885-3185", "1531-8257"],
+        "is_oa": false, "is_in_doaj": false, "is_core": true, "listed_in": ["anvur-scientific",
+        "cwts-core", "dongbi-b", "doyens", "jufo-3", "ki-jl-2", "medline", "norway-1",
+        "poland-140", "russia-white-list-1", "vabb-shw"], "host_organization": "https://openalex.org/P4310320595",
+        "host_organization_name": "Wiley", "host_organization_lineage": ["https://openalex.org/P4310320595"],
+        "host_organization_lineage_names": ["Wiley"], "type": "journal"}, "license":
+        null, "license_id": null, "version": null, "is_accepted": false, "is_published":
+        false, "raw_source_name": "Movement Disorders", "raw_type": null}], "open_access":
+        {"is_oa": false, "oa_status": "closed", "oa_url": null, "any_repository_has_fulltext":
+        false}}, {"ids": {"openalex": "https://openalex.org/W4292577873", "doi": "https://doi.org/10.1002/mds.26295",
+        "pmid": "https://pubmed.ncbi.nlm.nih.gov/26095114"}, "display_name": "Poster
+        Presentations", "authorships": [{"author_position": "first", "author": {"id":
+        "https://openalex.org/A5019153163", "display_name": "R A Brandsma", "orcid":
+        null, "observed_orcids": []}, "institutions": [], "countries": [], "is_corresponding":
+        false, "raw_author_name": "Brandsma, R.", "raw_affiliation_strings": [], "raw_orcid":
+        null, "affiliations": []}, {"author_position": "middle", "author": {"id":
+        "https://openalex.org/A5113716339", "display_name": "Tjitske F Lawerman",
+        "orcid": null, "observed_orcids": []}, "institutions": [], "countries": [],
+        "is_corresponding": false, "raw_author_name": "Lawerman, T. F.", "raw_affiliation_strings":
+        [], "raw_orcid": null, "affiliations": []}, {"author_position": "middle",
+        "author": {"id": "https://openalex.org/A5141895969", "display_name": "M. J.
+        Kuiper", "orcid": null, "observed_orcids": []}, "institutions": [], "countries":
+        [], "is_corresponding": false, "raw_author_name": "Kuiper, M. J.", "raw_affiliation_strings":
+        [], "raw_orcid": null, "affiliations": []}, {"author_position": "middle",
+        "author": {"id": "https://openalex.org/A5141550470", "display_name": "Geffen,
+        van, Joke", "orcid": null, "observed_orcids": []}, "institutions": [], "countries":
+        [], "is_corresponding": false, "raw_author_name": "Geffen, van, Joke", "raw_affiliation_strings":
+        [], "raw_orcid": null, "affiliations": []}, {"author_position": "middle",
+        "author": {"id": "https://openalex.org/A5028813641", "display_name": "I. J.
+        Lunsing", "orcid": null, "observed_orcids": []}, "institutions": [], "countries":
+        [], "is_corresponding": false, "raw_author_name": "Lunsing, I. J.", "raw_affiliation_strings":
+        [], "raw_orcid": null, "affiliations": []}, {"author_position": "middle",
+        "author": {"id": "https://openalex.org/A5141403063", "display_name": "H. Burger",
+        "orcid": null, "observed_orcids": []}, "institutions": [], "countries": [],
+        "is_corresponding": false, "raw_author_name": "Burger, H.; id_orcid 0000-0001-6484-0349",
+        "raw_affiliation_strings": [], "raw_orcid": null, "affiliations": []}, {"author_position":
+        "middle", "author": {"id": "https://openalex.org/A5020398622", "display_name":
+        "Tom J. de Koning", "orcid": "https://orcid.org/0000-0001-5609-1309", "observed_orcids":
+        ["https://orcid.org/0000-0001-5609-1309"]}, "institutions": [], "countries":
+        [], "is_corresponding": false, "raw_author_name": "de Koning, T. J.", "raw_affiliation_strings":
+        [], "raw_orcid": null, "affiliations": []}, {"author_position": "middle",
+        "author": {"id": "https://openalex.org/A5141614793", "display_name": "J. J.
+        de Vries", "orcid": null, "observed_orcids": []}, "institutions": [], "countries":
+        [], "is_corresponding": false, "raw_author_name": "de Vries, J. J.", "raw_affiliation_strings":
+        [], "raw_orcid": null, "affiliations": []}, {"author_position": "middle",
+        "author": {"id": "https://openalex.org/A5024637323", "display_name": "Marina
+        A.J. Tijssen", "orcid": "https://orcid.org/0000-0001-5783-571X", "observed_orcids":
+        ["https://orcid.org/0000-0001-5783-571X"]}, "institutions": [], "countries":
+        [], "is_corresponding": false, "raw_author_name": "de Koning-Tijssen, M. A.
+        J.; id_orcid 0000-0001-5783-571X", "raw_affiliation_strings": [], "raw_orcid":
+        null, "affiliations": []}, {"author_position": "last", "author": {"id": "https://openalex.org/A5062173805",
+        "display_name": "DA Sival", "orcid": null, "observed_orcids": []}, "institutions":
+        [], "countries": [], "is_corresponding": false, "raw_author_name": "Sival,
+        D. A.", "raw_affiliation_strings": [], "raw_orcid": null, "affiliations":
+        []}], "publication_year": 2015, "abstract_inverted_index": {"Contains": [0],
+        "fulltext": [1], ":": [2], "218342.pdf": [3], "(Publisher\u2019s": [4], "version":
+        [5], ")": [6], "(Closed": [7], "access)": [8]}, "primary_location": {"id":
+        "doi:10.1002/mds.26295", "doi": "https://doi.org/10.1002/mds.26295", "is_oa":
+        false, "landing_page_url": "https://doi.org/10.1002/mds.26295", "pdf_url":
+        null, "source": {"id": "https://openalex.org/S163027424", "display_name":
+        "Movement Disorders", "issn_l": "0885-3185", "issn": ["0885-3185", "1531-8257"],
+        "is_oa": false, "is_in_doaj": false, "is_core": true, "listed_in": ["anvur-scientific",
+        "cwts-core", "dongbi-b", "doyens", "jufo-3", "ki-jl-2", "medline", "norway-1",
+        "poland-140", "russia-white-list-1", "vabb-shw"], "host_organization": "https://openalex.org/P4310320595",
+        "host_organization_name": "Wiley", "host_organization_lineage": ["https://openalex.org/P4310320595"],
+        "host_organization_lineage_names": ["Wiley"], "type": "journal"}, "license":
+        null, "license_id": null, "version": "publishedVersion", "is_accepted": true,
+        "is_published": true, "raw_source_name": "Movement Disorders", "raw_type":
+        "journal-article"}, "best_oa_location": null, "locations": [{"id": "doi:10.1002/mds.26295",
+        "doi": "https://doi.org/10.1002/mds.26295", "is_oa": false, "landing_page_url":
+        "https://doi.org/10.1002/mds.26295", "pdf_url": null, "source": {"id": "https://openalex.org/S163027424",
+        "display_name": "Movement Disorders", "issn_l": "0885-3185", "issn": ["0885-3185",
+        "1531-8257"], "is_oa": false, "is_in_doaj": false, "is_core": true, "listed_in":
+        ["anvur-scientific", "cwts-core", "dongbi-b", "doyens", "jufo-3", "ki-jl-2",
+        "medline", "norway-1", "poland-140", "russia-white-list-1", "vabb-shw"], "host_organization":
+        "https://openalex.org/P4310320595", "host_organization_name": "Wiley", "host_organization_lineage":
+        ["https://openalex.org/P4310320595"], "host_organization_lineage_names": ["Wiley"],
+        "type": "journal"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Movement Disorders",
+        "raw_type": "journal-article"}, {"id": "pmid:26095114", "doi": null, "is_oa":
+        false, "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/26095114", "pdf_url":
+        null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "Movement disorders
+        : official journal of the Movement Disorder Society", "raw_type": "Journal
+        Article"}, {"id": "pmh:oai:pdxscholar.library.pdx.edu:ece_fac-1334", "doi":
+        null, "is_oa": false, "landing_page_url": "https://pdxscholar.library.pdx.edu/ece_fac/343",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4377196300", "display_name":
+        "PDXScholar  (Portland State University)", "issn_l": null, "issn": null, "is_oa":
+        false, "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I126345244", "host_organization_name": "Portland State
+        University", "host_organization_lineage": ["https://openalex.org/I126345244"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "Electrical and Computer Engineering Faculty Publications
+        and Presentations", "raw_type": "text"}, {"id": "pmh:oai:pure.rug.nl:openaire_cris_publications/06da9899-1ac7-406b-9a08-74ec0cbb420d",
+        "doi": null, "is_oa": false, "landing_page_url": "https://research.rug.nl/en/publications/06da9899-1ac7-406b-9a08-74ec0cbb420d",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400420", "display_name":
+        "University of Groningen research database (University of Groningen / Centre
+        for Information Technology)", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I169381384", "host_organization_name": "University of
+        Groningen", "host_organization_lineage": ["https://openalex.org/I169381384"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "Luinstra, M, Rutgers, W A W F, Dijkstra, H, Grasmeijer,
+        F, Hagedoorn, P, Vogelzang, J, Frijlink, H W & De Boer, A H 2015, ''The ability
+        of Parkinson''s disease patients to use dry powder inhalers during off periods'',
+        Movement Disorders, vol. 30, pp. 101. https://doi.org/10.1002/mds.26295",
+        "raw_type": "info:eu-repo/semantics/conferenceObject"}, {"id": "pmh:oai:pure.rug.nl:openaire_cris_publications/0ce7e1fc-faa5-4ba9-845f-8322f4f0aa00",
+        "doi": null, "is_oa": false, "landing_page_url": "https://research.rug.nl/en/publications/0ce7e1fc-faa5-4ba9-845f-8322f4f0aa00",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400420", "display_name":
+        "University of Groningen research database (University of Groningen / Centre
+        for Information Technology)", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I169381384", "host_organization_name": "University of
+        Groningen", "host_organization_lineage": ["https://openalex.org/I169381384"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "Brandsma, R, Lawerman, T F, Kuiper, M J, Geffen,
+        van, J, Lunsing, I J, Burger, H, de Koning, T J, de Vries, J J, de Koning-Tijssen,
+        M A J & Sival, D A 2015, ''Reliability and discriminant validity of ataxia
+        rating scales in early onset ataxia'', Movement Disorders, vol. 30, no. Supplement
+        1, 915, pp. S356-S356. https://doi.org/10.1002/mds.26295", "raw_type": "info:eu-repo/semantics/conferenceObject"},
+        {"id": "pmh:oai:repository.ubn.ru.nl:2066/218342", "doi": null, "is_oa": false,
+        "landing_page_url": "https://hdl.handle.net/2066/218342", "pdf_url": null,
+        "source": {"id": "https://openalex.org/S4306401067", "display_name": "Radboud
+        Repository (Radboud University)", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I145872427", "host_organization_name": "Radboud University
+        Nijmegen", "host_organization_lineage": ["https://openalex.org/I145872427"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "", "raw_type": "Article / Letter to editor"}, {"id":
+        "pmh:rug:oai:pure.rug.nl:publications/0ce7e1fc-faa5-4ba9-845f-8322f4f0aa00",
+        "doi": null, "is_oa": false, "landing_page_url": "https://research.rug.nl/en/publications/0ce7e1fc-faa5-4ba9-845f-8322f4f0aa00",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400420", "display_name":
+        "University of Groningen research database (University of Groningen / Centre
+        for Information Technology)", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I169381384", "host_organization_name": "University of
+        Groningen", "host_organization_lineage": ["https://openalex.org/I169381384"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "Movement Disorders, 30(Supplement 1):915, S356
+        - S356. Wiley", "raw_type": "info:eu-repo/semantics/article"}], "open_access":
+        {"is_oa": false, "oa_status": "closed", "oa_url": null, "any_repository_has_fulltext":
+        false}}, {"ids": {"openalex": "https://openalex.org/W2477211393", "doi": "https://doi.org/10.1002/mds.26295",
+        "mag": "2477211393"}, "display_name": "The ability of Parkinson''s disease
+        patients to use dry powder inhalers during off periods", "authorships": [{"author_position":
+        "first", "author": {"id": "https://openalex.org/A5038626465", "display_name":
+        "Marianne Luinstra", "orcid": null, "observed_orcids": []}, "institutions":
+        [], "countries": [], "is_corresponding": false, "raw_author_name": "Marianne
+        Luinstra", "raw_affiliation_strings": ["Pharmaceutical Technology and Biopharmacy"],
+        "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "Pharmaceutical
+        Technology and Biopharmacy", "institution_ids": []}]}, {"author_position":
+        "middle", "author": {"id": "https://openalex.org/A5061821101", "display_name":
+        "Wijnand Rutgers", "orcid": null, "observed_orcids": []}, "institutions":
+        [], "countries": [], "is_corresponding": false, "raw_author_name": "Wijnand
+        Rutgers", "raw_affiliation_strings": [], "raw_orcid": null, "affiliations":
+        []}, {"author_position": "middle", "author": {"id": "https://openalex.org/A5040237154",
+        "display_name": "Hilda Dijkstra", "orcid": null, "observed_orcids": []}, "institutions":
+        [], "countries": [], "is_corresponding": false, "raw_author_name": "Hilda
+        Dijkstra", "raw_affiliation_strings": [], "raw_orcid": null, "affiliations":
+        []}, {"author_position": "middle", "author": {"id": "https://openalex.org/A5021333179",
+        "display_name": "Floris Grasmeijer", "orcid": "https://orcid.org/0000-0003-0897-5673",
+        "observed_orcids": ["https://orcid.org/0000-0003-0897-5673"]}, "institutions":
+        [], "countries": [], "is_corresponding": false, "raw_author_name": "Floris
+        Grasmeijer", "raw_affiliation_strings": ["Pharmaceutical Technology and Biopharmacy"],
+        "raw_orcid": "https://orcid.org/0000-0003-0897-5673", "affiliations": [{"raw_affiliation_string":
+        "Pharmaceutical Technology and Biopharmacy", "institution_ids": []}]}, {"author_position":
+        "middle", "author": {"id": "https://openalex.org/A5091581887", "display_name":
+        "Paul Hagedoorn", "orcid": "https://orcid.org/0000-0001-6253-1905", "observed_orcids":
+        ["https://orcid.org/0000-0001-6253-1905"]}, "institutions": [], "countries":
+        [], "is_corresponding": false, "raw_author_name": "Paul Hagedoorn", "raw_affiliation_strings":
+        ["Pharmaceutical Technology and Biopharmacy"], "raw_orcid": "https://orcid.org/0000-0001-6253-1905",
+        "affiliations": [{"raw_affiliation_string": "Pharmaceutical Technology and
+        Biopharmacy", "institution_ids": []}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5008282817", "display_name": "Jolanda M.J. Vogelzang",
+        "orcid": "https://orcid.org/0000-0002-4953-0921", "observed_orcids": ["https://orcid.org/0000-0002-4953-0921"]},
+        "institutions": [], "countries": [], "is_corresponding": false, "raw_author_name":
+        "Jolanda M.J. Vogelzang", "raw_affiliation_strings": [], "raw_orcid": "https://orcid.org/0000-0002-4953-0921",
+        "affiliations": []}, {"author_position": "middle", "author": {"id": "https://openalex.org/A5008287871",
+        "display_name": "Henderik Willem Frijlink", "orcid": "https://orcid.org/0000-0001-7901-8198",
+        "observed_orcids": ["https://orcid.org/0000-0001-7901-8198"]}, "institutions":
+        [], "countries": [], "is_corresponding": false, "raw_author_name": "Henderik
+        W. Frijlink", "raw_affiliation_strings": ["Pharmaceutical Technology and Biopharmacy"],
+        "raw_orcid": "https://orcid.org/0000-0001-7901-8198", "affiliations": [{"raw_affiliation_string":
+        "Pharmaceutical Technology and Biopharmacy", "institution_ids": []}]}, {"author_position":
+        "last", "author": {"id": "https://openalex.org/A5113899476", "display_name":
+        "de A. Boer", "orcid": null, "observed_orcids": []}, "institutions": [], "countries":
+        [], "is_corresponding": false, "raw_author_name": "de A. Boer", "raw_affiliation_strings":
+        ["Pharmaceutical Technology and Biopharmacy"], "raw_orcid": null, "affiliations":
+        [{"raw_affiliation_string": "Pharmaceutical Technology and Biopharmacy", "institution_ids":
+        []}]}], "publication_year": 2015, "abstract_inverted_index": {"Objective:":
+        [0], "The": [1, 69, 177, 251, 300], "aim": [2], "of": [3, 11, 38, 43, 47,
+        61, 85, 122, 243, 272, 303, 325, 339], "our": [4], "study": [5, 178, 257],
+        "was": [6, 126, 179], "to": [7, 14, 53, 104, 112, 142, 157, 162, 168, 214,
+        227, 238, 311, 318], "assess": [8], "the": [9, 58, 80, 83, 116, 120, 123,
+        133, 182, 201, 234, 259, 269, 285, 322, 332], "applicability": [10], "Parkinson''s":
+        [12, 62, 204, 273, 304], "patients": [13, 64, 101, 187, 205, 211, 275, 306],
+        "use": [15], "a": [16, 75, 86, 129, 148, 240, 244, 298], "dry": [17, 87, 245,
+        264, 327], "powder": [18, 88, 246, 265, 328], "inhaler": [19, 89, 150, 173],
+        "correctly": [20, 170], "during": [21, 174, 206, 335], "their": [22, 166,
+        221], "off": [23, 67, 124, 175, 191, 207, 278, 309, 337], "periods,": [24],
+        "when": [25], "motor": [26, 136], "function": [27], "impairments": [28], "like":
+        [29, 248], "tremor,": [30], "bradykinesia": [31], "and": [32, 82, 90, 192,
+        232, 283], "rigidity": [33], "are": [34], "present.": [35], "Background:":
+        [36], "Because": [37], "its": [39], "expected": [40, 317], "rapid": [41],
+        "onset": [42], "effect,": [44], "pulmonary": [45], "administration": [46],
+        "levodopa": [48, 56, 108, 263, 326], "is": [49, 77, 91, 316], "an": [50, 66,
+        144, 172, 216, 224, 277, 308, 313, 336], "interesting": [51], "alternative":
+        [52], "orally": [54], "administered": [55], "for": [57, 79, 197, 223, 268,
+        321, 331], "rescue": [59, 270, 333], "treatment": [60, 271, 334], "disease":
+        [63, 274, 305], "in": [65, 110, 160, 255, 276, 292, 307], "period.": [68],
+        "inspiratory": [70], "flow": [71], "manoeuvre": [72, 146, 218, 315], "performed":
+        [73], "by": [74, 128, 131, 181], "patient": [76, 342], "crucial": [78], "performance":
+        [81], "suitability": [84], "therefore": [92, 194], "assessed.": [93], "Methods:":
+        [94], "After": [95], "obtaining": [96], "written": [97], "informed": [98],
+        "consent,": [99], "15": [100], "were": [102, 140, 193, 212], "asked": [103,
+        141], "postpone": [105], "there": [106], "scheduled": [107], "dose": [109],
+        "order": [111, 161], "become": [113, 190], "off.": [114], "Before": [115],
+        "inhalation": [117, 145, 217, 252, 266, 314, 329], "procedure": [118], "started,":
+        [119], "extent": [121], "state": [125], "scored": [127], "neurologist,": [130],
+        "using": [132], "(old)": [134], "UPDRS": [135], "section": [137], "3.": [138],
+        "Patients": [139], "simulate": [143], "through": [147, 171], "test": [149],
+        "(without": [151], "drug),": [152], "with": [153, 200], "three": [154], "different":
+        [155], "resistances": [156], "air": [158], "flow,": [159], "obtain": [163],
+        "information": [164], "about": [165], "ability": [167, 302], "inhale": [169],
+        "periods.": [176], "approved": [180], "ethics": [183], "commitee.": [184],
+        "Results:": [185], "Two": [186], "did": [188], "not": [189, 195], "included":
+        [196], "analysis.": [198], "Measurements": [199], "other": [202], "13": [203],
+        "periods": [208], "showed": [209], "that": [210], "able": [213], "perform":
+        [215, 312], "correctly,": [219], "hold": [220], "breath": [222], "acceptable":
+        [225], "time": [226], "facilitate": [228], "deep": [229], "lung": [230], "deposition":
+        [231], "create": [233], "pressure": [235], "drop": [236], "necessary": [237],
+        "achieve": [239], "proper": [241], "dispersion": [242], "formulation,": [247],
+        "levodopa.": [249], "Conclusions:": [250], "data": [253], "gathered": [254],
+        "this": [256, 340], "set": [258], "limits": [260], "within": [261], "which":
+        [262], "products": [267, 330], "period": [279, 310, 338], "should": [280],
+        "effectively": [281], "disperse": [282], "emit": [284], "required": [286],
+        "dose.": [287], "They": [288], "are,": [289], "therefore,": [290], "essential":
+        [291], "any": [293], "development": [294, 324], "activities": [295], "towards":
+        [296], "such": [297], "product.": [299], "demonstrated": [301], "be": [319],
+        "sufficient": [320], "successful": [323], "particular": [341], "group.": [343]},
+        "primary_location": {"id": "pmh:rug:oai:pure.rug.nl:publications/06da9899-1ac7-406b-9a08-74ec0cbb420d",
+        "doi": "https://doi.org/10.1002/mds.26295", "is_oa": false, "landing_page_url":
+        "https://research.rug.nl/en/publications/06da9899-1ac7-406b-9a08-74ec0cbb420d",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400420", "display_name":
+        "University of Groningen research database (University of Groningen / Centre
+        for Information Technology)", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I169381384", "host_organization_name": "University of
+        Groningen", "host_organization_lineage": ["https://openalex.org/I169381384"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "Movement Disorders, 30. Wiley", "raw_type": "info:eu-repo/semantics/article"},
+        "best_oa_location": null, "locations": [{"id": "pmh:rug:oai:pure.rug.nl:publications/06da9899-1ac7-406b-9a08-74ec0cbb420d",
+        "doi": "https://doi.org/10.1002/mds.26295", "is_oa": false, "landing_page_url":
+        "https://research.rug.nl/en/publications/06da9899-1ac7-406b-9a08-74ec0cbb420d",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S4306400420", "display_name":
+        "University of Groningen research database (University of Groningen / Centre
+        for Information Technology)", "issn_l": null, "issn": null, "is_oa": false,
+        "is_in_doaj": false, "is_core": false, "listed_in": [], "host_organization":
+        "https://openalex.org/I169381384", "host_organization_name": "University of
+        Groningen", "host_organization_lineage": ["https://openalex.org/I169381384"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "Movement Disorders, 30. Wiley", "raw_type": "info:eu-repo/semantics/article"},
+        {"id": "mag:2477211393", "doi": null, "is_oa": false, "landing_page_url":
+        "https://research.rug.nl/en/publications/the-ability-of-parkinsons-disease-patients-to-use-dry-powder-inha",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S163027424", "display_name":
+        "Movement Disorders", "issn_l": "0885-3185", "issn": ["0885-3185", "1531-8257"],
+        "is_oa": false, "is_in_doaj": false, "is_core": true, "listed_in": ["anvur-scientific",
+        "cwts-core", "dongbi-b", "doyens", "jufo-3", "ki-jl-2", "medline", "norway-1",
+        "poland-140", "russia-white-list-1", "vabb-shw"], "host_organization": "https://openalex.org/P4310320595",
+        "host_organization_name": "Wiley", "host_organization_lineage": ["https://openalex.org/P4310320595"],
+        "host_organization_lineage_names": ["Wiley"], "type": "journal"}, "license":
+        null, "license_id": null, "version": null, "is_accepted": false, "is_published":
+        false, "raw_source_name": "Movement Disorders", "raw_type": null}], "open_access":
+        {"is_oa": false, "oa_status": "closed", "oa_url": null, "any_repository_has_fulltext":
+        false}}, {"ids": {"openalex": "https://openalex.org/W3025146656", "doi": "https://doi.org/10.1002/mds.26295",
+        "mag": "3025146656"}, "display_name": "Cerebral mechanisms underlying initiation
+        and propagation of Parkinson''s tremor: A dynamic causal modeling study [Poster
+        presentation no. 11]", "authorships": [{"author_position": "first", "author":
+        {"id": "https://openalex.org/A5058082155", "display_name": "Michiel F. Dirkx",
+        "orcid": "https://orcid.org/0000-0001-8763-8071", "observed_orcids": ["https://orcid.org/0000-0001-8763-8071"]},
+        "institutions": [], "countries": [], "is_corresponding": false, "raw_author_name":
+        "Michiel F. Dirkx", "raw_affiliation_strings": [], "raw_orcid": "https://orcid.org/0000-0001-8763-8071",
+        "affiliations": []}, {"author_position": "middle", "author": {"id": "https://openalex.org/A5091066494",
+        "display_name": "Hanneke E.M. den Ouden", "orcid": "https://orcid.org/0000-0001-7039-5130",
+        "observed_orcids": ["https://orcid.org/0000-0001-7039-5130"]}, "institutions":
+        [], "countries": [], "is_corresponding": false, "raw_author_name": "Hanneke
+        E. M. den Ouden", "raw_affiliation_strings": [], "raw_orcid": "https://orcid.org/0000-0001-7039-5130",
+        "affiliations": []}, {"author_position": "middle", "author": {"id": "https://openalex.org/A5005290023",
+        "display_name": "Esther Aarts", "orcid": "https://orcid.org/0000-0001-6360-6200",
+        "observed_orcids": ["https://orcid.org/0000-0001-6360-6200"]}, "institutions":
+        [], "countries": [], "is_corresponding": false, "raw_author_name": "Esther
+        Aarts", "raw_affiliation_strings": [], "raw_orcid": "https://orcid.org/0000-0001-6360-6200",
+        "affiliations": []}, {"author_position": "middle", "author": {"id": "https://openalex.org/A5091897577",
+        "display_name": "Monique H.M. Timmer", "orcid": "https://orcid.org/0000-0002-3034-5742",
+        "observed_orcids": ["https://orcid.org/0000-0002-3034-5742"]}, "institutions":
+        [], "countries": [], "is_corresponding": false, "raw_author_name": "Monique
+        H.M. Timmer", "raw_affiliation_strings": [], "raw_orcid": "https://orcid.org/0000-0002-3034-5742",
+        "affiliations": []}, {"author_position": "middle", "author": {"id": "https://openalex.org/A5072571980",
+        "display_name": "Roshan Cools", "orcid": "https://orcid.org/0000-0001-8994-5534",
+        "observed_orcids": ["https://orcid.org/0000-0001-8994-5534"]}, "institutions":
+        [], "countries": [], "is_corresponding": false, "raw_author_name": "Roshan
+        Cools", "raw_affiliation_strings": [], "raw_orcid": "https://orcid.org/0000-0001-8994-5534",
+        "affiliations": []}, {"author_position": "middle", "author": {"id": "https://openalex.org/A5070737725",
+        "display_name": "Rianne A.J. Esselink", "orcid": "https://orcid.org/0000-0002-4822-5933",
+        "observed_orcids": ["https://orcid.org/0000-0002-4822-5933"]}, "institutions":
+        [], "countries": [], "is_corresponding": false, "raw_author_name": "Rianne
+        A.J. Esselink", "raw_affiliation_strings": [], "raw_orcid": "https://orcid.org/0000-0002-4822-5933",
+        "affiliations": []}, {"author_position": "middle", "author": {"id": "https://openalex.org/A5035064433",
+        "display_name": "Bastiaan R. Bloem", "orcid": "https://orcid.org/0000-0002-6371-3337",
+        "observed_orcids": ["https://orcid.org/0000-0002-6371-3337"]}, "institutions":
+        [], "countries": [], "is_corresponding": false, "raw_author_name": "Bastiaan
+        R. Bloem", "raw_affiliation_strings": [], "raw_orcid": "https://orcid.org/0000-0002-6371-3337",
+        "affiliations": []}, {"author_position": "middle", "author": {"id": "https://openalex.org/A5024257756",
+        "display_name": "Ivan Toni", "orcid": "https://orcid.org/0000-0003-0936-3601",
+        "observed_orcids": ["https://orcid.org/0000-0003-0936-3601"]}, "institutions":
+        [], "countries": [], "is_corresponding": false, "raw_author_name": "Ivan Toni",
+        "raw_affiliation_strings": [], "raw_orcid": "https://orcid.org/0000-0003-0936-3601",
+        "affiliations": []}, {"author_position": "last", "author": {"id": "https://openalex.org/A5025743783",
+        "display_name": "Rick C. G. Helmich", "orcid": "https://orcid.org/0000-0003-4035-6573",
+        "observed_orcids": ["https://orcid.org/0000-0003-4035-6573"]}, "institutions":
+        [], "countries": [], "is_corresponding": false, "raw_author_name": "Rick C.
+        Helmich", "raw_affiliation_strings": [], "raw_orcid": "https://orcid.org/0000-0003-4035-6573",
+        "affiliations": []}], "publication_year": 2015, "abstract_inverted_index":
+        null, "primary_location": {"id": "pmh:ru:oai:repository.ubn.ru.nl:2066/218342",
+        "doi": "https://doi.org/10.1002/mds.26295", "is_oa": false, "landing_page_url":
+        "http://hdl.handle.net/2066/218342", "pdf_url": null, "source": {"id": "https://openalex.org/S4306401067",
+        "display_name": "Radboud Repository (Radboud University)", "issn_l": null,
+        "issn": null, "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in":
+        [], "host_organization": "https://openalex.org/I145872427", "host_organization_name":
+        "Radboud University Nijmegen", "host_organization_lineage": ["https://openalex.org/I145872427"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "Movement Disorders, 30, S4 - S5", "raw_type": "info:eu-repo/semantics/article"},
+        "best_oa_location": null, "locations": [{"id": "pmh:ru:oai:repository.ubn.ru.nl:2066/218342",
+        "doi": "https://doi.org/10.1002/mds.26295", "is_oa": false, "landing_page_url":
+        "http://hdl.handle.net/2066/218342", "pdf_url": null, "source": {"id": "https://openalex.org/S4306401067",
+        "display_name": "Radboud Repository (Radboud University)", "issn_l": null,
+        "issn": null, "is_oa": false, "is_in_doaj": false, "is_core": false, "listed_in":
+        [], "host_organization": "https://openalex.org/I145872427", "host_organization_name":
+        "Radboud University Nijmegen", "host_organization_lineage": ["https://openalex.org/I145872427"],
+        "host_organization_lineage_names": [], "type": "repository"}, "license": null,
+        "license_id": null, "version": "submittedVersion", "is_accepted": false, "is_published":
+        false, "raw_source_name": "Movement Disorders, 30, S4 - S5", "raw_type": "info:eu-repo/semantics/article"},
+        {"id": "mag:3025146656", "doi": null, "is_oa": false, "landing_page_url":
+        "https://repository.ubn.ru.nl/handle/2066/218342", "pdf_url": null, "source":
+        {"id": "https://openalex.org/S163027424", "display_name": "Movement Disorders",
+        "issn_l": "0885-3185", "issn": ["0885-3185", "1531-8257"], "is_oa": false,
+        "is_in_doaj": false, "is_core": true, "listed_in": ["anvur-scientific", "cwts-core",
+        "dongbi-b", "doyens", "jufo-3", "ki-jl-2", "medline", "norway-1", "poland-140",
+        "russia-white-list-1", "vabb-shw"], "host_organization": "https://openalex.org/P4310320595",
+        "host_organization_name": "Wiley", "host_organization_lineage": ["https://openalex.org/P4310320595"],
+        "host_organization_lineage_names": ["Wiley"], "type": "journal"}, "license":
+        null, "license_id": null, "version": null, "is_accepted": false, "is_published":
+        false, "raw_source_name": "Movement Disorders", "raw_type": null}], "open_access":
+        {"is_oa": false, "oa_status": "closed", "oa_url": null, "any_repository_has_fulltext":
+        false}}], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a55f105eef4b806e-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 05 Nov 2026 21:48:40 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '1000'
+      X-RateLimit-Limit-USD:
+      - '0.1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '178'
+      X-RateLimit-Remaining-USD:
+      - '0.0178'
+      X-RateLimit-Reset:
+      - '7880'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=zUbPR91XbgZxmxOdLpdrgUtV3xstj%2BRq0KSnEI00FlA%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1793915320"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=zUbPR91XbgZxmxOdLpdrgUtV3xstj%2BRq0KSnEI00FlA%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1793915320"
+    status:
+      code: 200
+      message: OK
+version: 1

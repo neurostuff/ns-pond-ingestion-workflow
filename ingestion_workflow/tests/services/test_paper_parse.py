@@ -286,6 +286,22 @@ def test_the_bibliography_carries_structured_authors_and_validates(tmp_path):
     assert smith == {"name": "Smith, J", "corresponding": False}
 
 
+@pytest.mark.parametrize("venue, sent", [
+    # PLoS ONE's OpenAlex source
+    (pp.Venue(openalex_id="S202381698", match="doi"), {"openalex_id": "S202381698",
+                                                      "match": "doi"}),
+    (pp.Venue(openalex_id="S202381698", match="fuzzy", score=96.0),
+     {"openalex_id": "S202381698", "match": "fuzzy", "score": 96.0}),
+    (None, None),
+])
+def test_the_bibliography_carries_the_venue_beside_the_journal_s_name(tmp_path, venue, sent):
+    _, _, summary = _written(tmp_path, venue=venue)
+    paper = json.loads((summary["dir"] / "parsed_paper.json").read_text())
+    _validate(paper, "parsed-paper")
+    assert paper["bibliography"]["journal"] == "PLoS ONE"
+    assert _compact(paper["bibliography"]["venue"]) == sent
+
+
 def test_the_parsed_paper_points_at_the_synced_text(written):
     paper, parse, _ = written
     assert paper["text_path"] == "processed/pubget/text.txt"

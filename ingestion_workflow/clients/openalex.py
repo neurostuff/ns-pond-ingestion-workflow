@@ -53,6 +53,8 @@ _METADATA_FIELDS = (
 #: What a record keeps of the work verbatim: where its copies are, under which licences,
 #: and how it is open.
 _RAW_FIELDS = ("primary_location", "best_oa_location", "locations", "open_access")
+#: What a source lookup keeps: which source, its name, kind and size.
+_SOURCE_FIELDS = "id,display_name,type,works_count"
 
 
 # OpenAlex's Work schema documents `ids.pmcid`, but no recorded or live answer checked on
@@ -571,6 +573,17 @@ class OpenAlexClient:
                                 found, unreadable=unreadable)
         return found
 
+    def source_by_issn(self, issn: str) -> Optional[Dict]:
+        """The source holding `issn` (`id`, `display_name`, `type`, `works_count`); None when
+        no source does. A single-entity lookup, which OpenAlex does not charge for."""
+        try:
+            return self._request_openalex({"mailto": self.email, "select": _SOURCE_FIELDS},
+                                          f"issn:{quote(issn)}", endpoint="/sources")
+        except requests.HTTPError as exc:
+            if exc.response is not None and exc.response.status_code == 404:
+                return None
+            raise
+
     def _works_asked_singly(
         self, asked: List[str], answered: set, select: str
     ) -> List[Tuple[str, Dict]]:
@@ -616,10 +629,12 @@ class OpenAlexClient:
         return [work for _, payload in answers for work in payload.get("results") or []], why
 
     @retry_transient(3, 8)
-    def _request_openalex(self, params: Dict[str, str], work: str = "") -> Dict:
-        """Issue a GET request to the OpenAlex Works endpoint, or to one `work` of it."""
+    def _request_openalex(self, params: Dict[str, str], work: str = "",
+                          endpoint: str = LOOKUP_ENDPOINT) -> Dict:
+        """Issue a GET request to an OpenAlex endpoint (Works unless given), or to one entity
+        of it, `work`."""
         self._pace.wait(_MIN_REQUEST_INTERVAL)
-        url = urljoin(self.BASE_URL, f"{self.LOOKUP_ENDPOINT}/{work}" if work else self.LOOKUP_ENDPOINT)
+        url = urljoin(self.BASE_URL, f"{endpoint}/{work}" if work else endpoint)
         if self.api_key:
             params = {**params, "api_key": self.api_key}
         try:

@@ -400,6 +400,7 @@ def _bibliography(meta, title: str, types: Sequence[str], corrections=None):
         authors_provider=_provider(meta.authors_provider) if meta.authors_provider else None,
         correspondence_emails=list(meta.correspondence_emails) or None,
         journal=meta.journal,
+        venue=meta.venue,
         publication_year=meta.publication_year,
         abstract=meta.abstract,
         abstract_provider=_provider(meta.abstract_provider) if meta.abstract else None,

@@ -1,0 +1,80 @@
+--------------------------------------------------------
+JrId: 884
+JournalTitle: Arzneimittel-Forschung
+MedAbbr: Arzneimittelforschung
+ISSN (Print): 0004-4172
+ISSN (Online): 1616-7066
+IsoAbbr: Arzneimittelforschung
+NlmId: 0372660
+--------------------------------------------------------
+JrId: 2171
+JournalTitle: Cerebral cortex (New York, N.Y. : 1991)
+MedAbbr: Cereb Cortex
+ISSN (Print): 1047-3211
+ISSN (Online): 1460-2199
+IsoAbbr: Cereb Cortex
+NlmId: 9110718
+--------------------------------------------------------
+JrId: 4683
+JournalTitle: The Journal of dairy research
+MedAbbr: J Dairy Res
+ISSN (Print): 0022-0299
+ISSN (Online): 1469-7629
+IsoAbbr: J Dairy Res
+NlmId: 2985125R
+--------------------------------------------------------
+JrId: 5497
+JournalTitle: Life sciences
+MedAbbr: Life Sci
+ISSN (Print): 0024-3205
+ISSN (Online): 1879-0631
+IsoAbbr: Life Sci
+NlmId: 0375521
+--------------------------------------------------------
+JrId: 6768
+JournalTitle: Psychiatry
+MedAbbr: Psychiatry
+ISSN (Print): 0033-2747
+ISSN (Online): 1943-281X
+IsoAbbr: Psychiatry
+NlmId: 0376470
+--------------------------------------------------------
+JrId: 7632
+JournalTitle: Suicide & life-threatening behavior
+MedAbbr: Suicide Life Threat Behav
+ISSN (Print): 0363-0234
+ISSN (Online): 1943-278X
+IsoAbbr: Suicide Life Threat Behav
+NlmId: 7608054
+--------------------------------------------------------
+JrId: 21028
+JournalTitle: Human brain mapping
+MedAbbr: Hum Brain Mapp
+ISSN (Print): 1065-9471
+ISSN (Online): 1097-0193
+IsoAbbr: Hum Brain Mapp
+NlmId: 9419065
+--------------------------------------------------------
+JrId: 35825
+JournalTitle: Psychiatry (Edgmont (Pa. : Township))
+MedAbbr: Psychiatry (Edgmont)
+ISSN (Print): 1550-5952
+ISSN (Online): 1555-5194
+IsoAbbr: Psychiatry (Edgmont)
+NlmId: 101484252
+--------------------------------------------------------
+JrId: 36802
+JournalTitle: Psychiatry (Abingdon, England)
+MedAbbr: Psychiatry (Abingdon)
+ISSN (Print): 1476-1793
+ISSN (Online): 1878-7592
+IsoAbbr: Psychiatry (Abingdon)
+NlmId: 101170293
+--------------------------------------------------------
+JrId: 46044
+JournalTitle: Life sciences (1962)
+MedAbbr: Life Sci (1962)
+ISSN (Print): 0161-5564
+ISSN (Online): 
+IsoAbbr: Life Sci (1962)
+NlmId: 0244306

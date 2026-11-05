@@ -10,6 +10,10 @@ in this order:
 5. fallback to processed metadata from extractors
    (information from the downloaded article)
 
+Each article's venue, the OpenAlex source it appeared in, is decided from the same records
+(`services.venues`); a source looked up by ISSN, and NLM's journal list, are cached beside
+them.
+
 Every article returned also gets its licences (`services.licenses`): one for each copy a
 download holds, one for the paper, and one for each copy a provider lists that no
 download holds. Semantic Scholar, Crossref and OpenAlex are asked for every article,
@@ -39,6 +43,7 @@ from study_schema.models.paper_parse import (
 )
 
 from ingestion_workflow.catalog import Notes
+from ingestion_workflow.clients import nlm
 from ingestion_workflow.clients.crossref import CrossrefClient
 from ingestion_workflow.clients.openalex import OpenAlexClient, _locations_from
 from ingestion_workflow.clients.orcid import OrcidClient
@@ -58,7 +63,7 @@ from ingestion_workflow.models.metadata import (
     missing_fields,
 )
 from ingestion_workflow.models.notices import PartialAnswer
-from ingestion_workflow.services import corresponding_authors
+from ingestion_workflow.services import corresponding_authors, venues
 from ingestion_workflow.services.citations import JATS_SOURCES
 from ingestion_workflow.services.corresponding_authors.common import surname
 from ingestion_workflow.services.licenses import (
@@ -114,6 +119,7 @@ class MetadataService:
         self._openalex_client: Optional[OpenAlexClient] = None
         self._crossref_client = CrossrefClient(settings.crossref_email)
         self._orcid_client = OrcidClient()
+        self._journals: Optional[venues.JournalIndex] = None
         #: Article slug -> the catalog conflict it was not asked about for, for the last batch.
         self.conflicts: Dict[str, str] = {}
         #: Article slug -> what its record lacks and why, for the last batch.
@@ -364,6 +370,20 @@ class MetadataService:
                     metadata.authors, metadata.correspondence_emails = [], []
                     metadata.authors_provider = None
                     notes.error(AUTHOR_FIELDS, f"authors: {error_text(exc)}")
+                read: List[Path] = []
+                try:
+                    metadata.venue = venues.decide(
+                        ids, main_ident, journal[slug], paper_work,
+                        metadata.raw_metadata.get(MetadataSource.pubmed.value), metadata.journal,
+                        lambda issn: self._source_by_issn(issn, read),
+                        lambda: self._journal_index(read), notes)
+                except Exception as exc:
+                    logger.warning("venue of %s failed: %s", slug, exc)
+                    metadata.venue = None
+                    notes.error(venues.FIELD, f"venue: {error_text(exc)}",
+                                transient=transient(exc))
+                finally:
+                    self.records_read[slug].extend(read)
             except Exception as exc:
                 # The record stands as the providers gave it, its licences assumed.
                 logger.warning("metadata of %s failed: %s", slug, exc)
@@ -411,6 +431,31 @@ class MetadataService:
                     noted.error("orcid_emails", f"orcid {author.orcid}: {error_text(exc)}",
                                 transient=transient(exc))
         return read
+
+    def _source_by_issn(self, issn: str, read: List[Path]) -> Optional[Dict]:
+        """OpenAlex's source holding `issn`, or None when none does: each ISSN asked once and
+        cached. Its cache file is added to `read`."""
+        cache_file = self.settings.get_cache_dir("metadata") / OPENALEX_SOURCES_CACHE_DIR / \
+            f"{issn}.json"
+        read.append(cache_file)
+        if cache_file.exists():
+            return json.loads(cache_file.read_text())
+        found = self._openalex_client.source_by_issn(issn)
+        cache_file.parent.mkdir(parents=True, exist_ok=True)
+        cache_file.write_text(json.dumps(found))
+        return found
+
+    def _journal_index(self, read: List[Path]) -> venues.JournalIndex:
+        """NLM's journal list, fetched once and cached; its file is added to `read`. A newer
+        list is fetched by removing the cached one."""
+        cache_file = self.settings.get_cache_dir("metadata") / J_MEDLINE_CACHE
+        read.append(cache_file)
+        if self._journals is None:
+            if not cache_file.exists():
+                cache_file.parent.mkdir(parents=True, exist_ok=True)
+                cache_file.write_text(nlm.j_medline(), encoding="utf-8")
+            self._journals = venues.JournalIndex.parse(cache_file.read_text(encoding="utf-8"))
+        return self._journals
 
     def require_licence_providers(self) -> None:
         """Raise unless Semantic Scholar and OpenAlex are configured: without either, no
@@ -787,6 +832,10 @@ PROVIDER_CACHE_DIRS = {
 }
 #: The public addresses on each ORCID record asked about, by iD.
 ORCID_CACHE_DIR = "orcid-emails"
+#: The OpenAlex source holding each ISSN asked about (null: none), by ISSN.
+OPENALEX_SOURCES_CACHE_DIR = "openalex-sources-issn"
+#: NLM's journal list, J_Medline.txt.
+J_MEDLINE_CACHE = "nlm/J_Medline.txt"
 
 #: Why a provider that was down, or busy, left an article: asked again on a later run.
 OUTAGE = "did not answer"
