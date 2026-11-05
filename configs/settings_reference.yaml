@@ -68,6 +68,54 @@ prose_api_base: null  # Its server, apart from the table model's; defaults to ll
 # role_model_table: {endpoint: "http://host:8000/v1", model: "name", path: "/checkpoint/dir"}  # The served set-role model for table sets, {endpoint, model, path}; path (optional) is the checkpoint the server loads, so its labels stay fresh while it is down. The roles stage always runs; without it every article with a table set is blocked there, and nothing is uploaded
 # role_model_prose: {endpoint: "http://host:8001/v1", model: "name", path: "/checkpoint/dir"}  # The served set-role model for prose sets, {endpoint, model, path}. Without it every article with a prose set is blocked at the roles stage
 
+# ===== Offloaded stages =====
+# The private adapters `ingest offload push` copies are read with HF_TOKEN, from the environment only.
+# machines:  # The clusters offloaded stages run on, by name (`ingest offload --machine`)
+#   vista:
+#     ssh: vista  # its connection is opened by you (MFA) and reused; closed, a command stops
+#     work: /work/07723/jdk3232/vista/ns-pond-offload
+#     scratch: /scratch/07723/jdk3232/ns-pond-offload
+#     partition: gh  # `submit --partition gh-dev` for a smoke job
+#     account: IBN26027
+#     gpus_per_node: 1
+#     serve_python: /work/07723/jdk3232/vista/astra-distill/envs-aarch64/serve/bin/python
+#     train_python: /work/07723/jdk3232/vista/astra-distill/envs-aarch64/train/bin/python
+#     infer_group: infer-vista  # the optional-dependency group each environment must match
+#     merge_group: merge-vista
+#     hf_home: /work/07723/jdk3232/vista/astra-distill/hf
+#     environment:  # the machine's traps, exported in every job
+#       CC: gcc
+#       CXX: g++
+#       VLLM_USE_FLASHINFER_SAMPLER: "0"
+#       VLLM_USE_DEEP_GEMM: "0"
+#       PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+#       TRITON_CACHE_DIR: /tmp/triton-$SLURM_JOB_ID
+#       TORCHINDUCTOR_CACHE_DIR: /tmp/inductor-$SLURM_JOB_ID
+#     max_queued: 30  # gh allows 40 submitted per user, shared with other work
+#     su_per_node_hour: 1.0
+#     su_cap: 50  # `submit` needs --yes for an estimate above it
+#   ls6:  # A100 nodes (3 x 40 GB); ev1 evidence runs here (configs/offload/ns-ev1.json)
+#     ssh: ls6
+#     work: /work/07723/jdk3232/ls6/ns-pond-offload
+#     scratch: /scratch/07723/jdk3232/ns-pond-offload
+#     partition: gpu-a100  # gpu-a100-dev for a smoke job
+#     account: IBN26027
+#     gpus_per_node: 3
+#     serve_python: /work/07723/jdk3232/ls6/astra-distill/envs/serve/bin/python
+#     train_python: /work/07723/jdk3232/ls6/astra-distill/envs/train/bin/python
+#     infer_group: infer-ls6
+#     merge_group: merge-ls6
+#     hf_home: /work/07723/jdk3232/ls6/astra-distill/hf
+#     environment:
+#       CUDA_VISIBLE_DEVICES: "0"  # one shard per node; a 4B model needs one A100
+#       VLLM_USE_FLASHINFER_SAMPLER: "0"  # its sampler JIT needs nvcc, which compute nodes lack
+#       VLLM_USE_DEEP_GEMM: "0"
+#       PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+#       TRITON_CACHE_DIR: /tmp/triton-$SLURM_JOB_ID
+#       TORCHINDUCTOR_CACHE_DIR: /tmp/inductor-$SLURM_JOB_ID
+#     su_per_node_hour: 3.0  # check TACC's current rate for gpu-a100
+#     su_cap: 50
+
 # ===== Parallelism =====
 max_workers: 4  # Maximum number of parallel workers for concurrent operations
 

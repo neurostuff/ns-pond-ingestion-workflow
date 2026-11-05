@@ -125,6 +125,28 @@ class _OffloadedStage:
     def inputs(self, ctx: Context, ids: List[str], upstream) -> Dict[str, Dict[str, Any]]:
         raise NotImplementedError
 
+    def fresh_sources(
+        self,
+        ctx: Context,
+        ids: Sequence[str],
+        artifacts: Dict[str, Dict[str, Artifact]],
+        upstream: Dict[str, Dict[str, Artifact]],
+    ) -> Dict[str, Set[str]]:
+        """{article: the sources whose artifact is fresh}."""
+        runs = _Runs(ctx)
+        inputs = self.inputs(ctx, list(ids), upstream)
+        out: Dict[str, Set[str]] = {}
+        for article_id in ids:
+            for source, mine in artifacts.get(article_id, {}).items():
+                run = runs(mine.run_id)
+                if run is None or mine.status not in (Status.OK, Status.SKIPPED):
+                    continue
+                if mine.status is Status.SKIPPED or (
+                        self.expected(ctx, run, mine, inputs.get(article_id, {}), source)
+                        == mine.fingerprint and ctx.is_fresh(mine, mine.fingerprint)):
+                    out.setdefault(article_id, set()).add(source)
+        return out
+
     def plan(
         self,
         ctx: Context,
@@ -133,21 +155,9 @@ class _OffloadedStage:
         upstream: Dict[str, Dict[str, Artifact]],
     ) -> StagePlan:
         plan = StagePlan(stage=self.name)
-        runs = _Runs(ctx)
-        inputs = self.inputs(ctx, [ref.id for ref in refs], upstream)
+        fresh = self.fresh_sources(ctx, [ref.id for ref in refs], artifacts, upstream)
         for ref in refs:
-            held = artifacts.get(ref.id, {})
-            fresh = False
-            for source, mine in held.items():
-                run = runs(mine.run_id)
-                if run is None or mine.status not in (Status.OK, Status.SKIPPED):
-                    continue
-                if mine.status is Status.SKIPPED:
-                    fresh = True
-                elif self.expected(ctx, run, mine, inputs.get(ref.id, {}), source) == \
-                        mine.fingerprint and ctx.is_fresh(mine, mine.fingerprint):
-                    fresh = True
-            if fresh:
+            if fresh.get(ref.id):
                 plan.fresh += 1
             else:
                 plan.wait(AWAITS_IMPORT, ref.id)
