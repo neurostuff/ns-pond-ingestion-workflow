@@ -41,9 +41,10 @@ FIXED = {
     "taskextractor/discovered_origins.json": "c0ed8de866e70f9b8c27b4fe6c55bff395d4a6cdaf5468dff6351b3b29ca081e",
     "manifest.jsonl": "888ce6fcaa5f07e7b9c4816b08394d579c1fcfa7ae64ce7a2984f4e270d248b5",
 }
-FIXED_REPO = "neurostuff/astra-normalization-fixed"
-#: The repo commit holding FIXED, pinned when it was uploaded. None: not uploaded yet.
-FIXED_REVISION = None
+#: Under jdkent, beside the pipeline's private adapters: the account cannot create models under neurostuff.
+FIXED_REPO = "jdkent/astra-normalization-fixed"
+#: The repo commit holding FIXED.
+FIXED_REVISION = "26dded095ab77514f440e22016445fe0bf9f00ee"
 #: The fixed files a fit directory carries for assignment; the rest are read only while fitting.
 CARRIED = ("routeB_tfidf.pkl", "citation_role_lineage_clf.pkl")
 
