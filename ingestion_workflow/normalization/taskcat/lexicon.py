@@ -320,3 +320,20 @@ class Lexicon:
             if best:
                 return best[1:]
         return None
+
+    def mask(self, text):
+        """`text` folded as `match` folds it, with every lexicon phrase and pattern in it replaced by "taskname": the
+        words around a task's name, without the name the lexicon already read."""
+        if not text:
+            return ""
+        if not hasattr(self, "_phrases"):
+            self._phrases = sorted({p for p, *_ in self.entries}, key=len, reverse=True)
+            # a pattern can stop inside a word ("passive view" in "passive viewing"); mask the word's rest with it
+            self._masks = [re.compile(rf"(?:{p.pattern})\w*", p.flags) for p, *_ in self.patterns]
+        n = " " + _norm(text) + " "
+        for pat in self._masks:
+            n = pat.sub(" taskname ", n)
+        for p in self._phrases:
+            if f" {p} " in n:
+                n = n.replace(f" {p} ", " taskname ")
+        return re.sub(r"\s+", " ", n).strip()

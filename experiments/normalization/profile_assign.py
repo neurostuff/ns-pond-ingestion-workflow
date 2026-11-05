@@ -34,18 +34,16 @@ def stages(r, article, text, bib, f, t):
     def timed(name, fn, *a):
         s = time.perf_counter(); out = fn(*a); t[name] += time.perf_counter() - s
         return out
-    links = timed("medical", medical.links, r, article, text)
+    store = timed("abbreviations", medical.abbreviations, text, article)
+    links = timed("medical", medical.links, r, article, text, store)
     if hasattr(f.cb, "memo"):
         f.cb.memo = {}
-    rows, _ = timed("read pass one", records.read, r, article, f.cb, f.sch)
+    rows, _ = timed("read pass one", lambda: records.read(r, article, f.cb, f.sch, abbreviations=store))
     refs = timed("citation refs", lambda: citations.score_lineage(
         citations.task_refs(r, article, text, citations.bib_from_references(bib)), f.lineage))
     route_c = timed("citation vote", lambda: {(x["study"], x["task"]): citations.vote(x, f.index) for x in refs})
-    cn = defaultdict(list)
-    for k in rows["contrasts"]:
-        cn[(k["study"], k["task"])].append(k["name"])
     final = timed("labels", lambda: {(x["study"], x["task"]): labels.decide(
-        x, cn[(x["study"], x["task"])], route_c.get((x["study"], x["task"])), f.cb.L, f.classifier) for x in rows["tasks"]})
+        x, route_c.get((x["study"], x["task"])), f.cb.L, f.classifier) for x in rows["tasks"]})
     rows2, _ = timed("read pass two", records.read, r, article, f.cb, f.sch, final)
     if hasattr(f.cb, "memo"):
         f.cb.memo = None

@@ -21,7 +21,7 @@ import os
 import pickle
 import shutil
 import tempfile
-from collections import Counter, defaultdict
+from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
@@ -142,11 +142,11 @@ _W = {}
 
 def _pass_one(article):
     r = body_of(_W["records"][article])
-    rows, _st = records.read(r, article, _W["cb"], _W["sch"])
+    text = _W["texts"].get(article)
+    rows, _st = records.read(r, article, _W["cb"], _W["sch"], abbreviations=medical.abbreviations(text, article))
     bib = citations.bib_from_references(_W["bibliographies"].get(article))
-    refs = citations.task_refs(r, article, _W["texts"].get(article), bib)
-    names = [(k["study"], k["task"], k["name"]) for k in rows["contrasts"]]
-    return rows["tasks"], names, refs
+    refs = citations.task_refs(r, article, text, bib)
+    return rows["tasks"], refs
 
 
 def _pass_two(article):
@@ -184,9 +184,9 @@ def fit(records_, texts, bibliographies, out_dir, *, fixed_dir=None, identifiers
     _W.update(records=records_, texts=texts, bibliographies=bibliographies, cb=CardBuilder(route_b),
               sch=records.schemas(), final={})
     log(f"pass one: {len(articles)} articles")
-    tasks, names, refs = [], [], []
-    for t, n, r in _map(_pass_one, articles, workers):
-        tasks += t; names += n; refs += r
+    tasks, refs = [], []
+    for t, r in _map(_pass_one, articles, workers):
+        tasks += t; refs += r
     citations.score_lineage(refs, lineage)
     jl = citations.load_jsonl
     paper_ids = [(r["dbid"], r) for r in jl(fixed_dir / "manifest.jsonl")]
@@ -196,14 +196,11 @@ def fit(records_, texts, bibliographies, out_dir, *, fixed_dir=None, identifiers
                                   jl(fixed_dir / "taskextractor/te_citations_ctx.jsonl"),
                                   json.load(open(fixed_dir / "taskextractor/discovered_origins.json")), paper_ids)
     route_c = {(t["study"], t["task"]): citations.vote(t, index) for t in refs}
-    cn = defaultdict(list)
-    for s, t, n in names:
-        cn[(s, t)].append(n)
     log("contrast classifier")
-    classifier = labels.fit_contrast_classifier(tasks, [{"study": s, "task": t, "name": n} for s, t, n in names])
+    classifier = labels.fit_contrast_classifier(tasks)
     lexicon = _W["cb"].L
-    final = {(t["study"], t["task"]): labels.decide(t, cn[(t["study"], t["task"])], route_c.get((t["study"], t["task"])),
-                                                    lexicon, classifier) for t in tasks}
+    final = {(t["study"], t["task"]): labels.decide(t, route_c.get((t["study"], t["task"])), lexicon, classifier)
+             for t in tasks}
     _W["final"] = final
     log("pass two")
     docs = [d for ds in _map(_pass_two, articles, workers) for d in ds]
@@ -300,17 +297,15 @@ def load(fit_dir):
 
 def assign(r, article, text, bibliography, f, with_medical=True):
     """One record's derived rows under a fit: medical links, task labels, conditions, contrasts, set assignment."""
-    links = medical.links(r, article, text) if with_medical else None
+    store = medical.abbreviations(text, article)
+    links = medical.links(r, article, text, store) if with_medical else None
     f.cb.memo = {}                  # pass two asks route B about the same tasks as pass one
-    rows, _ = records.read(r, article, f.cb, f.sch)
+    rows, _ = records.read(r, article, f.cb, f.sch, abbreviations=store)
     refs = citations.score_lineage(citations.task_refs(r, article, text, citations.bib_from_references(bibliography)),
                                    f.lineage)
     route_c = {(t["study"], t["task"]): citations.vote(t, f.index) for t in refs}
-    cn = defaultdict(list)
-    for k in rows["contrasts"]:
-        cn[(k["study"], k["task"])].append(k["name"])
-    final = {(t["study"], t["task"]): labels.decide(t, cn[(t["study"], t["task"])], route_c.get((t["study"], t["task"])),
-                                                    f.cb.L, f.classifier) for t in rows["tasks"]}
+    final = {(t["study"], t["task"]): labels.decide(t, route_c.get((t["study"], t["task"])), f.cb.L, f.classifier)
+             for t in rows["tasks"]}
     rows2, _ = records.read(r, article, f.cb, f.sch, final)
     f.cb.memo = None
     docs = contrasts.documents(r, article, rows2["contrasts"], text)
