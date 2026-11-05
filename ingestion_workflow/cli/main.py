@@ -1393,7 +1393,8 @@ def offload_import(
     parse's, it names a parse key the parse lacks, the record it read is not the
     article's current one, or its record fails study_schema's schema. Writes the coverage
     JSON after."""
-    from ingestion_workflow.services import coverage, offload_import as offload
+    from ingestion_workflow.services import coverage
+    from ingestion_workflow.services.offload import importer as offload
 
     root = _catalog_root(catalog, config)
     run = offload.load_run(run_file)
@@ -1402,6 +1403,147 @@ def offload_import(
     for line in report.lines():
         typer.echo(line)
     typer.echo(f"coverage -> {coverage.write_json(coverage.coverage(root), coverage.default_json(root))}")
+
+
+MachineOption = typer.Option(..., "--machine", "-m", help="A machine named in `machines:`.")
+BundleArgument = typer.Argument(..., help="The bundle's directory, as export printed it.")
+
+
+def _remote(settings: Settings, name: str):
+    from ingestion_workflow.services.offload.remote import Remote
+
+    if name not in settings.machines:
+        raise typer.BadParameter(f"no machine {name!r} in the settings' machines: "
+                                 f"{', '.join(settings.machines) or 'none'}")
+    return Remote(name, settings.machines[name])
+
+
+def _bundle_remote(settings: Settings, bundle: Path):
+    from ingestion_workflow.services.offload.contract import BundleDir
+
+    return _remote(settings, BundleDir(bundle).bundle().machine)
+
+
+def _say(lines) -> None:
+    for line in lines:
+        typer.echo(line)
+
+
+def _offload(step):
+    """Run one offload step; a closed connection or a refusal ends the command, not a trace."""
+    from ingestion_workflow.services.offload.remote import RemoteError
+
+    try:
+        return step()
+    except (RemoteError, ValueError) as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1)
+
+
+@offload_app.command("export")
+def offload_export(
+    spec_file: Path = typer.Argument(..., help="The run to make (configs/offload/<name>.json)."),
+    machine: str = MachineOption,
+    articles: Optional[Path] = typer.Option(
+        None, "--articles", help="Article ids, one per line, in place of every article due."),
+    limit: int = typer.Option(0, "--limit", help="At most this many articles (0: all)."),
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Write a bundle of the articles whose record of the spec's source is not fresh."""
+    from ingestion_workflow.services.offload.contract import load_spec
+    from ingestion_workflow.services.offload.export import export
+
+    settings = _settings(config)
+    _remote(settings, machine)
+    spec = load_spec(spec_file)
+    wanted = None if articles is None else articles.read_text("utf-8").split()
+    with _catalog(settings) as catalog:
+        report = _offload(lambda: export(_context(settings, catalog, []), spec, machine,
+                                         articles=wanted, limit=limit,
+                                         workers=settings.max_workers))
+    _say(report.lines())
+
+
+@offload_app.command("setup")
+def offload_setup(
+    spec_file: Path = typer.Argument(..., help="The run whose model the machine must hold."),
+    machine: str = MachineOption,
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Check that the machine has what a job needs: the environments, the base model, the
+    directories and the partition."""
+    from ingestion_workflow.services.offload.contract import load_spec
+    from ingestion_workflow.services.offload.remote import check
+
+    spec = load_spec(spec_file)
+    lines = _offload(lambda: check(_remote(_settings(config), machine), spec.model,
+                                   spec.model_revision))
+    _say(lines)
+    if any(line.startswith("FAIL") for line in lines):
+        raise typer.Exit(1)
+
+
+@offload_app.command("push")
+def offload_push(bundle: Path = BundleArgument, config: Optional[Path] = ConfigOption) -> None:
+    """Copy the bundle, its job scripts and its adapter (once per commit) to its machine."""
+    from ingestion_workflow.services.offload.remote import push
+
+    settings = _settings(config)
+    _say(_offload(lambda: push(_bundle_remote(settings, bundle), bundle,
+                               hf_cache=settings.cache_root / "hf")))
+
+
+@offload_app.command("submit")
+def offload_submit(
+    bundle: Path = BundleArgument,
+    yes: bool = typer.Option(False, "--yes", help="Submit over the machine's SU cap."),
+    again: List[str] = typer.Option([], "--again", help="Submit this shard again (resumes it)."),
+    partition: Optional[str] = typer.Option(None, "--partition",
+                                             help="In place of the machine's."),
+    time: Optional[str] = typer.Option(None, "--time",
+                                       help="Each job's limit, in place of the spec's."),
+    shards: int = typer.Option(0, "--shards", help="Submit at most this many shards (0: all)."),
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Submit the bundle's shards not yet submitted, as many as the machine's queue has room
+    for. Prints the estimate first, and refuses one over the SU cap without --yes."""
+    from ingestion_workflow.services.offload.remote import submit
+
+    settings = _settings(config)
+    _say(_offload(lambda: submit(_bundle_remote(settings, bundle), bundle, yes=yes, again=again,
+                                 partition=partition, time=time, limit_shards=shards)))
+
+
+@offload_app.command("status")
+def offload_status(bundle: Path = BundleArgument, config: Optional[Path] = ConfigOption) -> None:
+    """Each shard's job, from sacct, and whether it is imported."""
+    from ingestion_workflow.services.offload.contract import BundleDir
+    from ingestion_workflow.services.offload.remote import job_states
+
+    held = BundleDir(bundle)
+    state = held.state()
+    states = _offload(lambda: job_states(_bundle_remote(_settings(config), bundle), state.jobs))
+    for shard in [s.name for s in held.bundle().shards]:
+        job = states.get(shard)
+        done = state.imported.get(shard)
+        typer.echo(f"{shard}  " + (f"job {state.jobs[shard]} {job['state']} {job['elapsed']}"
+                                   if job else "not submitted")
+                   + (f"  imported {done}" if done else ""))
+
+
+@offload_app.command("pull")
+def offload_pull(bundle: Path = BundleArgument, config: Optional[Path] = ConfigOption) -> None:
+    """Fetch and import each shard whose job completed; writes the coverage JSON after."""
+    from ingestion_workflow.services import coverage
+    from ingestion_workflow.services.offload.pull import pull
+
+    settings = _settings(config)
+    remote = _bundle_remote(settings, bundle)
+    with _catalog(settings) as catalog:
+        _say(_offload(lambda: pull(remote, bundle, catalog)))
+    root = settings.catalog_root
+    written = coverage.write_json(coverage.coverage(root), coverage.default_json(root))
+    typer.echo(f"coverage -> {written}")
 
 
 # -- searches ----------------------------------------------------------------

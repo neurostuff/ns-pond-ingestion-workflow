@@ -1,0 +1,156 @@
+{
+  "header": {
+    "artifact_kind": "coordinate_parse",
+    "schema_version": "0.11.0",
+    "article_id": "26klegjq7mhi",
+    "identifiers": {
+      "pmid": "30069597",
+      "pmcid": null,
+      "doi": "10.1007/s00441-018-2899-6",
+      "alternative_pmids": null,
+      "alternative_pmcids": null,
+      "alternative_dois": null,
+      "preprint_dois": null,
+      "preprint_pmids": null,
+      "preprint_pmcids": null,
+      "publication_status": "published"
+    },
+    "producer": {
+      "name": "ns-pond-ingestion-workflow",
+      "version": "paper_parse.13",
+      "stage": "sync",
+      "model": null,
+      "prompt_version": null
+    },
+    "inputs": [
+      {
+        "artifact_kind": "parsed_paper",
+        "fingerprint": "067a69b2021e98a832a2f32080848e5e58b7337dffed66dc3ac895cca3f5d680",
+        "producer_version": null
+      },
+      {
+        "artifact_kind": "analyses",
+        "fingerprint": "cdda0ba87a532fa55cae98a19ac007c8",
+        "producer_version": null
+      }
+    ],
+    "created_at": null,
+    "neurostore_base_study_id": "tS8tSUXeybTo"
+  },
+  "parse_id": "683796fb57393f0059fa4206438d94e707fe382021e41007eabc57f510bd5f0e",
+  "text_sha256": "067a69b2021e98a832a2f32080848e5e58b7337dffed66dc3ac895cca3f5d680",
+  "revision_of": null,
+  "analyses": [
+    {
+      "key": "analysis#840c7bec806dd3ad",
+      "cells": null,
+      "text_spans": [
+        {
+          "start_char": 9947,
+          "end_char": 9954,
+          "text": null
+        },
+        {
+          "start_char": 9956,
+          "end_char": 9964,
+          "text": null
+        },
+        {
+          "start_char": 9970,
+          "end_char": 9978,
+          "text": null
+        }
+      ],
+      "origin": "text",
+      "table_id": null,
+      "name": "Laird et al. (2011)",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "MNI",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "result",
+      "anchor_kind": null,
+      "from_prior_study": null,
+      "prior_study_evidence": null,
+      "role_confidence": 0.6679813814422885,
+      "role_source": "role-text@v5+d83dae2b8718",
+      "split": null,
+      "derived_from": null,
+      "statistic": null,
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            4.0,
+            39.0,
+            25.0
+          ],
+          "space": null,
+          "row": null,
+          "column_group": null,
+          "text_span": {
+            "start_char": 9947,
+            "end_char": 9954,
+            "text": null
+          },
+          "values": null,
+          "cluster_size": 200.0,
+          "cluster_measure": "mm3",
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            39.0,
+            29.0,
+            -4.0
+          ],
+          "space": null,
+          "row": null,
+          "column_group": null,
+          "text_span": {
+            "start_char": 9956,
+            "end_char": 9964,
+            "text": null
+          },
+          "values": null,
+          "cluster_size": 200.0,
+          "cluster_measure": "mm3",
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            -8.0,
+            37.0,
+            39.0
+          ],
+          "space": null,
+          "row": null,
+          "column_group": null,
+          "text_span": {
+            "start_char": 9970,
+            "end_char": 9978,
+            "text": null
+          },
+          "values": null,
+          "cluster_size": 200.0,
+          "cluster_measure": "mm3",
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    }
+  ],
+  "tables": null,
+  "omitted_analyses": null,
+  "text_sweep": {
+    "passages_found": 2,
+    "passages_read": 2,
+    "truncated": false,
+    "points_dropped_as_table_restatements": 0
+  },
+  "verdicts": null
+}

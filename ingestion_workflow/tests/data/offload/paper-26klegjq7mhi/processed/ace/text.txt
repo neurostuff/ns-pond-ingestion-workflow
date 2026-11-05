@@ -1,0 +1,570 @@
+Introduction
+
+Neuropeptides are a class of molecules that modify brain activity in a different manner than “classical” neurotransmitters, such as glutamate and GABA. Indeed, the release of neuropeptides requires a generation of hundreds action potentials, resulting in exocytosis of a single secretory vesicle from axons (Chini et al. 2017). Remarkably, the neuropeptide content of even a single granule is capable to effectively bind to respective G-coupled receptors on target neurons, initiating intracellular pathways to change cell excitability (Chini et al. 2017). This mode of action is in accordance with their neuromodulatory role as they regulate basic functions such as stress, pain, or appetite, linking brain activity to the physiological state of the whole body (van den Pol 2012).
+
+Because of these characteristics, neuropeptides and their receptors constitute interesting targets for the development of new molecule-modifying behaviors in the context of psychiatric disorders, for which we have now only few and not fully efficient drugs. Furthermore, translational research in animals has confirmed this potential, and several attempts have already been conducted in humans. Although some results are encouraging, the differences between patients and animal models of disease have so far prevented real progress.
+
+Here, we review studies that have investigated the role of neuropeptides in the regulation of human brain activity. Using functional magnetic resonance imaging (fMRI) in combination with pharmacological administration or gene polymorphism screening, researchers have been able to unveil the cerebral regions on which neuropeptides act. We start by discussing oxytocin (OT), as this neurohormone has received much attention recently; secondly, we present the results of a coordinated-based meta-analysis of its sister neuropeptide arginine-vasopressin (AVP); finally, we review studies on other less “popular” molecules and their receptors, such as neuropeptide S (NPS), neuropeptide Y (NPY), cholecystokinin (CCK), and corticotropin-releasing hormone (CRH). Although neuropeptides influence a wide spectrum of functions, most of the focus has been directed at the study of social behavior, more precisely how humans perceive, evaluate, and respond to social interaction (Ruff and Fehr 2014).
+
+Oxytocin
+
+OT is by far the most studied neuropeptide in humans. This comes from its effects on social behavior and the consequent hopes of pharmacologic therapy for psychiatric disorders it has raised (Lefevre and Sirigu 2016). Because OT is the major focus of this special issue, we will only summarize two recent coordinated-based quantitative meta-analyses of OT effects on human brain activity. The first one included 11 studies and reported a significant modulation of BOLD signal following intranasal (IN) OT administration, which mapped to the insula, a region involved in emotion regulation (Wigton et al. 2015). Other regions, such as the amygdala, were also often reported, but no significant effect was found in the meta-analysis. The second meta-analysis included 66 studies from both healthy and clinical populations (Wang et al. 2017). The authors found that OT significantly induced both decrease and increase in amygdala responses of healthy patients (35 studies), as well as increased activity in the caudate nucleus and the superior temporal gyrus. In patients with autism, social anxiety, post-traumatic stress disorders, or borderline personality disorders, only a decrease in BOLD in the amygdala was statistically significant (7 studies). When comparing patients to healthy subjects, it was found that OT decreased activity in the amygdala in healthy subjects to a greater degree than in patients, regardless of their affliction, suggesting that OT exerts distinct effects on healthy subjects and patients afflicted with psychiatric conditions. Finally, it should be noted that it remains yet unknown how IN OT exerts its effects (see the “Application of exogenous neuropeptides” section for more details), and thus these results need to be interpreted with caution. Taken together, IN OT has been consistently found to modulate the activity of limbic regions, such as the amygdala and the insula, an effect that has been reproduced to some extent in clinical cohorts (Domes et al. 2013; Gordon et al. 2013; Aoki et al. 2014), although more studies are required for reaching more definite conclusions. Importantly, the type of behavioral paradigm (e.g., appetitive vs. aversive) employed for task-dependent fMRI has an impact on the effect of OT, leading to increases or decreases of BOLD signal (Wang et al. 2017), which is consistent with the idea that this neurohormone has a context-dependent type of action (Bartz et al. 2011). In addition, sex may play an important role, perhaps reflecting differences in basic endogenous OT concentrations or differences in sensitivity to exogenous OT, which could be related to interactions with sex hormones. The context- and sex-dependent effects of IN OT underscore the need for rigorous dose-response (Spengler et al. 2017) and sex hormone interaction studies (Choleris et al. 2008).
+
+Vasopressin
+
+AVP is a nonapeptide differing from OT by only two amino acids. It is synthetized in the same regions of the hypothalamus, namely the paraventricular, supraoptic, and accessory nuclei (Ludwig and Leng 2006). While AVP exerts rather distinct effects at the peripheral level than OT, it has similarly been involved in the central modulation of social behaviors (Caldwell et al. 2008). More precisely, AVP and OT are two peptides that share a common origin from an evolutionary point of view, as several species only have one equivalent fulfilling the same roles (Banerjee et al. 2016). In mammals, it appears that OT and AVP often exert opposite effects on social behavior (Carter and Altemus 1997), with OT promoting social behavior and AVP antagonizing them, although this vision is oversimplified, as AVP effects have been subsequently found to be both pro- and anti-social, with large variations between species and sex (Dumais and Veenema 2015).
+
+In humans, AVP administration is done, as for OT, via IN spray application, which is subjects to the same critics (see the “Application of exogenous neuropeptides” section). Nevertheless, behavioral modifications after IN AVP have been reported, such as emotion processing (Guastella et al. 2010), and more generally, social cognition, at least in males (McCall and Singer 2012). Furthermore, alterations of AVP receptor gene have been linked to social traits, as evident in cooperation and competition games, and to some psychiatric disorders such as autism and major depression (Aspé-Sánchez et al. 2015). However, there are some discrepancies in behavioral effects of AVP on rodents vs. human: while AVP has been shown to regulate amygdala and striatum activity in rodents (Huber et al. 2005; Galbusera et al. 2017), these regions have not been found influenced by AVP in humans (see the meta-analysis hereafter). Other areas thought to be affected by AVP, at least in rodents, include the lateral septum and hippocampus (Febo and Ferris 2014; Stoop 2014). Furthermore, the CA2 region of the hippocampus has been shown to be regulated by both OT and AVP, suggesting interactive effects on social memory (Smith et al. 2016b; Raam et al. 2017).
+
+As stated in the “Oxytocin” section, OT has already been reviewed extensively by others; however, its close cousin AVP has not received as much attention and no one so far has conducted a rigorous meta-analysis of pharmaco-fMRI studies involving AVP. For the present review, we performed our own meta-analysis of all existing studies that have investigated the effects of AVP on brain activity in humans engaged in some form of social behavior. For this purpose, we used the PubMed database to identify fMRI experiments involving IN AVP administration. Searching for the keywords “vasopressin” AND “fMRI”, we found 423 studies published by March 2018. Out of this first-level literature search, we identified 14 original studies in which AVP was administered IN to healthy men before undergoing an fMRI scan. Because AVP has sexually dimorphic effects (Rilling et al. 2013), we selected only those studies performed on male volunteers. Next, we eliminated five studies due to their restrictions on regions of interest or functional connectivity analysis, leaving nine studies for our activation likelihood estimation (ALE) analysis (Zink et al. 2010, 2011; Rilling et al. 2012; Brunnlieb et al. 2013a, b, 2016; Lee et al. 2013; Feng et al. 2015; Gozzi et al. 2017). The main effects on brain activity and behavior reported by each study are summarized in Table 1.
+
+Because of the limited available data and in order to best summarize the effects of IN AVP, we conducted the ALE meta-analysis on all data, collapsing between and within subject designs, the type of behavioral tasks employed (which mainly involved cooperative games and emotion processing paradigms) and the direction of signal change. All nine studies were double-blind and placebo-controlled. To perform our coordinate-based meta-analysis, we applied the revised ALE algorithm (Turkeltaub et al. 2012) of GingerALE (https://www.brainmap.org/ale/), as described in details elsewhere (Eickhoff et al. 2012). Accordingly, we used default parameters that GingerALE selects automatically for the optimum FWHM; the statistical threshold was set at p<0.001 uncorrected, with a cluster size of >150 mm3. The resulting analysis included 347 subjects and 65 reported coordinates and revealed three clusters located in the frontal cortex (Brodmann areas 8, 9, and 47; Fig. 1). Note that apart from the volume threshold, no statistical correction was employed at the cluster level.
+
+General effects of IN AVP on the human male brain activity. Three clusters exceeding 200 mm3 were found at the following: 4 39 25, 39 29 -4, and -8 37 39 (Laird et al. 2011). Each of these clusters had two contributors
+
+Although the result of our analysis needs further confirmation on a larger number of studies, it suggests that IN AVP modulates cortical areas during social behavior. It can be proposed that other areas, which could not be found with the present analysis due to the limited amount of studies, are also being modulated by AVP, perhaps in a behavior-dependent manner.
+
+In contrast to OT, we did not find any studies testing IN AVP in a psychiatric population. The only one report suggesting a link between the AVP-ergic system and social behavior disorders found that several single nucleotide polymorphisms of the AVP 1b receptor were associated with autism (Francis et al. 2016).
+
+In conclusion of this section, it can be speculated that AVP modulates human brain activity and behavior, and hence, the AVP system may be interesting as a therapeutic target for psychiatric disorders. However, further investigation of the capacity of AVP or its derivatives to cross the blood-brain barrier (BBB) are required. In this line, a recent study used an oral AVP1aR antagonist in patients with autism but obtained mixed results (Umbricht et al. 2017).
+
+Other neuropeptides
+
+Although OT (and to a lesser extent AVP) have attracted most of the attention up to date, the family of neuropeptides comprises almost 300 members (according to this recent database (60 of them with a PMID): http://isyslab.info/NeuroPep/) (Wang et al. 2015), but the function of a vast majority of them remains enigmatic in mammals. In respect to the human brain activity, only few studies were focused on the direct effects of systemically applied neuropeptide or on the association between gene polymorphism of neuropeptide receptors and BOLD signal in specific regions. Here, we summarize these very limited but valuable findings.
+
+Neuropeptide S (NPS) is a peptide produced mainly, but not exclusively, in anxiety and sleep-related brainstem region such as the locus coeruleus, it is also moderately expressed in forebrain regions like the amygdala. In rats, central administration of NPS increases arousal and simultaneously attenuates anxiety by acting on its unique cognate receptor NPSR (Xu et al. 2004). In analogy, one variation of human NPS receptor gene have been associated with stress and anxiety levels (Pape et al. 2010). More precisely, a codon switch (Asn(107)Ile) due to a single nucleotide polymorphism rs324981 A/T is modifying the NPSR expression level as well as the NPS efficacy at NPSR. To date, four fMRI studies have found a significant effect of this gene polymorphism on the activity of several brain regions, including anterior cingulate cortex (Domschke et al. 2011), amygdala (Dannlowski et al. 2011; Streit et al. 2014), and connectivity of amygdala with other limbic regions including insula and medial prefrontal cortex (mPFC) (Domschke et al. 2017).
+
+Interestingly, mPFC activity was also found to depend on NPS receptor gene variation, as revealed by near-infrared spectroscopy (Guhn et al. 2015), and even glutamate levels in the anterior cingulate cortex were found to be influenced by the allele of the NPS receptor gene (Ruland et al. 2015). The results of the above-mentioned studies were obtained during tasks in which subjects were exposed to fearful faces, further pointing at the specific role of NPS in anxiety regulation. Interestingly, it was recently demonstrated that NPS exerts at least some of its anxiolytic action via the oxytocinergic system (Grund et al. 2017). This line of research suggests that NPS might be a promising target for the treatment of anxiety disorders, as it may tune down several limbic regions important for the expression of defensive behavior.
+
+In contrast to NPS, the cholecystokinin tetrapeptide (CCK) is known to induce panic attacks following peripheral administration in humans (Zwanzger et al. 2012). In this line, two fMRI studies have consistently reported that intravenous injection of CCK provoked strong activation of panic-related areas, such as the cingulate cortex, several other cortical regions like the superior frontal gyrus and the medial temporal gyrus, the amygdala, and regions of the brain stem (pons and midbrain) (Schunck et al. 2006; Eser et al. 2009). It is possible that these effects are modulated, or counterbalanced, by the NPS system, although this remains to be investigated (Ruland et al. 2015). Thus, further studies are required to elucidate potential interactions of NPS and CCK and their opposite modulation of anxiety-related brain regions.
+
+Another neuropeptide, which is involved in the modulation of stress responsiveness, is neuropeptide Y (NPY). It is composed of 36 amino acids and widely expressed in the brain, particularly in amygdala and striatum (Adrian et al. 1983). Consequently, it was found that the NPY haplotype specifically influences the expression of NPY and subsequently the activity of human amygdala and nucleus accumbens in response to the induction of stress by painful stimuli (Zhou et al. 2008). Other studies have found that NPY haplotype modulated BOLD signal in mPFC and cingulate cortex in reaction to pain-induced stress (Mickey et al. 2011; Opmeer et al. 2014). To summarize, specific genetic variations (haplotype) lead to low levels of NPY expression, which in turn increases neural responsivity and physiological reaction to stressful stimuli. This also suggests that pharmacological manipulations of the NPY system could have a beneficial impact on stress and anxiety-related disorders.
+
+Still in the attempt to alleviate pain and stress, other leads have been so far unsuccessfully explored; for instance, substance P or CRH (Borsook et al. 2012; Contoreggi 2015). In the case of CRH, significant efforts have been conducted in the attempt to develop a pharmacological agent against stress and anxiety. But while preclinical studies on rodents were promising, results in humans were not as conclusive (Refojo and Holsboer 2009; Sanders and Nemeroff 2016).
+
+Application of exogenous neuropeptides
+
+First, it should be noted that neither IN OT nor IN AVP have been reported to produce side effects, and subjects are typically unable to identify correctly whether they received the treatment or the placebo. Secondly, it still remains unclear how exogenously applied neuropeptides reach the brain via the nasal route (Leng and Ludwig 2015). There have been several reports in rodents suggesting that IN OT increases brain concentration of OT (Neumann et al. 2013; Tanaka et al. 2018), which were not fully confirmed in monkeys (Dal Monte et al. 2014; Modi et al. 2014; Freeman et al. 2016; Lee et al. 2017). In humans, IN OT or AVP remains conflicting especially in terms of temporal kinetics when looking at cerebrospinal fluid concentrations following administration (Born et al. 2002; Striepens et al. 2013). Given the reported effects of neuropeptides on BOLD signals in human brain, several hypotheses have been proposed on how IN administration could produce these effects (Quintana et al. 2014). First, OT and AVP could pass the epithelium and undergo retrograde transport via the olfactory or trigeminal nerves. A second hypothesis is that OT can reach the subarachnoid space and diffuse from there subsequently into the brain, although no mechanistic explanation has been brought so far. Finally, it has not been ruled out that IN OT could exert its effect via peripheral action as OTR are “disseminated” through our body, including skin, heart, vasculature, gut, lungs, and other organs (Poisbeau et al. 2017). Thus, it can be speculated that IN OT activates ascending sensory and autonomic pathways converging via the brainstem either onto the forebrain areas or inducing activation of OT neurons to release the neuropeptide endogenously. This has given researchers the idea of using endogenous molecules known to stimulate OT release. For instance, alpha melanocyte stimulating hormone (alpha-MSH) has been shown to activate OT neurons and provoke dendritic release of OT (Sabatier et al. 2003; Paiva et al. 2017), and to induce prosocial behavior in rodents (Modi et al. 2015). Hence, clinical trials are now being envisaged in which patients would receive an oral agonist to alpha-MSH receptor 4 (Johnson and Young 2017). While interesting, it should be noted that this approach might be ultimately limited by the role of alpha-MSH in energy homeostasis. Another promising area of research will be the development of non-peptide ligands that can cross the blood-brain barrier and act on brain neuropeptide receptors.
+
+Conclusion
+
+Human fMRI studies support numerous reports on mammals, including primates, demonstrating the important role of neuropeptides in the modulation of socio-emotional behaviors. However, further studies are largely limited by the unsolved question about the penetrance of exogenously applied neuropeptides, exemplarily OT, through the blood-brain barrier in primates (please see the article of Mary Lee in this special issue). In addition, there is a need for more dose-response experiments, as for now the typical amount administered is supra-physiological (Leng and Ludwig 2015). Therefore, further studies, especially on primates, are essential for understanding the anatomy and physiology of neuropeptide systems and their specific role in the pathophysiology of mental disorders. In addition to fMRI, the development of PET ligands specific to neuropeptidergic systems will allow to investigate neuropeptides receptors localization and potential pharmacologic drugs mechanisms of action in vivo (Smith et al. 2016a). In this line, PET scans have already been used to investigate interactions between neuropeptides and other transmitters (Striepens et al. 2014; Lefevre et al. 2017).
+
+References
+
+Adrian TE, Allen JM, Bloom SR et al (1983) Neuropeptide Y distribution in human brain. Nature 306:584-586
+
+Article
+CAS
+PubMed
+
+                    Google Scholar
+
+Aoki Y, Watanabe T, Abe O et al (2014) Oxytocin’s neurochemical effects in the medial prefrontal cortex underlie recovery of task-specific brain activity in autism: a randomized controlled trial. Mol Psychiatry. https://doi.org/10.1038/mp.2014.74
+
+Aspé-Sánchez M, Moreno M, Rivera MI et al (2015) Oxytocin and vasopressin receptor gene polymorphisms: role in social and psychiatric traits. Front Neurosci 9:510. https://doi.org/10.3389/fnins.2015.00510
+
+Article
+PubMed
+
+                    Google Scholar
+
+Banerjee P, Joy KP, Chaube R (2016) Structural and functional diversity of nonapeptide hormones from an evolutionary perspective: a review. Gen Comp Endocrinol. https://doi.org/10.1016/j.ygcen.2016.04.025
+
+Bartz JA, Zaki J, Bolger N, Ochsner KN (2011) Social effects of oxytocin in humans: context and person matter. Trends Cogn Sci 15:301-309. https://doi.org/10.1016/j.tics.2011.05.002
+
+Article
+CAS
+
+                    Google Scholar
+
+Born J, Lange T, Kern W et al (2002) Sniffing neuropeptides: a transnasal approach to the human brain. Nat Neurosci 5:514-516. https://doi.org/10.1038/nn0602-849
+
+Article
+CAS
+PubMed
+
+                    Google Scholar
+
+Borsook D, Upadhyay J, Klimas M et al (2012) Decision-making using fMRI in clinical drug development: revisiting NK-1 receptor antagonists for pain. Drug Discov Today 17:964-973. https://doi.org/10.1016/j.drudis.2012.05.004
+
+Article
+CAS
+PubMed
+
+                    Google Scholar
+
+Brunnlieb C, Münte TF, Krämer U et al (2013a) Vasopressin modulates neural responses during human reactive aggression. Soc Neurosci 8:148-164. https://doi.org/10.1080/17470919.2013.763654
+
+Article
+PubMed
+
+                    Google Scholar
+
+Brunnlieb C, Münte TF, Tempelmann C, Heldmann M (2013b) Vasopressin modulates neural responses related to emotional stimuli in the right amygdala. Brain Res 1499:29-42. https://doi.org/10.1016/j.brainres.2013.01.009
+
+Article
+CAS
+PubMed
+
+                    Google Scholar
+
+Brunnlieb C, Nave G, Camerer CF et al (2016) Vasopressin increases human risky cooperative behavior. Proc Natl Acad Sci U S A 113:2051-2056. https://doi.org/10.1073/pnas.1518825113
+
+Article
+CAS
+PubMed
+PubMed Central
+
+                    Google Scholar
+
+Caldwell HK, Lee H-J, Macbeth AH, Young WS III (2008) Vasopressin: behavioral roles of an “original” neuropeptide. Prog Neurobiol 84:1-24. https://doi.org/10.1016/j.pneurobio.2007.10.007
+
+Article
+CAS
+PubMed
+
+                    Google Scholar
+
+Carter CS, Altemus M (1997) Integrative functions of lactational hormones in social behavior and stress management. Ann N Y Acad Sci 807:164-174
+
+Article
+CAS
+PubMed
+
+                    Google Scholar
+
+Chini B, Verhage M, Grinevich V (2017) The action radius of oxytocin release in the mammalian CNS: from single vesicles to behavior. Trends Pharmacol Sci. https://doi.org/10.1016/j.tips.2017.08.005
+
+Choleris E, Devidze N, Kavaliers M, Pfaff DW (2008) Steroidal/neuropeptide interactions in hypothalamus and amygdala related to social anxiety. Prog Brain Res 170:291-303. https://doi.org/10.1016/S0079-6123(08)00424-X
+
+Article
+CAS
+PubMed
+
+                    Google Scholar
+
+Contoreggi C (2015) Corticotropin releasing hormone and imaging, rethinking the stress axis. Nucl Med Biol 42:323-339. https://doi.org/10.1016/j.nucmedbio.2014.11.008
+
+Article
+CAS
+PubMed
+
+                    Google Scholar
+
+Dal Monte O, Noble PL, Turchi J et al (2014) CSF and blood oxytocin concentration changes following intranasal delivery in macaque. PLoS One 9:e103677. https://doi.org/10.1371/journal.pone.0103677
+
+Article
+CAS
+PubMed
+PubMed Central
+
+                    Google Scholar
+
+Dannlowski U, Kugel H, Franke F et al (2011) Neuropeptide-S (NPS) receptor genotype modulates basolateral amygdala responsiveness to aversive stimuli. Neuropsychopharmacology 36:1879-1885. https://doi.org/10.1038/npp.2011.73
+
+Article
+CAS
+PubMed
+PubMed Central
+
+                    Google Scholar
+
+Domes G, Kumbier E, Heinrichs M, Herpertz SC (2013) Oxytocin promotes facial emotion recognition and amygdala reactivity in adults with Asperger syndrome. Neuropsychopharmacology. https://doi.org/10.1038/npp.2013.254
+
+Domschke K, Akhrif A, Romanos M, et al (2017) Neuropeptide S receptor gene variation differentially modulates fronto-limbic effective connectivity in childhood and adolescence. Cereb Cortex N Y N 1991 27:554-566. https://doi.org/10.1093/cercor/bhv259
+
+Domschke K, Reif A, Weber H et al (2011) Neuropeptide S receptor gene--converging evidence for a role in panic disorder. Mol Psychiatry 16:938-948. https://doi.org/10.1038/mp.2010.81
+
+Article
+CAS
+
+                    Google Scholar
+
+Dumais KM, Veenema AH (2015) Vasopressin and oxytocin receptor systems in the brain: sex differences and sex-specific regulation of social behavior. Front Neuroendocrinol. https://doi.org/10.1016/j.yfrne.2015.04.003
+
+Eickhoff SB, Bzdok D, Laird AR et al (2012) Activation likelihood estimation meta-analysis revisited. NeuroImage 59:2349-2361. https://doi.org/10.1016/j.neuroimage.2011.09.017
+
+Article
+PubMed
+
+                    Google Scholar
+
+Eser D, Leicht G, Lutz J et al (2009) Functional neuroanatomy of CCK-4-induced panic attacks in healthy volunteers. Hum Brain Mapp 30:511-522. https://doi.org/10.1002/hbm.20522
+
+Article
+PubMed
+
+                    Google Scholar
+
+Febo M, Ferris CF (2014) Oxytocin and vasopressin modulation of the neural correlates of motivation and emotion: results from functional MRI studies in awake rats. Brain Res. https://doi.org/10.1016/j.brainres.2014.01.019
+
+Feng C, DeMarco AC, Haroon E, Rilling JK (2015) Neuroticism modulates the effects of intranasal vasopressin treatment on the neural response to positive and negative social interactions. Neuropsychologia 73:108-115. https://doi.org/10.1016/j.neuropsychologia.2015.05.004
+
+Article
+PubMed
+PubMed Central
+
+                    Google Scholar
+
+Francis SM, Kim S-J, Kistner-Griffin E et al (2016) ASD and genetic associations with receptors for oxytocin and vasopressin-AVPR1A, AVPR1B, and OXTR. Front Neurosci 10:516. https://doi.org/10.3389/fnins.2016.00516
+
+Article
+PubMed
+PubMed Central
+
+                    Google Scholar
+
+Freeman SM, Samineni S, Allen PC et al (2016) Plasma and CSF oxytocin levels after intranasal and intravenous oxytocin in awake macaques. Psychoneuroendocrinology 66:185-194. https://doi.org/10.1016/j.psyneuen.2016.01.014
+
+Article
+CAS
+PubMed
+
+                    Google Scholar
+
+Galbusera A, De Felice A, Girardi S et al (2017) Intranasal oxytocin and vasopressin modulate divergent brainwide functional substrates. Neuropsychopharmacol Off Publ Am Coll Neuropsychopharmacol 42:1420-1434. https://doi.org/10.1038/npp.2016.283
+
+Article
+CAS
+
+                    Google Scholar
+
+Gordon I, Vander Wyk BC, Bennett RH et al (2013) Oxytocin enhances brain function in children with autism. Proc Natl Acad Sci U S A. https://doi.org/10.1073/pnas.1312857110
+
+Gozzi M, Dashow EM, Thurm A et al (2017) Effects of oxytocin and vasopressin on preferential brain responses to negative social feedback. Neuropsychopharmacol Off Publ Am Coll Neuropsychopharmacol 42:1409-1419. https://doi.org/10.1038/npp.2016.248
+
+Article
+CAS
+
+                    Google Scholar
+
+Grund T, Goyon S, Li Y et al (2017) Neuropeptide S activates paraventricular oxytocin neurons to induce anxiolysis. J Neurosci. https://doi.org/10.1523/JNEUROSCI.2161-17.2017
+
+Guastella AJ, Kenyon AR, Alvares GA et al (2010) Intranasal arginine vasopressin enhances the encoding of happy and angry faces in humans. Biol Psychiatry 67:1220-1222. https://doi.org/10.1016/j.biopsych.2010.03.014
+
+Article
+CAS
+PubMed
+
+                    Google Scholar
+
+Guhn A, Domschke K, Müller LD et al (2015) Neuropeptide S receptor gene variation and neural correlates of cognitive emotion regulation. Soc Cogn Affect Neurosci 10:1730-1737. https://doi.org/10.1093/scan/nsv061
+
+Article
+PubMed
+PubMed Central
+
+                    Google Scholar
+
+Huber D, Veinante P, Stoop R (2005) Vasopressin and oxytocin excite distinct neuronal populations in the central amygdala. Science 308:245-248. https://doi.org/10.1126/science.1105636
+
+Article
+CAS
+PubMed
+
+                    Google Scholar
+
+Johnson ZV, Young LJ (2017) Oxytocin and vasopressin neural networks: implications for social behavioral diversity and translational neuroscience. Neurosci Biobehav Rev 76:87-98. https://doi.org/10.1016/j.neubiorev.2017.01.034
+
+Article
+CAS
+PubMed
+PubMed Central
+
+                    Google Scholar
+
+Laird AR, Eickhoff SB, Fox PM et al (2011) The BrainMap strategy for standardization, sharing, and meta-analysis of neuroimaging data. BMC Res Notes 4:349. https://doi.org/10.1186/1756-0500-4-349
+
+Article
+PubMed
+PubMed Central
+
+                    Google Scholar
+
+Lee MR, Scheidweiler KB, Diao XX et al (2017) Oxytocin by intranasal and intravenous routes reaches the cerebrospinal fluid in rhesus macaques: determination using a novel oxytocin assay. Mol Psychiatry. https://doi.org/10.1038/mp.2017.27
+
+Lee RJ, Coccaro EF, Cremers H et al (2013) A novel V1a receptor antagonist blocks vasopressin-induced changes in the CNS response to emotional stimuli: an fMRI study. Front Syst Neurosci 7:100. https://doi.org/10.3389/fnsys.2013.00100
+
+Article
+CAS
+PubMed
+PubMed Central
+
+                    Google Scholar
+
+Lefevre A, Mottolese R, Redouté J et al (2017) Oxytocin fails to recruit serotonergic neurotransmission in the autistic brain. Cereb Cortex N Y N 1991:1-10. https://doi.org/10.1093/cercor/bhx272
+
+Article
+
+                    Google Scholar
+
+Lefevre A, Sirigu A (2016) The two fold role of oxytocin in social developmental disorders: a cause and a remedy? Neurosci Biobehav Rev. https://doi.org/10.1016/j.neubiorev.2016.01.011
+
+Leng G, Ludwig M (2015) Intranasal oxytocin: myths and delusions. Biol Psychiatry https://doi.org/10.1016/j.biopsych.2015.05.003
+
+Ludwig M, Leng G (2006) Dendritic peptide release and peptide-dependent behaviours. Nat Rev Neurosci 7:126-136. https://doi.org/10.1038/nrn1845
+
+Article
+CAS
+PubMed
+
+                    Google Scholar
+
+McCall C, Singer T (2012) The animal and human neuroendocrinology of social cognition, motivation and behavior. Nat Neurosci 15:681-688. https://doi.org/10.1038/nn.3084
+
+Article
+CAS
+PubMed
+
+                    Google Scholar
+
+Mickey BJ, Zhou Z, Heitzeg MM et al (2011) Emotion processing, major depression, and functional genetic variation of neuropeptide Y. Arch Gen Psychiatry 68:158-166. https://doi.org/10.1001/archgenpsychiatry.2010.197
+
+Article
+CAS
+PubMed
+PubMed Central
+
+                    Google Scholar
+
+Modi ME, Connor-Stroud F, Landgraf R et al (2014) Aerosolized oxytocin increases cerebrospinal fluid oxytocin in rhesus macaques. Psychoneuroendocrinology 45:49-57. https://doi.org/10.1016/j.psyneuen.2014.02.011
+
+Article
+CAS
+PubMed
+PubMed Central
+
+                    Google Scholar
+
+Modi ME, Inoue K, Barrett CE et al (2015) Melanocortin receptor agonists facilitate oxytocin-dependent partner preference formation in the prairie vole. Neuropsychopharmacol Off Publ Am Coll Neuropsychopharmacol 40:1856-1865. https://doi.org/10.1038/npp.2015.35
+
+Article
+CAS
+
+                    Google Scholar
+
+Neumann ID, Maloumby R, Beiderbeck DI, et al (2013) Increased brain and plasma oxytocin after nasal and peripheral administration in rats and mice. Psychoneuroendocrinology https://doi.org/10.1016/j.psyneuen.2013.03.003
+
+Opmeer EM, Kortekaas R, van Tol M-J et al (2014) Interaction of neuropeptide Y genotype and childhood emotional maltreatment on brain activity during emotional processing. Soc Cogn Affect Neurosci 9:601-609. https://doi.org/10.1093/scan/nst025
+
+Article
+PubMed
+
+                    Google Scholar
+
+Paiva L, Sabatier N, Leng G, Ludwig M (2017) Effect of melanotan-II on brain Fos immunoreactivity and oxytocin neuronal activity and secretion in rats. J Neuroendocrinol 29. https://doi.org/10.1111/jne.12454
+
+Pape H-C, Jüngling K, Seidenbecher T et al (2010) Neuropeptide S: a transmitter system in the brain regulating fear and anxiety. Neuropharmacology 58:29-34. https://doi.org/10.1016/j.neuropharm.2009.06.001
+
+Article
+CAS
+PubMed
+
+                    Google Scholar
+
+Poisbeau P, Grinevich V, Charlet A (2017) Oxytocin signaling in pain: cellular, circuit, system, and behavioral levels. Curr Top Behav Neurosci https://doi.org/10.1007/7854_2017_14
+
+Quintana DS, Alvares GA, Hickie IB, Guastella AJ (2014) Do delivery routes of intranasally administered oxytocin account for observed effects on social cognition and behavior? A two-level model Neurosci Biobehav Rev https://doi.org/10.1016/j.neubiorev.2014.12.011
+
+Raam T, McAvoy KM, Besnard A et al (2017) Hippocampal oxytocin receptors are necessary for discrimination of social stimuli. Nat Commun 8:2001. https://doi.org/10.1038/s41467-017-02173-0
+
+Article
+CAS
+PubMed
+PubMed Central
+
+                    Google Scholar
+
+Refojo D, Holsboer F (2009) CRH signaling. Molecular specificity for drug targeting in the CNS. Ann N Y Acad Sci 1179:106-119. https://doi.org/10.1111/j.1749-6632.2009.04983.x
+
+Article
+CAS
+PubMed
+
+                    Google Scholar
+
+Rilling JK, DeMarco AC, Hackett PD et al (2013) Sex differences in the neural and behavioral response to intranasal oxytocin and vasopressin during human social interaction. Psychoneuroendocrinology. https://doi.org/10.1016/j.psyneuen.2013.09.022
+
+Rilling JK, DeMarco AC, Hackett PD et al (2012) Effects of intranasal oxytocin and vasopressin on cooperative behavior and associated brain activity in men. Psychoneuroendocrinology 37:447-461. https://doi.org/10.1016/j.psyneuen.2011.07.013
+
+Article
+CAS
+PubMed
+
+                    Google Scholar
+
+Ruff CC, Fehr E (2014) The neurobiology of rewards and values in social decision making. Nat Rev Neurosci 15:549-562. https://doi.org/10.1038/nrn3776
+
+Article
+CAS
+PubMed
+
+                    Google Scholar
+
+Ruland T, Domschke K, Schütte V et al (2015) Neuropeptide S receptor gene variation modulates anterior cingulate cortex Glx levels during CCK-4 induced panic. Eur Neuropsychopharmacol J Eur Coll Neuropsychopharmacol 25:1677-1682. https://doi.org/10.1016/j.euroneuro.2015.07.011
+
+Article
+CAS
+
+                    Google Scholar
+
+Sabatier N, Caquineau C, Dayanithi G et al (2003) α-Melanocyte-stimulating hormone stimulates oxytocin release from the dendrites of hypothalamic neurons while inhibiting oxytocin release from their terminals in the neurohypophysis. J Neurosci 23:10351-10358
+
+Article
+CAS
+PubMed
+
+                    Google Scholar
+
+Sanders J, Nemeroff C (2016) The CRF system as a therapeutic target for neuropsychiatric disorders. Trends Pharmacol Sci 37:1045-1054. https://doi.org/10.1016/j.tips.2016.09.004
+
+Article
+CAS
+PubMed
+PubMed Central
+
+                    Google Scholar
+
+Schunck T, Erb G, Mathis A et al (2006) Functional magnetic resonance imaging characterization of CCK-4-induced panic attack and subsequent anticipatory anxiety. NeuroImage 31:1197-1208. https://doi.org/10.1016/j.neuroimage.2006.01.035
+
+Article
+PubMed
+
+                    Google Scholar
+
+Smith AL, Freeman SM, Barnhart TE et al (2016a) Initial investigation of three selective and potent small molecule oxytocin receptor PET ligands in New World monkeys. Bioorg Med Chem Lett. https://doi.org/10.1016/j.bmcl.2016.04.097
+
+Smith AS, Williams Avram SK, Cymerblit-Sabba A et al (2016b) Targeted activation of the hippocampal CA2 area strongly enhances social memory. Mol Psychiatry 21:1137-1144. https://doi.org/10.1038/mp.2015.189
+
+Article
+CAS
+PubMed
+PubMed Central
+
+                    Google Scholar
+
+Spengler FB, Schultz J, Scheele D et al (2017) Kinetics and dose dependency of intranasal oxytocin effects on amygdala reactivity. Biol Psychiatry. https://doi.org/10.1016/j.biopsych.2017.04.015
+
+Stoop R (2014) Neuromodulation by oxytocin and vasopressin in the central nervous system as a basis for their rapid behavioral effects. Curr Opin Neurobiol 29C:187-193. https://doi.org/10.1016/j.conb.2014.09.012
+
+Article
+CAS
+
+                    Google Scholar
+
+Streit F, Haddad L, Paul T et al (2014) A functional variant in the neuropeptide S receptor 1 gene moderates the influence of urban upbringing on stress processing in the amygdala. Stress Amst Neth 17:352-361. https://doi.org/10.3109/10253890.2014.921903
+
+Article
+CAS
+
+                    Google Scholar
+
+Striepens N, Kendrick KM, Hanking V, et al (2013) Elevated cerebrospinal fluid and blood concentrations of oxytocin following its intranasal administration in humans, Sci Rep 3:. https://doi.org/10.1038/srep03440
+
+Striepens N, Matusch A, Kendrick KM et al (2014) Oxytocin enhances attractiveness of unfamiliar female faces independent of the dopamine reward system. Psychoneuroendocrinology 39:74-87. https://doi.org/10.1016/j.psyneuen.2013.09.026
+
+Article
+CAS
+PubMed
+
+                    Google Scholar
+
+Tanaka A, Furubayashi T, Arai M et al (2018) Delivery of oxytocin to the brain for the treatment of autism spectrum disorder by nasal application. Mol Pharm 15:1105-1111. https://doi.org/10.1021/acs.molpharmaceut.7b00991
+
+Article
+CAS
+PubMed
+
+                    Google Scholar
+
+Turkeltaub PE, Eickhoff SB, Laird AR et al (2012) Minimizing within-experiment and within-group effects in activation likelihood estimation meta-analyses. Hum Brain Mapp 33:1-13. https://doi.org/10.1002/hbm.21186
+
+Article
+PubMed
+
+                    Google Scholar
+
+Umbricht D, Del Valle RM, Hollander E et al (2017) A single dose, randomized, controlled proof-of-mechanism study of a novel vasopressin 1a receptor antagonist (RG7713) in high-functioning adults with autism spectrum disorder. Neuropsychopharmacol Off Publ Am Coll Neuropsychopharmacol 42:1914-1923. https://doi.org/10.1038/npp.2016.232
+
+Article
+CAS
+
+                    Google Scholar
+
+van den Pol AN (2012) Neuropeptide transmission in brain circuits. Neuron 76:98-115. https://doi.org/10.1016/j.neuron.2012.09.014
+
+Article
+CAS
+PubMed
+PubMed Central
+
+                    Google Scholar
+
+Wang D, Yan X, Li M, Ma Y (2017) Neural substrates underlying the effects of oxytocin: a quantitative meta-analysis of pharmaco-imaging studies. Soc Cogn Affect Neurosci 12:1565-1573. https://doi.org/10.1093/scan/nsx085
+
+Article
+PubMed
+PubMed Central
+
+                    Google Scholar
+
+Wang Y, Wang M, Yin S, et al (2015) NeuroPep: a comprehensive resource of neuropeptides Database J Biol Databases Curation 2015:bav038. https://doi.org/10.1093/database/bav038
+
+Wigton R, Radua J, Allen P et al (2015) Neurophysiological effects of acute oxytocin administration: systematic review and meta-analysis of placebo-controlled imaging studies. J Psychiatry Neurosci JPN 40:E1-E22
+
+Article
+PubMed
+
+                    Google Scholar
+
+Xu Y-L, Reinscheid RK, Huitron-Resendiz S et al (2004) Neuropeptide S: a neuropeptide promoting arousal and anxiolytic-like effects. Neuron 43:487-497. https://doi.org/10.1016/j.neuron.2004.08.005
+
+Article
+CAS
+PubMed
+
+                    Google Scholar
+
+Zhou Z, Zhu G, Hariri AR et al (2008) Genetic variation in human NPY expression affects stress response and emotion. Nature 452:997-1001. https://doi.org/10.1038/nature06858
+
+Article
+CAS
+PubMed
+PubMed Central
+
+                    Google Scholar
+
+Zink CF, Kempf L, Hakimi S et al (2011) Vasopressin modulates social recognition-related activity in the left temporoparietal junction in humans. Transl Psychiatry 1:e3. https://doi.org/10.1038/tp.2011.2
+
+Article
+CAS
+PubMed
+PubMed Central
+
+                    Google Scholar
+
+Zink CF, Stein JL, Kempf L et al (2010) Vasopressin modulates medial prefrontal cortex-amygdala circuitry during emotion processing in humans. J Neurosci 30:7017-7022. https://doi.org/10.1523/JNEUROSCI.4899-09.2010
+
+Article
+CAS
+PubMed
+PubMed Central
+
+                    Google Scholar
+
+Zwanzger P, Domschke K, Bradwejn J (2012) Neuronal network of panic disorder: the role of the neuropeptide cholecystokinin. Depress Anxiety 29:762-774. https://doi.org/10.1002/da.21919
+
+Article
+CAS
+PubMed
+
+                    Google Scholar
+
+Download references
+
+Figure legends
+
+Table 1 Summary of the main effects (AVP vs. placebo) reported by the fMRI studies included in the ALE analysis. All subjects were adult healthy men. R, right; L, left. In some cases, no behavioral outcomes were recorded, or were not relevant (performance on easy tasks, reaction time, etc.), as paradigms employed simply consisted in stimuli presentation
+
+Fig. 1
