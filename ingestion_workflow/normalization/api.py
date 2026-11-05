@@ -84,6 +84,17 @@ def pondie_commit():
     return got.stdout.strip() or None
 
 
+def vocab_versions():
+    """The vocabularies the medical linker reads: MONDO's release, pondie's negation parser and abbreviation miner."""
+    try:
+        from pondie.vocabularies.abbreviations import detector
+
+        miner = "scispacy" if detector() is not None else "builtin"
+    except Exception:  # noqa: BLE001
+        miner = None
+    return {**medical.versions(), "abbreviation_miner": miner}
+
+
 def verify_fixed(fixed_dir):
     fixed_dir = Path(fixed_dir)
     bad = {k: (sha(fixed_dir / k) if (fixed_dir / k).exists() else None) for k, h in FIXED.items()}
@@ -180,15 +191,14 @@ def fit(records_, texts, bibliographies, out_dir, *, fixed_dir=None, identifiers
     with open(tmp / "labels/contrast_classifier.pkl", "wb") as f:
         pickle.dump(classifier, f, protocol=5)
     (tmp / "citations").mkdir()
-    with gzip.open(tmp / "citations/index.json.gz", "wt", compresslevel=6) as f:
-        json.dump(index, f, sort_keys=True)
+    with open(tmp / "citations/index.json.gz", "wb") as raw, \
+            gzip.GzipFile(fileobj=raw, mode="wb", compresslevel=6, mtime=0) as gz:   # no time in the header
+        gz.write(json.dumps(index, sort_keys=True).encode())
     contrasts.save_sets(tmp / "contrast_sets", sets, members, arrays)
     with open(tmp / "corpus.jsonl", "w") as f:
         for a in articles:
             f.write(json.dumps({"article": a, "record_sha256": digest(body_of(records_[a]))}) + "\n")
-    # gzip writes the time into its header; the hash reads the index's content
     files = {str(p.relative_to(tmp)): sha(p) for p in sorted(tmp.rglob("*")) if p.is_file()}
-    files["citations/index.json.gz"] = digest(index)
     import sklearn
 
     core = {"parameters": {"T5": T5, "TASK_COS": TASK_COS, "label_policy": "gate -> rest -> name -> citation "
@@ -196,9 +206,11 @@ def fit(records_, texts, bibliographies, out_dir, *, fixed_dir=None, identifiers
                            "citation_origin_weight": citations.ORIGIN_W, "s2_cap": contrasts.S2_CAP},
             "models": {"embedding": {"name": contrasts.EMBEDDING_MODEL, "revision": encoder.revision},
                        "scikit_learn": sklearn.__version__},
-            "fixed_sha256": FIXED, "code_sha256": code_hashes(), "files_sha256": files, "pondie_commit": pondie_commit()}
+            "vocab": vocab_versions(), "fixed_sha256": FIXED, "code_sha256": code_hashes(), "files_sha256": files,
+            "pondie_commit": pondie_commit()}
+    # the fit's fingerprint: a hash of what it holds and was made with, never of when it ran or what it assigned
     fit_id = "fit-" + digest(core)[:12]
-    manifest = {"fit_id": fit_id, **core, "refit_of": refit_of,
+    manifest = {"fit_id": fit_id, "fit_id_covers": sorted(core), **core, "refit_of": refit_of,
                 "counts": {"articles": len(articles), "tasks": len(tasks), "two_sided_contrasts": len(docs),
                            "sets": len(sets), "set_members": len(members),
                            "task_labels": dict(Counter(x["decided_by"] or "none" for x in final.values()))}}
@@ -279,21 +291,41 @@ def assign(r, article, text, bibliography, f, with_medical=True):
 
 def normalize_record(record, text, bibliography, fit_dir, *, article_id=None, allow_no_parser=False):
     """One article against a saved fit, with no corpus pass. The record's `normalized` sidecars are written in
-    place and the record returned.
+    place and the record returned; every entry names the fit in its `mapping_tool`.
 
     text: the parse's text, the one the record's evidence offsets index; bibliography: ns-pond's `references`
     artifact payload or None. article_id names the paper (it is left out of its own citation votes); it defaults
     to the record's `local_id`."""
+    _normalize(record, text, bibliography, fit_dir, article_id, allow_no_parser)
+    return record
+
+
+def normalize_records(articles, fit_dir, *, allow_no_parser=False):
+    """`normalize_record` over (article_id, record, text, bibliography) items. Returns (records, manifest): the
+    manifest names the fit used (`fit_id`, its fingerprint) and the code and vocabularies that assigned."""
+    out, tally = [], Counter()
+    for article, record, text, bibliography in articles:
+        tally.update(_normalize(record, text, bibliography, fit_dir, article, allow_no_parser))
+        out.append(record)
+    f = load(str(Path(fit_dir).resolve()))
+    return out, {"fit_id": f.fit_id, "assign_code_sha256": digest(code_hashes()), "vocab": vocab_versions(),
+                 "pondie_commit": pondie_commit(), "articles": len(out), "tallies": dict(sorted(tally.items()))}
+
+
+def _normalize(record, text, bibliography, fit_dir, article_id, allow_no_parser):
     r = body_of(record)
-    article = article_id or str((r.get("local_id") or {}).get("value") if isinstance(r.get("local_id"), dict)
-                                else r.get("local_id") or "")
+    local = r.get("local_id")
+    article = article_id or str((local.get("value") if isinstance(local, dict) else local) or "")
     if not allow_no_parser and not medical.versions()["negation_parser"]:
         # without spaCy's en_core_web_sm pondie cannot read negation scope: "Dementia free" links to dementia
         raise RuntimeError("pondie's negation parser is missing: python -m spacy download en_core_web_sm")
     f = load(str(Path(fit_dir).resolve()))
     got = assign(r, article, text or "", bibliography, f)
-    sidecars.write_medical(r, got["medical"], f.fit_id)
-    sidecars.write_tasks(r, {t: x for (_s, t), x in got["labels"].items()}, f.fit_id)
-    sidecars.write_conditions(r, got["conditions"], f.fit_id)
-    sidecars.write_contrasts(r, got["contrasts"], got["assigned"], f.fit_id, f.sets.T)
-    return record
+    tally = Counter()
+    for name, t in (("medical", sidecars.write_medical(r, got["medical"], f.fit_id)),
+                    ("tasks", sidecars.write_tasks(r, {t: x for (_s, t), x in got["labels"].items()}, f.fit_id)),
+                    ("conditions", sidecars.write_conditions(r, got["conditions"], f.fit_id)),
+                    ("contrast_sets", sidecars.write_contrasts(r, got["contrasts"], got["assigned"], f.fit_id,
+                                                               f.sets.T))):
+        tally.update({f"{name}:{k}": v for k, v in t.items()})
+    return tally
