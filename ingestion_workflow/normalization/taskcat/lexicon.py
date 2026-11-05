@@ -328,8 +328,10 @@ class Lexicon:
             return ""
         if not hasattr(self, "_phrases"):
             self._phrases = sorted({p for p, *_ in self.entries}, key=len, reverse=True)
+            # a pattern can stop inside a word ("passive view" in "passive viewing"); mask the word's rest with it
+            self._masks = [re.compile(rf"(?:{p.pattern})\w*", p.flags) for p, *_ in self.patterns]
         n = " " + _norm(text) + " "
-        for pat, *_ in self.patterns:
+        for pat in self._masks:
             n = pat.sub(" taskname ", n)
         for p in self._phrases:
             if f" {p} " in n:

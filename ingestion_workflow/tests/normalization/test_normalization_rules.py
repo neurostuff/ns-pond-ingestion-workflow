@@ -84,6 +84,14 @@ def test_the_task_text_loses_the_names_the_name_route_read(cb):
     assert "back" not in task
 
 
+def test_a_pattern_masks_the_whole_word_it_stops_in(cb):
+    """The passive-viewing pattern matches "passive view" in "passive viewing" (a condition
+    description in records_all2, p5FrUzu67DoL): "ing" must not be left for the route to read."""
+    assert cb.L.mask("Passive viewing of angry male and female faces.") == (
+        "taskname of angry male and female faces"
+    )
+
+
 def test_the_papers_own_abbreviations_are_spelled_out(cb):
     """The paper defines "spatial working memory (SWM)": the condition and contrast names are
     read expanded."""
