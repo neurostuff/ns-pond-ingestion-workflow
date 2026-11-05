@@ -118,6 +118,17 @@ def fixed_from_hub(repo=FIXED_REPO, revision=None):
     return verify_fixed(snapshot_download(repo, revision=revision, allow_patterns=sorted(FIXED)))
 
 
+def column_major(pair):
+    """A pickled (vectorizer, linear classifier) with its coefficients stored column-major, so `X @ coef_.T` reads
+    them in place: row-major, scipy copies the whole matrix on every call (route B's 174 classes: most of its
+    time). The same numbers, multiplied in the same order."""
+    import numpy as np
+
+    vec, clf = pair
+    clf.coef_ = np.asfortranarray(clf.coef_)
+    return vec, clf
+
+
 def body_of(document):
     """The extraction record inside a document that wraps it as {"study": record}, or the record itself."""
     inner = document.get("study") if isinstance(document, dict) else None
@@ -167,8 +178,8 @@ def fit(records_, texts, bibliographies, out_dir, *, fixed_dir=None, identifiers
     fixed_dir = verify_fixed(fixed_dir) if fixed_dir else fixed_from_hub()
     out_dir = Path(out_dir); out_dir.mkdir(parents=True, exist_ok=True)
     articles = sorted(records_)
-    route_b = pickle.load(open(fixed_dir / "routeB_tfidf.pkl", "rb"))
-    lineage = pickle.load(open(fixed_dir / "citation_role_lineage_clf.pkl", "rb"))
+    route_b = column_major(pickle.load(open(fixed_dir / "routeB_tfidf.pkl", "rb")))
+    lineage = column_major(pickle.load(open(fixed_dir / "citation_role_lineage_clf.pkl", "rb")))
     _W.update(records=records_, texts=texts, bibliographies=bibliographies, cb=CardBuilder(route_b),
               sch=records.schemas(), final={})
     log(f"pass one: {len(articles)} articles")
@@ -266,10 +277,10 @@ class Fit:
         self.dir = d
         self.manifest = json.loads((d / "manifest.json").read_text())
         self.fit_id = self.manifest["fit_id"]
-        self.cb = CardBuilder(pickle.load(open(d / "fixed/routeB_tfidf.pkl", "rb")))
+        self.cb = CardBuilder(column_major(pickle.load(open(d / "fixed/routeB_tfidf.pkl", "rb"))))
         self.sch = records.schemas()
-        self.lineage = pickle.load(open(d / "fixed/citation_role_lineage_clf.pkl", "rb"))
-        self.classifier = pickle.load(open(d / "labels/contrast_classifier.pkl", "rb"))
+        self.lineage = column_major(pickle.load(open(d / "fixed/citation_role_lineage_clf.pkl", "rb")))
+        self.classifier = column_major(pickle.load(open(d / "labels/contrast_classifier.pkl", "rb")))
         with gzip.open(d / "citations/index.json.gz", "rt") as f:
             self.index = json.load(f)
         p = self.manifest["parameters"]
@@ -289,6 +300,7 @@ def load(fit_dir):
 def assign(r, article, text, bibliography, f, with_medical=True):
     """One record's derived rows under a fit: medical links, task labels, conditions, contrasts, set assignment."""
     links = medical.links(r, article, text) if with_medical else None
+    f.cb.memo = {}                  # pass two asks route B about the same tasks as pass one
     rows, _ = records.read(r, article, f.cb, f.sch)
     refs = citations.score_lineage(citations.task_refs(r, article, text, citations.bib_from_references(bibliography)),
                                    f.lineage)
@@ -299,6 +311,7 @@ def assign(r, article, text, bibliography, f, with_medical=True):
     final = {(t["study"], t["task"]): labels.decide(t, cn[(t["study"], t["task"])], route_c.get((t["study"], t["task"])),
                                                     f.cb.L, f.classifier) for t in rows["tasks"]}
     rows2, _ = records.read(r, article, f.cb, f.sch, final)
+    f.cb.memo = None
     docs = contrasts.documents(r, article, rows2["contrasts"], text)
     assigned = f.sets.assign(docs, f.encoder)
     return {"medical": links, "labels": final, "conditions": rows2["conditions"], "contrasts": rows2["contrasts"],

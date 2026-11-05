@@ -302,6 +302,62 @@ def save_sets(out, sets, members, arrays):
         np.save(out / f"{k}.npy", a.astype(np.float32))
 
 
+class Family:
+    """One family's members, laid out once for assignment: their embeddings, and the cannot-link and lexical
+    fields as arrays, so a new contrast is compared with all of them without rebuilding codes per contrast."""
+
+    def __init__(self, fit, ids):
+        self.ids = np.array(ids, dtype=int)
+        self.Et, self.Eb, self.Ek = fit.Et[self.ids], fit.Eb[self.ids], fit.Ek[self.ids]
+        M = self.members = [fit.members[j] for j in self.ids]
+        # per side and axis, each member's value as a code (-1: the member states no value on that axis)
+        self.axes = {}
+        for side in ("target_axes", "baseline_axes"):
+            self.axes[side] = {}
+            for ax in set().union(*(m[side] for m in M)):
+                codes = {}
+                col = np.array([codes.setdefault(m[side][ax], len(codes)) if m[side].get(ax) is not None else -1
+                                for m in M])
+                self.axes[side][ax] = (codes, col)
+        self.phase_id = {p: k for k, p in enumerate(sorted({tuple(m["phases"]) for m in M}))}
+        self.phase = np.array([self.phase_id[tuple(m["phases"])] for m in M])
+        self.canonical_code = {}
+        self.canonical = np.array([self.canonical_code.setdefault(m["canonical"], len(self.canonical_code))
+                                   if m["canonical"] is not None else -1 for m in M])
+        self.words = [(frozenset(m["target_words"]), frozenset(m["baseline_words"])) for m in M]
+        by_set = defaultdict(list)
+        for k, m in enumerate(M):
+            by_set[m["set"]].append(k)
+        self.sets = sorted((sid, np.array(ks)) for sid, ks in by_set.items())
+        self.position = {int(j): k for k, j in enumerate(self.ids)}
+
+    def conflict(self, axes, side):
+        """[n] bool: the contrast and a member both state an axis of these sides, with different values."""
+        out = np.zeros(len(self.ids), bool)
+        for ax, val in axes.items():
+            if ax in self.axes[side] and val is not None:
+                codes, col = self.axes[side][ax]
+                out |= (col >= 0) & (col != codes.get(val, -2))
+        return out
+
+    def similarity(self, f, et, eb, ek, TT):
+        """(same, flip) [n] for one contrast, after the cannot-links: `similarity` for a single row, the same
+        products in the same order, so the same numbers."""
+        same = np.minimum(et @ self.Et.T, eb @ self.Eb.T).astype(np.float32)[0]
+        flip = np.minimum(et @ self.Eb.T, eb @ self.Et.T).astype(np.float32)[0]
+        same[self.conflict(f["target_axes"], "target_axes") | self.conflict(f["baseline_axes"], "baseline_axes")] = 0
+        flip[self.conflict(f["target_axes"], "baseline_axes") | self.conflict(f["baseline_axes"], "target_axes")] = 0
+        diff_phase = self.phase != self.phase_id.get(tuple(f["phases"]), -1)
+        same[diff_phase] = 0; flip[diff_phase] = 0
+        if TT > 0:
+            # a contrast or member with no canonical task is a task of its own
+            other = np.ones(len(self.ids), bool) if f["canonical"] is None else \
+                (self.canonical < 0) | (self.canonical != self.canonical_code.get(f["canonical"], -2))
+            other_task = ((ek @ self.Ek.T)[0] < TT) & other
+            same[other_task] = 0; flip[other_task] = 0
+        return same, flip
+
+
 class SetFit:
     """A saved contrast-set fit, loaded for assignment."""
 
@@ -315,6 +371,11 @@ class SetFit:
         for i, m in enumerate(self.members):
             self.by_family[m["family"]].append(i)
         self.index = {m["id"]: i for i, m in enumerate(self.members)}
+        # laid out at load, so a forked worker shares them and no paper pays for its family's first use
+        self.families = {name: Family(self, ids) for name, ids in self.by_family.items()}
+
+    def family(self, name):
+        return self.families[name]
 
     def assign(self, docs, encoder):
         """docs (one article's two-sided documents) -> {doc id: assignment or None}.
@@ -329,33 +390,29 @@ class SetFit:
         Ek = encoder([f["task_text"] for f in F])
         out = {}
         for i, f in enumerate(F):
-            ids = np.array(self.by_family.get(f["family"]) or [], dtype=int)
-            if not f["family"] or not len(ids):
+            if not f["family"] or not self.by_family.get(f["family"]):
                 out[f["id"]] = None
                 continue
-            M = [self.members[j] for j in ids]
-            same, flip = similarity([f], Et[i:i + 1], Eb[i:i + 1], Ek[i:i + 1], M, self.Et[ids], self.Eb[ids],
-                                    self.Ek[ids], self.T, self.TT)
-            same, flip = same[0], flip[0]
-            for k, m in enumerate(M):
-                if same[k] > 0 and lexical(f, m) and lexical_ok(f, m):
+            fam = self.family(f["family"])
+            same, flip = fam.similarity(f, Et[i:i + 1], Eb[i:i + 1], Ek[i:i + 1], self.TT)
+            tw, bw = set(f["target_words"]), set(f["baseline_words"])
+            for k in np.nonzero(same > 0)[0]:
+                m = fam.members[k]; mt, mb = fam.words[k]
+                if jac(tw, mt) >= 0.5 and jac(bw, mb) >= 0.5 and lexical_ok(f, m):
                     same[k] = max(same[k], self.T)
             S = np.maximum(same, flip)
-            by_set = defaultdict(list)
-            for k, m in enumerate(M):
-                by_set[m["set"]].append(k)
-            best, score = None, -1.0
-            for sid, ks in sorted(by_set.items()):
+            best, score, n_best = None, -1.0, 0
+            for sid, ks in fam.sets:
                 s = float(S[ks].mean())
                 if s > score:
-                    best, score = sid, s
+                    best, score, n_best = sid, s, len(ks)
             if best is None or score < self.T:
                 out[f["id"]] = None
                 continue
             med = self.index[self.sets[best]["medoid"]]
-            k_med = int(np.where(ids == med)[0][0])
+            k_med = fam.position[med]
             orient = (1 if same[k_med] >= flip[k_med] else -1) * self.members[med]["orient"]
             out[f["id"]] = {"set": best, "label": self.sets[best]["label"], "orient": orient,
                             "effective_sign": f["sign"] * orient, "similarity": round(score, 4),
-                            "n_members": len(by_set[best])}
+                            "n_members": n_best}
         return out

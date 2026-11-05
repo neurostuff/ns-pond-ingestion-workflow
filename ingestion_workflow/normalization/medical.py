@@ -51,7 +51,10 @@ def vocabularies():
     from pondie.vocabularies.mondo import load_mondo, onvoc_crosswalk
     from pondie.vocabularies.onvoc import load_onvoc
 
+    from pondie.vocabularies.folding import singular
+
     vocab = load_mondo()
+    singular("disorders")           # WordNet, loaded here rather than on the first record's first head
     return vocab, onvoc_crosswalk(), load_onvoc().scoped(("disorders",)), Index(vocab).build()
 
 
