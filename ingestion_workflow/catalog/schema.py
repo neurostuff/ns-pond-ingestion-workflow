@@ -6,7 +6,8 @@ from __future__ import annotations
 #: 3: doi aliases hold the canonical DOI: bare and lower case.
 #: 4: ids are held by bucket: a preprint's DOI is `preprint_doi`, not `doi`; the other DOI and
 #:    duplicate record kinds are `alternative_doi`, `alternative_pmid`, `alternative_pmcid`.
-SCHEMA_VERSION = 4
+#: 5: a `runs` table, and `artifacts.run_id` naming the run an artifact was imported from.
+SCHEMA_VERSION = 5
 
 DDL = """
 CREATE TABLE IF NOT EXISTS articles (
@@ -33,6 +34,7 @@ CREATE TABLE IF NOT EXISTS artifacts (
     summary     TEXT NOT NULL DEFAULT '{}',
     error       TEXT,
     updated_at  TEXT NOT NULL,
+    run_id      TEXT,
     PRIMARY KEY (article_id, stage, source)
 );
 CREATE INDEX IF NOT EXISTS artifacts_stage_status_idx ON artifacts(stage, status);
@@ -110,6 +112,29 @@ CREATE TABLE IF NOT EXISTS download_names_read (
     blob TEXT PRIMARY KEY
 ) WITHOUT ROWID;
 
+-- One row per run of a stage made away from ns-pond (a cluster job, a collected set) or
+-- a migration of its output. `artifacts.run_id` names the run an artifact came from; it
+-- is null for the stages ns-pond runs itself. `config` is JSON.
+CREATE TABLE IF NOT EXISTS runs (
+    run_id         TEXT PRIMARY KEY,
+    kind           TEXT NOT NULL,
+    stage          TEXT NOT NULL,
+    source         TEXT NOT NULL,
+    pipeline       TEXT,
+    version        TEXT,
+    model          TEXT,
+    adapter        TEXT,
+    prompt_version TEXT,
+    schema_version TEXT,
+    fit            TEXT,
+    code_commit    TEXT,
+    machine        TEXT,
+    config         TEXT NOT NULL DEFAULT '{}',
+    bundle_id      TEXT,
+    created_at     TEXT NOT NULL,
+    imported_at    TEXT NOT NULL
+);
+
 -- What each data-source catalogue said, under its own ids; a pull of a catalogue replaces
 -- all of its records.
 CREATE TABLE IF NOT EXISTS data_source_records (
@@ -145,6 +170,12 @@ CREATE TABLE IF NOT EXISTS meta (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL
 );
+"""
+
+#: Run once the catalog is at SCHEMA_VERSION: it names a column a v4 catalog lacks until
+#: the migration adds it.
+CURRENT_DDL = """
+CREATE INDEX IF NOT EXISTS artifacts_run_idx ON artifacts(run_id) WHERE run_id IS NOT NULL;
 """
 
 PRAGMAS = (
