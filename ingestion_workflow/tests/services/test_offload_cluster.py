@@ -302,7 +302,7 @@ def _evidence_bundle(world):
         update={"adapter_sha256": hashlib.sha256(b"weights").hexdigest(),
                 "model_revision": load_spec(SPEC_FILE).model_revision, "model": "Qwen/Qwen3.8-27B"})
     bundle = export(world["ctx"], spec, "vista", workers=1, now=NOW + timedelta(minutes=1)).bundle
-    R.push(world["remote"], bundle, hf_cache=Path("/nonexistent"), hf_token=None)
+    R.push(world["remote"], bundle, hf_cache=Path("/nonexistent"))
     R.submit(world["remote"], bundle, yes=False)
     (job,) = BundleDir(bundle).state().jobs.values()
     there = Path(world["remote"].bundle_dir(BundleDir(bundle).bundle()))
