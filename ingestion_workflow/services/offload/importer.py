@@ -23,7 +23,8 @@ whose article the catalog does not know is counted and left out.
 
 A record the schema refuses is first given pondie's deterministic fixes, the ones normalize
 runs on every record (`normalize_assign.repair`), without the paper's text, which import
-does not read. When the fixed record passes and names the same parse keys, it is kept, and
+does not read, then, if it still fails, the fixes for a record written to an older schema
+(`schema_fixes`). When the fixed record passes and names the same parse keys, it is kept, and
 its summary's `repaired` names the fixes that changed it. A record the schema accepts is kept
 as the model wrote it. The fixes need pondie and its study_schema checkout (the `normalize`
 extra); where they cannot load, a refused record stays refused and the report says why.
@@ -57,6 +58,7 @@ from ingestion_workflow.pipeline.stages.offloaded import (
     record_fingerprint,
 )
 from ingestion_workflow.services.normalize_assign import repair
+from ingestion_workflow.services.offload import schema_fixes
 
 logger = logging.getLogger(__name__)
 
@@ -163,7 +165,12 @@ def _repaired(record: Dict[str, Any], parse: Optional[Parse]) -> Optional[tuple]
     except Exception:  # noqa: BLE001 - this record's failure: it stays refused
         logger.warning("pondie's fixes failed on a refused record", exc_info=True)
         return None
-    if _schema_problem(fixed) is None and parse_keys(fixed) == parse_keys(record):
+    if _schema_problem(fixed) is not None:
+        fixed, drift = schema_fixes.fix(fixed)
+        if fixed is None:
+            return None
+        fired = list(fired) + drift
+    if parse_keys(fixed) == parse_keys(record):
         return fixed, fired
     return None
 
