@@ -6,8 +6,8 @@ answers differently would change with it. This, once, for each OK metadata artif
 no venue that is fresh under version 6:
 
 * decides its venue as the stage does, from the stored record and the cached OpenAlex
-  work (one not cached is not asked for); an ISSN's source and NLM's journal list are
-  asked for and cached when not held, as the stage asks them;
+  work (one not cached is not asked for); the sources of the ISSNs PubMed gives are asked
+  for in batches of 100 and cached when not held, and NLM's journal list once;
 * adds `venue` to the payload, and the files that decision read to the summary's
   `records`, with any note on it;
 * gives it the version 7 fingerprint of those inputs.
@@ -76,11 +76,15 @@ def add_venues(catalog: Catalog, settings) -> Added:
         metadata = catalog.artifacts(ids, "metadata")
         downloads = catalog.artifacts(ids, "download")
         extracted = catalog.artifacts(ids, "extract")
+        held = []
         for ref in batch:
             artifact = metadata.get(ref.id, {}).get("")
             if artifact is None or not artifact.ok:
                 continue
             payload = catalog.payload(artifact)
+            if payload is None:  # its blob is gone: the stage makes it again
+                found.counts["no payload"] += 1
+                continue
             if "venue" in payload:
                 found.counts["has venue"] += 1
                 continue
@@ -92,7 +96,10 @@ def add_venues(catalog: Catalog, settings) -> Added:
             if stage.fingerprint_for(*args, now, version=FORMER_VERSION) != artifact.fingerprint:
                 found.counts["stale"] += 1
                 continue
-            record = ArticleMetadata.from_dict(payload)
+            held.append((ref, artifact, payload, records, dois, args,
+                         ArticleMetadata.from_dict(payload)))
+        stage.service.cache_sources(record for *_, record in held)
+        for ref, artifact, payload, records, dois, args, record in held:
             read, notes = stage.service.venue_from_cache(
                 ref.identifier, dois, catalog.aliases(ref.id, "preprint_doi"), record)
             if notes.transient:

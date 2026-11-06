@@ -220,3 +220,16 @@ def test_a_name_only_somewhat_like_a_title_is_noted_for_review(by_name):
 
 def test_a_paper_with_neither_ids_nor_a_name_has_no_venue(by_name):
     assert by_name(None) == (None, None)
+
+
+@pytest.mark.vcr()
+def test_the_sources_of_many_issns_are_one_filter_and_match_each_asked_alone():
+    """Movement Disorders' print ISSN, NeuroImage's and one no source holds, in one
+    `issn:` filter; each answer is what the single lookup gives."""
+    client = OpenAlexClient(cassette_secrets.REPLAY_EMAIL)
+    found = client.sources_by_issn(["0885-3185", "1053-8119", "0000-0000"])
+
+    assert found["0885-3185"]["id"] == "https://openalex.org/S163027424"
+    assert found["0000-0000"] is None
+    for issn in ("0885-3185", "1053-8119"):
+        assert found[issn] == client.source_by_issn(issn)

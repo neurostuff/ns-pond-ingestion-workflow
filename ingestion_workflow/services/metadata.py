@@ -319,6 +319,10 @@ class MetadataService:
                     )
 
         by_slug = {item.slug: item for item in extracted_contents}
+        try:
+            self.cache_sources(results.values())
+        except Exception as exc:  # each venue asks for its own sources then
+            logger.warning("OpenAlex sources by ISSN failed: %s", exc)
         for slug, metadata in results.items():
             item = by_slug[slug]
             notes = self.notes.setdefault(slug, Notes())
@@ -458,11 +462,28 @@ class MetadataService:
         return self._decide_venue(identifier.slug, ids, main_ident, vor_doi, paper_work,
                                   metadata, notes), notes
 
+    def _source_cache(self, issn: str) -> Path:
+        return self.settings.get_cache_dir("metadata") / OPENALEX_SOURCES_CACHE_DIR / \
+            f"{issn}.json"
+
+    def cache_sources(self, records: Iterable[ArticleMetadata]) -> None:
+        """Cache the source of each ISSN the records' PubMed answers give that is not cached
+        yet, asked of OpenAlex in batches; one it refused is left for `_source_by_issn`."""
+        wanted = [issn for record in records
+                  for issn in venues.pubmed_issns(
+                      record.raw_metadata.get(MetadataSource.pubmed.value) or {})
+                  if not self._source_cache(issn).exists()]
+        if not wanted or self._openalex_client is None:
+            return
+        for issn, found in self._openalex_client.sources_by_issn(wanted).items():
+            cache_file = self._source_cache(issn)
+            cache_file.parent.mkdir(parents=True, exist_ok=True)
+            cache_file.write_text(json.dumps(found))
+
     def _source_by_issn(self, issn: str, read: List[Path]) -> Optional[Dict]:
         """OpenAlex's source holding `issn`, or None when none does: each ISSN asked once and
         cached. Its cache file is added to `read`."""
-        cache_file = self.settings.get_cache_dir("metadata") / OPENALEX_SOURCES_CACHE_DIR / \
-            f"{issn}.json"
+        cache_file = self._source_cache(issn)
         read.append(cache_file)
         if cache_file.exists():
             return json.loads(cache_file.read_text())
