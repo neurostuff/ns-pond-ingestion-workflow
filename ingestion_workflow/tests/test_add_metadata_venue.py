@@ -10,7 +10,9 @@ from __future__ import annotations
 import importlib.util
 import io
 import json
+import sqlite3
 import sys
+from contextlib import closing
 from pathlib import Path
 
 import pytest
@@ -106,3 +108,21 @@ def test_metadata_stale_already_is_left_for_the_stage(env):
                        out=io.StringIO())
     assert found.rewrites == [] and found.counts == {"stale": 1}
     assert catalog.artifact(ARTICLE, "metadata") == before
+
+
+def test_a_v4_catalog_is_backed_up_as_it_was_then_brought_up_to_date(env):
+    """Production's catalog was schema 4, without artifacts' `run_id`, when this ran."""
+    settings, catalog = env
+    _stored_under_v6(settings, catalog)
+    catalog._conn.execute("DROP INDEX artifacts_run_idx")
+    catalog._conn.execute("ALTER TABLE artifacts DROP COLUMN run_id")
+    catalog._conn.execute("UPDATE meta SET value='4' WHERE key='schema_version'")
+    with pytest.raises(SystemExit, match="schema 4"):
+        script.run(settings, out=io.StringIO())
+
+    backup = settings.catalog_root / "backup.sqlite"
+    found = script.run(settings, apply=True, backup=backup, out=io.StringIO())
+    assert found.counts == {"venue doi": 1}
+    with closing(sqlite3.connect(backup)) as kept:
+        assert "run_id" not in {r[1] for r in kept.execute("PRAGMA table_info(artifacts)")}
+    assert catalog.payload(catalog.artifact(ARTICLE, "metadata"))["venue"]["match"] == "doi"
