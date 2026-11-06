@@ -128,6 +128,8 @@ def read_articles(read: Callable, jobs: List[tuple],
 class ReferencesStage:
     name = "references"
     requires = "extract"
+    #: No stage waits for it: links and sync read its list when there is one.
+    gates = False
 
     def __init__(self, settings) -> None:
         self.settings = settings
@@ -160,19 +162,19 @@ class ReferencesStage:
             readable = ({judged.source: judged}
                         if judged is not None and (judged.source in READABLE_SOURCES or has_list) else {})
             if not readable:
-                plan.blocked += 1
+                plan.block(ref)
                 continue
             for source, extraction in readable.items():
                 fp = self.fingerprint_for(extraction, reflist)
                 existing = artifacts.get(ref.id, {}).get(source)
                 if ctx.is_fresh(existing, fp):
-                    plan.fresh += 1
+                    plan.add_fresh(ref)
                     continue
                 if source not in attempts:
                     attempts[source] = ctx.catalog.attempt_counts(ids, self.name, source)
                 count, last = attempts[source].get(ref.id, (0, None))
                 if not ctx.should_attempt(existing, count, last, self.name, source):
-                    plan.permanent += 1
+                    plan.add_permanent(ref)
                     continue
                 plan.pending.append(Work(ref=ref, source=source, fingerprint=fp, upstream=extraction))
         return plan

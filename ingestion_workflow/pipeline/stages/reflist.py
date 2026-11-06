@@ -27,6 +27,8 @@ class ReflistStage:
     name = "reflist"
     #: Only for articles something was downloaded for: the list serves their text.
     requires = "download"
+    #: No stage waits for it: references reads its list when there is one.
+    gates = False
 
     def __init__(self, settings) -> None:
         self.settings = settings
@@ -64,16 +66,16 @@ class ReflistStage:
             doi = ref.identifier.asking_doi
             downloaded = any(a.status is Status.OK for a in upstream.get(ref.id, {}).values())
             if not doi or not downloaded:
-                plan.blocked += 1
+                plan.block(ref)
                 continue
             fp = self.fingerprint_for(doi)
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
-                plan.fresh += 1
+                plan.add_fresh(ref)
                 continue
             count, last = attempts.get(ref.id, (0, None))
             if not ctx.should_attempt(existing, count, last, self.name):
-                plan.permanent += 1
+                plan.add_permanent(ref)
                 continue
             plan.pending.append(Work(ref=ref, source="", fingerprint=fp, upstream=None))
         return plan

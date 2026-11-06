@@ -45,6 +45,8 @@ class NoticesStage:
     name = "notices"
     #: An article metadata reached; the PMID is all that is read.
     requires = "metadata"
+    #: No stage waits for it: sync reads PubMed's answer when there is one.
+    gates = False
 
     def __init__(self, settings) -> None:
         self.settings = settings
@@ -89,17 +91,17 @@ class NoticesStage:
             pmids, doi = ref.identifier.pmids, ref.identifier.asking_doi
             found = upstream.get(ref.id, {}).get("")
             if not (pmids or doi) or found is None or found.status is not Status.OK:
-                plan.blocked += 1
+                plan.block(ref)
                 continue
             fp = self.fingerprint_for(",".join(pmids), doi)
             existing = artifacts.get(ref.id, {}).get("")
             age = _age(existing) if existing is not None else None
             if ctx.is_fresh(existing, fp) and age is not None and age < max_age:
-                plan.fresh += 1
+                plan.add_fresh(ref)
                 continue
             count, last = attempts.get(ref.id, (0, None))
             if not ctx.should_attempt(existing, count, last, self.name):
-                plan.permanent += 1
+                plan.add_permanent(ref)
                 continue
             plan.pending.append(Work(ref=ref, source="", fingerprint=fp, upstream=None))
         return plan

@@ -275,7 +275,7 @@ class SyncStage:
                 take_back_or_block(plan, ref, spaced, existing)
                 continue
             if ref.id not in roled:
-                plan.blocked += 1
+                plan.block(ref)
                 continue
             base_study_id = bases.get(ref.id)
             identifier = ref.identifier
@@ -296,7 +296,7 @@ class SyncStage:
                 continue
             if read_from_bad_page(prose.get(ref.id, {}).get(""), downloads.get(ref.id, {}),
                                   extracted.get(ref.id, {})):
-                plan.block(f"prose {READ_FROM_BAD_PAGE}")
+                plan.block(ref, f"prose {READ_FROM_BAD_PAGE}")
                 continue
             triage = triaged.get(ref.id, {}).get("")
             synced = _synced_extraction(ctx, extracted.get(ref.id, {}),
@@ -308,7 +308,7 @@ class SyncStage:
                 linked.get(ref.id, {}).get(source), probed.get(ref.id, {}).get(""),
                 listed.get(ref.id, {}).get(source))
             if ctx.is_fresh(existing, fp):
-                plan.fresh += 1
+                plan.add_fresh(ref)
                 continue
             plan.pending.append(Work(ref=ref, source="", fingerprint=fp, upstream=spaced))
         return plan
@@ -551,7 +551,7 @@ def _skip(plan: StagePlan, ref: ArticleRef, spaced: Artifact, existing: Optional
     names it to `shared_base_studies`."""
     error = error or reason
     if existing is not None and existing.status is Status.SKIPPED and existing.error == error:
-        plan.block(reason)
+        plan.block(ref, reason)
         return
     plan.pending.append(Work(ref=ref, source="", fingerprint="", upstream=spaced, skip=(
         error, {"reason": reason, "base_study_id": base_study_id, **summary})))

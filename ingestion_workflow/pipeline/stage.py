@@ -15,8 +15,8 @@ from ingestion_workflow.catalog import (
     Outcome,
     Status,
     fingerprint,
-    is_retryable,
 )
+from ingestion_workflow.catalog.store import NOT_FAILED, RETRY_DUE, retry_state
 from ingestion_workflow.clients.model_server import ModelUnavailable
 from ingestion_workflow.config import Settings
 from ingestion_workflow.utils.isolation import error_text
@@ -148,7 +148,7 @@ def take_back_or_block(plan: StagePlan, ref: ArticleRef, upstream: Optional[Arti
         plan.pending.append(Work(ref=ref, source="", fingerprint=NO_TEXT, upstream=None,
                                  reason=upstream.error))
     else:
-        plan.blocked += 1
+        plan.block(ref)
 
 
 def is_take_back(work: Work) -> bool:
@@ -163,6 +163,24 @@ def taking_back(stage: str, works: List[Work]):
     back = [Outcome.failure(w.article_id, stage, "", w.reason or NO_TEXT, fingerprint=NO_TEXT)
             for w in works if is_take_back(w)]
     return back, [w for w in works if not is_take_back(w)]
+
+
+#: Whether `Context.freshness` reuses an artifact, and why not.
+FRESH = "fresh"
+NOT_OK = "not a success"
+NO_FINGERPRINT = "has no fingerprint: `ingest repair` stores the one it should carry"
+CHANGED = "its inputs or the stage's code changed since it was made"
+PAYLOAD_GONE = "its stored payload is gone"
+TRANSIENT_DUE = "kept with a provider error, and due to be asked again"
+
+#: Why `Context.attempt_state` tries a non-fresh artifact again now...
+REFRESHING = "asked to redo"
+NEVER_TRIED = "never tried"
+REMADE = "made from inputs or code since changed"
+INPUT_BACK = "its input is back"
+ATTEMPTED = (REFRESHING, NEVER_TRIED, REMADE, INPUT_BACK, RETRY_DUE)
+#: ... and why not.
+NOT_RETRIED = "a permanent failure or a skip, not tried again"
 
 
 class Context:
@@ -187,6 +205,13 @@ class Context:
         #: embargoes at, fixed when it is built.
         self.now = now if now is not None else datetime.now(timezone.utc)
 
+    @classmethod
+    def from_settings(cls, settings: Settings, catalog: Catalog,
+                      refresh: Sequence[str] = ()) -> "Context":
+        """The context a run makes from its settings: their attempts and retry wait."""
+        return cls(settings, catalog, refresh=refresh or (), max_attempts=settings.max_attempts,
+                   retry_after=timedelta(hours=settings.retry_after_hours))
+
     def refreshing(self, stage: str, source: str = "") -> bool:
         """Whether the operator asked for this work to be redone.
 
@@ -199,19 +224,25 @@ class Context:
         return bool(source) and f"{stage}:{source}" in self.refresh
 
     def is_fresh(self, artifact: Optional[Artifact], expected: str) -> bool:
-        """Reusable iff it succeeded, its inputs are unchanged, and its blob survives.
+        """Reusable iff it succeeded, its inputs are unchanged, and its blob survives."""
+        return self.freshness(artifact, expected) == FRESH
+
+    def freshness(self, artifact: Optional[Artifact], expected: str) -> str:
+        """Whether an artifact is reusable as `expected`: FRESH, or why not.
 
         An artifact with no fingerprint says nothing about its inputs, so it is
         not reusable: `ingest repair` stores the fingerprint it should carry."""
         if artifact is None or artifact.status is not Status.OK:
-            return False
+            return NOT_OK
         if self.refreshing(artifact.stage, artifact.source):
-            return False
+            return REFRESHING
+        if not artifact.fingerprint:
+            return NO_FINGERPRINT
         if artifact.fingerprint != expected:
-            return False
+            return CHANGED
         if artifact.blob and not self.catalog.blobs.exists(artifact.blob):
-            return False
-        return not self.due_again(artifact)
+            return PAYLOAD_GONE
+        return TRANSIENT_DUE if self.due_again(artifact) else FRESH
 
     def due_again(self, artifact: Artifact) -> bool:
         """Whether an artifact kept despite an error noted `transient` (a provider busy or
@@ -234,23 +265,31 @@ class Context:
         source: str = "",
     ) -> bool:
         """Whether a non-fresh artifact is worth (re)trying now."""
+        return self.attempt_state(artifact, attempts, last_attempt, stage, source) in ATTEMPTED
+
+    def attempt_state(
+        self,
+        artifact: Optional[Artifact],
+        attempts: int,
+        last_attempt: Optional[str],
+        stage: str,
+        source: str = "",
+    ) -> str:
+        """Why a non-fresh artifact is, or is not, tried again now: one of `ATTEMPTED`,
+        or `NOT_RETRIED`, `BACKING_OFF` or `RETRIES_SPENT`."""
         if self.refreshing(stage, source):
-            return True
+            return REFRESHING
         if artifact is None:
-            return True
+            return NEVER_TRIED
         if artifact.status is Status.OK:
-            return True  # stale: fingerprint changed
+            return REMADE
         if taken_back(artifact):
-            return True  # not a failed try: its input is back
+            return INPUT_BACK
         if artifact.status in (Status.PERMANENT, Status.SKIPPED):
-            return False
-        return is_retryable(
-            artifact,
-            attempts,
-            last_attempt,
-            max_attempts=self.max_attempts,
-            backoff=self.retry_after,
-        )
+            return NOT_RETRIED
+        state = retry_state(artifact, attempts, last_attempt, max_attempts=self.max_attempts,
+                            backoff=self.retry_after, now=self.now)
+        return state if state != NOT_FAILED else NOT_RETRIED
 
     def payload(self, artifact: Optional[Artifact]):
         return self.catalog.payload(artifact)

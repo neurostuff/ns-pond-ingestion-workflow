@@ -95,14 +95,14 @@ class DownloadStage:
                 ctx.is_fresh(existing.get(source.value), self.fingerprint_for(source))
                 for source in self._order
             ):
-                plan.fresh += 1
+                plan.add_fresh(ref)
                 continue
             candidate = self.next_source(ctx, ref, existing, attempts)
             if candidate is None:
                 if any(a.status is Status.PERMANENT for a in existing.values()):
-                    plan.permanent += 1
+                    plan.add_permanent(ref)
                 else:
-                    plan.skipped += 1
+                    plan.add_skipped(ref)
                 continue
             plan.pending.append(
                 Work(ref=ref, source=candidate.value, fingerprint=self.fingerprint_for(candidate))

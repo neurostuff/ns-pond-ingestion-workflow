@@ -290,6 +290,10 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
     return out, summary
 
 
+#: Why resolve has nothing to do for an article.
+NOTHING_TO_RESOLVE = "neither the tables nor the prose hold an analysis"
+
+
 class ResolveStage:
     name = "resolve"
     #: prose, and `analyses` read alongside when it exists: `requires` names
@@ -323,7 +327,7 @@ class ResolveStage:
                 take_back_or_block(plan, ref, prose, artifacts.get(ref.id, {}).get(""))
                 continue
             if read_from_bad_page(prose, downloads.get(ref.id, {}), extracted.get(ref.id, {})):
-                plan.block(f"prose {READ_FROM_BAD_PAGE}")  # an earlier resolve stays as it is
+                plan.block(ref, f"prose {READ_FROM_BAD_PAGE}")  # an earlier resolve stays as it is
                 continue
             # The tables' analyses when there are any. Nothing waits for them:
             # when they arrive the fingerprint below changes, and this re-runs.
@@ -338,11 +342,11 @@ class ResolveStage:
                 # an analysis, so it says HOLD or TAKE_BACK.
                 existing = artifacts.get(ref.id, {}).get("")
                 if existing is None or not needs_taking_back(existing):
-                    plan.skipped += 1
+                    plan.add_skipped(ref, NOTHING_TO_RESOLVE)
                     continue
                 verdict, why = decide(tables_reading(ctx, ref.id, analyses), prose_reading(prose))
                 if verdict is Verdict.HOLD:
-                    plan.block(why)
+                    plan.block(ref, why)
                 else:
                     plan.pending.append(Work(ref=ref, source="", fingerprint=NO_TEXT,
                                              upstream=None, reason=NO_ANALYSES))
@@ -350,11 +354,11 @@ class ResolveStage:
             fp = self.fingerprint_for(prose, tables)
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
-                plan.fresh += 1
+                plan.add_fresh(ref)
                 continue
             count, last = attempts.get(ref.id, (0, None))
             if not ctx.should_attempt(existing, count, last, self.name):
-                plan.permanent += 1
+                plan.add_permanent(ref)
                 continue
             plan.pending.append(Work(ref=ref, source="", fingerprint=fp, upstream=prose))
         return plan
