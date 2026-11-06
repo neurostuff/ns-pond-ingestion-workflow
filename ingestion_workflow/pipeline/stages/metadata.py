@@ -74,7 +74,8 @@ class MetadataStage:
     def fingerprint_for(self, ids: Tuple[Optional[str], Sequence[str]],
                         downloads: Dict[str, Artifact],
                         extractions: Optional[Dict[str, Artifact]] = None,
-                        records: Optional[Dict[str, str]] = None) -> str:
+                        records: Optional[Dict[str, str]] = None,
+                        version: int = METADATA_VERSION) -> str:
         """The version, the ids the stage asks by (the PMID, and the DOIs held as the
         article's own and its preprints'), the article's ok downloads, whose copies each get
         a licence, the extractions of its PDFs, whose text names the corresponding authors,
@@ -85,7 +86,7 @@ class MetadataStage:
         texts = sorted((source, artifact.fingerprint)
                        for source, artifact in (extractions or {}).items()
                        if source in PDF_SOURCES and artifact.status is Status.OK)
-        return fingerprint("metadata", METADATA_VERSION, (pmid, tuple(sorted(dois))),
+        return fingerprint("metadata", version, (pmid, tuple(sorted(dois))),
                            tuple(held), *([tuple(texts)] if texts else []),
                            tuple(sorted((records or {}).items())))
 

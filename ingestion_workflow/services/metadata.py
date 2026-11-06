@@ -370,20 +370,9 @@ class MetadataService:
                     metadata.authors, metadata.correspondence_emails = [], []
                     metadata.authors_provider = None
                     notes.error(AUTHOR_FIELDS, f"authors: {error_text(exc)}")
-                read: List[Path] = []
-                try:
-                    metadata.venue = venues.decide(
-                        ids, main_ident, journal[slug], paper_work,
-                        metadata.raw_metadata.get(MetadataSource.pubmed.value), metadata.journal,
-                        lambda issn: self._source_by_issn(issn, read),
-                        lambda: self._journal_index(read), notes)
-                except Exception as exc:
-                    logger.warning("venue of %s failed: %s", slug, exc)
-                    metadata.venue = None
-                    notes.error(venues.FIELD, f"venue: {error_text(exc)}",
-                                transient=transient(exc))
-                finally:
-                    self.records_read[slug].extend(read)
+                self.records_read[slug].extend(
+                    self._decide_venue(slug, ids, main_ident, journal[slug], paper_work,
+                                       metadata, notes))
             except Exception as exc:
                 # The record stands as the providers gave it, its licences assumed.
                 logger.warning("metadata of %s failed: %s", slug, exc)
@@ -431,6 +420,43 @@ class MetadataService:
                     noted.error("orcid_emails", f"orcid {author.orcid}: {error_text(exc)}",
                                 transient=transient(exc))
         return read
+
+    def _decide_venue(self, slug: str, ids, main_ident: Identifier, vor_doi: Optional[str],
+                      paper_work: Optional[Dict], metadata: ArticleMetadata,
+                      notes: Notes) -> List[Path]:
+        """Set `metadata.venue` (`venues.decide`), an error noted; returns the files read."""
+        read: List[Path] = []
+        try:
+            metadata.venue = venues.decide(
+                ids, main_ident, vor_doi, paper_work,
+                metadata.raw_metadata.get(MetadataSource.pubmed.value), metadata.journal,
+                lambda issn: self._source_by_issn(issn, read),
+                lambda: self._journal_index(read), notes)
+        except Exception as exc:
+            logger.warning("venue of %s failed: %s", slug, exc)
+            metadata.venue = None
+            notes.error(venues.FIELD, f"venue: {error_text(exc)}", transient=transient(exc))
+        return read
+
+    def venue_from_cache(self, identifier: Identifier, dois: Sequence[str],
+                         filed_preprints: Sequence[str], metadata: ArticleMetadata,
+                         ) -> Tuple[List[Path], Notes]:
+        """Set the venue of a stored record as `enrich_metadata` decides it, OpenAlex's work
+        read from its cache alone (none when not held): no work is asked for. Returns the
+        files read, and the notes on it."""
+        notes = Notes()
+        published = sorted(d for d in dois if d and not is_preprint_doi(d)
+                           and d not in filed_preprints)
+        vor_doi = published[0] if published else None
+        main_ident = _by_journal_doi(identifier, vor_doi)
+        cache_file = self._cache_file(MetadataSource.openalex.value, main_ident.slug)
+        paper_work = None
+        if cache_file.exists():
+            cached = ArticleMetadata.from_dict(json.loads(cache_file.read_text(encoding="utf-8")))
+            paper_work = cached.raw_metadata.get(MetadataSource.openalex.value)
+        ids = article_identifiers(identifier, metadata)
+        return self._decide_venue(identifier.slug, ids, main_ident, vor_doi, paper_work,
+                                  metadata, notes), notes
 
     def _source_by_issn(self, issn: str, read: List[Path]) -> Optional[Dict]:
         """OpenAlex's source holding `issn`, or None when none does: each ISSN asked once and
