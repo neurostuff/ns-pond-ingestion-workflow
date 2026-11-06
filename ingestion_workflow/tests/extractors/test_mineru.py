@@ -111,6 +111,17 @@ def test_the_article_keeps_signed_coordinates(tmp_path):
     assert Path(content.tables[0].raw_content_path).suffix == ".html"
 
 
+def test_a_table_continued_over_pages_keeps_each_piece(tmp_path):
+    content = _extract_mineru_article(_download(tmp_path / "a.pdf"), MIDDLE, tmp_path)
+
+    first, continued = content.tables[:2]
+    assert continued.caption == "Table 1. (continued)"
+    assert (first.table_id, continued.table_id) == ("table-1", "table-1-2")
+    # Each piece reads its own rows: one file shared by both held only the last.
+    assert "Anterior temporal pole" in Path(first.raw_content_path).read_text()
+    assert "Anterior temporal pole" not in Path(continued.raw_content_path).read_text()
+
+
 # -- the workers -------------------------------------------------------------------
 
 
