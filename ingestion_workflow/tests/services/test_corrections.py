@@ -222,7 +222,7 @@ def _openalex_client(monkeypatch, sent):
 
     client = OpenAlexClient(email="t@example.com")
 
-    def answer(params, work=""):
+    def answer(params, work="", endpoint=None):
         if work:  # a DOI the batch did not return: OpenAlex does not know it either
             raise requests.HTTPError(response=SimpleNamespace(status_code=404))
         sent.append(params)
@@ -465,7 +465,7 @@ def test_a_failed_batch_keeps_the_batches_before_it(monkeypatch):
     client = _openalex_client(monkeypatch, sent)
     real = client._request_openalex
 
-    def third_fails(params, work=""):
+    def third_fails(params, work="", endpoint=None):
         if len(sent) == 2:
             raise RuntimeError("503")
         return real(params, work)
