@@ -145,7 +145,7 @@ def test_an_openalex_work_that_cannot_be_read_fails_only_its_article(monkeypatch
     sici_work, moved_work = works["results"]
     sici_work["authorships"] = [None, *sici_work["authorships"]]
 
-    def request(params, work=""):
+    def request(params, work="", endpoint=None):
         return copy.deepcopy(moved_work) if work else copy.deepcopy(works)
 
     client = OpenAlexClient()
@@ -167,7 +167,7 @@ def test_an_openalex_work_whose_doi_cannot_be_read_is_asked_for_singly(monkeypat
     plain_work, _ = answer["results"]
     broken = {**plain_work, "doi": [plain_work["doi"]]}
 
-    def request(params, work=""):
+    def request(params, work="", endpoint=None):
         return plain_work if work else {"results": [broken]}
 
     client = OpenAlexClient()

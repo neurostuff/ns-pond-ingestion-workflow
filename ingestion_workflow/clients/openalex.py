@@ -36,6 +36,8 @@ from ingestion_workflow.utils.isolation import error_text, halving, parsed_each
 logger = logging.getLogger(__name__)
 
 OPENALEX_BATCH_LOOKUP_SIZE = 100  # the most a page holds, and the most values one OR filter takes
+#: The largest page OpenAlex gives: room for a batch of ISSNs whose sources list several.
+OPENALEX_PAGE_MAX = 200
 OPENALEX_RETRACTION_BATCH_SIZE = 50  # the most DOIs one filter accepts
 
 
@@ -584,6 +586,25 @@ class OpenAlexClient:
                 return None
             raise
 
+    def sources_by_issn(self, issns: Sequence[str]) -> Dict[str, Optional[Dict]]:
+        """The source holding each ISSN, as `source_by_issn` gives it, asked by `issn:a|b|c`
+        filters of up to 100: None for an ISSN no source holds. Of two sources listing one
+        ISSN, the one with more works. An ISSN OpenAlex refused to look up is left out."""
+        found: Dict[str, Optional[Dict]] = {}
+        wanted = list(dict.fromkeys(issns))
+        for index in range(0, len(wanted), OPENALEX_BATCH_LOOKUP_SIZE):
+            batch = wanted[index : index + OPENALEX_BATCH_LOOKUP_SIZE]
+            sources, refused_alone = self._filtered("issn", batch, f"{_SOURCE_FIELDS},issn",
+                                                    OPENALEX_PAGE_MAX, endpoint="/sources")
+            for issn in batch:
+                if issn in refused_alone:
+                    continue
+                holding = [s for s in sources if issn in (s.get("issn") or [])]
+                best = max(holding, key=lambda s: s.get("works_count") or 0, default=None)
+                found[issn] = ({name: best.get(name) for name in _SOURCE_FIELDS.split(",")}
+                               if best else None)
+        return found
+
     def _works_asked_singly(
         self, asked: List[str], answered: set, select: str
     ) -> List[Tuple[str, Dict]]:
@@ -607,9 +628,10 @@ class OpenAlexClient:
         return works
 
     def _filtered(self, field: str, values: List[str], select: str,
-                  size: int = OPENALEX_BATCH_LOOKUP_SIZE) -> Tuple[List[Dict], Dict[str, str]]:
-        """The works a `field:a|b|c` filter over `values` returns, and why each value it
-        could not ask about was left out.
+                  size: int = OPENALEX_BATCH_LOOKUP_SIZE,
+                  endpoint: str = LOOKUP_ENDPOINT) -> Tuple[List[Dict], Dict[str, str]]:
+        """The entities (works unless `endpoint` says otherwise) a `field:a|b|c` filter over
+        `values` returns, and why each value it could not ask about was left out.
 
         A refused batch is halved down to the values OpenAlex refuses alone
         (`isolation.halving`), so one value cannot cost its batch: a comma or pipe would
@@ -623,7 +645,7 @@ class OpenAlexClient:
             "per_page": str(size),
             "mailto": self.email,
             "select": select,
-        }), refused)
+        }, endpoint=endpoint), refused)
         why = {v: error_text(exc) for v, exc in alone.items()}
         why.update({v: SPLITS_FILTER for v in values if v not in kept})
         return [work for _, payload in answers for work in payload.get("results") or []], why
