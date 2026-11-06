@@ -23,7 +23,7 @@ stage runs under version 7:
 A dry run opens the catalog read-only and prints the counts; it needs a catalog at the
 current schema. --apply first copies the catalog to `--backup`, a path not yet taken,
 then opens it (an older schema is brought up to date) and changes only these artifacts'
-fingerprints, summaries and payloads: no status or `updated_at` moves. A row written
+fingerprints, summaries and payloads, a batch at a time: no status or `updated_at` moves. A row written
 meanwhile is left alone. A second run finds nothing left to do.
 """
 
@@ -36,7 +36,7 @@ from collections import Counter
 from contextlib import closing
 from dataclasses import dataclass, field, replace
 from pathlib import Path
-from typing import List, Optional
+from typing import Callable, List, Optional
 
 REPO = Path(__file__).resolve().parents[1]
 if str(REPO) not in sys.path:
@@ -63,15 +63,19 @@ FORMER_VERSION = 6
 
 @dataclass
 class Added:
-    rewrites: List[Rewrite] = field(default_factory=list)
-    #: `venue <match>` / `no venue` for each rewrite; `stale`, `transient`, `has venue`
-    #: for what is left.
+    #: How many artifacts were given a venue, and how many of those were stored.
+    rewrites: int = 0
+    stored: int = 0
+    #: `venue <match>` / `no venue` for each rewrite; `stale`, `transient`, `has venue`,
+    #: `no payload` for what is left.
     counts: Counter = field(default_factory=Counter)
 
 
-def add_venues(catalog: Catalog, settings) -> Added:
-    """What adding the venue to each stored metadata record would store. Only the caches
-    are written: an ISSN's source and NLM's list, when not held."""
+def add_venues(catalog: Catalog, settings,
+               store: Optional[Callable[[List[Rewrite]], int]] = None) -> Added:
+    """Add the venue to each stored metadata record, each batch's rewrites given to
+    `store` (`Catalog.store_fingerprints`) as it is made; without one, only counted. The
+    caches are written either way: an ISSN's source and NLM's list, when not held."""
     stage = MetadataStage(settings)
     root = settings.get_cache_dir("metadata")
     found = Added()
@@ -103,6 +107,7 @@ def add_venues(catalog: Catalog, settings) -> Added:
             held.append((ref, artifact, payload, records, dois, args,
                          ArticleMetadata.from_dict(payload)))
         stage.service.cache_sources(record for *_, record in held)
+        rewrites = []
         for ref, artifact, payload, records, dois, args, record in held:
             read, notes = stage.service.venue_from_cache(
                 ref.identifier, dois, catalog.aliases(ref.id, "preprint_doi"), record)
@@ -114,11 +119,14 @@ def add_venues(catalog: Catalog, settings) -> Added:
             if notes.errors:
                 summary["errors"] = {**(summary.get("errors") or {}), **notes.errors}
             venue = record.to_dict()["venue"]
-            found.rewrites.append(Rewrite(
+            rewrites.append(Rewrite(
                 artifact, replace(artifact, fingerprint=stage.fingerprint_for(*args, records),
                                   summary=summary),
                 {**payload, "venue": venue}))
             found.counts[f"venue {venue['match']}" if venue else "no venue"] += 1
+        found.rewrites += len(rewrites)
+        if store is not None and rewrites:
+            found.stored += store(rewrites)
     return found
 
 
@@ -145,14 +153,13 @@ def run(settings, *, apply: bool = False, backup: Optional[Path] = None,
                              f"--apply brings it to {SCHEMA_VERSION} after its backup")
         catalog = Catalog(conn, root)
     try:
-        found = add_venues(catalog, settings)
+        found = add_venues(catalog, settings, catalog.store_fingerprints if apply else None)
         for name, n in sorted(found.counts.items()):
             print(f"{name}\t{n}", file=out)
         if not apply:
             print("dry run, nothing written", file=out)
             return found
-        stored = catalog.store_fingerprints(found.rewrites)
-        print(f"stored {stored} venues; {len(found.rewrites) - stored} artifacts were "
+        print(f"stored {found.stored} venues; {found.rewrites - found.stored} artifacts were "
               "written meanwhile", file=out)
         return found
     finally:

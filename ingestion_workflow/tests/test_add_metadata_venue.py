@@ -94,7 +94,7 @@ def test_the_venue_is_added_and_nothing_else_moves(env):
     assert stage.inputs_of(ctx, catalog.ref(ARTICLE), {}, {}, after) == after.fingerprint
 
     again = io.StringIO()
-    assert script.run(settings, out=again).rewrites == []
+    assert script.run(settings, out=again).rewrites == 0
     assert "has venue\t1" in again.getvalue()
 
 
@@ -106,7 +106,7 @@ def test_metadata_stale_already_is_left_for_the_stage(env):
 
     found = script.run(settings, apply=True, backup=settings.catalog_root / "backup.sqlite",
                        out=io.StringIO())
-    assert found.rewrites == [] and found.counts == {"stale": 1}
+    assert found.rewrites == 0 and found.counts == {"stale": 1}
     assert catalog.artifact(ARTICLE, "metadata") == before
 
 
