@@ -15,7 +15,9 @@ second run reads only the articles not there yet, nor in any `--done-in` out dir
 machine's run of the same shard). `--shard i/n` takes every n-th input from the i-th,
 the same articles however many are done. `--remap` rewrites a path prefix: in
 `run`, where the PDFs were copied to; in `import`, where the out dir was copied back to.
-`--workers-per-gpu` runs more than one MinerU worker on a card with room for them.
+`--workers-per-gpu` runs more than one MinerU worker on a card with room for them;
+`--max-workers` and `--min-free-gb` start fewer on a machine others share, and the
+`--done-in` dirs are read again before each chunk.
 
 `import` records each result as the extract stage would (`ExtractStage._outcome`), under
 the fingerprint of the download it read, so the stages after extract see a new
@@ -108,14 +110,19 @@ def run(args) -> None:
     print(f"{len(done)} done, {len(todo)} to read", flush=True)
 
     settings = load_settings(args.settings, {"data_root": out_dir})
-    if args.workers_per_gpu > 1:
-        found = mineru_convert.mineru_gpus
-        mineru_convert.mineru_gpus = lambda: found() * args.workers_per_gpu
+    found = mineru_convert.mineru_gpus
+    workers = [0]
+    mineru_convert.mineru_gpus = lambda: (found() * args.workers_per_gpu)[:workers[0] or None]
     extractor = PdfExtractor(settings)
 
     with results.open("a") as fh:
         for start in range(0, len(todo), args.chunk):
-            chunk = todo[start:start + args.chunk]
+            workers[0] = _workers(args)
+            done = {row["article_id"] for path in map(Path, args.done_in)
+                    for row in _read_jsonl(path / "results.jsonl")}
+            chunk = [row for row in todo[start:start + args.chunk] if row["article_id"] not in done]
+            if not chunk:
+                continue
             downloads = [DownloadResult.from_dict(_remap(row["download"], pairs)) for row in chunk]
             began = time.monotonic()
             contents = extractor.extract(downloads)
@@ -127,7 +134,27 @@ def run(args) -> None:
                                      "chunk_size": len(chunk),
                                      "content": content.to_dict()}) + "\n")
             fh.flush()
-            print(f"{start + len(chunk)}/{len(todo)}: {len(chunk)} in {seconds}s", flush=True)
+            print(f"{start + args.chunk}/{len(todo)}: {len(chunk)} in {seconds}s"
+                  f" on {workers[0] or 'all'} workers", flush=True)
+
+
+def _workers(args) -> int:
+    """MinerU workers to start now (0: one per GPU), waiting while memory allows none.
+
+    With `--min-free-gb`, each worker is counted as `--worker-gb` of the memory available
+    above that floor; MinerU's workers exit between chunks, so this is read without them.
+    """
+    if not args.min_free_gb:
+        return args.max_workers
+    while True:
+        with open("/proc/meminfo") as fh:
+            available = next(int(line.split()[1]) for line in fh
+                             if line.startswith("MemAvailable")) / 2**20
+        fits = int((available - args.min_free_gb) // args.worker_gb)
+        if fits > 0:
+            return min(fits, args.max_workers or fits)
+        print(f"{available:.0f} GB available: waiting for room", flush=True)
+        time.sleep(60)
 
 
 def import_(args) -> None:
@@ -177,6 +204,10 @@ def main(argv=None) -> int:
     p.add_argument("--chunk", type=int, default=200)
     p.add_argument("--shard", help="i/n: every n-th article from the i-th")
     p.add_argument("--workers-per-gpu", type=int, default=1)
+    p.add_argument("--max-workers", type=int, default=0, help="0: one per free GPU")
+    p.add_argument("--min-free-gb", type=float, default=0,
+                   help="memory to leave available; fewer workers, or a wait, below it")
+    p.add_argument("--worker-gb", type=float, default=11)
     p.add_argument("--done-in", action="append", default=[],
                    help="another run's out dir, whose articles are not read again")
     p.set_defaults(func=run)
