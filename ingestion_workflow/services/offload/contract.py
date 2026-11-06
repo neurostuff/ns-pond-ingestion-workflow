@@ -39,6 +39,9 @@ class Serve(BaseModel):
     vllm_args: List[str] = Field(default_factory=list)
     #: What the job leaves of the context for the answer's template wrapping, per family.
     reserve: int
+    #: Sampling for a retry of answers the schema refused; 0 is greedy. The seed fixes it.
+    temperature: float = 0.0
+    seed: Optional[int] = None
 
 
 class RunSpec(BaseModel):

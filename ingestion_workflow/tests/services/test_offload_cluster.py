@@ -293,6 +293,22 @@ def test_the_job_id_is_read_past_tacc_s_banner():
     assert R.sbatch_job_id("sbatch: error: invalid partition\n") is None
 
 
+def test_the_job_asks_greedily_unless_the_spec_samples(world):
+    from ingestion_workflow.services.offload.cluster.job import request_body
+
+    bundle = BundleDir(world["bundle"])
+    (shard,) = bundle.bundle().shards
+    row = json.loads(bundle.inputs(shard.name).read_text().splitlines()[0])
+    greedy = request_body(row, bundle.bundle().spec.serve.model_dump())
+    assert greedy["temperature"] == 0.0 and "seed" not in greedy
+    assert greedy["messages"] == [{"role": "user", "content": row["content"]}]
+    retry = load_spec(SPEC_FILE.with_name("ns-27b-e-r1.json")).serve.model_dump()
+    sampled = request_body(row, retry)
+    assert (sampled["temperature"], sampled["seed"]) == (0.7, 1)
+    assert {k: v for k, v in sampled.items() if k not in ("temperature", "seed")} == \
+        {k: v for k, v in greedy.items() if k != "temperature"}
+
+
 EV1_PRED = json.loads((DATA / "26klegjq7mhi.ev1.pred.json").read_text())
 EV1_RECORD = json.loads((DATA / "26klegjq7mhi.ev1.extraction.json").read_text())
 
