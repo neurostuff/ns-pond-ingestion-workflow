@@ -117,6 +117,16 @@ def test_an_analysis_with_new_points_keeps_them_and_records_the_restated_ones():
     assert summary["restated_points"][0]["restatement"] is False
 
 
+def test_a_cluster_size_read_with_a_minus_is_its_magnitude():
+    """Three production papers (cddjp2q2thdw, xmkgndlogyr7, ztcuou6jdwsd) had prose sizes of
+    -6, -76 and -10, which study_schema's ParsedPoint refuses at sync."""
+    passage = _passage(("patients > controls", [(-22, -4, -18, "result")]))
+    passage["analyses"][0]["points"][0]["cluster_size"] = -76
+    out, _ = resolve({}, {"passages": [passage]}, "slug")
+    (point,) = out["prose"]["analyses"][0]["coordinates"]
+    assert point["cluster_size"] == 76
+
+
 def test_every_prose_point_is_kept_under_its_analysis_and_its_role_word_is_not_read():
     """What a set is for is the roles stage's to decide: the prose model's own
     role word neither drops a point nor splits an analysis."""
