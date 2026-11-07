@@ -1132,7 +1132,7 @@ def _extract_pdf_article(
         # both want the frame.
         extracted_tables.append(_extracted_table(
             download_result.identifier.slug, index, caption, footer, frame, tables_dir,
-            article_space,
+            article_space, [t.table_id for t in extracted_tables],
             lambda table_id, table=table: _write_table_html(table, document, tables_dir, table_id),
         ))
 
@@ -1185,7 +1185,7 @@ def _extract_mineru_article(
         extracted_tables.append(_extracted_table(
             download_result.identifier.slug, index, normalize_text_tokens(table.caption),
             normalize_text_tokens(table.footer), table_frame(html), tables_dir, article_space,
-            write_html,
+            [t.table_id for t in extracted_tables], write_html,
         ))
 
     return _pdf_content(download_result, full_text_path, extracted_tables, figure_captions)
@@ -1244,16 +1244,24 @@ def _extracted_table(
     frame: Optional[Any],
     tables_dir: Path,
     article_space: Any,
+    taken: Sequence[str],
     write_html: Callable[[str], Optional[Path]],
 ) -> ExtractedTable:
     """One table, its CSV and HTML written and its coordinates parsed from `frame`.
 
-    A table pandas could not read has no frame: it keeps its HTML and no coordinates."""
+    Its id is its caption's label, numbered on (`table-ii-2`) when an earlier table in
+    `taken` has it: a table continued over pages repeats the label, and each piece needs
+    its own files. A table pandas could not read has no frame: it keeps its HTML and no
+    coordinates."""
     from pubget._coordinates import _extract_coordinates_from_table
 
     from ingestion_workflow.extractors.utils import coordinate_from_row
 
-    table_id = sanitize_table_id(None, _table_label(caption), index)
+    label = sanitize_table_id(None, _table_label(caption), index)
+    table_id, n = label, 1
+    while table_id in taken:
+        n += 1
+        table_id = f"{label}-{n}"
     csv_path = None
     coordinates = []
     if frame is not None:
