@@ -153,9 +153,27 @@ def test_a_record_of_another_text_is_refused(ctx):
 
 def test_a_record_study_schema_refuses_is_refused(ctx):
     record = copy.deepcopy(RECORD)
-    record["analyses"][0]["invented"] = 1
+    record["analyses"][0]["groups"] = 7   # required, and no fix makes a list of it
     import_run(ctx.catalog, _run(), [_row(record=record)])
     assert ctx.catalog.artifact(ARTICLE, "record", "ns-27b").error.startswith(SCHEMA_INVALID)
+
+
+def test_a_field_the_schema_has_dropped_is_dropped_and_the_record_kept(ctx, tmp_path):
+    from ingestion_workflow.services.offload.importer import _fixes_unavailable
+
+    if _fixes_unavailable():
+        pytest.skip(_fixes_unavailable())
+    parse = DATA / "paper-26klegjq7mhi" / "parse" / "coordinate_parse.json"
+    assert json.loads(parse.read_text())["text_sha256"] == TEXT_SHA256
+    (tmp_path / "pond" / BASE_STUDY / "parse" / "coordinate_parse.json").write_text(
+        parse.read_text())
+    record = copy.deepcopy(RECORD)
+    record["analyses"][0]["region_type"] = "roi"   # an older schema's field
+    report = import_run(ctx.catalog, _run(), [_row(record=record)])
+    assert report.recorded == {"ok": 1} and not report.refused
+    kept = ctx.catalog.artifact(ARTICLE, "record", "ns-27b")
+    assert "drop_extra" in kept.summary["repaired"]
+    assert "region_type" not in ctx.catalog.payload(kept)["analyses"][0]
 
 
 def test_a_refused_record_stays_refused_where_pondie_s_fixes_cannot_load(ctx, monkeypatch):

@@ -132,6 +132,18 @@ def main():
                 srv.kill()
 
 
+def request_body(row, serve):
+    """The chat request for one input row: greedy unless the spec samples."""
+    body = {"model": "model", "temperature": serve.get("temperature", 0.0),
+            "max_tokens": row["max_tokens"],
+            "messages": [{"role": "user", "content": row["content"]}],
+            "chat_template_kwargs": row["chat_template_kwargs"],
+            "response_format": {"type": "json_object"}}
+    if serve.get("seed") is not None:
+        body["seed"] = serve["seed"]
+    return body
+
+
 def run(root, shard, url):
     rows = [json.loads(line) for line in open(root / "inputs" / f"{shard}.jsonl")]
     out = root / "results" / f"{shard}.jsonl"
@@ -143,7 +155,8 @@ def run(root, shard, url):
         have = {json.loads(line)["article_id"] for line in keep}
         out.write_text("".join(keep))
     rows = [r for r in rows if r["article_id"] not in have]
-    workers = json.loads((root / "bundle.json").read_text())["spec"]["serve"]["workers"]
+    serve = json.loads((root / "bundle.json").read_text())["spec"]["serve"]
+    workers = serve["workers"]
     print(f"resume: have {len(have)}, todo {len(rows)}", flush=True)
     lock, done, t1 = threading.Lock(), [0, 0], time.time()
     handle = open(out, "a")
@@ -153,10 +166,7 @@ def run(root, shard, url):
         res = {"article_id": r["article_id"], "text_sha256": r["text_sha256"], "prediction": None,
                "finish_reason": None, "error": None, "prompt_tokens": None,
                "completion_tokens": None}
-        body = {"model": "model", "temperature": 0.0, "max_tokens": r["max_tokens"],
-                "messages": [{"role": "user", "content": r["content"]}],
-                "chat_template_kwargs": r["chat_template_kwargs"],
-                "response_format": {"type": "json_object"}}
+        body = request_body(r, serve)
         try:
             q = urllib.request.Request(url, json.dumps(body).encode(),
                                        {"Content-Type": "application/json"})
