@@ -261,9 +261,10 @@ def _marked_url(href: Optional[str], kind: Optional[str] = None) -> Optional[str
 def _jats(xml_path: Path, text: str, notes: Dict[str, int]) -> List[Occurrence]:
     from lxml import etree
 
+    from ingestion_workflow.extractors.pubget_extractor import _JATS
     from ingestion_workflow.services.citations import jats_spans
 
-    tree = etree.parse(str(xml_path))
+    tree = etree.parse(str(xml_path), _JATS)  # as the extraction read it
     found: List[Tuple[object, Occurrence]] = []
     for el in tree.getroot().iter():
         name = _local(el)

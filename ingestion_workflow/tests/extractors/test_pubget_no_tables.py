@@ -72,3 +72,26 @@ def test_malformed_jats_is_read_as_the_pmc_sources_read_it(tmp_path):
 
     assert len(extraction.tables) == len(intact.tables) > 0
     assert extraction.full_text_path.read_text(encoding="utf-8")
+
+
+def test_references_and_links_read_malformed_jats_as_the_extraction_did(tmp_path):
+    """References and links place spans in the text the extraction wrote, so they parse the
+    JATS with the extraction's parser; a strict parse failed them on the same files."""
+    from ingestion_workflow.services.citations import read_jats
+    from ingestion_workflow.services.paper_links import _jats
+
+    intact = _extract_pubget_article(_download(ARTICLE), tmp_path / "intact")
+    broken = tmp_path / "article"
+    shutil.copytree(ARTICLE, broken)
+    xml = (broken / "article.xml").read_text(encoding="utf-8")
+    at = xml.index("<back>")  # the break is in the body; the reference list is intact
+    (broken / "article.xml").write_text(
+        xml[:at].replace("</italic>", "</italic=", 1) + xml[at:], encoding="utf-8")
+    extraction = _extract_pubget_article(_download(broken), tmp_path / "extracted")
+    text = extraction.full_text_path.read_text(encoding="utf-8")
+    want = read_jats(ARTICLE / "article.xml", intact.full_text_path.read_text(encoding="utf-8"))
+
+    got = read_jats(broken / "article.xml", text)
+
+    assert len(got.references) == len(want.references) > 0
+    assert _jats(broken / "article.xml", text, {}) is not None
