@@ -91,6 +91,11 @@ class DownloadStage:
         }
         for ref in refs:
             existing = artifacts.get(ref.id, {})
+            named = self._refreshed_source(ctx, ref)
+            if named is not None:
+                plan.pending.append(
+                    Work(ref=ref, source=named.value, fingerprint=self.fingerprint_for(named)))
+                continue
             if any(
                 ctx.is_fresh(existing.get(source.value), self.fingerprint_for(source))
                 for source in self._order
@@ -108,6 +113,17 @@ class DownloadStage:
                 Work(ref=ref, source=candidate.value, fingerprint=self.fingerprint_for(candidate))
             )
         return plan
+
+    def _refreshed_source(self, ctx: Context, ref: ArticleRef) -> Optional[DownloadSource]:
+        """The first source `--refresh download:<source>` names that can address the article.
+
+        Fetched even when another source's copy is fresh: the copy an extraction was read
+        from is the one sync needs, and that need not be the copy download stopped at.
+        """
+        for source in self._order:
+            if f"{self.name}:{source.value}" in ctx.refresh and supports(self.extractor(source), ref):
+                return source
+        return None
 
     def next_source(
         self,
