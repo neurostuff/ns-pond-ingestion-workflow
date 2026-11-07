@@ -5,7 +5,7 @@ the PDFs are copied to, and records the result in a catalog afterwards:
 
     python scripts/pdf_rerun.py export <catalog root> <article ids file> <inputs.jsonl>
     python scripts/pdf_rerun.py run <inputs.jsonl> <out dir> [--remap OLD=NEW] [--chunk N]
-    python scripts/pdf_rerun.py import <out dir> <catalog root> [--remap OLD=NEW]
+    python scripts/pdf_rerun.py import <out dir> <catalog root> [--remap OLD=NEW] [--ids FILE]
 
 `export` writes each article's pdf download payload (the one the extract stage would
 read, `extraction_inputs`), opening the catalog read-only. `run` reads them with
@@ -19,9 +19,11 @@ the same articles however many are done. `--remap` rewrites a path prefix: in
 `--max-workers` and `--min-free-gb` start fewer on a machine others share, and the
 `--done-in` dirs are read again before each chunk.
 
-`import` records each result as the extract stage would (`ExtractStage._outcome`), under
-the fingerprint of the download it read, so the stages after extract see a new
-extraction. Point it at a copy of the catalog, never the production one.
+`import` records each result (those `--ids` lists, or all) as the extract stage would
+(`ExtractStage._outcome`), under the fingerprint of the download it read, so the stages
+after extract see a new extraction; references and links, read from the text, too.
+The results name files in the out dir: copy them where the catalog's data lives first,
+never over another extraction's, and `--remap` to there.
 """
 
 from __future__ import annotations
@@ -168,6 +170,9 @@ def import_(args) -> None:
     catalog = Catalog.open(args.catalog)
     stage = ExtractStage(load_settings(args.settings))
     rows = list(_read_jsonl(Path(args.out) / "results.jsonl"))
+    if args.ids:
+        wanted = {line.split()[0] for line in Path(args.ids).read_text().splitlines() if line.strip()}
+        rows = [row for row in rows if row["article_id"] in wanted]
     outcomes = []
     for row in rows:
         article_id = catalog.current_id(row["article_id"])
@@ -215,6 +220,7 @@ def main(argv=None) -> int:
     p.add_argument("out")
     p.add_argument("catalog")
     p.add_argument("--settings")
+    p.add_argument("--ids", help="file whose lines start with the article ids to import")
     p.add_argument("--remap", action="append", default=[])
     p.set_defaults(func=import_)
     args = parser.parse_args(argv)
