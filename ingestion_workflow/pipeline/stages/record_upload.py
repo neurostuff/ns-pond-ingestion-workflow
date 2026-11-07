@@ -46,9 +46,23 @@ def run_id_of(record: Dict[str, Any]) -> str:
     return "ns-pond-" + hashlib.sha256(raw.encode("utf-8")).hexdigest()[:32]
 
 
+def without_nul(value: Any) -> Any:
+    """`value` with each NUL as U+FFFD. Postgres stores no NUL, so neurostore answers 500, on
+    every retry; a NUL in a record is a PDF symbol-font glyph the text lost (`p \\x00 .001`
+    for `p < .001`), so it is marked unreadable rather than guessed."""
+    if isinstance(value, str):
+        return value.replace("\x00", "�")
+    if isinstance(value, dict):
+        return {without_nul(k): without_nul(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [without_nul(v) for v in value]
+    return value
+
+
 def build_request(record: Dict[str, Any], runs: Sequence[Run], parse_id: str,
                   base_study_id: str) -> Dict[str, Any]:
     """The body of one record upload."""
+    record = without_nul(record)
     return {
         "record": record,
         "parse_id": parse_id,
