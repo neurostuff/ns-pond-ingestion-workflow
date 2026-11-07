@@ -43,6 +43,20 @@ def test_only_articles_triage_passed_a_table_for_are_selected(catalog, settings)
     assert got == {refs["a"], refs["c"]}
 
 
+def test_an_article_triage_now_passes_nothing_for_is_kept_while_it_holds_analyses(catalog, settings):
+    """A newer triage passed none of 2dtdccwxbuyb's tables, and its October analyses went
+    stale. Dropped by the gate, nothing ever replaced them, and upload held the article
+    with "analyses stale" (40 of the ACE restore, 2026-11-07). Kept, the stage's plan
+    records the skip; an earlier skip has nothing to replace."""
+    cat, refs = catalog
+    cat.record([Outcome(article_id=refs["b"], stage="analyses", source="", status=Status.OK,
+                        fingerprint="old", summary={"tables": 1}),
+                Outcome(article_id=refs["d"], stage="analyses", source="", status=Status.SKIPPED,
+                        fingerprint="old", summary={"tables": 0})])
+    sel = narrow(cat, everything(cat), Select.ALL, "analyses", settings=settings)
+    assert {r.id for r in sel.refs} == {refs["a"], refs["b"], refs["c"]}
+
+
 def test_the_query_is_one_index_lookup_not_a_walk(catalog):
     cat, refs = catalog
     assert cat.article_ids_where_summary("triage", "passed") == {refs["a"], refs["c"]}

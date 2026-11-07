@@ -1164,6 +1164,14 @@ class Catalog:
         )
         return {row["article_id"] for row in rows}
 
+    def article_ids_holding(self, stage: str) -> set:
+        """Articles with a `stage` artifact that is not a skip: output, or a failure, to replace."""
+        rows = self._conn.execute(
+            "SELECT DISTINCT article_id FROM artifacts WHERE stage = ? AND status != 'skipped'",
+            (stage,),
+        )
+        return {row["article_id"] for row in rows}
+
     def articles_naming_base_studies(
         self, base_study_ids: Sequence[str], stages: Sequence[str], skipped_for: str
     ) -> Dict[str, set]:

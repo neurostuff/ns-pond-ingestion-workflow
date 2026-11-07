@@ -222,6 +222,9 @@ def _gated(catalog: Catalog, selection: Selection, stage: Optional[str], setting
         return selection
 
     allowed = catalog.article_ids_where_summary(upstream, flag)
+    # One the upstream now passes nothing for still holds this stage's earlier output, which
+    # only its plan replaces; dropped here, it stays stale and holds the upload for good.
+    allowed |= catalog.article_ids_holding(stage)
     refs = [ref for ref in selection.refs if ref.id in allowed]
     dropped = len(selection.refs) - len(refs)
     if dropped:
