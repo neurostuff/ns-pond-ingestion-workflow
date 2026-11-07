@@ -173,5 +173,10 @@ class BundleDir:
         tmp.replace(self.state_file)
 
 
+def read_rows(path: Path) -> List[dict]:
+    """A bundle file's rows. Only a newline ends one: the text in a row may hold U+2028."""
+    return [json.loads(line) for line in Path(path).read_text("utf-8").split("\n") if line]
+
+
 def load_spec(path: Path) -> RunSpec:
     return RunSpec(**json.loads(Path(path).read_text("utf-8")))

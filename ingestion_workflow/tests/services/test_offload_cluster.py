@@ -230,6 +230,20 @@ def test_pull_imports_a_completed_shard_as_the_record_the_collected_set_holds(wo
     assert BundleDir(world["bundle"]).state().imported == state.imported
 
 
+def test_a_shard_whose_text_holds_a_line_separator_is_imported(world):
+    """Export writes the paper as it is, so a U+2028 in it stays inside its row."""
+    _push(world)
+    R.submit(world["remote"], world["bundle"], yes=False)
+    inputs = BundleDir(world["bundle"]).inputs("s000")
+    (row,) = [json.loads(line) for line in inputs.read_text("utf-8").split("\n") if line]
+    row["content"] += " "
+    inputs.write_text(json.dumps(row, ensure_ascii=False) + "\n", "utf-8")
+    job = _job_ran(world, [_result(prediction=PRED["prediction"])])
+    world["cluster"].states[job] = "COMPLETED"
+    pull(world["remote"], world["bundle"], world["catalog"])
+    assert world["catalog"].artifact(ARTICLE, "record", "ns-27b").ok
+
+
 @pytest.mark.parametrize("row, status, reason", [
     (dict(finish_reason="length"), "skipped", NO_ANSWER.format("length")),
     (dict(error="invalid_json: JSONDecodeError('Expecting value')"), "skipped",
