@@ -170,6 +170,24 @@ def test_an_article_fresh_for_the_source_is_not_exported_again(ctx, tmp_path, fa
     assert other.fresh == 0 and len(other.shards) == 1
 
 
+def test_a_skip_another_version_made_is_asked_again_by_a_retry_spec(ctx, tmp_path, fake_tokens):
+    """177 production records were skipped when ns-27b-e's answer was cut short (invalid
+    JSON); a skip is fresh whatever its inputs, so ns-27b-e-r1 could never ask them again."""
+    from ingestion_workflow.catalog import Run, RunKind
+
+    _synced(ctx, ARTICLE, _paper(tmp_path / "pond", ARTICLE))
+    sent = json.loads((DATA / "paper-26klegjq7mhi/parse/coordinate_parse.json").read_text())
+    import_run(ctx.catalog, Run("ns-27b-e-20261031", RunKind.MODEL, "record", "ns-27b",
+                                version="ns-27b-e", model=SPEC.model, adapter=SPEC.adapter,
+                                created_at="2026-10-31"),
+               [{"article_id": ARTICLE, "status": "skipped", "text_sha256": sent["text_sha256"],
+                 "reason": "no prediction: invalid_json: JSONDecodeError('Unterminated string')"}])
+    assert export(ctx, SPEC, "vista", workers=1, now=NOW).fresh == 1
+    retry = SPEC.model_copy(update={"version": "ns-27b-e-r1"})
+    report = export(ctx, retry, "vista", workers=1, now=NOW + timedelta(minutes=1))
+    assert report.fresh == 0 and len(report.shards) == 1
+
+
 def test_shards_are_balanced_longest_first_within_their_size():
     rows = [{"article_id": str(i), "n_input_tokens": n} for i, n in enumerate([9, 1, 8, 2, 7])]
     out = shard(rows, size=3)

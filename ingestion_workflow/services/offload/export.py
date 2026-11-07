@@ -25,7 +25,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable, List, Optional, Sequence, Tuple
 
-from ingestion_workflow.catalog import Catalog, Run, RunKind, Status
+from ingestion_workflow.catalog import Artifact, Catalog, Run, RunKind, Status
 from ingestion_workflow.pipeline.stage import Context, recorded_path
 from ingestion_workflow.pipeline.stages.offloaded import (
     EvidenceStage,
@@ -171,14 +171,25 @@ def candidates(catalog: Catalog, articles: Optional[Iterable[str]]) -> List[str]
                   if catalog.live(a))
 
 
+def _skipped_by_another(catalog: Catalog, mine: Optional[Artifact], spec: RunSpec) -> bool:
+    """Whether `mine` is a skip another version of the run made: a skip is fresh whatever
+    its inputs, so without this a retry spec (ns-27b-e-r1) could never ask again a paper
+    the first run's answer was cut short on."""
+    if mine is None or mine.status is not Status.SKIPPED or not mine.run_id:
+        return False
+    run = catalog.run(mine.run_id)
+    return run is not None and run.version not in (None, spec.version)
+
+
 def _due(ctx: Context, spec: RunSpec, ids: List[str], report: ExportReport):
     """{article: its record, for evidence} of the articles the spec's source is not fresh for,
     and the skipped rows of the evidence whose record was skipped."""
     catalog = ctx.catalog
     stage = (RecordStage if spec.stage == "record" else EvidenceStage)(ctx.settings)
-    fresh = stage.fresh_sources(ctx, ids, catalog.artifacts(ids, stage.name),
-                                catalog.artifacts(ids, stage.requires))
-    todo = [a for a in ids if spec.source not in fresh.get(a, ())]
+    held = catalog.artifacts(ids, stage.name)
+    fresh = stage.fresh_sources(ctx, ids, held, catalog.artifacts(ids, stage.requires))
+    todo = [a for a in ids if spec.source not in fresh.get(a, ())
+            or _skipped_by_another(catalog, held.get(a, {}).get(spec.source), spec)]
     report.fresh = len(ids) - len(todo)
     if spec.stage == "record":
         return {a: None for a in todo}, []
