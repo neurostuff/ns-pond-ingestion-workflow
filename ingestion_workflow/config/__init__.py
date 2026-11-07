@@ -465,6 +465,15 @@ class Settings(BaseSettings):
         ),
     )
 
+    ace_prefer_pmc: bool = Field(
+        default=False,
+        description=(
+            "Ask ACE for an article's PMC copy before the publisher's page. For "
+            "articles whose publisher pages are gone or walled: PMC's page holds "
+            "the tables inline"
+        ),
+    )
+
     node_path: Optional[Path] = Field(
         default=None,
         validation_alias=AliasChoices("node_path", "INGEST_NODE_PATH"),

@@ -180,6 +180,29 @@ def test_ace_moves_a_rejected_page_out_of_its_cache_and_says_where(tmp_path, mon
         assert Path(moved).read_bytes() == real("a6mheoqpeocv")
 
 
+@pytest.mark.parametrize("prefer", [False, True])
+def test_ace_asks_for_the_pmc_copy_when_settings_prefer_it(tmp_path, monkeypatch, prefer):
+    """The publisher's own page is the default; a run whose publisher pages are gone or
+    walled (HighWire's table pages, Cloudflare) asks ACE for the PMC copy."""
+    from ingestion_workflow.config import Settings
+    from ingestion_workflow.extractors import ace_extractor
+    from ingestion_workflow.extractors.ace_extractor import ACEExtractor
+    from ingestion_workflow.models.ids import Identifier
+
+    monkeypatch.setattr(ace_extractor, "prepare_node", lambda settings: None)
+    settings = Settings(cache_root=tmp_path / "cache", data_root=tmp_path / "data",
+                        ace_cache_root=tmp_path / "ace", ace_max_workers=1, ace_prefer_pmc=prefer)
+    asked = []
+
+    class Scraper:
+        def process_article(self, pmid, journal, **kwargs):
+            asked.append(kwargs["prefer_pmc_source"])
+            return None, None
+
+    ACEExtractor(settings=settings)._download_single(Identifier(pmid="123"), scraper=Scraper())
+    assert asked == [prefer]
+
+
 @pytest.mark.parametrize(
     "article_id, says",
     [
