@@ -141,6 +141,20 @@ def test_the_normalized_record_goes_with_its_three_runs_as_kept(ctx, neurostore)
     assert _plan(ctx, stage).fresh == 1
 
 
+def test_a_nul_the_text_lost_a_glyph_to_is_sent_marked_unreadable():
+    """Production article 3iojlwhdwjqh: an analysis named "... (p \\x00 .001, Uncorrected)",
+    a symbol font's `<`, which Postgres refused on every retry."""
+    from ingestion_workflow.pipeline.stages.record_upload import build_request
+
+    record = copy.deepcopy(EVIDENCED)
+    record["analyses"][0]["name"]["value"] = "One-Sample t Test (p \x00 .001, Uncorrected)"
+    body = build_request(record, [], "p1", "bs1")
+    assert "\x00" not in json.dumps(body, ensure_ascii=False)
+    assert body["record"]["analyses"][0]["name"]["value"] == \
+        "One-Sample t Test (p � .001, Uncorrected)"
+    assert record["analyses"][0]["name"]["value"].count("\x00") == 1   # the caller's is left
+
+
 def test_the_same_record_again_is_a_replay_and_a_newer_one_a_new_run_id(ctx, neurostore):
     from ingestion_workflow.pipeline.stages.record_upload import run_id_of
 
