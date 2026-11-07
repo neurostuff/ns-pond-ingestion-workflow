@@ -53,6 +53,9 @@ from ingestion_workflow.models import (
 
 logger = logging.getLogger(__name__)
 
+#: As the PMC sources read JATS: some of PMC's is malformed past the front matter.
+_JATS = etree.XMLParser(recover=True, huge_tree=True, resolve_entities=False)
+
 
 class PubgetExtractor(BaseExtractor):
     """Extractor that uses Pubget for article and table downloads."""
@@ -468,7 +471,7 @@ def _extract_pubget_article(
     tables_output_dir = output_dir / "tables"
     tables_output_dir.mkdir(parents=True, exist_ok=True)
 
-    article_tree = etree.parse(str(article_file.file_path))
+    article_tree = etree.parse(str(article_file.file_path), _JATS)
 
     try:
         full_text, figure_captions = article_text_and_captions(article_tree, article_input_dir)
@@ -488,7 +491,7 @@ def _extract_pubget_article(
     article_text = " ".join(article_tree.xpath(".//text()"))
     article_space = coordinate_space_from_guess(_neurosynth_guess_space(article_text))
 
-    tables_tree = etree.parse(str(tables_file.file_path))
+    tables_tree = etree.parse(str(tables_file.file_path), _JATS)
     element_by_id, element_by_label = _build_table_lookup(tables_tree)
 
     info_files = get_table_info_files_from_article_dir(article_input_dir)
