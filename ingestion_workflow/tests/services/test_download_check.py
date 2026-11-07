@@ -180,6 +180,35 @@ def test_ace_moves_a_rejected_page_out_of_its_cache_and_says_where(tmp_path, mon
         assert Path(moved).read_bytes() == real("a6mheoqpeocv")
 
 
+def test_ace_reuses_the_scrape_s_own_page_for_the_pmid(tmp_path, monkeypatch):
+    """The scrape corpus keeps a page at <root>/<journal>/<pmid>.html; ACE's scraper looks only
+    under <root>/html, so a second download fetched the page again and a refusal replaced
+    the article's good copy (33797954, Brain connectivity). A page there that passes the
+    check is the download; a corpus page that fails it is left where it is."""
+    from ingestion_workflow.config import Settings
+    from ingestion_workflow.extractors import ace_extractor
+    from ingestion_workflow.extractors.ace_extractor import ACEExtractor
+    from ingestion_workflow.models.ids import Identifier
+
+    monkeypatch.setattr(ace_extractor, "prepare_node", lambda settings: None)
+    settings = Settings(cache_root=tmp_path / "cache", data_root=tmp_path / "data",
+                        ace_cache_root=tmp_path / "ace", ace_max_workers=1)
+    extractor = ACEExtractor(settings=settings)
+    bad = tmp_path / "ace" / "Old Journal" / "123.html"
+    good = tmp_path / "ace" / "Brain" / "123.html"
+    for page, body in ((bad, real("a6mheoqpeocv")), (good, real("ytpicngb4emb"))):
+        page.parent.mkdir(parents=True)
+        page.write_bytes(body)
+
+    class Scraper:
+        def process_article(self, pmid, journal, **kwargs):
+            raise AssertionError("fetched a page the scrape already holds")
+
+    result = extractor._download_single(Identifier(pmid="123"), scraper=Scraper())
+    assert result.success and [f.file_path for f in result.files] == [good]
+    assert bad.read_bytes() == real("a6mheoqpeocv")
+
+
 @pytest.mark.parametrize(
     "article_id, says",
     [

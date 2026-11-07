@@ -854,6 +854,16 @@ class ACEExtractor(BaseExtractor):
 
         pmid = str(pmid_value).strip()
 
+        scraped = self._scraped_page(pmid)
+        if scraped is not None:
+            return DownloadResult(
+                identifier=identifier,
+                source=DownloadSource.ACE,
+                success=True,
+                files=[self._build_downloaded_file(scraped)],
+                error_message=None,
+            )
+
         active_scraper = scraper or self._build_scraper()
 
         journal = "IngestionWorkflow"
@@ -930,6 +940,14 @@ class ACEExtractor(BaseExtractor):
 
         matches = list(self._cache_root.glob(f"html/**/{pmid}.html"))
         return matches[0] if matches else None
+
+    def _scraped_page(self, pmid: str) -> Optional[Path]:
+        """The scrape corpus's own page for `pmid` (<root>/<journal>/<pmid>.html), newest first,
+        when it passes the page check. ACE's scraper looks only under <root>/html, so without
+        this a download fetched the page again. A corpus page that fails is left in place."""
+        pages = sorted(self._cache_root.glob(f"*/{pmid}.html"),
+                       key=lambda page: page.stat().st_mtime, reverse=True)
+        return next((page for page in pages if _validate_downloaded_html(page)[0]), None)
 
     def _build_downloaded_file(self, file_path: Path) -> DownloadedFile:
         return build_downloaded_file(
