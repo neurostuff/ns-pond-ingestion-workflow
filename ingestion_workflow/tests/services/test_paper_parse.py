@@ -1165,6 +1165,18 @@ def test_a_nan_statistic_gives_a_point_no_value():
     assert point_values(float("nan"), "T") == []
 
 
+def test_spm_s_inf_statistic_gives_a_point_no_value(tmp_path):
+    """SPM prints Z = Inf past its precision; the reader takes it as infinity, which JSON
+    writes as null and the parse then refuses (6CcBmf9G5kpF, Z = Inf at -44 22 24)."""
+    assert point_values(float("inf"), "Z") == [] and point_values(float("-inf"), "T") == []
+    point = Coordinate(x=22, y=-4, z=-20, statistic_value=float("inf"), statistic_type="Z")
+    parse, _ = _parse(tmp_path, SHARED, {"tbl1": _collection(
+        [Analysis(name="Fear > Neutral", coordinates=[point])])})
+    (analysis,) = parse.analyses
+    assert not analysis.points[0].values
+    type(parse).model_validate_json(parse.model_dump_json())
+
+
 def test_halves_pair_by_the_stages_index_after_an_analysis_is_dropped(tmp_path):
     point = [Coordinate(x=22, y=-4, z=-20, statistic_value=-3.0, statistic_type="T")]
     stage = _collection(
