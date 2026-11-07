@@ -1,0 +1,27 @@
+{
+ "stage": "evidence",
+ "source": "ns-27b",
+ "family": "nu",
+ "pipeline": "ns-pond offload",
+ "version": "ns-ev1-r1",
+ "model": "numind/NuExtract3",
+ "model_revision": "c99dc8f5641b866aa0192b6ea78f84bf9f3535f1",
+ "adapter": "jdkent/nuextract3-ns-evidence@ea9be65e535cec75ba9a03dc637352b96d07e9b6",
+ "adapter_sha256": "9975edf6a60c04b7f6e66ce2477d6b58d2be10a278ec35d46066bd82cf761efe",
+ "prompt_version": "ev1 evidence by unit index, record keys sorted (pondie-astra evidence.prompt_of)",
+ "schema_version": "extraction-evidence (evidence sets, source retriever)",
+ "serve": {
+  "max_len": 65536,
+  "max_tokens": 20000,
+  "workers": 48,
+  "gpu_mem": 0.80,
+  "tp": 1,
+  "vllm_args": [],
+  "reserve": 64,
+  "temperature": 0.7,
+  "seed": 1
+ },
+ "shard_size": 1000,
+ "max_input_tokens": 52000,
+ "time": "02:00:00"
+}
