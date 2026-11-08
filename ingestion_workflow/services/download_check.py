@@ -24,7 +24,7 @@ from typing import Dict, List, Optional, Union
 import lxml.html
 from lxml import etree
 
-from ingestion_workflow.models import DownloadResult, FileType
+from ingestion_workflow.models import DownloadResult, DownloadSource, FileType
 
 EMPTY_SHELL = "empty_shell"
 PAYWALL = "paywall"
@@ -450,16 +450,34 @@ def check_file(path: Path) -> Optional[BadPage]:
     return check_page(data)
 
 
-def check_download(result: DownloadResult) -> Optional[BadPage]:
-    """The first HTML file of a download that is not an article, if any.
+#: ScienceDirect's full text holds its body as `ce:sections` and `ce:para`, or as
+#: `xocs:rawtext` for an article it has not tagged. An answer with none of them holds only
+#: the abstract and the reference list: 2,088 of the 302,721 stored (2026-11-08).
+_ELSEVIER_BODY = (b"<ce:sections", b"<ce:para", b"<xocs:rawtext")
 
-    XML and PDF payloads come from full-text services and are not pages; they pass.
-    """
+
+def check_elsevier_xml(path: Path) -> Optional[BadPage]:
+    if any(tag in Path(path).read_bytes() for tag in _ELSEVIER_BODY):
+        return None
+    return BadPage(ABSTRACT_ONLY, "Elsevier full text with no body, only the abstract")
+
+
+def check_stored(path: Path, file_type: FileType, source: DownloadSource) -> Optional[BadPage]:
+    """Why one downloaded file is not the article, if it is not: a page, or an Elsevier
+    full text. Other XML and PDF payloads come from full-text services and pass."""
+    if file_type is FileType.HTML:
+        return check_file(path)
+    if file_type is FileType.XML and source is DownloadSource.ELSEVIER:
+        return check_elsevier_xml(path)
+    return None
+
+
+def check_download(result: DownloadResult) -> Optional[BadPage]:
+    """The first file of a download that is not the article, if any."""
     for downloaded in result.files:
-        if downloaded.file_type is FileType.HTML:
-            bad = check_file(Path(downloaded.file_path))
-            if bad is not None:
-                return bad
+        bad = check_stored(Path(downloaded.file_path), downloaded.file_type, result.source)
+        if bad is not None:
+            return bad
     return None
 
 

@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Callable, Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import Artifact, Catalog, Outcome, Status, utcnow
-from ingestion_workflow.models import FileType
+from ingestion_workflow.models import DownloadSource, FileType
 from ingestion_workflow.services import download_check
 
 _BATCH = 900
@@ -75,20 +75,27 @@ class Revalidation:
         return Counter((b.reason, b.source) for b in self.bad)
 
 
-def _html_files(catalog: Catalog, download: Artifact, recorded_path) -> Optional[List[str]]:
+#: The files the check reads: pages, and Elsevier's full-text XML.
+_CHECKED = {FileType.HTML.value: None, FileType.XML.value: DownloadSource.ELSEVIER.value}
+
+
+def _checked_files(catalog: Catalog, download: Artifact,
+                   recorded_path) -> Optional[List[Tuple[str, str]]]:
     payload = catalog.payload(download)
     if payload is None:
         return None
-    return [str(recorded_path(f["file_path"])) for f in payload.get("files", [])
-            if f.get("file_type") == FileType.HTML.value]
+    return [(str(recorded_path(f["file_path"])), f["file_type"])
+            for f in payload.get("files", [])
+            if f.get("file_type") in _CHECKED
+            and _CHECKED[f["file_type"]] in (None, download.source)]
 
 
-def _check(item: Tuple[str, str, List[str]]):
-    article_id, source, paths = item
-    for path in paths:
+def _check(item: Tuple[str, str, List[Tuple[str, str]]]):
+    article_id, source, files = item
+    for path, file_type in files:
         if not Path(path).is_file():
             return article_id, source, None, "missing", path
-        bad = download_check.check_file(Path(path))
+        bad = download_check.check_stored(Path(path), FileType(file_type), DownloadSource(source))
         if bad is not None:
             return article_id, source, bad.reason, bad.message, path
     return article_id, source, None, None, None
@@ -111,9 +118,8 @@ def scan(
     workers: int = 1,
     recorded_path: Optional[Callable[[str], Path]] = None,
 ) -> Revalidation:
-    """Check every OK download of these articles that holds an HTML page.
-
-    XML and PDF downloads hold no page and are not read. A relative path is read where
+    """Check every OK download of these articles that holds an HTML page or an Elsevier
+    full text; other XML and PDF downloads are not read. A relative path is read where
     `recorded_path` (by default the stages' own `Context.recorded_path`) puts it, wherever
     the run starts. Idempotent: a download
     already failed is not checked again, and its OK extraction (left by a run that
@@ -135,7 +141,7 @@ def scan(
             for source, download in by_source.items():
                 if download.status is not Status.OK:
                     continue
-                paths = _html_files(catalog, download, recorded_path)
+                paths = _checked_files(catalog, download, recorded_path)
                 if paths is None:
                     result.missing.append((article_id, source))
                 elif paths:

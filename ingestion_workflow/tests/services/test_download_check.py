@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pytest
 from ingestion_workflow.extractors.ace_extractor import _validate_downloaded_html
+from ingestion_workflow.models import DownloadSource, FileType
 from ingestion_workflow.services import download_check
 from ingestion_workflow.services.download_check import (
     ABSTRACT_ONLY,
@@ -479,3 +480,29 @@ def test_running_prose_beside_an_abstract_is_body_prose():
                    f"from one trial to the next.</p></div>" for i in range(16))
     page = synthetic(ABSTRACT, headed=False, body=body)
     assert download_check.page_prose(page).body_words >= download_check.BODY_PROSE_WORDS
+
+
+def stored_xml(tmp_path, article_id: str) -> Path:
+    path = tmp_path / f"{article_id}.xml"
+    path.write_bytes(gzip.decompress((PAGES / f"{article_id}.xml.gz").read_bytes()))
+    return path
+
+
+def test_an_elsevier_full_text_with_no_body_is_abstract_only(tmp_path):
+    """ScienceDirect answered 3o66ws7cfpuq with its abstract and references only, and ACE's
+    page of the same article holds the five tables."""
+    bad = download_check.check_stored(stored_xml(tmp_path, "3o66ws7cfpuq"), FileType.XML,
+                                      DownloadSource.ELSEVIER)
+    assert bad is not None and bad.reason == ABSTRACT_ONLY
+
+
+@pytest.mark.parametrize("article_id", ["ry7j2gwauv7r",   # tagged sections
+                                        "gulrtythqeyl"])  # untagged, as xocs:rawtext
+def test_an_elsevier_full_text_with_a_body_passes(tmp_path, article_id):
+    assert download_check.check_stored(stored_xml(tmp_path, article_id), FileType.XML,
+                                       DownloadSource.ELSEVIER) is None
+
+
+def test_another_source_s_xml_is_not_read_for_an_elsevier_body(tmp_path):
+    assert download_check.check_stored(stored_xml(tmp_path, "3o66ws7cfpuq"), FileType.XML,
+                                       DownloadSource.PUBGET) is None
