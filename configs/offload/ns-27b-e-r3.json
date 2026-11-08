@@ -1,0 +1,35 @@
+{
+ "stage": "record",
+ "source": "ns-27b",
+ "family": "q27",
+ "pipeline": "ns-pond offload",
+ "version": "ns-27b-e-r3",
+ "model": "Qwen/Qwen3.8-27B",
+ "model_revision": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+ "adapter": "jdkent/qwen3.8-27b-ns-record@dbfd846bd3e1259039eb2f3117dc12bd733c640a",
+ "adapter_sha256": "98ed1c7ce5f90cafc3816e0ab5abd41c3cc8048480b2a6fd3c65b17c02c9d327",
+ "prompt_version": "astra-distill v5 paper prompt (pondie-astra prompt.prompt_of, user_content q27)",
+ "schema_version": "extraction-record (pondie-astra frozen schema, sha256 27f8cf61)",
+ "serve": {
+  "max_len": 65536,
+  "max_tokens": 20000,
+  "workers": 48,
+  "gpu_mem": 0.92,
+  "tp": 1,
+  "vllm_args": [
+   "--kv-cache-dtype",
+   "fp8",
+   "--quantization",
+   "fp8",
+   "--speculative-config",
+   "{\"method\": \"qwen3_5_mtp\", \"num_speculative_tokens\": 2}"
+  ],
+  "reserve": 3000,
+  "temperature": 0.7,
+  "seed": 3,
+  "json_schema": "extraction-record"
+ },
+ "shard_size": 500,
+ "max_input_tokens": 46000,
+ "time": "01:15:00"
+}

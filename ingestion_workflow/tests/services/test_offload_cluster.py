@@ -309,6 +309,26 @@ def test_the_job_asks_greedily_unless_the_spec_samples(world):
         {k: v for k, v in greedy.items() if k != "temperature"}
 
 
+
+def test_a_spec_naming_a_schema_ships_it_and_decodes_against_it(world):
+    """A retry of answers the schema refused asks vLLM to decode against that schema."""
+    from study_schema.jsonschema import load
+
+    from ingestion_workflow.services.offload.cluster.job import request_body
+
+    spec = load_spec(SPEC_FILE.with_name("ns-27b-e-r3.json")).model_copy(
+        update={"adapter_sha256": hashlib.sha256(b"weights").hexdigest()})
+    held = BundleDir(export(world["ctx"], spec, "vista", workers=1,
+                            now=NOW + timedelta(minutes=1)).bundle)
+    schema = json.loads(held.schema.read_text())
+    assert schema == load("extraction-record")
+    (shard,) = held.bundle().shards
+    row = json.loads(held.inputs(shard.name).read_text().splitlines()[0])
+    guided = request_body(row, spec.serve.model_dump(), schema)
+    assert guided["response_format"] == {
+        "type": "json_schema", "json_schema": {"name": "extraction-record", "schema": schema}}
+    assert not BundleDir(world["bundle"]).schema.exists()
+
 EV1_PRED = json.loads((DATA / "26klegjq7mhi.ev1.pred.json").read_text())
 EV1_RECORD = json.loads((DATA / "26klegjq7mhi.ev1.extraction.json").read_text())
 

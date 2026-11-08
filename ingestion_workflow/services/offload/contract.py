@@ -42,6 +42,9 @@ class Serve(BaseModel):
     #: Sampling for a retry of answers the schema refused; 0 is greedy. The seed fixes it.
     temperature: float = 0.0
     seed: Optional[int] = None
+    #: A study_schema schema the answer is decoded against (vLLM guided decoding), for a
+    #: retry of answers that schema refused. Export writes it into the bundle.
+    json_schema: Optional[str] = None
 
 
 class RunSpec(BaseModel):
@@ -153,6 +156,10 @@ class BundleDir:
     @property
     def skipped(self) -> Path:
         return self.root / "skipped.jsonl"
+
+    @property
+    def schema(self) -> Path:
+        return self.root / "schema.json"
 
     @property
     def state_file(self) -> Path:

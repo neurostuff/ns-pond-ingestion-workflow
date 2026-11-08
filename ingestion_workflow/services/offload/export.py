@@ -260,6 +260,10 @@ def export(ctx: Context, spec: RunSpec, machine: str, *, articles: Optional[Iter
                             input_tokens=sum(r["n_input_tokens"] for r in rows)))
     with out.skipped.open("w", encoding="utf-8") as handle:
         handle.writelines(json.dumps(r) + "\n" for r in skipped)
+    if spec.serve.json_schema:
+        from study_schema.jsonschema import load
+
+        out.schema.write_text(json.dumps(load(spec.serve.json_schema)), "utf-8")
     config = {"serve": spec.serve.model_dump(), "family": spec.family,
               "model_revision": spec.model_revision, "adapter_sha256": spec.adapter_sha256,
               "shard_size": spec.shard_size, "max_input_tokens": spec.max_input_tokens,
