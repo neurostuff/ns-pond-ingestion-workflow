@@ -155,9 +155,11 @@ class AnalysesStage:
                 continue
             count, last = attempts.get(ref.id, (0, None))
             # A skip ("no coordinate tables") judged what triage passed then;
-            # once triage passes something new it is stale, like an OK parse.
+            # once triage passes tables it is stale, like an OK parse. A new read
+            # that passes none leaves the skip right.
             stale_skip = (existing is not None and existing.status is Status.SKIPPED
-                          and existing.fingerprint != fp)
+                          and existing.fingerprint != fp
+                          and bool(triaged.summary["passed_tables"]))
             if not stale_skip and not ctx.should_attempt(existing, count, last, self.name):
                 plan.permanent += 1
                 continue

@@ -179,6 +179,16 @@ def test_a_skip_runs_again_once_triage_passes_tables(env, evidence):
                             summary={"tables": 0, "reason": "no coordinate tables"})])
     assert _plan_analyses(settings, catalog, [ref]).permanent == 1
 
+    # A new read that passes no tables leaves the skip standing (2lrnm23oqj2g: MinerU's
+    # read moved the fingerprint, and upload held the article on the "stale" skip).
+    catalog.record([Outcome(article_id=ref.id, stage="triage", source="",
+                            fingerprint="tr-1b",
+                            payload={"source": "pdf",
+                                     "tables": [{"table_id": "t1", "passes": False}]},
+                            summary={"source": "pdf", "tables": 1, "passed": 0,
+                                     "passed_tables": []})])
+    assert _plan_analyses(settings, catalog, [ref]).permanent == 1
+
     catalog.record([Outcome(article_id=ref.id, stage="triage", source="",
                             fingerprint="tr-2",
                             payload={"source": "pubget",
