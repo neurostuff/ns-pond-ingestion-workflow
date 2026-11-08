@@ -162,3 +162,28 @@ def test_analyses_waits_for_triage(env, evidence):
 
     _triaged(catalog, ref)
     assert [w.ref.id for w in _plan_analyses(settings, catalog, [ref]).pending] == [ref.id]
+
+
+def test_a_skip_runs_again_once_triage_passes_tables(env, evidence):
+    """"No coordinate tables" is a verdict on what triage passed. When a new
+    read passes tables, the old skip is stale and analyses runs; until then it
+    stands."""
+    settings, catalog = env
+    ref = catalog.register(Identifier(pmcid="PMC6"), evidence)
+    _extracted(catalog, ref)
+    _metadata(catalog, ref)
+    _triaged(catalog, ref, passes=False)
+    work = _plan_analyses(settings, catalog, [ref]).pending[0]
+    catalog.record([Outcome(article_id=ref.id, stage="analyses", source="",
+                            status=Status.SKIPPED, fingerprint=work.fingerprint,
+                            summary={"tables": 0, "reason": "no coordinate tables"})])
+    assert _plan_analyses(settings, catalog, [ref]).permanent == 1
+
+    catalog.record([Outcome(article_id=ref.id, stage="triage", source="",
+                            fingerprint="tr-2",
+                            payload={"source": "pubget",
+                                     "tables": [{"table_id": "t1", "passes": True}]},
+                            summary={"source": "pubget", "tables": 1, "passed": 1,
+                                     "passed_tables": ["t1"]})])
+
+    assert [w.ref.id for w in _plan_analyses(settings, catalog, [ref]).pending] == [ref.id]
