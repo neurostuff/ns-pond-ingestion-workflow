@@ -310,24 +310,35 @@ def test_the_job_asks_greedily_unless_the_spec_samples(world):
 
 
 
-def test_a_spec_naming_a_schema_ships_it_and_decodes_against_it(world):
-    """A retry of answers the schema refused asks vLLM to decode against that schema."""
-    from study_schema.jsonschema import load
+def test_a_guided_spec_decodes_against_the_compact_shape_of_the_papers_keys(world):
+    """A guided retry decodes against the compact form the model writes, its parse keys
+    those of the paper. Guided by extraction-record (r3), the model wrote the expanded
+    form, which pull then wrapped a second time: 132 of 160 answers refused."""
+    import jsonschema
 
     from ingestion_workflow.services.offload.cluster.job import request_body
 
-    spec = load_spec(SPEC_FILE.with_name("ns-27b-e-r3.json")).model_copy(
+    spec = load_spec(SPEC_FILE.with_name("ns-27b-e-r4.json")).model_copy(
         update={"adapter_sha256": hashlib.sha256(b"weights").hexdigest()})
     held = BundleDir(export(world["ctx"], spec, "vista", workers=1,
                             now=NOW + timedelta(minutes=1)).bundle)
-    schema = json.loads(held.schema.read_text())
-    assert schema == load("extraction-record")
     (shard,) = held.bundle().shards
     row = json.loads(held.inputs(shard.name).read_text().splitlines()[0])
-    guided = request_body(row, spec.serve.model_dump(), schema)
+    schema = row["response_schema"]
+    guided = request_body(row, spec.serve.model_dump())
     assert guided["response_format"] == {
-        "type": "json_schema", "json_schema": {"name": "extraction-record", "schema": schema}}
-    assert not BundleDir(world["bundle"]).schema.exists()
+        "type": "json_schema", "json_schema": {"name": "compact-record", "schema": schema}}
+    check = jsonschema.validators.validator_for(schema)(schema)
+    assert check.is_valid(PRED["prediction"])
+    assert not check.is_valid(RECORD)
+    wrong = json.loads(json.dumps(PRED["prediction"]))
+    wrong["coordinate_sets"][0]["local_id"] = "analysis#not-in-the-listing"
+    assert not check.is_valid(wrong)
+
+    plain = json.loads(BundleDir(world["bundle"]).inputs(shard.name).read_text().splitlines()[0])
+    assert plain["response_schema"] is None
+    assert request_body(plain, spec.serve.model_dump())["response_format"] == {"type": "json_object"}
+
 
 EV1_PRED = json.loads((DATA / "26klegjq7mhi.ev1.pred.json").read_text())
 EV1_RECORD = json.loads((DATA / "26klegjq7mhi.ev1.extraction.json").read_text())

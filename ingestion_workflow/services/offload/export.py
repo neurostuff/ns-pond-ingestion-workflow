@@ -97,13 +97,15 @@ def _text(root: Path):
     return parse, parsed, text, text_sha256
 
 
-def _row(job, text_sha256, parse_keys, n_in, content, kwargs, record_digest=None) -> dict:
+def _row(job, text_sha256, parse_keys, n_in, content, kwargs, record_digest=None,
+         response_schema=None) -> dict:
     article_id, _, base_study_id, _, serve, _ = job
     room = serve["max_len"] - n_in - serve["reserve"]
     return InputRow(article_id=article_id, base_study_id=base_study_id, text_sha256=text_sha256,
                     parse_keys=parse_keys, record_digest=record_digest, n_input_tokens=n_in,
                     content=content, chat_template_kwargs=kwargs,
-                    max_tokens=max(256, min(serve["max_tokens"], room))).model_dump()
+                    max_tokens=max(256, min(serve["max_tokens"], room)),
+                    response_schema=response_schema).model_dump()
 
 
 def build_record(job) -> Tuple[Optional[dict], str]:
@@ -123,7 +125,10 @@ def build_record(job) -> Tuple[Optional[dict], str]:
     template = prompt.template()
     content, kwargs = prompt.user_content(paper_prompt, template, job[3])
     n_in = prompt.ntok(prompt.user_turn(paper_prompt, template))
-    return _row(job, text_sha256, list(listed), n_in, content, kwargs), ""
+    schema = (prompt.record_shape(prompt.schema_index(), "schema", keys=list(listed))
+              if job[4].get("guided") else None)
+    return _row(job, text_sha256, list(listed), n_in, content, kwargs,
+                response_schema=schema), ""
 
 
 def build_evidence(job) -> Tuple[Optional[dict], str]:
@@ -260,10 +265,6 @@ def export(ctx: Context, spec: RunSpec, machine: str, *, articles: Optional[Iter
                             input_tokens=sum(r["n_input_tokens"] for r in rows)))
     with out.skipped.open("w", encoding="utf-8") as handle:
         handle.writelines(json.dumps(r) + "\n" for r in skipped)
-    if spec.serve.json_schema:
-        from study_schema.jsonschema import load
-
-        out.schema.write_text(json.dumps(load(spec.serve.json_schema)), "utf-8")
     config = {"serve": spec.serve.model_dump(), "family": spec.family,
               "model_revision": spec.model_revision, "adapter_sha256": spec.adapter_sha256,
               "shard_size": spec.shard_size, "max_input_tokens": spec.max_input_tokens,

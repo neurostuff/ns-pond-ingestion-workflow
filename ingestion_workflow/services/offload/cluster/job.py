@@ -132,12 +132,13 @@ def main():
                 srv.kill()
 
 
-def request_body(row, serve, schema=None):
+def request_body(row, serve):
     """The chat request for one input row: greedy unless the spec samples, and decoded
-    against `schema` when the spec names one."""
-    response_format = ({"type": "json_schema", "json_schema": {"name": serve["json_schema"],
+    against the row's schema when it has one."""
+    schema = row.get("response_schema")
+    response_format = ({"type": "json_schema", "json_schema": {"name": "compact-record",
                                                                "schema": schema}}
-                       if schema is not None else {"type": "json_object"})
+                       if schema else {"type": "json_object"})
     body = {"model": "model", "temperature": serve.get("temperature", 0.0),
             "max_tokens": row["max_tokens"],
             "messages": [{"role": "user", "content": row["content"]}],
@@ -161,8 +162,6 @@ def run(root, shard, url):
     rows = [r for r in rows if r["article_id"] not in have]
     serve = json.loads((root / "bundle.json").read_text())["spec"]["serve"]
     workers = serve["workers"]
-    schema = (json.loads((root / "schema.json").read_text())
-              if serve.get("json_schema") else None)
     print(f"resume: have {len(have)}, todo {len(rows)}", flush=True)
     lock, done, t1 = threading.Lock(), [0, 0], time.time()
     handle = open(out, "a")
@@ -172,7 +171,7 @@ def run(root, shard, url):
         res = {"article_id": r["article_id"], "text_sha256": r["text_sha256"], "prediction": None,
                "finish_reason": None, "error": None, "prompt_tokens": None,
                "completion_tokens": None}
-        body = request_body(r, serve, schema)
+        body = request_body(r, serve)
         try:
             q = urllib.request.Request(url, json.dumps(body).encode(),
                                        {"Content-Type": "application/json"})

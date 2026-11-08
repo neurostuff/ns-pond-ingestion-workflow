@@ -42,9 +42,10 @@ class Serve(BaseModel):
     #: Sampling for a retry of answers the schema refused; 0 is greedy. The seed fixes it.
     temperature: float = 0.0
     seed: Optional[int] = None
-    #: A study_schema schema the answer is decoded against (vLLM guided decoding), for a
-    #: retry of answers that schema refused. Export writes it into the bundle.
-    json_schema: Optional[str] = None
+    #: Decode each record answer against the compact record's JSON schema with the paper's
+    #: parse keys enumerated (vLLM guided decoding), for a retry of refused answers. Compact,
+    #: not extraction-record: the model writes the compact form, which pull expands.
+    guided: bool = False
 
 
 class RunSpec(BaseModel):
@@ -109,6 +110,8 @@ class InputRow(BaseModel):
     content: str
     chat_template_kwargs: Dict[str, Any]
     max_tokens: int
+    #: The JSON schema the answer is decoded against, when the spec is guided.
+    response_schema: Optional[Dict[str, Any]] = None
 
 
 class ResultRow(BaseModel):
@@ -156,10 +159,6 @@ class BundleDir:
     @property
     def skipped(self) -> Path:
         return self.root / "skipped.jsonl"
-
-    @property
-    def schema(self) -> Path:
-        return self.root / "schema.json"
 
     @property
     def state_file(self) -> Path:
