@@ -1164,6 +1164,17 @@ class Catalog:
         )
         return {row["article_id"] for row in rows}
 
+    def article_ids_holding(self, stage: str, no_text: str, taken_back: Sequence[str]) -> set:
+        """Articles with a `stage` artifact to replace: not a skip, nor a take-back that went
+        through (fingerprint `no_text`, and OK or failed with one of `taken_back`)."""
+        marks = ", ".join("?" * len(taken_back))
+        rows = self._conn.execute(
+            "SELECT DISTINCT article_id FROM artifacts WHERE stage = ? AND status != 'skipped'"
+            f" AND NOT (fingerprint = ? AND (status = 'ok' OR COALESCE(error, '') IN ({marks})))",
+            (stage, no_text, *taken_back),
+        )
+        return {row["article_id"] for row in rows}
+
     def articles_naming_base_studies(
         self, base_study_ids: Sequence[str], stages: Sequence[str], skipped_for: str
     ) -> Dict[str, set]:

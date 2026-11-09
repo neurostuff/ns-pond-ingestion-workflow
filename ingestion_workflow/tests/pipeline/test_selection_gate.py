@@ -8,6 +8,7 @@ import pytest
 from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline.selection import Select, everything, narrow
+from ingestion_workflow.pipeline.stage import NO_TEXT
 
 
 @pytest.fixture()
@@ -41,6 +42,32 @@ def test_only_articles_triage_passed_a_table_for_are_selected(catalog, settings)
     sel = narrow(cat, everything(cat), Select.PENDING, "analyses", settings=settings)
     got = {r.id for r in sel.refs}
     assert got == {refs["a"], refs["c"]}
+
+
+def test_an_article_triage_now_passes_nothing_for_is_kept_while_it_holds_analyses(
+        catalog, settings):
+    """A newer triage passed none of 2dtdccwxbuyb's tables, and its October analyses went
+    stale. Dropped by the gate, nothing ever replaced them, and upload held the article
+    with "analyses stale" (40 of the ACE restore, 2026-11-07). Kept, the stage's plan
+    records the skip; an earlier skip has nothing to replace."""
+    cat, refs = catalog
+    cat.record([Outcome(article_id=refs["b"], stage="analyses", source="", status=Status.OK,
+                        fingerprint="old", summary={"tables": 1}),
+                Outcome(article_id=refs["d"], stage="analyses", source="", status=Status.SKIPPED,
+                        fingerprint="old", summary={"tables": 0})])
+    sel = narrow(cat, everything(cat), Select.ALL, "analyses", settings=settings)
+    assert {r.id for r in sel.refs} == {refs["a"], refs["b"], refs["c"]}
+
+
+def test_a_take_back_that_went_through_has_nothing_left_to_replace(catalog, settings):
+    """A take-back recorded as failed with its reason holds nothing; one that failed
+    for any other reason (the connection dropped) is tried again, so it is kept."""
+    cat, refs = catalog
+    cat.record([Outcome.failure(refs["b"], "analyses", "", NO_TEXT, fingerprint=NO_TEXT),
+                Outcome.failure(refs["d"], "analyses", "", "connection dropped",
+                                fingerprint=NO_TEXT)])
+    sel = narrow(cat, everything(cat), Select.ALL, "analyses", settings=settings)
+    assert {r.id for r in sel.refs} == {refs["a"], refs["c"], refs["d"]}
 
 
 def test_the_query_is_one_index_lookup_not_a_walk(catalog):

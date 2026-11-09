@@ -18,8 +18,9 @@ from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.config import Settings
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
-from ingestion_workflow.pipeline.stages.analyses import AnalysesStage
+from ingestion_workflow.pipeline.selection import Select, everything, narrow
 from ingestion_workflow.pipeline.stage import metadata_digests
+from ingestion_workflow.pipeline.stages.analyses import AnalysesStage
 from ingestion_workflow.pipeline.stages.triage import TriageStage
 
 
@@ -162,3 +163,68 @@ def test_analyses_waits_for_triage(env, evidence):
 
     _triaged(catalog, ref)
     assert [w.ref.id for w in _plan_analyses(settings, catalog, [ref]).pending] == [ref.id]
+
+
+def test_a_skip_runs_again_once_triage_passes_tables(env, evidence):
+    """"No coordinate tables" is a verdict on what triage passed. When a new
+    read passes tables, the old skip is stale and analyses runs; until then it
+    stands."""
+    settings, catalog = env
+    ref = catalog.register(Identifier(pmcid="PMC6"), evidence)
+    _extracted(catalog, ref)
+    _metadata(catalog, ref)
+    _triaged(catalog, ref, passes=False)
+    work = _plan_analyses(settings, catalog, [ref]).pending[0]
+    catalog.record([Outcome(article_id=ref.id, stage="analyses", source="",
+                            status=Status.SKIPPED, fingerprint=work.fingerprint,
+                            summary={"tables": 0, "reason": "no coordinate tables"})])
+    assert _plan_analyses(settings, catalog, [ref]).permanent == 1
+
+    # A new read that passes no tables leaves the skip standing (2lrnm23oqj2g: MinerU's
+    # read moved the fingerprint, and upload held the article on the "stale" skip).
+    catalog.record([Outcome(article_id=ref.id, stage="triage", source="",
+                            fingerprint="tr-1b",
+                            payload={"source": "pdf",
+                                     "tables": [{"table_id": "t1", "passes": False}]},
+                            summary={"source": "pdf", "tables": 1, "passed": 0,
+                                     "passed_tables": []})])
+    assert _plan_analyses(settings, catalog, [ref]).permanent == 1
+
+    catalog.record([Outcome(article_id=ref.id, stage="triage", source="",
+                            fingerprint="tr-2",
+                            payload={"source": "pubget",
+                                     "tables": [{"table_id": "t1", "passes": True}]},
+                            summary={"source": "pubget", "tables": 1, "passed": 1,
+                                     "passed_tables": ["t1"]})])
+
+    assert [w.ref.id for w in _plan_analyses(settings, catalog, [ref]).pending] == [ref.id]
+
+
+def test_analyses_go_stale_skip_and_return_as_triage_reads_change(env, evidence):
+    """The round trip: OK analyses, then a triage that passes nothing, then one that
+    passes t1 again. The gate keeps the article while it holds analyses, the plan
+    records the skip, and the skip runs again once tables pass."""
+    settings, catalog = env
+    ref = catalog.register(Identifier(pmcid="PMC7"), evidence)
+    _extracted(catalog, ref)
+    _metadata(catalog, ref)
+
+    def plan():
+        sel = narrow(catalog, everything(catalog), Select.ALL, "analyses", settings=settings)
+        return _plan_analyses(settings, catalog, list(sel.refs))
+
+    _triaged(catalog, ref)
+    work = plan().pending[0]
+    catalog.record([Outcome(article_id=ref.id, stage="analyses", source="", status=Status.OK,
+                            fingerprint=work.fingerprint, summary={"tables": 1})])
+    assert plan().fresh == 1
+
+    _triaged(catalog, ref, passes=False)
+    work = plan().pending[0]
+    catalog.record([Outcome(article_id=ref.id, stage="analyses", source="",
+                            status=Status.SKIPPED, fingerprint=work.fingerprint,
+                            summary={"tables": 0, "reason": "no coordinate tables"})])
+    assert plan().pending == []
+
+    _triaged(catalog, ref)
+    assert [w.ref.id for w in plan().pending] == [ref.id]
