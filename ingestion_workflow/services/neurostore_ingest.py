@@ -231,14 +231,23 @@ def auth0(settings) -> Optional[Tuple[str, str]]:
     return (url.rstrip("/"), audience) if url and audience else None
 
 
-def _holds_nul(value: Any) -> bool:
+# Postgres stores no NUL in text: the ingester would answer 500, and again on every retry.
+# A parse holding one is refused, since its text is the source every offset points into; a
+# record holding one is sent with it marked unreadable, since its strings are the model's
+# (`\u0000` in its JSON answer) and point into nothing.
+def without_nul(value: Any) -> Any:
+    """`value` with each NUL as U+FFFD."""
     if isinstance(value, str):
-        return "\x00" in value
+        return value.replace("\x00", "\ufffd")
     if isinstance(value, dict):
-        return any(_holds_nul(k) or _holds_nul(v) for k, v in value.items())
+        return {without_nul(k): without_nul(v) for k, v in value.items()}
     if isinstance(value, list):
-        return any(_holds_nul(v) for v in value)
-    return False
+        return [without_nul(v) for v in value]
+    return value
+
+
+def _holds_nul(value: Any) -> bool:
+    return without_nul(value) != value
 
 
 def build_payload(study_dir: Path) -> Tuple[Dict[str, Any], List[str]]:
@@ -281,7 +290,6 @@ def build_payload(study_dir: Path) -> Tuple[Dict[str, Any], List[str]]:
         text = (Path(study_dir) / text_path).read_bytes().decode("utf-8")
     except UnicodeDecodeError as exc:
         raise InvalidParse([f"{text_path} is not UTF-8: {exc}"]) from None
-    # Postgres stores no NUL in text: the ingester would answer 500, and again on every retry.
     held = [name for name, value in (("coordinate_parse", raw_parse), ("parsed_paper", raw_paper),
                                      (str(text_path), text)) if _holds_nul(value)]
     if held:
