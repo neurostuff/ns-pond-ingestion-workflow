@@ -150,6 +150,32 @@ def test_an_extracted_table_s_coordinates_carry_no_other_statistics_key():
     assert ExtractedTable.from_dict(table.to_dict()).to_dict() == table.to_dict()
 
 
+@pytest.mark.parametrize("size", [-76, -6.0, True, "76", float("nan"), float("inf")])
+def test_a_coordinate_refuses_a_size_that_is_not_a_count_and_drops_its_measure(size):
+    """Read from a stored blob too, so a negative size stored before the rule never reaches sync."""
+    from ingestion_workflow.models.analysis import Coordinate
+
+    point = Coordinate.from_dict({"x": 1, "y": 2, "z": 3, "cluster_size": size,
+                                  "cluster_measure": "voxels"})
+    assert (point.cluster_size, point.cluster_measure) == (None, None)
+
+
+def test_a_coordinate_keeps_a_count_and_a_measure_given_without_one():
+    from ingestion_workflow.models.analysis import Coordinate
+
+    assert Coordinate(x=1, y=2, z=3, cluster_size=76.0,
+                      cluster_measure="voxels").cluster_size == 76
+    assert Coordinate(x=1, y=2, z=3, cluster_size=0).cluster_size == 0
+    assert Coordinate(x=1, y=2, z=3, cluster_measure="mm^3").cluster_measure == "mm^3"
+
+
+def test_a_table_s_negative_size_is_still_its_magnitude():
+    """A stray dash in a table's size column: CoordinatePoint takes abs before Coordinate."""
+    from ingestion_workflow.models.analysis import CoordinatePoint
+
+    assert CoordinatePoint(coordinates=[1, 2, 3], cluster_size=-76).cluster_size == 76
+
+
 #: One PMID as providers and people write it: PubMed bare, a spreadsheet's zero-padded,
 #: Europe PMC and OpenAlex prefixed or as an address.
 PMID_SPELLINGS = [

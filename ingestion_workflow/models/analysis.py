@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -182,6 +183,19 @@ class Coordinate:
     #: set's role, which the roles stage decides), and `sign`, which `to_dict`
     #: writes but is always derived again on read.
     NON_FIELD_KEYS = ("is_deactivation", "is_seed", "sign")
+
+    def __post_init__(self) -> None:
+        # A cluster size is a count. One read negative is a misread (most often a
+        # coordinate taken for the size), so it and its measure are dropped. A table's
+        # stray dash is CoordinatePoint's to take abs of before it gets here.
+        size = self.cluster_size
+        if size is None:
+            return
+        if (isinstance(size, bool) or not isinstance(size, (int, float))
+                or not 0 <= size < math.inf):
+            self.cluster_size = self.cluster_measure = None
+        else:
+            self.cluster_size = int(size)
 
     @property
     def sign(self) -> str:
