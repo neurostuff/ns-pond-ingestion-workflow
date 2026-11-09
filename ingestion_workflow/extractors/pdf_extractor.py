@@ -880,7 +880,8 @@ class PdfExtractor(BaseExtractor):
         found = [index for index, d in enumerate(download_results) if _pdf_file(d)]
         if not found:
             return answers
-        gpus = mineru_gpus()
+        gpus = (mineru_gpus() * self.settings.mineru_workers_per_gpu)[
+            :self.settings.mineru_max_workers]
         logger.info("PDF extraction: %d MinerU worker(s) over GPU(s) %s", len(gpus), gpus)
         contents = self._run_extraction_pipeline(
             [download_results[index] for index in found],

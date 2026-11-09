@@ -158,6 +158,31 @@ def _read_by_docling(download):
     return ExtractedContent(slug=download.identifier.slug, source=DownloadSource.PDF)
 
 
+@pytest.mark.parametrize("per_gpu, most, gpus", [
+    (1, None, [0, 1]),
+    (2, None, [0, 1, 0, 1]),
+    (2, 3, [0, 1, 0]),
+    (1, 1, [0]),
+])
+def test_the_settings_decide_how_many_workers_start_on_which_gpus(
+        tmp_path, monkeypatch, per_gpu, most, gpus):
+    monkeypatch.setattr(mineru_convert, "mineru_gpus", lambda: [0, 1])
+    settings = Settings(cache_root=tmp_path / "cache", data_root=tmp_path / "data",
+                        mineru_workers_per_gpu=per_gpu, mineru_max_workers=most)
+    extractor = PdfExtractor(settings=settings)
+    started = {}
+
+    def pipeline(downloads, **kwargs):
+        started.update(count=kwargs["worker_count"], gpus=kwargs["worker_initargs"][0])
+        return [ExtractedContent(slug="x", source=DownloadSource.PDF, full_text_path="t")
+                for _ in downloads]
+
+    monkeypatch.setattr(extractor, "_run_extraction_pipeline", pipeline)
+    extractor._extract_with_mineru([_download(_pdf(tmp_path / "a.pdf"))], tmp_path)
+
+    assert started == {"count": len(gpus), "gpus": gpus}
+
+
 def test_no_free_gpu_is_unavailable(monkeypatch):
     monkeypatch.setattr(mineru_convert.importlib.util, "find_spec", lambda name: object())
     monkeypatch.setattr(mineru_convert, "free_cuda_devices", lambda min_free_mib: [])
