@@ -39,6 +39,13 @@ class Serve(BaseModel):
     vllm_args: List[str] = Field(default_factory=list)
     #: What the job leaves of the context for the answer's template wrapping, per family.
     reserve: int
+    #: Sampling for a retry of answers the schema refused; 0 is greedy. The seed fixes it.
+    temperature: float = 0.0
+    seed: Optional[int] = None
+    #: Decode each record answer against the compact record's JSON schema with the paper's
+    #: parse keys enumerated (vLLM guided decoding), for a retry of refused answers. Compact,
+    #: not extraction-record: the model writes the compact form, which pull expands.
+    guided: bool = False
 
 
 class RunSpec(BaseModel):
@@ -103,6 +110,8 @@ class InputRow(BaseModel):
     content: str
     chat_template_kwargs: Dict[str, Any]
     max_tokens: int
+    #: The JSON schema the answer is decoded against, when the spec is guided.
+    response_schema: Optional[Dict[str, Any]] = None
 
 
 class ResultRow(BaseModel):
