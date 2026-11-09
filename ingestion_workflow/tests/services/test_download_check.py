@@ -150,17 +150,21 @@ def test_an_offer_to_sell_the_article_is_a_paywall_when_no_access_was_provided()
     assert check_page(served).reason == PAYWALL  # a banner over an abstract is not access
 
 
-def test_ace_moves_a_rejected_page_out_of_its_cache_and_says_where(tmp_path, monkeypatch):
+def _ace_extractor(tmp_path, monkeypatch, **settings):
     from ingestion_workflow.config import Settings
     from ingestion_workflow.extractors import ace_extractor
     from ingestion_workflow.extractors.ace_extractor import ACEExtractor
-    from ingestion_workflow.models.ids import Identifier
 
     monkeypatch.setattr(ace_extractor, "prepare_node", lambda settings: None)  # nothing is parsed
+    return ACEExtractor(settings=Settings(
+        cache_root=tmp_path / "cache", data_root=tmp_path / "data",
+        ace_cache_root=tmp_path / "ace" / "html", ace_max_workers=1, **settings))
 
-    settings = Settings(cache_root=tmp_path / "cache", data_root=tmp_path / "data",
-                        ace_cache_root=tmp_path / "ace" / "html", ace_max_workers=1)
-    extractor = ACEExtractor(settings=settings, download_mode="browser")
+
+def test_ace_moves_a_rejected_page_out_of_its_cache_and_says_where(tmp_path, monkeypatch):
+    from ingestion_workflow.models.ids import Identifier
+
+    extractor = _ace_extractor(tmp_path, monkeypatch)
     cached = tmp_path / "ace" / "html" / "html" / "Brain" / "123.html"
 
     class Scraper:
@@ -184,14 +188,9 @@ def test_ace_moves_a_rejected_page_out_of_its_cache_and_says_where(tmp_path, mon
 def test_ace_asks_for_the_pmc_copy_when_settings_prefer_it(tmp_path, monkeypatch, prefer):
     """The publisher's own page is the default; a run whose publisher pages are gone or
     walled (HighWire's table pages, Cloudflare) asks ACE for the PMC copy."""
-    from ingestion_workflow.config import Settings
-    from ingestion_workflow.extractors import ace_extractor
-    from ingestion_workflow.extractors.ace_extractor import ACEExtractor
     from ingestion_workflow.models.ids import Identifier
 
-    monkeypatch.setattr(ace_extractor, "prepare_node", lambda settings: None)
-    settings = Settings(cache_root=tmp_path / "cache", data_root=tmp_path / "data",
-                        ace_cache_root=tmp_path / "ace", ace_max_workers=1, ace_prefer_pmc=prefer)
+    extractor = _ace_extractor(tmp_path, monkeypatch, ace_prefer_pmc=prefer)
     asked = []
 
     class Scraper:
@@ -199,7 +198,7 @@ def test_ace_asks_for_the_pmc_copy_when_settings_prefer_it(tmp_path, monkeypatch
             asked.append(kwargs["prefer_pmc_source"])
             return None, None
 
-    ACEExtractor(settings=settings)._download_single(Identifier(pmid="123"), scraper=Scraper())
+    extractor._download_single(Identifier(pmid="123"), scraper=Scraper())
     assert asked == [prefer]
 
 

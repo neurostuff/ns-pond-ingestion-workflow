@@ -468,9 +468,11 @@ class Settings(BaseSettings):
     ace_prefer_pmc: bool = Field(
         default=False,
         description=(
-            "Ask ACE for an article's PMC copy before the publisher's page. For "
-            "articles whose publisher pages are gone or walled: PMC's page holds "
-            "the tables inline"
+            "Ask ACE for an article's PMC copy before the publisher's page. Only for "
+            "selected articles whose publisher pages are gone or walled: PMC's page "
+            "holds the tables inline, and a failed PMC fetch does not fall back to the "
+            "publisher. ACE reuses a page already in ace_cache_root, so set a fresh "
+            "ace_cache_root for the run, or the old publisher page is recorded again"
         ),
     )
 
