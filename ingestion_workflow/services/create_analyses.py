@@ -390,19 +390,6 @@ class CreateAnalysesService:
         cluster_measure = point.cluster_measure
         statistic_value = None
         statistic_type = None
-        if cluster_size is not None:
-            try:
-                cluster_size = abs(int(cluster_size))
-            except (TypeError, ValueError):
-                cluster_size = None
-        if cluster_measure is not None:
-            normalized_measure = str(cluster_measure).strip().lower()
-            if normalized_measure not in {"voxels", "mm^3", "mm3"}:
-                cluster_measure = None
-            elif normalized_measure in {"mm^3", "mm3"}:
-                cluster_measure = "mm^3"
-            else:
-                cluster_measure = "voxels"
         if point.values:
             primary_value = point.values[0]
             statistic_type = primary_value.kind

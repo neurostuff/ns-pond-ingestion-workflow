@@ -150,6 +150,45 @@ def test_an_extracted_table_s_coordinates_carry_no_other_statistics_key():
     assert ExtractedTable.from_dict(table.to_dict()).to_dict() == table.to_dict()
 
 
+@pytest.mark.parametrize("size", [True, "76", float("nan"), float("inf")])
+def test_a_coordinate_refuses_a_size_that_is_not_a_number_and_drops_its_measure(size):
+    from ingestion_workflow.models.analysis import Coordinate
+
+    point = Coordinate.from_dict({"x": 1, "y": 2, "z": 3, "cluster_size": size,
+                                  "cluster_measure": "voxels"})
+    assert (point.cluster_size, point.cluster_measure) == (None, None)
+
+
+@pytest.mark.parametrize("size, kept", [(-76, 76), (-6.0, 6)])
+def test_a_coordinate_s_negative_size_is_its_magnitude_with_its_measure(size, kept):
+    """Read from a stored blob too, so a stored negative size never reaches sync."""
+    from ingestion_workflow.models.analysis import Coordinate
+
+    point = Coordinate.from_dict({"x": 1, "y": 2, "z": 3, "cluster_size": size,
+                                  "cluster_measure": "voxels"})
+    assert (point.cluster_size, point.cluster_measure) == (kept, "voxels")
+
+
+def test_a_coordinate_keeps_a_count_and_a_measure_given_without_one():
+    from ingestion_workflow.models.analysis import Coordinate
+
+    assert Coordinate(x=1, y=2, z=3, cluster_size=76.0,
+                      cluster_measure="voxels").cluster_size == 76
+    assert Coordinate(x=1, y=2, z=3, cluster_size=0).cluster_size == 0
+    assert Coordinate(x=1, y=2, z=3, cluster_measure="mm^3").cluster_measure == "mm^3"
+
+
+@pytest.mark.parametrize("values", [None, [4.1]])
+def test_a_table_s_negative_size_is_still_its_magnitude(values):
+    """A stray dash in a table's size column: CoordinatePoint takes abs before Coordinate,
+    for a point with no statistic too."""
+    from ingestion_workflow.models.analysis import CoordinatePoint
+
+    point = CoordinatePoint(coordinates=[1, 2, 3], values=values, cluster_size=-76,
+                            cluster_measure="MM3")
+    assert (point.cluster_size, point.cluster_measure) == (76, "mm^3")
+
+
 #: One PMID as providers and people write it: PubMed bare, a spreadsheet's zero-padded,
 #: Europe PMC and OpenAlex prefixed or as an address.
 PMID_SPELLINGS = [
