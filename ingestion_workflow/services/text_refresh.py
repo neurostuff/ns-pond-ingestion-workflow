@@ -167,12 +167,13 @@ def build(source: str, article_file: Path, text_path: Path, pmid: Optional[str] 
     """The text the source's extractor writes for this download, its caption spans, and
     for ACE how the text was made (`ExtractedContent.text_source`)."""
     if source in JATS_SOURCES:
-        from lxml import etree
+        from ingestion_workflow.extractors.pubget_extractor import (
+            article_text_and_captions,
+            read_article,
+        )
 
-        from ingestion_workflow.extractors.pubget_extractor import article_text_and_captions
-
-        return (*article_text_and_captions(etree.parse(str(article_file)), article_file.parent),
-                None)
+        tree = read_article(article_file)[0]
+        return (*article_text_and_captions(tree, article_file.parent), None)
     if source == "elsevier":
         from ingestion_workflow.extractors.elsevier_extractor import article_text_and_captions
 

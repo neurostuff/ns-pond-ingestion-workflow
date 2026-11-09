@@ -31,7 +31,6 @@ from pathlib import Path
 from typing import Collection, Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
 from urllib.parse import urlsplit
 
-from lxml import etree
 from pubget._utils import article_bucket_from_pmcid
 from study_schema.models.paper_parse import (
     CopyRoute,
@@ -775,9 +774,10 @@ class MetadataService:
         if article_xml is None:
             return None
 
+        from ingestion_workflow.extractors.pubget_extractor import read_article
+
         try:
-            tree = etree.parse(str(article_xml))
-            root = tree.getroot()
+            root = read_article(article_xml)[0].getroot()
 
             # Extract title
             title_elem = root.find(".//article-title")
