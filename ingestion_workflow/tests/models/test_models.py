@@ -150,14 +150,23 @@ def test_an_extracted_table_s_coordinates_carry_no_other_statistics_key():
     assert ExtractedTable.from_dict(table.to_dict()).to_dict() == table.to_dict()
 
 
-@pytest.mark.parametrize("size", [-76, -6.0, True, "76", float("nan"), float("inf")])
-def test_a_coordinate_refuses_a_size_that_is_not_a_count_and_drops_its_measure(size):
-    """Read from a stored blob too, so a stored negative size never reaches sync."""
+@pytest.mark.parametrize("size", [True, "76", float("nan"), float("inf")])
+def test_a_coordinate_refuses_a_size_that_is_not_a_number_and_drops_its_measure(size):
     from ingestion_workflow.models.analysis import Coordinate
 
     point = Coordinate.from_dict({"x": 1, "y": 2, "z": 3, "cluster_size": size,
                                   "cluster_measure": "voxels"})
     assert (point.cluster_size, point.cluster_measure) == (None, None)
+
+
+@pytest.mark.parametrize("size, kept", [(-76, 76), (-6.0, 6)])
+def test_a_coordinate_s_negative_size_is_its_magnitude_with_its_measure(size, kept):
+    """Read from a stored blob too, so a stored negative size never reaches sync."""
+    from ingestion_workflow.models.analysis import Coordinate
+
+    point = Coordinate.from_dict({"x": 1, "y": 2, "z": 3, "cluster_size": size,
+                                  "cluster_measure": "voxels"})
+    assert (point.cluster_size, point.cluster_measure) == (kept, "voxels")
 
 
 def test_a_coordinate_keeps_a_count_and_a_measure_given_without_one():

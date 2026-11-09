@@ -186,17 +186,15 @@ class Coordinate:
     NON_FIELD_KEYS = ("is_deactivation", "is_seed", "sign")
 
     def __post_init__(self) -> None:
-        # A cluster size is a count. One read negative is a misread (most often a
-        # coordinate taken for the size), so it and its measure are dropped. A table's
-        # stray dash is CoordinatePoint's to take abs of before it gets here.
+        # A cluster size is a count; one printed or read with a minus is its magnitude,
+        # as a table's is (CoordinatePoint). What is not a finite number is no size.
         size = self.cluster_size
         if size is None:
             return
-        if (isinstance(size, bool) or not isinstance(size, (int, float))
-                or not 0 <= size < math.inf):
+        if isinstance(size, bool) or not isinstance(size, (int, float)) or not math.isfinite(size):
             self.cluster_size = self.cluster_measure = None
         else:
-            self.cluster_size = int(size)
+            self.cluster_size = abs(int(size))
 
     @property
     def sign(self) -> str:
