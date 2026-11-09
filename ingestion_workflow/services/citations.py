@@ -296,14 +296,14 @@ def _jats_references(root) -> List[dict]:
 
 def read_jats(xml_path: Path, text: str) -> ReadResult:
     from ingestion_workflow.extractors.pubget_extractor import (
-        _JATS,
         KEEPS_SUBSCRIPTS,
         KEEPS_SUPERSCRIPTS,
         article_text,
+        read_article,
     )
 
     dropped_tags = tuple(tag for tag, kept in (("sup", KEEPS_SUPERSCRIPTS), ("sub", KEEPS_SUBSCRIPTS)) if not kept)
-    tree = etree.parse(str(xml_path), _JATS)  # as the extraction read it
+    tree = read_article(xml_path)[0]  # as the extraction read it
     root = tree.getroot()
     refs = _jats_references(root)
     ids = {r["id"] for r in refs}

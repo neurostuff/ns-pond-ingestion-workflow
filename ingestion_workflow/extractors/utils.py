@@ -8,6 +8,8 @@ import re
 from pathlib import Path
 from typing import Any, Optional
 
+from lxml import etree
+
 from ingestion_workflow.models import (
     Coordinate,
     CoordinateSpace,
@@ -27,6 +29,16 @@ DEFAULT_CONTENT_TYPES: dict[FileType, str] = {
     FileType.PDF: "application/pdf",
     FileType.BINARY: "application/octet-stream",
 }
+
+
+def recovering_xml_parser() -> etree.XMLParser:
+    """A parser that keeps what it can of malformed XML, as some of PMC's JATS is.
+    One per parse: its `error_log` holds what recovery got past."""
+    return etree.XMLParser(recover=True, huge_tree=True, resolve_entities=False)
+
+
+def has_body(article: etree._Element) -> bool:
+    return article.find(".//body") is not None
 
 
 def doi_prefix(doi: Optional[str]) -> Optional[str]:
