@@ -21,7 +21,6 @@ from pathlib import Path
 from typing import Callable, Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import Artifact, Catalog, Outcome, Status, utcnow
-from ingestion_workflow.models import DownloadSource, FileType
 from ingestion_workflow.services import download_check
 
 _BATCH = 900
@@ -63,6 +62,7 @@ class Revalidation:
         # The failure keeps no payload, so its message names the page it was.
         out = [
             (Outcome.failure(b.article_id, "download", b.source, f"{b.message} [page {b.page}]",
+                             permanent=b.reason in download_check.PERMANENT_REASONS,
                              fingerprint=b.fingerprint, summary={"bad_page": b.reason}),
              b.updated_at)
             for b in self.bad
@@ -75,10 +75,6 @@ class Revalidation:
         return Counter((b.reason, b.source) for b in self.bad)
 
 
-#: The files the check reads: pages, and Elsevier's full-text XML.
-_CHECKED = {FileType.HTML.value: None, FileType.XML.value: DownloadSource.ELSEVIER.value}
-
-
 def _checked_files(catalog: Catalog, download: Artifact,
                    recorded_path) -> Optional[List[Tuple[str, str]]]:
     payload = catalog.payload(download)
@@ -86,8 +82,7 @@ def _checked_files(catalog: Catalog, download: Artifact,
         return None
     return [(str(recorded_path(f["file_path"])), f["file_type"])
             for f in payload.get("files", [])
-            if f.get("file_type") in _CHECKED
-            and _CHECKED[f["file_type"]] in (None, download.source)]
+            if download_check.is_checked(f.get("file_type"), download.source)]
 
 
 def _check(item: Tuple[str, str, List[Tuple[str, str]]]):
@@ -95,13 +90,13 @@ def _check(item: Tuple[str, str, List[Tuple[str, str]]]):
     for path, file_type in files:
         if not Path(path).is_file():
             return article_id, source, None, "missing", path
-        bad = download_check.check_stored(Path(path), FileType(file_type), DownloadSource(source))
+        bad = download_check.check_stored(Path(path), file_type, source)
         if bad is not None:
             return article_id, source, bad.reason, bad.message, path
     return article_id, source, None, None, None
 
 
-def _map(items: List[Tuple[str, str, List[str]]], workers: int) -> Iterator[tuple]:
+def _map(items: List[Tuple[str, str, List[Tuple[str, str]]]], workers: int) -> Iterator[tuple]:
     if workers <= 1:
         yield from map(_check, items)
         return

@@ -6,7 +6,7 @@ import sqlite3
 from pathlib import Path
 
 import pytest
-from ingestion_workflow.catalog import Catalog, Outcome, Status
+from ingestion_workflow.catalog import ArticleRef, Catalog, Outcome, Status
 from ingestion_workflow.cli.main import app
 from ingestion_workflow.config import Settings
 from ingestion_workflow.extractors.base import BaseExtractor
@@ -116,21 +116,30 @@ def test_triage_moves_to_the_other_source(env, tmp_path, evidence):
 
 
 
-def test_an_elsevier_abstract_hands_the_extraction_to_ace(tmp_path, evidence):
-    """3o66ws7cfpuq: ScienceDirect's answer held only the abstract, and, read first, it
-    kept ACE's page with the five tables from ever being extracted again."""
+
+@pytest.mark.parametrize("pub_type, reason, status", [
+    ("fla", "abstract_only", Status.FAILED),
+    ("ret", "retracted", Status.PERMANENT),
+])
+def test_an_elsevier_answer_with_no_body_hands_the_extraction_to_ace(
+        tmp_path, evidence, pub_type, reason, status):
+    """3o66ws7cfpuq: ScienceDirect's answer held no body, and, read first, it kept ACE's
+    page with the five tables from ever being extracted again. The article is retracted;
+    as a full article ("fla") it stands for an abstract-only answer. A retraction notice
+    is never replaced by the body, so that download is not asked again."""
     gate = tmp_path / "gate.joblib"
     gate.write_bytes(b"a fitted gate")
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", download_sources=["elsevier", "ace"],
                         coordinate_gate_path=gate)
     xml = tmp_path / "content.xml"
-    xml.write_bytes(gzip.decompress((PAGES / "3o66ws7cfpuq.xml.gz").read_bytes()))
+    xml.write_bytes(gzip.decompress((PAGES / "3o66ws7cfpuq.xml.gz").read_bytes()).replace(
+        b"<pubType>ret</pubType>", f"<pubType>{pub_type}</pubType>".encode()))
     with Catalog.open(settings.catalog_root) as catalog:
         ref = catalog.register(Identifier(pmid="23261134"), evidence)
         elsevier = downloaded(catalog, settings, ref, "elsevier", xml, FileType.XML)
         extracted(catalog, ref, elsevier, tables=0)
-        ace = downloaded(catalog, settings, ref, "ace", page(tmp_path, ARTICLE))
+        downloaded(catalog, settings, ref, "ace", page(tmp_path, ARTICLE))
         catalog.record([Outcome(ref.id, "extract", "ace", Status.OK, "an older ace reader",
                                 {"tables": []}, summary={"tables": 5, "has_text": True})])
         stage = ExtractStage(settings)
@@ -143,10 +152,26 @@ def test_an_elsevier_abstract_hands_the_extraction_to_ace(tmp_path, evidence):
 
         assert pending() == []  # Elsevier's extraction is fresh, and first
         found = revalidate.scan(catalog, [ref.id])
-        assert found.counts() == {("abstract_only", "elsevier"): 1}
+        assert found.counts() == {(reason, "elsevier"): 1}
         revalidate.apply(catalog, found)
+        assert catalog.artifact(ref.id, "download", "elsevier").status is status
         assert catalog.artifact(ref.id, "extract", "elsevier").status is Status.FAILED
         assert pending() == ["ace"]
+
+
+@pytest.mark.parametrize("pub_type, status", [("fla", Status.FAILED),
+                                              ("ret", Status.PERMANENT)])
+def test_a_new_elsevier_download_with_no_body_fails(env, tmp_path, pub_type, status):
+    settings, _ = env
+    xml = tmp_path / "content.xml"
+    xml.write_bytes(gzip.decompress((PAGES / "3o66ws7cfpuq.xml.gz").read_bytes()).replace(
+        b"<pubType>ret</pubType>", f"<pubType>{pub_type}</pubType>".encode()))
+    result = DownloadResult(Identifier(pmid="23261134"), DownloadSource.ELSEVIER, True, files=[
+        DownloadedFile(xml, FileType.XML, "text/xml", DownloadSource.ELSEVIER)])
+    outcome = DownloadStage(settings)._outcome(ArticleRef(id="a", identifier=result.identifier),
+                                               DownloadSource.ELSEVIER, result, "fp")
+    assert outcome.status is status
+
 
 def test_an_article_with_no_other_download_plans_its_next_source(env, tmp_path, evidence):
     settings, catalog = env

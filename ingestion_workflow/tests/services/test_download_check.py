@@ -18,6 +18,7 @@ from ingestion_workflow.services.download_check import (
     EMPTY_SHELL,
     ERROR_PAGE,
     PAYWALL,
+    RETRACTED,
     check_page,
     reason_of,
 )
@@ -482,27 +483,68 @@ def test_running_prose_beside_an_abstract_is_body_prose():
     assert download_check.page_prose(page).body_words >= download_check.BODY_PROSE_WORDS
 
 
-def stored_xml(tmp_path, article_id: str) -> Path:
+#: ScienceDirect's answer for 3o66ws7cfpuq, retracted: no body, the notice as its abstract.
+#: With a full article's pubType ("fla") it stands for an abstract-only answer that is not a
+#: retraction; no such answer is stored here.
+RETRACTED_XML = "3o66ws7cfpuq"
+HIGHLIGHTS = (b'<ce:abstract class="author-highlights"><ce:section-title>Highlights'
+              b'</ce:section-title><ce:abstract-sec><ce:simple-para><ce:list><ce:list-item>'
+              b'<ce:para>Adolescents with bipolar disorder were scanned.</ce:para>'
+              b'</ce:list-item></ce:list></ce:simple-para></ce:abstract-sec></ce:abstract>')
+ACKNOWLEDGMENT = (b'<ce:acknowledgment><ce:section-title>Acknowledgments</ce:section-title>'
+                  b'<ce:para>We thank the participants.</ce:para></ce:acknowledgment>')
+
+
+def stored_xml(tmp_path, article_id: str, *, pub_type: str = "", added: bytes = b"") -> Path:
+    data = gzip.decompress((PAGES / f"{article_id}.xml.gz").read_bytes())
+    if pub_type:
+        data = data.replace(b"<pubType>ret</pubType>", f"<pubType>{pub_type}</pubType>".encode())
+    if added:
+        data = data.replace(b"<ce:abstract ", added + b"<ce:abstract ", 1)
     path = tmp_path / f"{article_id}.xml"
-    path.write_bytes(gzip.decompress((PAGES / f"{article_id}.xml.gz").read_bytes()))
+    path.write_bytes(data)
     return path
 
 
-def test_an_elsevier_full_text_with_no_body_is_abstract_only(tmp_path):
-    """ScienceDirect answered 3o66ws7cfpuq with its abstract and references only, and ACE's
-    page of the same article holds the five tables."""
-    bad = download_check.check_stored(stored_xml(tmp_path, "3o66ws7cfpuq"), FileType.XML,
-                                      DownloadSource.ELSEVIER)
+def elsevier(path: Path):
+    return download_check.check_stored(path, FileType.XML, DownloadSource.ELSEVIER)
+
+
+def test_an_elsevier_retraction_notice_is_retracted(tmp_path):
+    """ScienceDirect answers 3o66ws7cfpuq, retracted, with the notice as its abstract."""
+    bad = elsevier(stored_xml(tmp_path, RETRACTED_XML))
+    assert bad is not None and bad.reason == RETRACTED
+
+
+@pytest.mark.parametrize("added", [b"", HIGHLIGHTS, ACKNOWLEDGMENT],
+                         ids=["abstract", "highlights", "acknowledgment"])
+def test_an_elsevier_full_text_with_no_body_is_abstract_only(tmp_path, added):
+    """Highlights and acknowledgments hold `ce:para` outside any body."""
+    bad = elsevier(stored_xml(tmp_path, RETRACTED_XML, pub_type="fla", added=added))
     assert bad is not None and bad.reason == ABSTRACT_ONLY
 
 
-@pytest.mark.parametrize("article_id", ["ry7j2gwauv7r",   # tagged sections
+@pytest.mark.parametrize("article_id", ["ry7j2gwauv7r",   # tagged, as ja:body
                                         "gulrtythqeyl"])  # untagged, as xocs:rawtext
 def test_an_elsevier_full_text_with_a_body_passes(tmp_path, article_id):
-    assert download_check.check_stored(stored_xml(tmp_path, article_id), FileType.XML,
-                                       DownloadSource.ELSEVIER) is None
+    assert elsevier(stored_xml(tmp_path, article_id)) is None
+
+
+def test_an_elsevier_answer_that_is_not_xml_is_abstract_only(tmp_path):
+    path = tmp_path / "content.xml"
+    path.write_bytes(b"<html><body>Service unavailable</body></html")
+    assert elsevier(path).reason == ABSTRACT_ONLY
 
 
 def test_another_source_s_xml_is_not_read_for_an_elsevier_body(tmp_path):
-    assert download_check.check_stored(stored_xml(tmp_path, "3o66ws7cfpuq"), FileType.XML,
+    assert download_check.check_stored(stored_xml(tmp_path, RETRACTED_XML), FileType.XML,
                                        DownloadSource.PUBGET) is None
+
+
+@pytest.mark.parametrize("file_type, source, checked", [
+    ("html", "ace", True), ("html", "pdf", True), ("xml", "elsevier", True),
+    ("xml", "pubget", False), ("pdf", "elsevier", False), ("json", "elsevier", False),
+    ("xml", "a source no longer configured", False),
+])
+def test_which_files_the_check_reads(file_type, source, checked):
+    assert download_check.is_checked(file_type, source) is checked

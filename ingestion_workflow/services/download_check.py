@@ -31,7 +31,11 @@ PAYWALL = "paywall"
 ERROR_PAGE = "error_page"
 CITATION_STUB = "citation_stub"
 ABSTRACT_ONLY = "abstract_only"
-REASONS = (EMPTY_SHELL, PAYWALL, ERROR_PAGE, CITATION_STUB, ABSTRACT_ONLY)
+#: The source serves the retraction notice in the article's place, and always will.
+RETRACTED = "retracted"
+REASONS = (EMPTY_SHELL, PAYWALL, ERROR_PAGE, CITATION_STUB, ABSTRACT_ONLY, RETRACTED)
+#: Reasons a retry will not change, so the download is recorded permanent.
+PERMANENT_REASONS = (RETRACTED,)
 
 #: Visible characters below which a page holds nothing to read (a PDF viewer's
 #: `<embed>`, a bare `<body></body>`, a script-only shell).
@@ -450,26 +454,22 @@ def check_file(path: Path) -> Optional[BadPage]:
     return check_page(data)
 
 
-#: ScienceDirect's full text holds its body as `ce:sections` and `ce:para`, or as
-#: `xocs:rawtext` for an article it has not tagged. An answer with none of them holds only
-#: the abstract and the reference list: 2,088 of the 302,721 stored (2026-11-08).
-_ELSEVIER_BODY = (b"<ce:sections", b"<ce:para", b"<xocs:rawtext")
+def is_checked(file_type: str, source: str) -> bool:
+    """Whether the check reads a downloaded file: a page, or Elsevier's full text. Other
+    XML and PDF payloads come from full-text services and pass. Enums or their values."""
+    return file_type == FileType.HTML or (
+        file_type == FileType.XML and source == DownloadSource.ELSEVIER)
 
 
-def check_elsevier_xml(path: Path) -> Optional[BadPage]:
-    if any(tag in Path(path).read_bytes() for tag in _ELSEVIER_BODY):
+def check_stored(path: Path, file_type: str, source: str) -> Optional[BadPage]:
+    """Why one downloaded file is not the article, if it is not."""
+    if not is_checked(file_type, source):
         return None
-    return BadPage(ABSTRACT_ONLY, "Elsevier full text with no body, only the abstract")
-
-
-def check_stored(path: Path, file_type: FileType, source: DownloadSource) -> Optional[BadPage]:
-    """Why one downloaded file is not the article, if it is not: a page, or an Elsevier
-    full text. Other XML and PDF payloads come from full-text services and pass."""
-    if file_type is FileType.HTML:
+    if file_type == FileType.HTML:
         return check_file(path)
-    if file_type is FileType.XML and source is DownloadSource.ELSEVIER:
-        return check_elsevier_xml(path)
-    return None
+    from ingestion_workflow.extractors.elsevier_extractor import check_full_text
+
+    return check_full_text(path)
 
 
 def check_download(result: DownloadResult) -> Optional[BadPage]:

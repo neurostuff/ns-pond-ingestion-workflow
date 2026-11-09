@@ -55,6 +55,7 @@ from ingestion_workflow.models import (
     ExtractionResult,
     FileType,
 )
+from ingestion_workflow.services.download_check import ABSTRACT_ONLY, RETRACTED, BadPage
 from ingestion_workflow.utils.progress import emit_progress
 
 
@@ -849,6 +850,32 @@ def _extract_elsevier_article(
         error_message=error_message,
         figure_captions=figure_captions,
     )
+
+
+_JA = "{http://www.elsevier.com/xml/ja/dtd}"
+_XOCS = "{http://www.elsevier.com/xml/xocs/dtd}"
+_SVAPI = "{http://www.elsevier.com/xml/svapi/article/dtd}"
+#: Where ScienceDirect's full text holds the article: `ja:body`, or `xocs:rawtext` for an
+#: article it has not tagged. `ce:para` is no sign of one: highlights and acknowledgments
+#: hold it too. An answer with neither holds only the abstract and the references.
+_BODY = (_JA + "body", _XOCS + "rawtext")
+
+
+def check_full_text(path: Path) -> Optional[BadPage]:
+    """Why a stored ScienceDirect full text is not the article, if it is not."""
+    pub_type = None
+    try:
+        for event, element in etree.iterparse(str(path), events=("start", "end"),
+                                              huge_tree=True, tag=(*_BODY, _SVAPI + "pubType")):
+            if element.tag in _BODY:
+                return None
+            if event == "end":
+                pub_type = (element.text or "").strip()
+    except etree.XMLSyntaxError:
+        pass
+    if pub_type == "ret":
+        return BadPage(RETRACTED, "Elsevier serves the retraction notice, not the article")
+    return BadPage(ABSTRACT_ONLY, "Elsevier full text with no body, only the abstract")
 
 
 def _select_content_file(
