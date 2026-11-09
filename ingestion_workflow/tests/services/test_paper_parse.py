@@ -1168,12 +1168,33 @@ def test_a_nan_statistic_gives_a_point_no_value():
 def test_spm_s_inf_statistic_gives_a_point_no_value(tmp_path):
     """SPM prints Z = Inf past its precision; the reader takes it as infinity, which JSON
     writes as null and the parse then refuses (6CcBmf9G5kpF, Z = Inf at -44 22 24)."""
-    assert point_values(float("inf"), "Z") == [] and point_values(float("-inf"), "T") == []
+    assert point_values(float("-inf"), "T") == [{"kind": "t", "value": float("-inf")}]
     point = Coordinate(x=22, y=-4, z=-20, statistic_value=float("inf"), statistic_type="Z")
     parse, _ = _parse(tmp_path, SHARED, {"tbl1": _collection(
         [Analysis(name="Fear > Neutral", coordinates=[point])])})
     (analysis,) = parse.analyses
     assert not analysis.points[0].values
+    type(parse).model_validate_json(parse.model_dump_json())
+
+
+def test_a_minus_inf_point_is_split_into_the_inverse_half_with_no_value(tmp_path):
+    """-Inf is still negative: the split places it by its sign, and only the parse drops it."""
+    from ingestion_workflow.services.create_analyses import split_by_sign
+
+    points = [Coordinate(x=36, y=20, z=4, statistic_value=4.1, statistic_type="Z"),
+              Coordinate(x=-44, y=22, z=24, statistic_value=float("-inf"), statistic_type="Z"),
+              Coordinate(x=22, y=-4, z=-20, statistic_value=-3.2, statistic_type="Z")]
+    assert [c.sign for c in points] == ["positive", "negative", "negative"]
+    (name, original, _), (inverse_name, inverse, _) = split_by_sign("A > B", points)
+    parse, _ = _parse(tmp_path, SHARED, {"tbl1": _collection([
+        Analysis(name=name, coordinates=original,
+                 metadata={"split": {"half": "original", "index": 0}}),
+        Analysis(name=inverse_name, coordinates=inverse,
+                 metadata={"split": {"half": "inverse", "original_index": 0}})])})
+    a, b = parse.analyses
+    assert [p.coordinates for p in a.points] == [[36, 20, 4]]
+    assert [p.coordinates for p in b.points] == [[-44, 22, 24], [22, -4, -20]]
+    assert b.points[0].values is None and b.points[1].values[0].value == 3.2
     type(parse).model_validate_json(parse.model_dump_json())
 
 

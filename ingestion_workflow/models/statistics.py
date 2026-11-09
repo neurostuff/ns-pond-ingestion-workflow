@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import math
 from typing import Any, Dict, List, Optional
 
 from study_schema.statistics import NON_DIRECTIONAL_KINDS, point_side
@@ -44,10 +43,13 @@ def schema_kind(letter: Optional[str]) -> str:
 
 
 def point_values(statistic_value: Any, statistic_type: Optional[str]) -> List[Dict[str, Any]]:
-    """A point's statistic as study_schema PointValue dicts: none unless it is a number."""
+    """A point's statistic as study_schema PointValue dicts: none unless it is a number.
+
+    An infinite value is kept, so its sign still places the point; the parse drops it.
+    """
     if isinstance(statistic_value, bool) or not isinstance(statistic_value, (int, float)):
         return []
-    if not math.isfinite(statistic_value):  # NaN, or SPM's printed Inf
+    if statistic_value != statistic_value:  # NaN
         return []
     return [{"kind": schema_kind(statistic_type), "value": float(statistic_value)}]
 
