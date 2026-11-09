@@ -20,12 +20,12 @@ from typing import Any, Dict, Iterator, List, Mapping, Optional
 
 from ingestion_workflow.catalog import Catalog, Run, RunKind
 from ingestion_workflow.pipeline.stage import recorded_path
+from ingestion_workflow.pipeline.stages.offloaded import NO_ANSWER
 
 from .contract import BundleDir, ResultRow
 from .importer import import_run
 from .remote import Remote, elapsed_s, job_states
 
-NO_ANSWER = "no prediction: {}"
 REQUEST_FAILED = "request failed: {}"
 RESTORE_FAILED = "restore failed: {}"
 
