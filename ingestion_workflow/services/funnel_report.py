@@ -114,6 +114,8 @@ GLOSSARY: Tuple[Tuple[str, str], ...] = (
     ("bad page: paywall", "the download was a paywall or login page, not the article"),
     ("bad page: error_page", "the download was an error page (not found, server error)"),
     ("bad page: empty_shell", "the download held almost no visible text (a viewer shell)"),
+    ("bad page: abstract_only", "the download held the abstract and no body"),
+    ("bad page: retracted", "the source serves the retraction notice in the article's place"),
     ("bad page: citation_stub", "the download was a citation or record page with no article "
                                 "text"),
     ("not open access", "the source will not serve the full text"),

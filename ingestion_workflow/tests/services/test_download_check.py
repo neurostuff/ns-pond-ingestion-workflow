@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pytest
 from ingestion_workflow.extractors.ace_extractor import _validate_downloaded_html
+from ingestion_workflow.models import DownloadSource, FileType
 from ingestion_workflow.services import download_check
 from ingestion_workflow.services.download_check import (
     ABSTRACT_ONLY,
@@ -17,6 +18,7 @@ from ingestion_workflow.services.download_check import (
     EMPTY_SHELL,
     ERROR_PAGE,
     PAYWALL,
+    RETRACTED,
     check_page,
     reason_of,
 )
@@ -479,3 +481,91 @@ def test_running_prose_beside_an_abstract_is_body_prose():
                    f"from one trial to the next.</p></div>" for i in range(16))
     page = synthetic(ABSTRACT, headed=False, body=body)
     assert download_check.page_prose(page).body_words >= download_check.BODY_PROSE_WORDS
+
+
+#: ScienceDirect's answer for 3o66ws7cfpuq, retracted: no body, the notice as its abstract.
+#: With a full article's pubType ("fla") it stands for an abstract-only answer that is not a
+#: retraction; no such answer is stored here.
+RETRACTED_XML = "3o66ws7cfpuq"
+HIGHLIGHTS = (b'<ce:abstract class="author-highlights"><ce:section-title>Highlights'
+              b'</ce:section-title><ce:abstract-sec><ce:simple-para><ce:list><ce:list-item>'
+              b'<ce:para>Adolescents with bipolar disorder were scanned.</ce:para>'
+              b'</ce:list-item></ce:list></ce:simple-para></ce:abstract-sec></ce:abstract>')
+ACKNOWLEDGMENT = (b'<ce:acknowledgment><ce:section-title>Acknowledgments</ce:section-title>'
+                  b'<ce:para>We thank the participants.</ce:para></ce:acknowledgment>')
+SECTIONED_ABSTRACT = (b'<ce:abstract class="graphical"><ce:sections><ce:section>'
+                      b'<ce:para>A sectioned abstract.</ce:para></ce:section></ce:sections>'
+                      b'</ce:abstract>')
+#: A book chapter (Progress in Brain Research, Handbook of Clinical Neurology) is in the
+#: bk DTD, with no ja:body: its body is `ce:sections`.
+CHAPTER = (b'<full-text-retrieval-response xmlns="http://www.elsevier.com/xml/svapi/article/dtd"'
+           b' xmlns:bk="http://www.elsevier.com/xml/bk/dtd"'
+           b' xmlns:ce="http://www.elsevier.com/xml/common/dtd"><coredata><pubType>chp</pubType>'
+           b'</coredata><originalText><bk:chapter><ce:abstract><ce:abstract-sec><ce:simple-para>'
+           b'The chapter reviews it.</ce:simple-para></ce:abstract-sec></ce:abstract>'
+           b'<ce:sections><ce:section><ce:section-title>Introduction</ce:section-title>'
+           b'<ce:para>The chapter begins.</ce:para></ce:section></ce:sections></bk:chapter>'
+           b'</originalText></full-text-retrieval-response>')
+
+
+def stored_xml(tmp_path, article_id: str, *, pub_type: str = "", added: bytes = b"") -> Path:
+    data = gzip.decompress((PAGES / f"{article_id}.xml.gz").read_bytes())
+    if pub_type:
+        data = data.replace(b"<pubType>ret</pubType>", f"<pubType>{pub_type}</pubType>".encode())
+    if added:
+        data = data.replace(b"<ce:abstract ", added + b"<ce:abstract ", 1)
+    path = tmp_path / f"{article_id}.xml"
+    path.write_bytes(data)
+    return path
+
+
+def elsevier(path: Path):
+    return download_check.check_stored(path, FileType.XML, DownloadSource.ELSEVIER)
+
+
+def test_an_elsevier_retraction_notice_is_retracted(tmp_path):
+    """ScienceDirect answers 3o66ws7cfpuq, retracted, with the notice as its abstract."""
+    bad = elsevier(stored_xml(tmp_path, RETRACTED_XML))
+    assert bad is not None and bad.reason == RETRACTED
+
+
+@pytest.mark.parametrize("added", [b"", HIGHLIGHTS, ACKNOWLEDGMENT, SECTIONED_ABSTRACT],
+                         ids=["abstract", "highlights", "acknowledgment", "sectioned abstract"])
+def test_an_elsevier_full_text_with_no_body_is_abstract_only(tmp_path, added):
+    """Highlights and acknowledgments hold `ce:para`, and an abstract can hold
+    `ce:sections`, outside any body."""
+    bad = elsevier(stored_xml(tmp_path, RETRACTED_XML, pub_type="fla", added=added))
+    assert bad is not None and bad.reason == ABSTRACT_ONLY
+
+
+@pytest.mark.parametrize("article_id", ["ry7j2gwauv7r",   # tagged, as ja:body
+                                        "gulrtythqeyl"])  # untagged, as xocs:rawtext
+def test_an_elsevier_full_text_with_a_body_passes(tmp_path, article_id):
+    assert elsevier(stored_xml(tmp_path, article_id)) is None
+
+
+def test_an_elsevier_chapter_with_sections_passes(tmp_path):
+    path = tmp_path / "content.xml"
+    path.write_bytes(CHAPTER)
+    assert elsevier(path) is None
+
+
+def test_an_elsevier_answer_that_is_not_xml_is_an_error(tmp_path):
+    path = tmp_path / "content.xml"
+    path.write_bytes(b"<html><body>Service unavailable</body></html")
+    bad = elsevier(path)
+    assert bad.reason == ERROR_PAGE and "not well-formed XML" in bad.message
+
+
+def test_another_source_s_xml_is_not_read_for_an_elsevier_body(tmp_path):
+    assert download_check.check_stored(stored_xml(tmp_path, RETRACTED_XML), FileType.XML,
+                                       DownloadSource.PUBGET) is None
+
+
+@pytest.mark.parametrize("file_type, source, checked", [
+    ("html", "ace", True), ("html", "pdf", True), ("xml", "elsevier", True),
+    ("xml", "pubget", False), ("pdf", "elsevier", False), ("json", "elsevier", False),
+    ("xml", "a source no longer configured", False),
+])
+def test_which_files_the_check_reads(file_type, source, checked):
+    assert download_check.is_checked(file_type, source) is checked

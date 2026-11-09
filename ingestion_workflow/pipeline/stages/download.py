@@ -278,8 +278,8 @@ class DownloadStage:
             # A PDF failure is never final: its dead URLs are remembered instead,
             # and a provider may list a new copy. A page that is not the article
             # may be a passing outage or a challenge, and its message can quote
-            # "404" from the page itself.
-            permanent = (
+            # "404" from the page itself. A retraction notice stays one.
+            permanent = reason in download_check.PERMANENT_REASONS or (
                 source is not DownloadSource.PDF and reason is None and _is_permanent(message)
             )
             return Outcome.failure(
