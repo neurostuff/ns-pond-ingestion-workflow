@@ -416,7 +416,7 @@ def read_article(path: Path) -> Tuple[etree._ElementTree, Optional[str]]:
     """
     parser = recovering_xml_parser()
     tree = etree.parse(str(path), parser)
-    if parser.error_log:
+    if parser.error_log.filter_from_errors():  # a warning (XML 1.1) needs no recovery
         data = path.read_bytes()
         parser = recovering_xml_parser()
         root = etree.fromstring(_PREDEFINED.sub(lambda m: _CHARACTER_REFERENCE[m[1]], data),
@@ -425,7 +425,7 @@ def read_article(path: Path) -> Tuple[etree._ElementTree, Optional[str]]:
     root = tree.getroot()
     if root is None or etree.QName(root).localname != "article":
         raise UnreadableJats(f"{path.name} is not a JATS article")
-    errors = list(parser.error_log)
+    errors = list(parser.error_log.filter_from_errors())
     if not errors:
         return tree, None
     first = f"line {errors[0].line}: {errors[0].message}"

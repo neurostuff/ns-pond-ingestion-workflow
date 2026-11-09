@@ -139,6 +139,26 @@ def test_text_refresh_rebuilds_malformed_jats_as_the_extraction_wrote_it(tmp_pat
     assert captions == extraction.figure_captions
 
 
+def _xml_1_1(xml):
+    """The same article declared XML 1.1, which libxml2 reads with a warning, not an error."""
+    return '<?xml version="1.1" encoding="utf-8"?>\n' + xml[xml.index("<article"):]
+
+
+@pytest.mark.parametrize(
+    "edit",
+    [_xml_1_1, lambda xml: _xml_1_1(xml[: xml.index("<body")] + "</article>\n")],
+    ids=["with-body", "without-body"],
+)
+def test_a_warning_is_not_a_recovery(tmp_path, edit):
+    broken = _broken(tmp_path, edit)
+    etree.parse(str(broken / "article.xml"))  # strict accepts it
+
+    tree, recovered = read_article(broken / "article.xml")
+
+    assert recovered is None
+    assert etree.QName(tree.getroot()).localname == "article"
+
+
 @pytest.mark.parametrize(
     "edit, reason",
     [
