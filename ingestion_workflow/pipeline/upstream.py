@@ -90,10 +90,10 @@ def tables_reading(ctx: Context, article_id: str, analyses: Optional[Artifact]) 
         empty = (analyses.status is Status.SKIPPED and not summary.get("tables")) or (
             analyses.status is Status.OK and not unread and not summary.get("tables"))
         if empty and _passes_unseen(ctx, article_id, analyses):
-            # Triage passes tables this reading never saw (emcznvwqpaor: skipped for
-            # "no coordinate tables" on 09-30, triage passed two on 10-15).
-            return Reading(Kind.UNKNOWN, f"{TABLES_NOT_READ}: triage passes tables the "
-                                         "analyses stage has not read")
+            # Stale while triage passes tables (emcznvwqpaor: skipped for "no coordinate
+            # tables" on 09-30, triage passed two on 10-15).
+            return Reading(Kind.UNKNOWN, f"{TABLES_NOT_READ}: the analyses reading is stale "
+                                         "and triage passes tables")
         if analyses.status is Status.SKIPPED and not summary.get("tables"):
             return Reading(Kind.EMPTY)
         if analyses.status is Status.OK and not unread:

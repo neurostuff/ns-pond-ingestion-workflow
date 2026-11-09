@@ -49,9 +49,9 @@ def metadata_read(payload: Optional[Dict]) -> Dict:
 
 
 def passes_unseen(existing: Artifact, fp: Optional[str], triaged: Artifact) -> bool:
-    """Whether triage passes tables that `existing`, a reading that found none, did not see:
-    triage passes some, and `existing` is not the reading the plan makes now (`fp`, None
-    when the plan cannot say). A new triage that passes none leaves it right."""
+    """Whether `existing`, a reading that found no tables, is stale while triage passes
+    some: it is not the reading the plan makes now (`fp`; None when the metadata records
+    no digests). A triage that passes none, or records no `passed_tables`, leaves it."""
     return existing.fingerprint != fp and bool((triaged.summary or {}).get("passed_tables"))
 
 

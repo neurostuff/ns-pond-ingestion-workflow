@@ -2247,7 +2247,7 @@ def test_an_empty_table_reading_older_than_a_triage_that_passes_tables_only_hold
     ctx = Context(settings, catalog)
     plan, outcomes = _run(ResolveStage(settings), ctx, catalog, ref)
     assert (plan.blocked, plan.pending, outcomes) == (1, [], [])
-    assert "triage passes tables the analyses stage has not read" in " ".join(plan.reasons)
+    assert "the analyses reading is stale and triage passes tables" in " ".join(plan.reasons)
     assert catalog.artifacts([ref.id], "resolve")[ref.id][""].status is Status.OK
     assert Assessor(settings).assess(ctx, [ref])[ref.id].verdict is Verdict.HOLD
 
