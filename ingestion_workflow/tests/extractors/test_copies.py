@@ -129,6 +129,19 @@ def test_an_ace_page_of_the_journal_is_its_version_of_record_whatever_the_articl
         route=CopyRoute.publisher, version=CopyVersion.vor, access=CopyAccess.unrecorded)
 
 
+@pytest.mark.parametrize("fixture, version", [
+    ("ace_pmc_manuscript", CopyVersion.am),
+    ("ace_pmc_journal", CopyVersion.vor),
+])
+def test_an_ace_page_from_pmc_is_pmc_s_copy(fixture, version):
+    """With `ace_prefer_pmc` ACE reads PMC's page; PMC8015308's is an NIH manuscript of a
+    NeuroImage article, PMC6665080's the J Neurosci version."""
+    held = _ace(fixture, "10.1/x")
+
+    assert copy_of(held) == DownloadCopy(
+        route=CopyRoute.pmc, version=version, access=CopyAccess.unrecorded)
+
+
 def _fetched_pdf(**attempt) -> DownloadResult:
     """A PDF download as the pdf source records it: what it passed over, then the fetch."""
     return DownloadResult(
