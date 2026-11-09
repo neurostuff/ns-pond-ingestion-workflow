@@ -264,3 +264,19 @@ def test_an_unstated_space_is_null_in_stage1(tmp_path):
     analysis = _stage1(root)["analyses"][0]
     assert analysis["coordinate_space"] is None
     assert analysis["points"][0]["space"] is None
+
+
+def test_an_infinite_statistic_is_no_value_in_stage1(tmp_path):
+    """SPM's Z = Inf: stage1 keeps the point, with its sign but no value, as the parse does."""
+    identifier = Identifier(pmid="1")
+    content = ExtractedContent(
+        slug=identifier.slug, source=DownloadSource.PUBGET, identifier=identifier)
+    table = AnalysisCollection(slug="s", identifier=identifier, analyses=[
+        Analysis(name="B > A", table_id="tbl1", metadata=_decided(),
+                 coordinates=[Coordinate(x=-44.0, y=22.0, z=24.0,
+                                         statistic_value=float("-inf"), statistic_type="Z")])])
+    root = tmp_path / "pond"
+    bundle = ArticleExtractionBundle(content, ArticleMetadata(title="T"))
+    nspond.write_article(root, BASE, bundle, {"tbl1": table}, [])
+    (point,) = _stage1(root)["analyses"][0]["points"]
+    assert point["sign"] == "negative" and "values" not in point
