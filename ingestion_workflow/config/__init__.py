@@ -721,6 +721,19 @@ class Settings(BaseSettings):
             "(MINERU_HOME, MINERU_MODEL_SOURCE) come from the environment"
         ),
     )
+    mineru_workers_per_gpu: int = Field(
+        default=1,
+        ge=1,
+        description="MinerU workers on each GPU with room for one; more fit a card with room",
+    )
+    mineru_max_workers: Optional[int] = Field(
+        default=None,
+        ge=1,
+        description=(
+            "At most this many MinerU workers, for a machine others share (each holds "
+            "about 11 GB of memory); None means every one the GPUs fit"
+        ),
+    )
     pdf_extract_workers: Optional[int] = Field(
         default=None,
         description=(

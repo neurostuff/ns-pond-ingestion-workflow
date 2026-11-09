@@ -32,6 +32,8 @@ pdf_engines:  # Ordered PDF readers: each PDF is read by the first that can read
   - mineru  # needs the `mineru` extra and a GPU with 7000 MiB free
   - docling
 mineru_extract_memory_mb: 16384  # Resident memory (MB) a MinerU worker, with its vLLM engine, may reach before it is killed and that article failed; MinerU's own settings (MINERU_HOME, MINERU_MODEL_SOURCE) come from the environment
+mineru_workers_per_gpu: 1  # MinerU workers on each GPU with room for one; more fit a card with room
+mineru_max_workers: null  # At most this many MinerU workers, for a machine others share (each holds about 11 GB of memory); None means every one the GPUs fit
 pdf_extract_workers: null  # Docling worker processes for PDF extraction; None means one per CUDA device, or 1 on CPU
 pdf_extract_memory_mb: 8192  # Resident memory (MB) a Docling worker may reach before it is killed and that article failed
 pdf_extract_timeout_s: 600.0  # Seconds one PDF extraction may run before its worker is killed and that article failed; the first article a worker reads also loads its models

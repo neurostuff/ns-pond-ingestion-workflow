@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pandas as pd
 import pytest
 from ingestion_workflow.config import Settings
@@ -18,6 +20,8 @@ from ingestion_workflow.extractors.pdf_extractor import (
     _table_label,
 )
 from ingestion_workflow.models import (
+    DownloadedFile,
+    DownloadResult,
     DownloadSource,
     FileType,
     Identifier,
@@ -475,3 +479,53 @@ def test_a_table_with_no_provenance_yields_nothing_rather_than_failing():
 
     assert _footnotes_below(type("T", (), {"prov": []})(), _Doc([])) == []
     assert _footnotes_below(object(), _Doc([])) == []
+
+
+class _Caption:
+    def __init__(self, text):
+        self.text = text
+
+    def resolve(self, doc=None):
+        return self
+
+
+class _DoclingTable:
+    """A Docling table item: its caption, its rows, its HTML."""
+
+    def __init__(self, caption, region):
+        self.captions = [_Caption(caption)]
+        self.footnotes, self.prov = [], []
+        self.data = _TableDataStub([])
+        self._frame = pd.DataFrame([[region, "-42", "18", "4"]], columns=["Region", "x", "y", "z"])
+
+    def export_to_dataframe(self, doc=None):
+        return self._frame
+
+    def export_to_html(self, doc=None, add_caption=True):
+        return self._frame.to_html(index=False)
+
+
+def test_a_table_continued_over_pages_keeps_each_piece_through_docling(tmp_path, monkeypatch):
+    """The ids the Docling path hands `_extracted_table`: the 81 production Docling
+    extractions with a continued table were made on this path."""
+    from ingestion_workflow.extractors import docling_convert
+    from ingestion_workflow.extractors.pdf_extractor import _extract_pdf_article
+
+    tables = [_DoclingTable("Table 1. Activations", "Left IFG"),
+              _DoclingTable("Table 1. (continued)", "Anterior temporal pole")]
+    document = type("D", (), {"tables": tables, "texts": [], "pictures": [],
+                              "export_to_text": lambda self: "Results were in MNI space."})()
+    monkeypatch.setattr(docling_convert, "convert_pdf", lambda path: document)
+    pdf = tmp_path / "a.pdf"
+    pdf.write_bytes(b"%PDF-1.4")
+    download = DownloadResult(
+        identifier=Identifier(doi="10.1/a"), source=DownloadSource.PDF, success=True,
+        files=[DownloadedFile(file_path=pdf, file_type=FileType.PDF,
+                              content_type="application/pdf", source=DownloadSource.PDF)])
+
+    content = _extract_pdf_article(download, tmp_path / "out")
+
+    assert [t.table_id for t in content.tables] == ["table-1", "table-1-2"]
+    first, continued = (Path(t.raw_content_path).read_text() for t in content.tables)
+    assert "Left IFG" in first and "Anterior temporal pole" not in first
+    assert "Anterior temporal pole" in continued
