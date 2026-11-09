@@ -34,7 +34,7 @@ from ingestion_workflow.pipeline.stages.offloaded import (
     record_digest,
 )
 
-from .contract import Bundle, BundleDir, InputRow, RunSpec, Shard
+from .contract import Bundle, BundleDir, InputRow, RunSpec, Shard, write_rows
 
 #: Why an article is left out of a bundle; counted, never written.
 NO_SYNC = "no sync"
@@ -238,17 +238,13 @@ def export(ctx: Context, spec: RunSpec, machine: str, *, articles: Optional[Iter
     shards = []
     for k, rows in enumerate(shard(built, spec.shard_size)):
         name = f"s{k:03d}"
-        with out.inputs(name).open("w", encoding="utf-8") as handle:
-            handle.writelines(json.dumps(r, ensure_ascii=False) + "\n" for r in rows)
+        write_rows(out.inputs(name), rows)
         if spec.stage == "evidence":
-            with out.records(name).open("w", encoding="utf-8") as handle:
-                handle.writelines(json.dumps({"article_id": r["article_id"],
-                                              "record": due[r["article_id"]]}) + "\n"
-                                  for r in rows)
+            write_rows(out.records(name), ({"article_id": r["article_id"],
+                                            "record": due[r["article_id"]]} for r in rows))
         shards.append(Shard(name=name, articles=len(rows),
                             input_tokens=sum(r["n_input_tokens"] for r in rows)))
-    with out.skipped.open("w", encoding="utf-8") as handle:
-        handle.writelines(json.dumps(r) + "\n" for r in skipped)
+    write_rows(out.skipped, skipped)
     config = {"serve": spec.serve.model_dump(), "family": spec.family,
               "model_revision": spec.model_revision, "adapter_sha256": spec.adapter_sha256,
               "shard_size": spec.shard_size, "max_input_tokens": spec.max_input_tokens,

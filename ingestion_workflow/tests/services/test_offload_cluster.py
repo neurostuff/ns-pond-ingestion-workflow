@@ -20,7 +20,12 @@ from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.config import Machine, Settings
 from ingestion_workflow.pipeline import Context
 from ingestion_workflow.services.offload import remote as R
-from ingestion_workflow.services.offload.contract import BundleDir, load_spec
+from ingestion_workflow.services.offload.contract import (
+    BundleDir,
+    load_spec,
+    read_rows,
+    write_rows,
+)
 from ingestion_workflow.services.offload.export import export
 from ingestion_workflow.services.offload.pull import NO_ANSWER, REQUEST_FAILED, pull
 from pondie_astra import prompt
@@ -242,6 +247,14 @@ def test_a_shard_whose_text_holds_a_line_separator_is_imported(world):
     world["cluster"].states[job] = "COMPLETED"
     pull(world["remote"], world["bundle"], world["catalog"])
     assert world["catalog"].artifact(ARTICLE, "record", "ns-27b").ok
+
+
+def test_a_bundle_file_keeps_a_line_separator_inside_its_row(tmp_path):
+    rows = [{"article_id": "a", "content": "one\u2028two"}, {"article_id": "b", "content": "é"}]
+    write_rows(tmp_path / "s000.jsonl", rows)
+    raw = (tmp_path / "s000.jsonl").read_text("utf-8")
+    assert "\u2028" in raw and "\\u" not in raw
+    assert list(read_rows([tmp_path / "s000.jsonl"])) == rows
 
 
 @pytest.mark.parametrize("row, status, reason", [

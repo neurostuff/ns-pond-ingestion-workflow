@@ -93,7 +93,7 @@ def _context(held: BundleDir, shard: str, stage: str, catalog: Catalog,
     if stage != "evidence":
         return None
     records = {}
-    for row in read_rows(held.records(shard)):
+    for row in read_rows([held.records(shard)]):
         records[row["article_id"]] = row["record"]
     ids = [r["article_id"] for r in inputs]
     synced = catalog.artifacts(ids, "sync")
@@ -109,7 +109,7 @@ def pull(remote: Remote, root, catalog: Catalog) -> List[str]:
     run = run_of(bundle)
     said: List[str] = []
     if not state.skipped_imported:
-        rows = read_rows(held.skipped)
+        rows = list(read_rows([held.skipped]))
         report = import_run(catalog, run, rows)
         state.skipped_imported = True
         held.save(state)
@@ -122,9 +122,9 @@ def pull(remote: Remote, root, catalog: Catalog) -> List[str]:
                 f" (exit {job['exit']}); `submit --again {shard}` resumes it"))
             continue
         remote.get(f"{remote.bundle_dir(bundle)}/results/{shard}.jsonl", held.results(shard))
-        inputs = read_rows(held.inputs(shard))
+        inputs = list(read_rows([held.inputs(shard)]))
         results = {}
-        for row in read_rows(held.results(shard)):
+        for row in read_rows([held.results(shard)]):
             res = ResultRow(**row)
             results[res.article_id] = res
         missing = [r["article_id"] for r in inputs if r["article_id"] not in results]
