@@ -18,6 +18,7 @@ from ingestion_workflow.services.offload.schema_fixes import fix
 
 DATA = Path(__file__).resolve().parents[1] / "data" / "offload"
 RECORDS = json.loads((DATA / "schema-refused-records.json").read_text())
+VALID = json.loads((DATA / "26klegjq7mhi.extraction.json").read_text())
 
 
 def refused(article_id):
@@ -71,7 +72,47 @@ def test_a_value_the_schema_does_not_allow_is_cleared_where_it_may_be_null():
     assert record["groups"][0]["sample_source"]["value"] == "pooled from three independent cohorts"
     fixed, fired = fix(record)
     assert fired == ["clear_optional"] and _schema_problem(fixed) is None
-    assert changes(record, fixed) == ["/groups/0/sample_source/value"]
+    assert sorted(changes(record, fixed)) == ["/groups/0/sample_source/extraction_status",
+                                              "/groups/0/sample_source/value"]
+    assert fixed["groups"][0]["sample_source"]["extraction_status"] == "not_reported"
+
+
+def _with_lists(**values):
+    """26klegjq7mhi's record (valid as kept) with its MRI's list values set to `values`."""
+    record = copy.deepcopy(VALID)
+    drop_siblings(record)
+    assert _schema_problem(record) is None
+    for name, value in values.items():
+        record["acquisitions"][0][name] = {"extraction_status": "extracted", "value": value,
+                                           "value_source": "generated",
+                                           "evidence": {"status": "not_found"}}
+    return record
+
+
+def test_a_number_written_as_a_string_in_a_list_value_becomes_the_number():
+    record = _with_lists(acquisition_voxel_size_mm=[2, "2.5", 3], echo_time_seconds=[0.03, "0.05"])
+    assert _schema_problem(record)
+    fixed, fired = fix(record)
+    assert fired == ["number_from_string"] and _schema_problem(fixed) is None
+    mri = fixed["acquisitions"][0]
+    assert mri["acquisition_voxel_size_mm"]["value"] == [2, 2.5, 3]
+    assert mri["echo_time_seconds"]["value"] == [0.03, 0.05]
+
+
+def test_a_list_value_is_cleared_whole_never_shortened():
+    """Dropping the refused element would leave a vector of the wrong length that passes."""
+    fixed, fired = fix(_with_lists(acquisition_voxel_size_mm=[2, "2.5 x 3", 3]))
+    assert fired == ["clear_optional"] and _schema_problem(fixed) is None
+    assert fixed["acquisitions"][0]["acquisition_voxel_size_mm"]["value"] is None
+    assert fixed["acquisitions"][0]["acquisition_voxel_size_mm"]["extraction_status"] == \
+        "not_reported"
+
+
+def test_a_reference_list_loses_only_the_element_it_refuses():
+    record = _with_lists()
+    record["analyses"][0]["tasks"] = ["tsk_social", 5]
+    fixed, fired = fix(record)
+    assert fired == ["clear_optional"] and fixed["analyses"][0]["tasks"] == ["tsk_social"]
 
 
 def test_a_second_list_beside_the_schema_s_own_is_merged_into_it():

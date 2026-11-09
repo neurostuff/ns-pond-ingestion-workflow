@@ -26,8 +26,9 @@ runs on every record (`normalize_assign.repair`), without the paper's text, whic
 does not read, then, if it still fails, the fixes for a record written to an older schema
 (`schema_fixes`). When the fixed record passes and names the same parse keys, it is kept, and
 its summary's `repaired` names the fixes that changed it. A record the schema accepts is kept
-as the model wrote it. The fixes need pondie and its study_schema checkout (the `normalize`
-extra); where they cannot load, a refused record stays refused and the report says why.
+as the model wrote it. pondie's fixes need pondie and its study_schema checkout (the
+`normalize` extra); where they cannot load, only the older schema's run, and the report
+says why.
 """
 
 from __future__ import annotations
@@ -129,21 +130,11 @@ def read_rows(paths: Iterable[Path | str]) -> Iterator[Dict[str, Any]]:
 
 
 def _schema_problem(record: Any) -> Optional[str]:
-    import jsonschema
-    from study_schema.jsonschema import load
-
-    global _VALIDATOR
-    if _VALIDATOR is None:
-        schema = load("extraction-record")
-        _VALIDATOR = jsonschema.validators.validator_for(schema)(schema)
-    error = next(iter(_VALIDATOR.iter_errors(record)), None)
+    error = next(iter(schema_fixes.validator().iter_errors(record)), None)
     if error is None:
         return None
     where = "/".join(str(p) for p in error.absolute_path)
     return f"{SCHEMA_INVALID}: {where}: {error.message[:200]}"
-
-
-_VALIDATOR = None
 
 
 @functools.lru_cache(maxsize=1)
@@ -156,20 +147,22 @@ def _fixes_unavailable() -> Optional[str]:
     return None
 
 
-def _repaired(record: Dict[str, Any], parse: Optional[Parse]) -> Optional[tuple]:
-    """(`record` with pondie's fixes, the fixes that changed it) when the schema accepts
-    that and its parse keys are `record`'s, else None."""
-    fixed = copy.deepcopy(record)
+def _repaired(record: Dict[str, Any], parse: Optional[Parse],
+              pondie: bool = True) -> Optional[tuple]:
+    """(`record` with pondie's fixes, where `pondie`, then the older schema's, the fixes that
+    changed it) when the schema accepts that and its parse keys are `record`'s, else None."""
+    fixed, fired = copy.deepcopy(record), []
     try:
-        fired = repair(fixed, parse.path if parse is not None else None, "")
+        if pondie:
+            fired = list(repair(fixed, parse.path if parse is not None else None, ""))
+        if _schema_problem(fixed) is not None:
+            fixed, drift = schema_fixes.fix(fixed)
+            if fixed is None:
+                return None
+            fired += drift
     except Exception:  # noqa: BLE001 - this record's failure: it stays refused
-        logger.warning("pondie's fixes failed on a refused record", exc_info=True)
+        logger.warning("the fixes failed on a refused record", exc_info=True)
         return None
-    if _schema_problem(fixed) is not None:
-        fixed, drift = schema_fixes.fix(fixed)
-        if fixed is None:
-            return None
-        fired = list(fired) + drift
     if parse_keys(fixed) == parse_keys(record):
         return fixed, fired
     return None
@@ -266,14 +259,13 @@ class _Importer:
 
     def repair(self, why: str, record: Dict[str, Any],
                parse: Optional[Parse]) -> tuple:
-        """(None, the fixed record, the fixes) when pondie's fixes make `record` valid, else
-        (`why`, `record`, [])."""
+        """(None, the fixed record, the fixes) when the fixes make `record` valid, else
+        (`why`, `record`, []). Without pondie only the older schema's fixes run."""
         unavailable = _fixes_unavailable()
         if unavailable:
             self.report.unrepaired += 1
             self.report.unrepaired_why = unavailable
-            return why, record, []
-        fixed = _repaired(record, parse)
+        fixed = _repaired(record, parse, pondie=not unavailable)
         return (None, *fixed) if fixed is not None else (why, record, [])
 
     @staticmethod
