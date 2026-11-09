@@ -33,14 +33,13 @@ from __future__ import annotations
 
 import copy
 import functools
-import gzip
 import json
 import logging
 import re
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from ingestion_workflow.catalog import Artifact, Catalog, Outcome, Run, RunKind, Status
 from ingestion_workflow.pipeline.stages.offloaded import (
@@ -114,16 +113,6 @@ def load_run(path: Path | str) -> Run:
     if unknown:
         raise ValueError(f"{path}: fields no run has: {', '.join(sorted(unknown))}")
     return Run(**{**held, "kind": RunKind(held.get("kind", "model"))})
-
-
-def read_rows(paths: Iterable[Path | str]) -> Iterator[Dict[str, Any]]:
-    """The rows of JSON-lines files, gzipped when named `.gz`."""
-    for path in paths:
-        opener = gzip.open if str(path).endswith(".gz") else open
-        with opener(path, "rt", encoding="utf-8") as handle:
-            for line in handle:
-                if line.strip():
-                    yield json.loads(line)
 
 
 def _schema_problem(record: Any) -> Optional[str]:
@@ -335,4 +324,4 @@ def import_run(catalog: Catalog, run: Run, rows: Iterable[Dict[str, Any]],
     return report
 
 
-__all__ = ["ImportReport", "import_run", "load_run", "read_rows", "record_digest", "stamp"]
+__all__ = ["ImportReport", "import_run", "load_run", "record_digest", "stamp"]

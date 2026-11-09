@@ -16,9 +16,10 @@ everything import checks (the text hash and parse keys) travels with each row.
 
 from __future__ import annotations
 
+import gzip
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, Iterator, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -171,6 +172,23 @@ class BundleDir:
         tmp = self.state_file.with_suffix(".tmp")
         tmp.write_text(state.model_dump_json(indent=1), "utf-8")
         tmp.replace(self.state_file)
+
+
+def read_rows(paths: Iterable[Path | str]) -> Iterator[Dict[str, Any]]:
+    """The rows of JSON-lines files, gzipped when named `.gz`. Only a newline ends a row:
+    the text in one may hold U+2028, which `str.splitlines` would split on."""
+    for path in paths:
+        opener = gzip.open if str(path).endswith(".gz") else open
+        with opener(path, "rt", encoding="utf-8") as handle:
+            for line in handle:
+                if line.strip():
+                    yield json.loads(line)
+
+
+def write_rows(path: Path, rows: Iterable[dict]) -> None:
+    """A bundle file, one row per line, its text as it is."""
+    with Path(path).open("w", encoding="utf-8") as handle:
+        handle.writelines(json.dumps(r, ensure_ascii=False) + "\n" for r in rows)
 
 
 def load_spec(path: Path) -> RunSpec:

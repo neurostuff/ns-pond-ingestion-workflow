@@ -20,7 +20,12 @@ from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.config import Machine, Settings
 from ingestion_workflow.pipeline import Context
 from ingestion_workflow.services.offload import remote as R
-from ingestion_workflow.services.offload.contract import BundleDir, load_spec
+from ingestion_workflow.services.offload.contract import (
+    BundleDir,
+    load_spec,
+    read_rows,
+    write_rows,
+)
 from ingestion_workflow.services.offload.export import export
 from ingestion_workflow.services.offload.pull import NO_ANSWER, REQUEST_FAILED, pull
 from pondie_astra import prompt
@@ -228,6 +233,28 @@ def test_pull_imports_a_completed_shard_as_the_record_the_collected_set_holds(wo
     assert world["catalog"].run(bundle.run["run_id"]).adapter == bundle.spec.adapter
     pull(world["remote"], world["bundle"], world["catalog"])   # nothing left to do
     assert BundleDir(world["bundle"]).state().imported == state.imported
+
+
+def test_a_shard_whose_text_holds_a_line_separator_is_imported(world):
+    """Export writes the paper as it is, so a U+2028 in it stays inside its row."""
+    _push(world)
+    R.submit(world["remote"], world["bundle"], yes=False)
+    inputs = BundleDir(world["bundle"]).inputs("s000")
+    (row,) = [json.loads(line) for line in inputs.read_text("utf-8").split("\n") if line]
+    row["content"] += " "
+    inputs.write_text(json.dumps(row, ensure_ascii=False) + "\n", "utf-8")
+    job = _job_ran(world, [_result(prediction=PRED["prediction"])])
+    world["cluster"].states[job] = "COMPLETED"
+    pull(world["remote"], world["bundle"], world["catalog"])
+    assert world["catalog"].artifact(ARTICLE, "record", "ns-27b").ok
+
+
+def test_a_bundle_file_keeps_a_line_separator_inside_its_row(tmp_path):
+    rows = [{"article_id": "a", "content": "one\u2028two"}, {"article_id": "b", "content": "é"}]
+    write_rows(tmp_path / "s000.jsonl", rows)
+    raw = (tmp_path / "s000.jsonl").read_text("utf-8")
+    assert "\u2028" in raw and "\\u" not in raw
+    assert list(read_rows([tmp_path / "s000.jsonl"])) == rows
 
 
 @pytest.mark.parametrize("row, status, reason", [

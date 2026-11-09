@@ -14,14 +14,13 @@ shard whose job ended any other way is reported and left for that resubmit.
 from __future__ import annotations
 
 import copy
-import json
 from pathlib import Path
 from typing import Any, Dict, Iterator, List, Mapping, Optional
 
 from ingestion_workflow.catalog import Catalog, Run, RunKind
 from ingestion_workflow.pipeline.stage import recorded_path
 
-from .contract import BundleDir, ResultRow
+from .contract import BundleDir, ResultRow, read_rows
 from .importer import import_run
 from .remote import Remote, elapsed_s, job_states
 
@@ -94,8 +93,7 @@ def _context(held: BundleDir, shard: str, stage: str, catalog: Catalog,
     if stage != "evidence":
         return None
     records = {}
-    for line in held.records(shard).read_text("utf-8").splitlines():
-        row = json.loads(line)
+    for row in read_rows([held.records(shard)]):
         records[row["article_id"]] = row["record"]
     ids = [r["article_id"] for r in inputs]
     synced = catalog.artifacts(ids, "sync")
@@ -111,7 +109,7 @@ def pull(remote: Remote, root, catalog: Catalog) -> List[str]:
     run = run_of(bundle)
     said: List[str] = []
     if not state.skipped_imported:
-        rows = [json.loads(line) for line in held.skipped.read_text("utf-8").splitlines()]
+        rows = list(read_rows([held.skipped]))
         report = import_run(catalog, run, rows)
         state.skipped_imported = True
         held.save(state)
@@ -124,10 +122,10 @@ def pull(remote: Remote, root, catalog: Catalog) -> List[str]:
                 f" (exit {job['exit']}); `submit --again {shard}` resumes it"))
             continue
         remote.get(f"{remote.bundle_dir(bundle)}/results/{shard}.jsonl", held.results(shard))
-        inputs = [json.loads(line) for line in held.inputs(shard).read_text("utf-8").splitlines()]
+        inputs = list(read_rows([held.inputs(shard)]))
         results = {}
-        for line in held.results(shard).read_text("utf-8").splitlines():
-            res = ResultRow(**json.loads(line))
+        for row in read_rows([held.results(shard)]):
+            res = ResultRow(**row)
             results[res.article_id] = res
         missing = [r["article_id"] for r in inputs if r["article_id"] not in results]
         if missing:
