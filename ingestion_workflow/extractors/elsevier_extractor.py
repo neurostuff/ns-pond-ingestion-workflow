@@ -55,7 +55,12 @@ from ingestion_workflow.models import (
     ExtractionResult,
     FileType,
 )
-from ingestion_workflow.services.download_check import ABSTRACT_ONLY, RETRACTED, BadPage
+from ingestion_workflow.services.download_check import (
+    ABSTRACT_ONLY,
+    ERROR_PAGE,
+    RETRACTED,
+    BadPage,
+)
 from ingestion_workflow.utils.progress import emit_progress
 
 
@@ -853,12 +858,17 @@ def _extract_elsevier_article(
 
 
 _JA = "{http://www.elsevier.com/xml/ja/dtd}"
+_CE = "{http://www.elsevier.com/xml/common/dtd}"
 _XOCS = "{http://www.elsevier.com/xml/xocs/dtd}"
 _SVAPI = "{http://www.elsevier.com/xml/svapi/article/dtd}"
-#: Where ScienceDirect's full text holds the article: `ja:body`, or `xocs:rawtext` for an
-#: article it has not tagged. `ce:para` is no sign of one: highlights and acknowledgments
-#: hold it too. An answer with neither holds only the abstract and the references.
+#: Where ScienceDirect's full text holds the article: `ja:body`, `xocs:rawtext` for an
+#: article it has not tagged, or `ce:sections` for one outside the JA DTD (a book chapter).
+#: `ce:para` is no sign of one: highlights and acknowledgments hold it too. An answer with
+#: none of them holds only the abstract and the references.
 _BODY = (_JA + "body", _XOCS + "rawtext")
+_SECTIONS = _CE + "sections"
+#: `ce:sections` here is not the body.
+_NOT_BODY = (_CE + "abstract", _CE + "acknowledgment")
 
 
 def check_full_text(path: Path) -> Optional[BadPage]:
@@ -866,13 +876,17 @@ def check_full_text(path: Path) -> Optional[BadPage]:
     pub_type = None
     try:
         for event, element in etree.iterparse(str(path), events=("start", "end"),
-                                              huge_tree=True, tag=(*_BODY, _SVAPI + "pubType")):
+                                              huge_tree=True,
+                                              tag=(*_BODY, _SECTIONS, _SVAPI + "pubType")):
             if element.tag in _BODY:
                 return None
-            if event == "end":
+            if element.tag == _SECTIONS:
+                if not any(a.tag in _NOT_BODY for a in element.iterancestors()):
+                    return None
+            elif event == "end":
                 pub_type = (element.text or "").strip()
-    except etree.XMLSyntaxError:
-        pass
+    except etree.XMLSyntaxError as exc:
+        return BadPage(ERROR_PAGE, f"Elsevier full text is not well-formed XML: {exc}")
     if pub_type == "ret":
         return BadPage(RETRACTED, "Elsevier serves the retraction notice, not the article")
     return BadPage(ABSTRACT_ONLY, "Elsevier full text with no body, only the abstract")

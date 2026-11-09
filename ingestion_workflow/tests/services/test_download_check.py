@@ -493,6 +493,19 @@ HIGHLIGHTS = (b'<ce:abstract class="author-highlights"><ce:section-title>Highlig
               b'</ce:list-item></ce:list></ce:simple-para></ce:abstract-sec></ce:abstract>')
 ACKNOWLEDGMENT = (b'<ce:acknowledgment><ce:section-title>Acknowledgments</ce:section-title>'
                   b'<ce:para>We thank the participants.</ce:para></ce:acknowledgment>')
+SECTIONED_ABSTRACT = (b'<ce:abstract class="graphical"><ce:sections><ce:section>'
+                      b'<ce:para>A sectioned abstract.</ce:para></ce:section></ce:sections>'
+                      b'</ce:abstract>')
+#: A book chapter (Progress in Brain Research, Handbook of Clinical Neurology) is in the
+#: bk DTD, with no ja:body: its body is `ce:sections`.
+CHAPTER = (b'<full-text-retrieval-response xmlns="http://www.elsevier.com/xml/svapi/article/dtd"'
+           b' xmlns:bk="http://www.elsevier.com/xml/bk/dtd"'
+           b' xmlns:ce="http://www.elsevier.com/xml/common/dtd"><coredata><pubType>chp</pubType>'
+           b'</coredata><originalText><bk:chapter><ce:abstract><ce:abstract-sec><ce:simple-para>'
+           b'The chapter reviews it.</ce:simple-para></ce:abstract-sec></ce:abstract>'
+           b'<ce:sections><ce:section><ce:section-title>Introduction</ce:section-title>'
+           b'<ce:para>The chapter begins.</ce:para></ce:section></ce:sections></bk:chapter>'
+           b'</originalText></full-text-retrieval-response>')
 
 
 def stored_xml(tmp_path, article_id: str, *, pub_type: str = "", added: bytes = b"") -> Path:
@@ -516,10 +529,11 @@ def test_an_elsevier_retraction_notice_is_retracted(tmp_path):
     assert bad is not None and bad.reason == RETRACTED
 
 
-@pytest.mark.parametrize("added", [b"", HIGHLIGHTS, ACKNOWLEDGMENT],
-                         ids=["abstract", "highlights", "acknowledgment"])
+@pytest.mark.parametrize("added", [b"", HIGHLIGHTS, ACKNOWLEDGMENT, SECTIONED_ABSTRACT],
+                         ids=["abstract", "highlights", "acknowledgment", "sectioned abstract"])
 def test_an_elsevier_full_text_with_no_body_is_abstract_only(tmp_path, added):
-    """Highlights and acknowledgments hold `ce:para` outside any body."""
+    """Highlights and acknowledgments hold `ce:para`, and an abstract can hold
+    `ce:sections`, outside any body."""
     bad = elsevier(stored_xml(tmp_path, RETRACTED_XML, pub_type="fla", added=added))
     assert bad is not None and bad.reason == ABSTRACT_ONLY
 
@@ -530,10 +544,17 @@ def test_an_elsevier_full_text_with_a_body_passes(tmp_path, article_id):
     assert elsevier(stored_xml(tmp_path, article_id)) is None
 
 
-def test_an_elsevier_answer_that_is_not_xml_is_abstract_only(tmp_path):
+def test_an_elsevier_chapter_with_sections_passes(tmp_path):
+    path = tmp_path / "content.xml"
+    path.write_bytes(CHAPTER)
+    assert elsevier(path) is None
+
+
+def test_an_elsevier_answer_that_is_not_xml_is_an_error(tmp_path):
     path = tmp_path / "content.xml"
     path.write_bytes(b"<html><body>Service unavailable</body></html")
-    assert elsevier(path).reason == ABSTRACT_ONLY
+    bad = elsevier(path)
+    assert bad.reason == ERROR_PAGE and "not well-formed XML" in bad.message
 
 
 def test_another_source_s_xml_is_not_read_for_an_elsevier_body(tmp_path):
