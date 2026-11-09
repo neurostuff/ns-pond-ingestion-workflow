@@ -854,15 +854,10 @@ class ACEExtractor(BaseExtractor):
 
         pmid = str(pmid_value).strip()
 
-        scraped = self._scraped_page(pmid)
-        if scraped is not None:
-            return DownloadResult(
-                identifier=identifier,
-                source=DownloadSource.ACE,
-                success=True,
-                files=[self._build_downloaded_file(scraped)],
-                error_message=None,
-            )
+        held = next((page for page in self._pages_for(pmid) if _validate_downloaded_html(page)[0]),
+                    None)
+        if held is not None:
+            return self._success(identifier, held)
 
         active_scraper = scraper or self._build_scraper()
 
@@ -883,7 +878,7 @@ class ACEExtractor(BaseExtractor):
             logger.exception("ACE scraper failed for PMID %s", pmid)
             return self._failure(identifier, f"ACE scrape failed: {exc}")
 
-        resolved_path = self._resolve_file_path(file_path, journal, pmid)
+        resolved_path = self._resolve_file_path(file_path, pmid)
 
         if valid is False:
             message = f"ACE validation failed for PMID {pmid}."
@@ -908,14 +903,7 @@ class ACEExtractor(BaseExtractor):
                 failure.moved_aside = {str(resolved_path): str(moved)}
             return failure
 
-        downloaded_file = self._build_downloaded_file(resolved_path)
-        return DownloadResult(
-            identifier=identifier,
-            source=DownloadSource.ACE,
-            success=True,
-            files=[downloaded_file],
-            error_message=None,
-        )
+        return self._success(identifier, resolved_path)
 
     def _build_scraper(self) -> Scraper:
         return Scraper(
@@ -923,31 +911,22 @@ class ACEExtractor(BaseExtractor):
             api_key=self.settings.pubmed_api_key,
         )
 
-    def _resolve_file_path(
-        self,
-        file_path: Path | str | None,
-        journal: str,
-        pmid: str,
-    ) -> Optional[Path]:
+    def _resolve_file_path(self, file_path: Path | str | None, pmid: str) -> Optional[Path]:
         candidate = Path(file_path) if file_path else None
         if candidate and candidate.exists():
             return candidate
+        return next(iter(self._pages_for(pmid, corpus=False)), None)
 
-        journal_dir = self._cache_root / "html" / journal
-        fallback = journal_dir / f"{pmid}.html"
-        if fallback.exists():
-            return fallback
-
-        matches = list(self._cache_root.glob(f"html/**/{pmid}.html"))
-        return matches[0] if matches else None
-
-    def _scraped_page(self, pmid: str) -> Optional[Path]:
-        """The scrape corpus's own page for `pmid` (<root>/<journal>/<pmid>.html), newest first,
-        when it passes the page check. ACE's scraper looks only under <root>/html, so without
-        this a download fetched the page again. A corpus page that fails is left in place."""
-        pages = sorted(self._cache_root.glob(f"*/{pmid}.html"),
-                       key=lambda page: page.stat().st_mtime, reverse=True)
-        return next((page for page in pages if _validate_downloaded_html(page)[0]), None)
+    def _pages_for(self, pmid: str, *, corpus: bool = True) -> list[Path]:
+        """The pages held for `pmid`: ACE's own scrapes first, then the corpus's, each newest
+        first. `ace_cache_root` is ACE's store, which keeps <root>/html/<journal>/<pmid>.html.
+        On beast it names the corpus's html/ directory, so the corpus's pages sit at
+        <root>/<journal>/<pmid>.html and ns-pond's own scrapes at <root>/html/IngestionWorkflow."""
+        patterns = [f"html/*/{pmid}.html"] + ([f"*/{pmid}.html"] if corpus else [])
+        return [page for pattern in patterns
+                for page in sorted(self._cache_root.glob(pattern),
+                                   key=lambda page: (page.stat().st_mtime, str(page)),
+                                   reverse=True)]
 
     def _build_downloaded_file(self, file_path: Path) -> DownloadedFile:
         return build_downloaded_file(
@@ -976,6 +955,15 @@ class ACEExtractor(BaseExtractor):
             logger.warning("Could not move rejected ACE page %s aside: %s", path, exc)
             return None
         return target
+
+    def _success(self, identifier: Identifier, path: Path) -> DownloadResult:
+        return DownloadResult(
+            identifier=identifier,
+            source=DownloadSource.ACE,
+            success=True,
+            files=[self._build_downloaded_file(path)],
+            error_message=None,
+        )
 
     def _failure(self, identifier: Identifier, message: str) -> DownloadResult:
         return DownloadResult(
