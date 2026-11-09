@@ -152,7 +152,7 @@ def test_an_extracted_table_s_coordinates_carry_no_other_statistics_key():
 
 @pytest.mark.parametrize("size", [-76, -6.0, True, "76", float("nan"), float("inf")])
 def test_a_coordinate_refuses_a_size_that_is_not_a_count_and_drops_its_measure(size):
-    """Read from a stored blob too, so a negative size stored before the rule never reaches sync."""
+    """Read from a stored blob too, so a stored negative size never reaches sync."""
     from ingestion_workflow.models.analysis import Coordinate
 
     point = Coordinate.from_dict({"x": 1, "y": 2, "z": 3, "cluster_size": size,
