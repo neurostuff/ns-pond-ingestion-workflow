@@ -169,11 +169,15 @@ def test_a_coordinate_keeps_a_count_and_a_measure_given_without_one():
     assert Coordinate(x=1, y=2, z=3, cluster_measure="mm^3").cluster_measure == "mm^3"
 
 
-def test_a_table_s_negative_size_is_still_its_magnitude():
-    """A stray dash in a table's size column: CoordinatePoint takes abs before Coordinate."""
+@pytest.mark.parametrize("values", [None, [4.1]])
+def test_a_table_s_negative_size_is_still_its_magnitude(values):
+    """A stray dash in a table's size column: CoordinatePoint takes abs before Coordinate,
+    for a point with no statistic too."""
     from ingestion_workflow.models.analysis import CoordinatePoint
 
-    assert CoordinatePoint(coordinates=[1, 2, 3], cluster_size=-76).cluster_size == 76
+    point = CoordinatePoint(coordinates=[1, 2, 3], values=values, cluster_size=-76,
+                            cluster_measure="MM3")
+    assert (point.cluster_size, point.cluster_measure) == (76, "mm^3")
 
 
 #: One PMID as providers and people write it: PubMed bare, a spreadsheet's zero-padded,

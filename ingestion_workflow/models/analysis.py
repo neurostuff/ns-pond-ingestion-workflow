@@ -80,6 +80,21 @@ class CoordinatePoint:
                 raise ValueError(f"Coordinate at index {index} must be numeric") from exc
         self.coordinates = coerced
 
+        # A table's stray dash before a size: the size is its magnitude.
+        if self.cluster_size is not None:
+            try:
+                size = int(self.cluster_size)
+                self.cluster_size = abs(size)
+            except (TypeError, ValueError):
+                self.cluster_size = None
+
+        if self.cluster_measure is not None:
+            normalized_measure = str(self.cluster_measure).strip().lower()
+            if normalized_measure in {"voxels", "mm^3", "mm3"}:
+                self.cluster_measure = "mm^3" if normalized_measure in {"mm^3", "mm3"} else "voxels"
+            else:
+                self.cluster_measure = None
+
         if self.values is None:
             return
         if not isinstance(self.values, list):
@@ -97,20 +112,6 @@ class CoordinatePoint:
                 continue
             raise ValueError("values entries must be PointsValue, mapping, number, or string")
         self.values = parsed_values
-
-        if self.cluster_size is not None:
-            try:
-                size = int(self.cluster_size)
-                self.cluster_size = abs(size)
-            except (TypeError, ValueError):
-                self.cluster_size = None
-
-        if self.cluster_measure is not None:
-            normalized_measure = str(self.cluster_measure).strip().lower()
-            if normalized_measure in {"voxels", "mm^3", "mm3"}:
-                self.cluster_measure = "mm^3" if normalized_measure in {"mm^3", "mm3"} else "voxels"
-            else:
-                self.cluster_measure = None
 
 
 @dataclass
