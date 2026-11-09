@@ -133,12 +133,21 @@ def test_an_article_with_no_other_download_plans_its_next_source(env, tmp_path, 
     assert pending() == ["pubget"]
 
 
-def test_refreshing_one_source_fetches_it_beside_another_fresh_copy(env, tmp_path, evidence):
-    """dl572q5z2j4y's text is read from its ACE page; a failed ACE re-download left its PDF
-    the fresh copy, and `--refresh download:ace` then planned nothing, so sync kept failing
-    "no ok download of the ace copy" (2026-11-07)."""
-    settings, catalog = env
+def failed_ace(catalog, settings, tmp_path, evidence):
+    """dl572q5z2j4y's state on 2026-11-07: its text is read from its ACE page, a failed ACE
+    re-download replaced that record, and its pubget copy is fresh."""
     ref = article(catalog, settings, tmp_path, "1", ARTICLE, pubget=True, evidence=evidence)
+    catalog.record([Outcome.failure(
+        ref.id, "download", "ace", "bot check",
+        fingerprint=DownloadStage(settings).fingerprint_for(DownloadSource.ACE))])
+    return ref
+
+
+def test_refreshing_one_source_fetches_it_beside_another_fresh_copy(env, tmp_path, evidence):
+    """`--refresh download:ace` planned nothing for it, so sync kept failing "no ok download
+    of the ace copy"."""
+    settings, catalog = env
+    ref = failed_ace(catalog, settings, tmp_path, evidence)
     stage = DownloadStage(settings)
     stage._extractors = {s: AnySource() for s in DownloadSource}
 
@@ -149,7 +158,41 @@ def test_refreshing_one_source_fetches_it_beside_another_fresh_copy(env, tmp_pat
 
     assert pending() == []
     assert pending("download:ace") == ["ace"]
-    assert pending("download:pdf") == ["pdf"]
+    assert pending("download:pdf") == []  # no pdf record: nothing to refresh
+
+
+class Fetches(BaseExtractor):
+    """A source that fails every article, or serves it `path`, and notes each call."""
+
+    def __init__(self, source, calls, path=None):
+        self.source, self.calls, self.path = source, calls, path
+
+    def download(self, identifiers, **_):
+        self.calls.append(self.source.value)
+        if self.path is None:
+            return [DownloadResult(i, self.source, False, error_message="bot check")
+                    for i in identifiers]
+        return [DownloadResult(i, self.source, True, files=[
+            DownloadedFile(self.path, FileType.PDF, "application/pdf", self.source)])
+            for i in identifiers]
+
+
+def test_a_refreshed_source_that_fails_again_leaves_the_other_copy_alone(env, tmp_path,
+                                                                         evidence):
+    settings, catalog = env
+    ref = failed_ace(catalog, settings, tmp_path, evidence)
+    pdf = tmp_path / "x.pdf"
+    pdf.write_bytes(b"%PDF-1.4 x")
+    calls = []
+    stage = DownloadStage(settings)
+    stage._extractors = {DownloadSource.PUBGET: AnySource(),
+                         DownloadSource.ACE: Fetches(DownloadSource.ACE, calls),
+                         DownloadSource.PDF: Fetches(DownloadSource.PDF, calls, pdf)}
+    ctx = Context(settings, catalog, refresh=["download:ace"])
+    plan = stage.plan(ctx, [ref], catalog.artifacts([ref.id], "download"), {})
+    outcomes = list(stage.execute(ctx, plan.pending))
+    assert calls == ["ace"]
+    assert [(o.source, o.status) for o in outcomes] == [("ace", Status.FAILED)]
 
 
 def test_effects_sort_articles_by_what_happens_next(env, tmp_path, evidence):

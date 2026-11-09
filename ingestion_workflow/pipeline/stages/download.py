@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict, Iterator, List, Optional, Sequence
+from typing import Dict, Iterator, List, Optional, Sequence, Set
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.extractors.base import BaseExtractor, SourceExhausted, SourceMisconfigured
@@ -91,7 +91,7 @@ class DownloadStage:
         }
         for ref in refs:
             existing = artifacts.get(ref.id, {})
-            named = self._refreshed_source(ctx, ref)
+            named = self._refreshed_source(ctx, ref, existing)
             if named is not None:
                 plan.pending.append(
                     Work(ref=ref, source=named.value, fingerprint=self.fingerprint_for(named)))
@@ -114,14 +114,18 @@ class DownloadStage:
             )
         return plan
 
-    def _refreshed_source(self, ctx: Context, ref: ArticleRef) -> Optional[DownloadSource]:
-        """The first source `--refresh download:<source>` names that can address the article.
+    def _refreshed_source(
+        self, ctx: Context, ref: ArticleRef, existing: Dict[str, Artifact]
+    ) -> Optional[DownloadSource]:
+        """The first source `--refresh download:<source>` names that holds a record of the
+        article and can address it.
 
         Fetched even when another source's copy is fresh: the copy an extraction was read
         from is the one sync needs, and that need not be the copy download stopped at.
         """
         for source in self._order:
-            if f"{self.name}:{source.value}" in ctx.refresh and supports(self.extractor(source), ref):
+            if (ctx.names(self.name, source.value) and source.value in existing
+                    and supports(self.extractor(source), ref)):
                 return source
         return None
 
@@ -152,6 +156,7 @@ class DownloadStage:
             return
         remaining = {work.article_id: work.ref for work in works}
         preferred: Dict[str, str] = {work.article_id: work.source for work in works}
+        held = self._held_elsewhere(ctx, works)
 
         for source in self._order:
             if not remaining:
@@ -159,7 +164,7 @@ class DownloadStage:
             batch = [
                 ref
                 for article_id, ref in remaining.items()
-                if self._eligible(source, article_id, preferred, ref)
+                if self._eligible(source, article_id, preferred, ref, held)
             ]
             if not batch:
                 continue
@@ -171,13 +176,38 @@ class DownloadStage:
                 return
 
     def _eligible(
-        self, source: DownloadSource, article_id: str, preferred: Dict[str, str], ref: ArticleRef
+        self,
+        source: DownloadSource,
+        article_id: str,
+        preferred: Dict[str, str],
+        ref: ArticleRef,
+        held: Set[str],
     ) -> bool:
-        """Only try sources at or after the one planning chose, and only if addressable."""
+        """Only try sources at or after the one planning chose, and only if addressable.
+
+        An article with a fresh copy at another source tries only the planned one: a
+        failure there must not fetch, and replace, the copy it already has.
+        """
         order = [s.value for s in self._order]
         if order.index(source.value) < order.index(preferred[article_id]):
             return False
+        if article_id in held and source.value != preferred[article_id]:
+            return False
         return supports(self.extractor(source), ref)
+
+    def _held_elsewhere(self, ctx: Context, works: List[Work]) -> Set[str]:
+        """The articles with a fresh copy at a source other than the one planned for them."""
+        found = ctx.catalog.artifacts([work.article_id for work in works], self.name)
+        return {
+            work.article_id
+            for work in works
+            if any(
+                source.value != work.source
+                and ctx.is_fresh(found.get(work.article_id, {}).get(source.value),
+                                 self.fingerprint_for(source))
+                for source in self._order
+            )
+        }
 
     def _download(
         self, ctx: Context, source: DownloadSource, refs: List[ArticleRef]
