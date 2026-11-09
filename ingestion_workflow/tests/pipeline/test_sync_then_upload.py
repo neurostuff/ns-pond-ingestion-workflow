@@ -1264,6 +1264,9 @@ def test_a_failed_table_reading_holds_back_a_parse_with_only_the_prose(env, monk
      Artifact("a", "x", status=Status.FAILED, error="ReadTimeout"), "failed: ReadTimeout"),
     (StagePlan("x", pending=[Work(ref=None, source="", fingerprint="f")]),
      Artifact("a", "x", status=Status.OK), "stale"),
+    # A skip planned again once triage passes tables (#218) is stale, not failed.
+    (StagePlan("x", pending=[Work(ref=None, source="", fingerprint="f")]),
+     Artifact("a", "x", status=Status.SKIPPED), "stale"),
     (StagePlan("x", pending=[Work(ref=None, source="", fingerprint="f")]), None, "not run"),
     (StagePlan("x", pending=[Work(ref=None, source="", fingerprint=NO_TEXT)]),
      Artifact("a", "x", status=Status.OK), "taken back"),

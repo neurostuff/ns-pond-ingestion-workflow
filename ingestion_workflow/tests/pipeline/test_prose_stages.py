@@ -2240,12 +2240,14 @@ def test_an_empty_table_reading_older_than_a_triage_that_passes_tables_only_hold
     # triage ran again later, as it did days later in production
     monkeypatch.setattr("ingestion_workflow.catalog.store.utcnow", lambda: "2999-01-01T00:00:00+00:00")
     catalog.record([Outcome(article_id=ref.id, stage="triage", source="", fingerprint="tr-2",
-                            payload={"tables": [{"table_id": "t2", "passes": True}]},
-                            summary={"tables": 1, "passed": 1})])
+                            payload={"source": "pubget",
+                                     "tables": [{"table_id": "t2", "passes": True}]},
+                            summary={"source": "pubget", "tables": 1, "passed": 1,
+                                     "passed_tables": ["t2"]})])
     ctx = Context(settings, catalog)
     plan, outcomes = _run(ResolveStage(settings), ctx, catalog, ref)
     assert (plan.blocked, plan.pending, outcomes) == (1, [], [])
-    assert "triage passed tables since the analyses stage last ran" in " ".join(plan.reasons)
+    assert "the analyses reading is stale and triage passes tables" in " ".join(plan.reasons)
     assert catalog.artifacts([ref.id], "resolve")[ref.id][""].status is Status.OK
     assert Assessor(settings).assess(ctx, [ref])[ref.id].verdict is Verdict.HOLD
 
