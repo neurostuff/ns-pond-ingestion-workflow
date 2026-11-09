@@ -7,7 +7,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 from functools import partial
-from typing import Dict, Iterator, List, Optional, Sequence
+from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.models import ArticleExtractionBundle, ExtractedContent
@@ -46,6 +46,13 @@ NO_VERDICT = "triage records no passed tables: run scripts/rekey_analyses_reads.
 
 def metadata_read(payload: Optional[Dict]) -> Dict:
     return read_fields(payload, METADATA_READ)
+
+
+def passes_unseen(existing: Artifact, fp: Optional[str], triaged: Artifact) -> bool:
+    """Whether triage passes tables that `existing`, a reading that found none, did not see:
+    triage passes some, and `existing` is not the reading the plan makes now (`fp`, None
+    when the plan cannot say). A new triage that passes none leaves it right."""
+    return existing.fingerprint != fp and bool((triaged.summary or {}).get("passed_tables"))
 
 
 logger = logging.getLogger(__name__)
@@ -140,31 +147,43 @@ class AnalysesStage:
             if triaged is None or triaged.status is not Status.OK:
                 plan.blocked += 1
                 continue
-            if "passed_tables" not in (triaged.summary or {}):
-                plan.wait(NO_VERDICT, ref.id)
+            fp, wait = self._current(triaged, extractions.get(ref.id, {}),
+                                     metadata.get(ref.id, {}).get(""))
+            if fp is None:
+                plan.wait(wait, ref.id)
                 continue
-            read = metadata_fingerprint(metadata.get(ref.id, {}).get(""), METADATA_READ)
-            if read is None:
-                plan.wait(NO_DIGESTS, ref.id)
-                continue
-            extraction = self._extraction_for(extractions.get(ref.id, {}), triaged)
-            fp = self.fingerprint_for(triaged, extraction, read)
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
                 plan.fresh += 1
                 continue
             count, last = attempts.get(ref.id, (0, None))
             # A skip ("no coordinate tables") judged what triage passed then;
-            # once triage passes tables it is stale, like an OK parse. A new read
-            # that passes none leaves the skip right.
+            # once triage passes tables it is stale, like an OK parse.
             stale_skip = (existing is not None and existing.status is Status.SKIPPED
-                          and existing.fingerprint != fp
-                          and bool(triaged.summary["passed_tables"]))
+                          and passes_unseen(existing, fp, triaged))
             if not stale_skip and not ctx.should_attempt(existing, count, last, self.name):
                 plan.permanent += 1
                 continue
             plan.pending.append(Work(ref=ref, source="", fingerprint=fp, upstream=triaged))
         return plan
+
+    def current(self, ctx: Context, article_id: str, triaged: Artifact) -> Optional[str]:
+        """The fingerprint `plan` gives the article's analyses now, from its OK triage;
+        None when it cannot."""
+        extractions = ctx.catalog.artifacts([article_id], "extract").get(article_id, {})
+        metadata = ctx.catalog.artifacts([article_id], "metadata").get(article_id, {}).get("")
+        return self._current(triaged, extractions, metadata)[0]
+
+    def _current(self, triaged: Artifact, extractions: Dict[str, Artifact],
+                 metadata: Optional[Artifact]) -> Tuple[Optional[str], Optional[str]]:
+        """(fingerprint, None), or (None, why the plan waits)."""
+        if "passed_tables" not in (triaged.summary or {}):
+            return None, NO_VERDICT
+        read = metadata_fingerprint(metadata, METADATA_READ)
+        if read is None:
+            return None, NO_DIGESTS
+        extraction = self._extraction_for(extractions, triaged)
+        return self.fingerprint_for(triaged, extraction, read), None
 
     @staticmethod
     def _extraction_for(found: Dict[str, Artifact], triage: Artifact) -> Artifact | None:
