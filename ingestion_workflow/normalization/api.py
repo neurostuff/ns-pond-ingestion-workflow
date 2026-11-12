@@ -298,7 +298,7 @@ def load(fit_dir):
 def assign(r, article, text, bibliography, f, with_medical=True):
     """One record's derived rows under a fit: medical links, task labels, conditions, contrasts, set assignment."""
     store = medical.abbreviations(text, article)
-    links = medical.links(r, article, text, store) if with_medical else None
+    links = medical.settle_healthy(r, medical.links(r, article, text, store)) if with_medical else None
     f.cb.memo = {}                  # pass two asks route B about the same tasks as pass one
     rows, _ = records.read(r, article, f.cb, f.sch, abbreviations=store)
     refs = citations.score_lineage(citations.task_refs(r, article, text, citations.bib_from_references(bibliography)),

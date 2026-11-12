@@ -1,0 +1,193 @@
+{
+ "7c47sgesb5wl": {
+  "base_study_id": "mSWczX8uDxiF",
+  "groups": [
+   {
+    "local_id": "grp_bilinguals",
+    "is_healthy": {
+     "evidence": {
+      "status": "not_found"
+     },
+     "extraction_status": "extracted",
+     "value": true,
+     "value_source": "generated"
+    },
+    "medical_condition": {
+     "extraction_status": "extracted",
+     "value": [
+      "Physically and psychologically healthy"
+     ],
+     "value_source": "generated"
+    }
+   },
+   {
+    "local_id": "grp_monolinguals",
+    "is_healthy": {
+     "evidence": {
+      "status": "not_found"
+     },
+     "extraction_status": "extracted",
+     "value": true,
+     "value_source": "generated"
+    },
+    "medical_condition": {
+     "extraction_status": "extracted",
+     "value": [
+      "Physically and psychologically healthy"
+     ],
+     "value_source": "generated"
+    }
+   }
+  ]
+ },
+ "xd2xqhulniyq": {
+  "base_study_id": "gNwTN4t6cPre",
+  "groups": [
+   {
+    "local_id": "grp_young",
+    "is_healthy": {
+     "evidence": {
+      "status": "not_found"
+     },
+     "extraction_status": "extracted",
+     "value": true,
+     "value_source": "generated"
+    },
+    "medical_condition": {
+     "extraction_status": "extracted",
+     "value": [
+      "Neurotypical"
+     ],
+     "value_source": "generated"
+    }
+   },
+   {
+    "local_id": "grp_old",
+    "is_healthy": {
+     "evidence": {
+      "status": "not_found"
+     },
+     "extraction_status": "extracted",
+     "value": true,
+     "value_source": "generated"
+    },
+    "medical_condition": {
+     "extraction_status": "extracted",
+     "value": [
+      "Neurotypical"
+     ],
+     "value_source": "generated"
+    }
+   }
+  ]
+ },
+ "uw6hfyq36rx2": {
+  "base_study_id": "6odDzJ92sgPo",
+  "groups": [
+   {
+    "local_id": "grp_pwmls_ci",
+    "is_healthy": {
+     "evidence": {
+      "status": "not_found"
+     },
+     "extraction_status": "extracted",
+     "value": false,
+     "value_source": "generated"
+    },
+    "medical_condition": {
+     "extraction_status": "extracted",
+     "value": [
+      "Periventricular white matter lesions",
+      "Mild cognitive impairment",
+      "Hyperlipidemia in 3 participants",
+      "Hypertension in 5 participants"
+     ],
+     "value_source": "generated"
+    }
+   },
+   {
+    "local_id": "grp_pwmls_cn",
+    "is_healthy": {
+     "evidence": {
+      "status": "not_found"
+     },
+     "extraction_status": "extracted",
+     "value": false,
+     "value_source": "generated"
+    },
+    "medical_condition": {
+     "extraction_status": "extracted",
+     "value": [
+      "Periventricular white matter lesions",
+      "Hyperlipidemia in 2 participants",
+      "Hypertension in 4 participants",
+      "Diabetes mellitus in 1 participant"
+     ],
+     "value_source": "generated"
+    }
+   },
+   {
+    "local_id": "grp_cn",
+    "is_healthy": {
+     "evidence": {
+      "status": "not_found"
+     },
+     "extraction_status": "extracted",
+     "value": true,
+     "value_source": "generated"
+    },
+    "medical_condition": {
+     "extraction_status": "extracted",
+     "value": [
+      "Hyperlipidemia in 3 participants",
+      "Hypertension in 3 participants"
+     ],
+     "value_source": "generated"
+    }
+   }
+  ]
+ },
+ "ntuf47r2lzgf": {
+  "base_study_id": "ihRjXA2aAqD9",
+  "groups": [
+   {
+    "local_id": "grp_trd",
+    "is_healthy": {
+     "evidence": {
+      "status": "not_found"
+     },
+     "extraction_status": "extracted",
+     "value": false,
+     "value_source": "generated"
+    },
+    "medical_condition": {
+     "extraction_status": "extracted",
+     "value": [
+      "Treatment-resistant depression",
+      "Hypertension in 2/36",
+      "Diabetes in 1/37"
+     ],
+     "value_source": "generated"
+    }
+   },
+   {
+    "local_id": "grp_hc",
+    "is_healthy": {
+     "evidence": {
+      "status": "not_found"
+     },
+     "extraction_status": "extracted",
+     "value": true,
+     "value_source": "generated"
+    },
+    "medical_condition": {
+     "extraction_status": "extracted",
+     "value": [
+      "Hypertension in 1/33"
+     ],
+     "value_source": "generated"
+    }
+   }
+  ]
+ }
+}

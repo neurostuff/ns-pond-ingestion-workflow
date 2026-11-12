@@ -10,9 +10,10 @@ Before assigning, what code decides is decided again (`renormalize`): the siblin
 study_schema#56 removed (`age_unit_normalized`, `category_normalized`) are dropped; pondie's
 deterministic fixes (`repair`) make the record's references and shapes agree with its schema
 and its parse; pondie's `apply_derived` fills the derived slots, replacing what the model
-answered there (`groups[].is_healthy` among them); and its `apply_normalized` writes each
-field's `normalized` sidecar. The record then holds to the schema pondie and this package
-pin, and the fit's medical step reads the derived `is_healthy`.
+answered there (`groups[].is_healthy` among them, but for the model's `true` that pondie
+would make `false`, which the fit's medical step settles); and its `apply_normalized` writes
+each field's `normalized` sidecar. The record then holds to the schema pondie and this
+package pin, and the fit's medical step reads the derived `is_healthy`.
 """
 
 from __future__ import annotations
@@ -31,7 +32,7 @@ from ingestion_workflow.pipeline.stages.offloaded import drop_siblings
 #: The pipeline a normalize run made in-process is filed under.
 PIPELINE = "ns-pond normalize"
 #: Bumped when `renormalize` changes what it does; part of the run's version.
-RENORMALIZE_VERSION = 4
+RENORMALIZE_VERSION = 5
 
 #: pondie's fixes that `repair` leaves out, because they change what the record says rather
 #: than how it says it: `mirrored` writes a sign-reversed copy of an analysis the paper
@@ -141,10 +142,22 @@ def _extraction_schema():
 
 
 def apply_derived(record: Dict[str, Any]) -> None:
-    """pondie's derived-slot fills (`is_healthy`, `population_characteristics`), in place."""
-    from pondie.normalization import apply_derived as apply
+    """pondie's derived-slot fills (`is_healthy`, `population_characteristics`), in place.
 
+    A group the model called healthy stays healthy where pondie would say otherwise: pondie
+    reads a head out of any value outside its wellness phrases ("Normal hearing",
+    "Neurotypical"), and only linking can tell such a head from a diagnosis. The medical step
+    decides it (`normalization.medical.settle_healthy`)."""
+    from pondie.formats import values
+    from pondie.normalization import apply_derived as apply
+    from pondie.normalization._records import value_of
+
+    groups = [g for g in record.get("groups") or [] if isinstance(g, dict)]
+    said = [value_of(g.get("is_healthy")) for g in groups]
     apply(record)
+    for group, answer in zip(groups, said):
+        if answer is True and value_of(group.get("is_healthy")) is False:
+            group["is_healthy"] = values.wrap(True, source="generated", evidence="not_found")
 
 
 def apply_normalized(record: Dict[str, Any]) -> None:
