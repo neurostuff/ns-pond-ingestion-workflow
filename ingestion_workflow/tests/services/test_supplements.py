@@ -260,3 +260,28 @@ def test_a_busy_host_is_asked_again_later(host, tmp_path):
 
     with pytest.raises(sp.TransientFetch):
         sp.fetch(item, tmp_path / "busy.pdf", requests.Session(), max_bytes=1024)
+
+
+def test_a_word_file_is_read_with_its_tables(tmp_path):
+    import docx
+
+    document = docx.Document()
+    document.add_paragraph("Supplementary Methods. Images were normalised to MNI space.")
+    document.add_paragraph("Table S1. Peaks of the group difference.")
+    rows = [["Region", "x", "y", "z", "t"], ["L insula", "-34", "16", "-6", "5.2"],
+            ["R amygdala", "22", "-4", "-18", "4.8"]]
+    table = document.add_table(rows=len(rows), cols=len(rows[0]))
+    for r, row in enumerate(rows):
+        for c, cell in enumerate(row):
+            table.cell(r, c).text = cell
+    path = tmp_path / "mmc1.docx"
+    document.save(path)
+    item = sp.Supplement("elsevier", "https://x/mmc1.docx", "mmc1.docx", path=str(path))
+
+    sp.read(item, tmp_path / "read")
+
+    assert item.read and item.read_by == "docling"
+    text = Path(item.text_path).read_text()
+    assert "normalised to MNI space" in text and "L insula" in text
+    [read] = item.tables
+    assert "-34" in Path(read["raw_content_path"]).read_text()

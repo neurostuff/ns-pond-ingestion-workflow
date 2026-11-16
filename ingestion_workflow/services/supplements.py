@@ -369,6 +369,7 @@ def read_docx(item: Supplement, out_dir: Path, path: Optional[Path] = None) -> N
 
     document = DocumentConverter().convert(str(path or item.path)).document
     text, _ = pdf_text_and_captions(document, normalize_text_tokens)
+    (out_dir / "tables").mkdir(parents=True, exist_ok=True)
     tables = document_tables(item.name, document, out_dir / "tables", None)
     item.tables = [t.to_dict() for t in tables]
     _write_text(item, out_dir, text)
