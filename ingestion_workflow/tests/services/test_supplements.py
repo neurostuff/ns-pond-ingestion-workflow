@@ -285,3 +285,11 @@ def test_a_word_file_is_read_with_its_tables(tmp_path):
     assert "normalised to MNI space" in text and "L insula" in text
     [read] = item.tables
     assert "-34" in Path(read["raw_content_path"]).read_text()
+
+
+@pytest.mark.parametrize("item", [
+    sp.Supplement("pmc", None, "s3.xlsx", reason="not in PMC's Cloud Service package"),
+    sp.Supplement("publisher", "https://www.pnas.org/doi/suppl/x", "", reason="HTTP 403"),
+])
+def test_an_item_with_no_address_or_no_name_survives_its_payload(item):
+    assert sp.Supplement.from_dict(item.to_dict()) == item

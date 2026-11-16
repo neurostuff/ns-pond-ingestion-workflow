@@ -60,8 +60,8 @@ class Supplement:
     """One item of supplementary material, as listed, then as fetched and read."""
 
     route: str
-    url: Optional[str]
-    name: str
+    url: Optional[str] = None
+    name: str = ""
     label: str = ""
     caption: str = ""
     #: Why it was not fetched, or not read; None once read.
