@@ -16,12 +16,15 @@ from .reflist import ReflistStage
 from .resolve import ResolveStage
 from .roles import RolesStage
 from .space import SpaceStage
+from .supplements import SupplementsStage
 from .sync import SyncStage
 from .triage import TriageStage
 from .record_upload import RecordUploadStage
 from .upload import UploadStage
 
 #: Canonical order. A stage may only require one that appears before it.
+#: `supplements` fetches and reads each article's supplementary material, and `extract`
+#: appends it to the extraction it makes, so every stage after sees the two as one article.
 #: `triage` sits between `metadata` and `analyses`: it needs the tables
 #: `extract` keeps and it decides which of them `analyses` spends a call on.
 #: `space` sits between `analyses` and `sync`, so a table goes out with the
@@ -62,7 +65,7 @@ from .upload import UploadStage
 #: `datasources` searches the text of each paper sync wrote for the data sources
 #: `ingest data-sources pull` keeps in the catalog. No stage reads it:
 #: `ingest data-sources export` writes its matches for neurostore.
-STAGE_ORDER = ("download", "extract", "reflist", "references", "links", "linkprobe", "passages",
+STAGE_ORDER = ("download", "supplements", "extract", "reflist", "references", "links", "linkprobe", "passages",
                "metadata", "notices", "triage", "analyses", "prose", "resolve", "roles", "space",
                "sync", "record", "evidence", "normalize", "upload", "record_upload",
                "datasources")
@@ -93,6 +96,7 @@ STAGE_TYPES = {
     "resolve": ResolveStage,
     "roles": RolesStage,
     "space": SpaceStage,
+    "supplements": SupplementsStage,
     "sync": SyncStage,
     "upload": UploadStage,
     "record_upload": RecordUploadStage,
@@ -146,6 +150,7 @@ __all__ = [
     "STAGE_TYPES",
     "upstream_of",
     "SpaceStage",
+    "SupplementsStage",
     "SyncStage",
     "TriageStage",
     "RecordUploadStage",

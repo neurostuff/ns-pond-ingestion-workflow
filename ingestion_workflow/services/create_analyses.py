@@ -686,7 +686,8 @@ Raw Table Content:
 
         Identity is the numbers in order, not the bytes: the two renderings
         differ in markup and whitespace but agree on every figure, and the
-        figures are what gets stored (`table_figures`). A copy with a caption
+        figures are what gets stored (`table_figures`). The main text's copy wins
+        over a supplement's (`services.supplements`); then a copy with a caption
         wins over one without, since ACE's own copy carries none; then the
         longer serialisation, because the two renderings are not always
         equally complete.
@@ -704,7 +705,10 @@ Raw Table Content:
                 continue                    # nothing numeric to collide on
             digest = hashlib.sha1(",".join(numbers).encode()).hexdigest()
             found.append((digest, key))
-            rank = (bool((table.caption or "").strip()), len(text))
+            # A supplement repeating a main-text table loses to it: the main text's is the
+            # copy the paper's other stages and its readers point at.
+            rank = ("supplement" not in (table.metadata or {}),
+                    bool((table.caption or "").strip()), len(text))
             if digest not in best or rank > best[digest][1]:
                 best[digest] = (key, rank)
 

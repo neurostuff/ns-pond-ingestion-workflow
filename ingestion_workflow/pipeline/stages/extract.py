@@ -120,10 +120,27 @@ def unusable(extraction: Artifact) -> bool:
     return bool(extraction.summary.get("symbols_as_digits"))
 
 
-def extraction_fingerprint(source: str, download: Artifact) -> str:
-    """`source` is the download's: the fingerprint names the code that read it."""
+def extraction_fingerprint(source: str, download: Artifact, supplements: Optional[str] = None) -> str:
+    """`source` is the download's: the fingerprint names the code that read it, and the
+    fingerprint of the supplements appended to it, when any were. An article without
+    supplements keeps the fingerprint it always had."""
     version = EXTRACTOR_VERSIONS.get(source, DEFAULT_EXTRACTOR_VERSION)
+    if supplements:
+        return fingerprint("extract", source, version, supplements, upstream=download.fingerprint)
     return fingerprint("extract", source, version, upstream=download.fingerprint)
+
+
+def appended(supplements: Optional[Artifact]) -> Optional[str]:
+    """The fingerprint an extraction names for `supplements`: theirs when any was read."""
+    if supplements is None or supplements.status is not Status.OK:
+        return None
+    return supplements.fingerprint if (supplements.summary or {}).get("read") else None
+
+
+def base_fingerprint(extraction: Artifact) -> str:
+    """The fingerprint the extraction would have without its supplements."""
+    summary = extraction.summary or {}
+    return summary.get("base_fingerprint") or extraction.fingerprint
 
 
 def file_sha256(path) -> str:
@@ -204,8 +221,22 @@ def current_extractions(
         source: artifact
         for source, artifact in extractions.items()
         if source in inputs
-        and ctx.is_fresh(artifact, extraction_fingerprint(inputs[source].source, inputs[source]))
+        and ctx.is_fresh(artifact, extraction_fingerprint(
+            inputs[source].source, inputs[source], (artifact.summary or {}).get("supplements_fingerprint")))
     }
+
+
+def _supplements_of(ctx: Context, ids: Sequence[str]) -> Dict[str, tuple]:
+    """`(fingerprint, supplements)` of each article whose supplements stage read any."""
+    from ingestion_workflow.services.supplements import payload_supplements
+
+    out = {}
+    for article_id, by_source in ctx.catalog.artifacts(list(ids), "supplements").items():
+        artifact = by_source.get("")
+        fp = appended(artifact)
+        if fp:
+            out[article_id] = (fp, payload_supplements(ctx.payload(artifact)))
+    return out
 
 
 class ExtractStage:
@@ -216,6 +247,9 @@ class ExtractStage:
         self.settings = settings
         self._extractors: Dict[DownloadSource, object] = {}
         self._order = list(dict.fromkeys(text_source(s) for s in settings.download_sources))
+        #: The supplements each article of the batch being executed has read, with their
+        #: fingerprint (`_supplements_of`).
+        self._appending: Dict[str, tuple] = {}
 
     def _priority(self, sources: Sequence[str]) -> List[str]:
         """Configured order first; anything else after, so a source that has
@@ -228,8 +262,8 @@ class ExtractStage:
             self._extractors[source] = build_extractor(source, self.settings)
         return self._extractors[source]
 
-    def fingerprint_for(self, source: str, upstream: Artifact) -> str:
-        return extraction_fingerprint(source, upstream)
+    def fingerprint_for(self, source: str, upstream: Artifact, supplements: Optional[str] = None) -> str:
+        return extraction_fingerprint(source, upstream, supplements)
 
     def plan(
         self,
@@ -251,6 +285,7 @@ class ExtractStage:
         plan = StagePlan(stage=self.name)
         ids = [ref.id for ref in refs]
         attempts_cache: Dict[str, Dict[str, tuple]] = {}
+        supplements = ctx.catalog.artifacts(ids, "supplements")
 
         def attempts(source: str) -> Dict[str, tuple]:
             if source not in attempts_cache:
@@ -274,10 +309,11 @@ class ExtractStage:
             # kept until the better source is due again.
             chosen = None
             is_fresh = False
+            sup = appended(supplements.get(ref.id, {}).get(""))
             for source in self._priority(list(downloads)):
                 download = downloads[source]
                 extraction = existing.get(source)
-                if ctx.is_fresh(extraction, self.fingerprint_for(download.source, download)):
+                if ctx.is_fresh(extraction, self.fingerprint_for(download.source, download, sup)):
                     is_fresh = True
                     if unusable(extraction):
                         continue
@@ -299,7 +335,7 @@ class ExtractStage:
                 Work(
                     ref=ref,
                     source=source,
-                    fingerprint=self.fingerprint_for(download.source, download),
+                    fingerprint=self.fingerprint_for(download.source, download, sup),
                     upstream=download,
                 )
             )
@@ -308,9 +344,14 @@ class ExtractStage:
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
         """Extract each work; a failure over an extraction failed as a bad page keeps
         saying so, since the passages made from that page are still there."""
-        earlier = ctx.catalog.artifacts(list({w.article_id for w in works}), self.name)
+        ids = list({w.article_id for w in works})
+        earlier = ctx.catalog.artifacts(ids, self.name)
+        self._appending = _supplements_of(ctx, ids)
         read = {w.article_id: w.upstream.source for w in works if w.upstream.source != w.source}
-        for outcome in self._extract(ctx, works):
+        rejoin = [w for w in works if self._rejoins(ctx, w, earlier.get(w.article_id, {}).get(w.source))]
+        again = {w.article_id for w in rejoin}
+        outcomes = [self._rejoined(ctx, w, earlier[w.article_id][w.source]) for w in rejoin]
+        for outcome in [*outcomes, *self._extract(ctx, [w for w in works if w.article_id not in again])]:
             if outcome.article_id in read:
                 outcome.summary["download_source"] = read[outcome.article_id]
             before = earlier.get(outcome.article_id, {}).get(outcome.source)
@@ -318,6 +359,42 @@ class ExtractStage:
                     and before.status is not Status.OK and before.summary.get("bad_page")):
                 outcome.summary.setdefault("bad_page", before.summary["bad_page"])
             yield outcome
+
+    def _rejoins(self, ctx: Context, work: Work, extraction: Optional[Artifact]) -> bool:
+        """Whether only the supplements changed: the extraction is the extractor's answer for
+        this download, so they are appended to it again without reading the download again."""
+        return (extraction is not None and extraction.status is Status.OK
+                and not ctx.refreshing(self.name, work.source)
+                and ctx.payload(extraction) is not None
+                and base_fingerprint(extraction) == extraction_fingerprint(work.upstream.source, work.upstream))
+
+    def _rejoined(self, ctx: Context, work: Work, extraction: Artifact) -> Outcome:
+        content = ExtractedContent.from_dict(ctx.payload(extraction))
+        return alone(self.name, work, partial(self._outcome, work, work.source, content))
+
+    def _with_supplements(self, work: Work, content: ExtractedContent) -> tuple:
+        """`content` with the article's supplements appended (or taken off when it has none
+        now), and what the extraction's summary records of them."""
+        from ingestion_workflow.services import supplements as sp
+
+        fp, items = self._appending.get(work.article_id, (None, []))
+        content = sp.append(content, items)
+        if not fp:
+            return content, {}
+        return content, {
+            **self._fingerprints(work),
+            "supplements": len(content.supplements),
+            "supplement_tables": sum(len(s["tables"]) for s in content.supplements),
+        }
+
+    def _fingerprints(self, work: Work) -> Dict[str, str]:
+        """What `current_extractions` checks an extraction made with supplements against:
+        recorded even when nothing could be appended."""
+        fp, _ = self._appending.get(work.article_id, (None, []))
+        if not fp:
+            return {}
+        return {"supplements_fingerprint": fp,
+                "base_fingerprint": extraction_fingerprint(work.upstream.source, work.upstream)}
 
     def _extract(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
         by_source: Dict[str, List[Work]] = {}
@@ -394,6 +471,7 @@ class ExtractStage:
         if content.symbols_as_digits:
             return self._set_aside(work, source, content)
 
+        content, joined = self._with_supplements(work, content)
         tables = content.tables or []
         produced_something = bool(content.full_text_path) or bool(tables)
         if content.error_message and not produced_something:
@@ -422,6 +500,7 @@ class ExtractStage:
             # Kept, because "four of five tables parsed" is worth knowing; it
             # is just not a failure.
             summary["notes"] = content.error_message
+        summary.update(joined)
         return Outcome(
             article_id=work.article_id,
             stage=self.name,
@@ -451,5 +530,6 @@ class ExtractStage:
                 "tables_with_coordinates": 0,
                 "has_text": False,
                 "symbols_as_digits": content.symbols_as_digits,
+                **self._fingerprints(work),
             },
         )
