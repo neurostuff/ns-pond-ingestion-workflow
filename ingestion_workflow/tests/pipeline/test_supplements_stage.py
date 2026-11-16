@@ -170,3 +170,35 @@ def test_the_parse_reads_the_appended_material_as_one_supplement_section():
     assert [s.kind for s in found] == ["methods", "results", "supplement"]
     assert found[-1].start_char == text.index("## Supplementary material")
     assert sections(text)[-1].kind != "supplement"
+
+
+def test_supplementary_pdfs_are_read_together_each_into_its_own_directory(env, tmp_path, monkeypatch):
+    settings, _, _ = env
+    seen = {}
+
+    class Reader:
+        def __init__(self, settings):
+            seen["root"] = settings.data_root
+
+        def extract(self, downloads):
+            seen["dirs"] = [d.identifier.slug for d in downloads]
+            out = []
+            for d in downloads:
+                text = tmp_path / f"{d.identifier.slug}.txt"
+                text.write_text("Supplementary results.")
+                out.append(ExtractedContent(slug=d.identifier.slug, source=DownloadSource.PDF,
+                                            full_text_path=text, text_source={"method": "docling"}))
+            return out
+
+    monkeypatch.setattr("ingestion_workflow.extractors.pdf_extractor.PdfExtractor", Reader)
+    pdfs = []
+    for article_id, index in (("a1", 1), ("a1", 2), ("a2", 1)):
+        path = tmp_path / f"{article_id}-{index}.pdf"
+        path.write_bytes(b"%PDF-1.4")
+        pdfs.append((article_id, index, sp.Supplement("pmc", "u", path.name, path=str(path))))
+
+    assert SupplementsStage(settings)._read_pdfs(tmp_path / "root", pdfs) == {}
+
+    assert seen["root"] == tmp_path / "root"
+    assert len(set(seen["dirs"])) == 3
+    assert [(s.read, s.read_by) for _, _, s in pdfs] == [(True, "docling")] * 3

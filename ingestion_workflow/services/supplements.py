@@ -278,6 +278,11 @@ def fetch(item: Supplement, dest: Path, session, *, max_bytes: int) -> None:
 
     from ingestion_workflow.utils.http import transient
 
+    if dest.is_file():
+        # Only a complete fetch is renamed into place, so one there is this file.
+        data = dest.read_bytes()
+        item.path, item.size, item.sha256 = str(dest), len(data), hashlib.sha256(data).hexdigest()
+        return
     try:
         with session.get(item.url, stream=True, timeout=(20, 120),
                          headers={"User-Agent": USER_AGENT}) as response:
@@ -360,14 +365,26 @@ def read_sheets(item: Supplement, out_dir: Path) -> None:
     item.read_by = "sheet"
 
 
+_WORD_CONVERTER = None
+
+
+def _word_converter():
+    """One Docling converter for every Word file a process reads: building one takes seconds."""
+    global _WORD_CONVERTER
+    if _WORD_CONVERTER is None:
+        from docling.datamodel.base_models import InputFormat
+        from docling.document_converter import DocumentConverter
+
+        _WORD_CONVERTER = DocumentConverter(allowed_formats=[InputFormat.DOCX])
+    return _WORD_CONVERTER
+
+
 def read_docx(item: Supplement, out_dir: Path, path: Optional[Path] = None) -> None:
     """A Word file through Docling: its text, captions and tables as a PDF's are read."""
-    from docling.document_converter import DocumentConverter
-
     from ingestion_workflow.extractors.docling_convert import normalize_text_tokens
     from ingestion_workflow.extractors.pdf_extractor import document_tables, pdf_text_and_captions
 
-    document = DocumentConverter().convert(str(path or item.path)).document
+    document = _word_converter().convert(str(path or item.path)).document
     text, _ = pdf_text_and_captions(document, normalize_text_tokens)
     (out_dir / "tables").mkdir(parents=True, exist_ok=True)
     tables = document_tables(item.name, document, out_dir / "tables", None)

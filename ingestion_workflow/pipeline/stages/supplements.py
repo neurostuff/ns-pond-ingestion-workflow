@@ -204,7 +204,8 @@ class SupplementsStage:
         settings = self.settings.model_copy(update={"data_root": root})
         results = []
         for article_id, index, item in pdfs:
-            identifier = Identifier(slug=f"{article_id}-supp{index:02d}")
+            # Named so each PDF is read into its own directory (`safe_hash_stem` of the slug).
+            identifier = Identifier(doi=f"10.0000/supplement.{article_id}.{index:02d}")
             results.append(DownloadResult(
                 identifier=identifier, source=DownloadSource.PDF, success=True,
                 files=[build_downloaded_file(Path(item.path), FileType.PDF, source=DownloadSource.PDF)]))
