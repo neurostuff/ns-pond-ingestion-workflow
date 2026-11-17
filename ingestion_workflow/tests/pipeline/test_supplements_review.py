@@ -227,7 +227,7 @@ def test_a_busy_host_leaves_the_article_standing_with_its_other_files_and_due_a_
     stage = SupplementsStage(settings)
     good = sp.Supplement("pmc", "https://pmc/good.txt", "good.txt")
     busy = sp.Supplement("pmc", "https://pmc/busy.txt", "busy.txt")
-    monkeypatch.setattr(stage, "_list", lambda work, stored, session: [good, busy])
+    monkeypatch.setattr(stage, "_list", lambda *args: [good, busy])
     monkeypatch.setattr("requests.Session", lambda: _Session({
         "https://pmc/good.txt": (200, b"Supplementary results: x = -34, y = 16, z = -6."),
         "https://pmc/busy.txt": (503, b"slow down")}))
@@ -315,3 +315,64 @@ def test_a_file_fetched_twice_under_two_names_is_read_once():
     _dedupe([pmc, elsevier, other])
 
     assert (pmc.reason, elsevier.reason, other.reason) == (None, "same file as 1-s2.0-S1-mmc1.docx", None)
+
+
+def crash_on_doc(task):
+    """A reader that kills its process on one file, as a segfaulting converter does."""
+    import os
+
+    from ingestion_workflow.pipeline.stages.supplements import _read_one
+
+    payload, _ = task
+    if payload["name"] == "crashes.xlsx":
+        os._exit(11)
+    return _read_one(task)
+
+
+def test_a_reader_that_dies_fails_its_file_alone(env, tmp_path):
+    from openpyxl import Workbook
+
+    settings, _, _ = env
+    settings = settings.model_copy(update={"max_workers": 2})
+    jobs = []
+    for article_id, name in (("a1", "good.xlsx"), ("a1", "crashes.xlsx"), ("a2", "also-good.xlsx")):
+        book = Workbook()
+        book.active.append(["Region", "x", "y", "z"])
+        book.active.append(["L insula", -34, 16, -6])
+        path = tmp_path / name
+        book.save(path)
+        jobs.append((article_id, len(jobs) + 1, sp.Supplement("pmc", "u", name, path=str(path))))
+
+    SupplementsStage(settings)._read_rest(tmp_path / "root", jobs, worker=crash_on_doc)
+
+    assert [(s.name, s.read) for _, _, s in jobs] == [
+        ("good.xlsx", True), ("crashes.xlsx", False), ("also-good.xlsx", True)]
+    assert jobs[1][2].reason.startswith("unreadable: Stopped")
+
+
+def test_a_file_that_cannot_be_written_is_noted_for_a_retry_not_the_batch_s_failure(env, tmp_path, monkeypatch):
+    settings, catalog, ctx = env
+    refs = [_article(catalog, f"a{n}", pmcid=f"PMC{n}") for n in (1, 2)]
+    for ref in refs:
+        _download(catalog, tmp_path, ref, "pubget")
+    stage = SupplementsStage(settings)
+    def listed(*args):  # the stage's `_list`, whichever arguments it takes
+        work = next(a for a in args if isinstance(a, Work))
+        return [sp.Supplement("pmc", f"https://pmc/{work.article_id}.txt", f"{work.article_id}.txt")]
+
+    monkeypatch.setattr(stage, "_list", listed)
+    monkeypatch.setattr("requests.Session", lambda: _Session({
+        "https://pmc/a1.txt": (200, b"Supplementary results."), "https://pmc/a2.txt": (200, b"More results.")}))
+    real = sp.fetch
+
+    def disk_full(item, dest, *args, **kwargs):
+        if item.name == "a1.txt":
+            raise OSError(28, "No space left on device")
+        return real(item, dest, *args, **kwargs)
+
+    monkeypatch.setattr(sp, "fetch", disk_full)
+
+    outcomes = {o.article_id: o for o in stage.execute(ctx, _plan(stage, ctx, catalog, refs).pending)}
+
+    assert [o.status for o in outcomes.values()] == [Status.OK, Status.OK]
+    assert outcomes["a1"].summary["transient"] == ["a1.txt"] and outcomes["a2"].summary["read"] == 1
