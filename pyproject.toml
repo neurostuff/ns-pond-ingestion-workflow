@@ -19,6 +19,9 @@ dependencies = [
   "tenacity>=8.2",
   "openai>=1.35.0",
   "pandas>=2.2",
+  # Spreadsheet supplements (services.supplements): .xlsx and the older .xls.
+  "openpyxl>=3.1",
+  "xlrd>=2.0",
   "lxml>=4.9",
   "beautifulsoup4>=4.12",
   "readabilipy~=0.3.0",

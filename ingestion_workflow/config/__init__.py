@@ -711,6 +711,19 @@ class Settings(BaseSettings):
         default=None,
         description="Optional override for the cache of XML fetched from Europe PMC",
     )
+    supplement_routes: List[Literal["pmc", "elsevier", "springer", "publisher"]] = Field(
+        default_factory=lambda: ["pmc", "elsevier", "springer", "publisher"],
+        description=(
+            "Where the supplements stage lists an article's supplementary material: PMC's "
+            "Cloud Service by PMCID, a stored Elsevier XML's objects, a stored Springer JATS, "
+            "and the links on a stored publisher page"
+        ),
+    )
+    supplement_max_mb: int = Field(
+        default=50,
+        gt=0,
+        description="Supplementary files larger than this (MB) are listed and not fetched",
+    )
     pdf_engines: List[Literal["mineru", "docling"]] = Field(
         # MinerU reads each page from its image, so a text layer that maps the minus to
         # 2 does not reach its tables; Docling reads that layer. On PDFs set aside for

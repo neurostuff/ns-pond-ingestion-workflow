@@ -44,7 +44,8 @@ FILE_SECONDS = 60
 def find_passages(job: dict) -> Tuple[str, list, Optional[str], str]:
     """How the article's prose was read, its passages, the space it states, and its text.
 
-    `job` names the extraction text (`text_path`) and its `figure_captions`. The
+    `job` names the extraction text (`text_path`), its `figure_captions` and the spans
+    of the supplementary material appended to it, which are read whole. The
     space is read from the same Methods and Results by `space`'s rules.
 
     Figure legends are read: about half the coordinates in them are the study's
@@ -63,10 +64,11 @@ def find_passages(job: dict) -> Tuple[str, list, Optional[str], str]:
         if not may_hold_coordinates(text):
             return "filtered", [], None, text
         legends = _caption_spans(text, job.get("figure_captions") or [])
-        # the legends are the text's last section: the body ends where they begin
-        body = text[: _legends_start(text, legends)]
+        supplements = _caption_spans(text, [{"span": s} for s in job.get("supplements") or []])
+        # the legends, then the appended supplements, close the text: the body ends at the first
+        body = text[: min([_legends_start(text, legends)] + [a for a, _ in supplements[:1]])]
         spans, how = kept_spans(body)
-        spans += legends
+        spans += legends + supplements
         found = [p for a, b in spans for p in _shifted(text, a, b)]
         for p in found:
             p.from_legend = bool(p.hits) and all(
@@ -282,7 +284,8 @@ class PassagesStage:
             payload = ctx.payload(work.upstream) or {}
             text_path = ctx.recorded_path(payload.get("full_text_path"))
             jobs.append({"text_path": str(text_path) if text_path else None,
-                         "figure_captions": payload.get("figure_captions") or []})
+                         "figure_captions": payload.get("figure_captions") or [],
+                         "supplements": [s["span"] for s in payload.get("supplements") or []]})
         workers = max(1, getattr(self.settings, "max_workers", 1) or 1)
         if len(works) < 8 or workers == 1:
             found = [find_passages(job) for job in jobs]

@@ -211,6 +211,10 @@ def jobs(catalog, sources: Sequence[str]) -> Iterator[Job]:
                 if source not in sources or extraction.status is not Status.OK:
                     continue
                 payload = catalog.payload(extraction) or {}
+                if payload.get("supplements"):
+                    # Its text is the extractor's with supplements appended: a rebuild from
+                    # the download would drop them. Re-extracting rebuilds both.
+                    continue
                 download = catalog.payload(downloads.get(article_id, {}).get(source)) or {}
                 identifier = payload.get("identifier") or download.get("identifier") or {}
                 yield Job(article_id, source, payload.get("full_text_path"),

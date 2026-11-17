@@ -317,7 +317,11 @@ def parsed_paper(root: Path, bundle: ArticleExtractionBundle, inputs: ParseInput
         bibliography=_bibliography(meta, title, types, inputs.corrections),
         is_meta_analysis=bool(is_meta),
         is_meta_analysis_basis=_meta_basis(title, types) if is_meta else None,
-        sections=sections(text.text),
+        sections=sections(text.text, content.supplements),
+        supplements=[
+            pp.Supplement(label=" ".join(filter(None, (s.get("label"), s.get("caption")))) or s.get("name"),
+                          url=s.get("url"), fetched=True)
+            for s in content.supplements] or None,
         links=_links(inputs, text_sha256),
         references=None if inputs.references is None else [
             pp.Reference(id=r["id"], position=r.get("position"), provider=r.get("provider"),
@@ -427,13 +431,25 @@ def _meta_basis(title: str, types: Sequence[str]) -> Optional[str]:
     return "publication_type" if by_type else ("title" if by_title else None)
 
 
-def sections(text: str):
-    """The text's sections as study_schema Sections; None when no heading names one."""
+def sections(text: str, supplements: Sequence[Mapping] = ()):
+    """The text's sections as study_schema Sections; None when no heading names one.
+
+    The supplementary material appended to the text (`services.supplements.append`) is one
+    `supplement` section, from its heading to the end, whatever headings it holds."""
+    from ingestion_workflow.services.supplements import HEADING
+
+    cut = len(text)
+    if supplements:
+        first = min(s["span"][0] for s in supplements)
+        at = text.rfind(HEADING, 0, first)
+        cut = text.rfind("\n", 0, at) + 1 if at >= 0 else first
     out = []
-    for start, end, label in sectionize(text):
+    for start, end, label in sectionize(text[:cut]):
         if label == "unknown":
             continue
         out.append(pp.Section(kind=_SECTIONS.get(label, "other"), start_char=start, end_char=end))
+    if cut < len(text):
+        out.append(pp.Section(kind="supplement", start_char=cut, end_char=len(text)))
     return out or None
 
 
@@ -533,6 +549,7 @@ def _parsed_table(root: Path, index: int, table, grid: _Table, verdict, excluded
     raw = Path(table.raw_content_path) if table.raw_content_path else None
     return pp.ParsedTable(
         table_id=table.table_id,
+        label=(table.metadata or {}).get("table_label") if "supplement" in (table.metadata or {}) else None,
         number=str(table.table_number) if table.table_number is not None else None,
         caption=table.caption or None,
         footer=table.footer or None,

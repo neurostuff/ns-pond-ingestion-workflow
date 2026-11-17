@@ -1,0 +1,11 @@
+ns-pond-ingestion-workflow
+Copyright (c) neurostuff contributors. Licensed under the MIT licence (pyproject.toml).
+
+Supplementary material (ingestion_workflow/services/supplements.py,
+ingestion_workflow/pipeline/stages/supplements.py)
+  The routes it fetches supplements by (PMC's Cloud Service package, Elsevier's mmc
+  attachments, Springer's ESM files), the file types it reads, reading Word files with
+  Docling and a spreadsheet's sheets as tables follow Anthony Yang's
+  supplementary-extraction, https://github.com/anthonyangg/supplementary-extraction
+  (commit 5eb00d2, November 2026). No code was copied from it: that repository states
+  no licence.

@@ -1109,7 +1109,15 @@ def _extract_pdf_article(
         # The cells are read from the same layer, so the tables lost their signs too.
         return _set_aside(download_result, misread, len(document.tables))
 
-    article_space = _article_space(full_text)
+    extracted_tables = document_tables(
+        download_result.identifier.slug, document, tables_dir, _article_space(full_text))
+    return _pdf_content(download_result, full_text_path, extracted_tables, figure_captions)
+
+
+def document_tables(slug: str, document: Any, tables_dir: Path, article_space: Any) -> List[ExtractedTable]:
+    """Each table of a Docling document, its CSV and HTML written to `tables_dir`."""
+    from ingestion_workflow.extractors.docling_convert import normalize_text_tokens
+
     extracted_tables: List[ExtractedTable] = []
     for index, table in enumerate(document.tables):
         caption = " ".join(_caption_texts(table, document)).strip()
@@ -1132,12 +1140,11 @@ def _extract_pdf_article(
         # `_extract_coordinates_from_table` and `_merge_split_coordinate_columns`
         # both want the frame.
         extracted_tables.append(_extracted_table(
-            download_result.identifier.slug, index, caption, footer, frame, tables_dir,
-            article_space, [t.table_id for t in extracted_tables],
+            slug, index, caption, footer, frame, tables_dir, article_space,
+            [t.table_id for t in extracted_tables],
             lambda table_id, table=table: _write_table_html(table, document, tables_dir, table_id),
         ))
-
-    return _pdf_content(download_result, full_text_path, extracted_tables, figure_captions)
+    return extracted_tables
 
 
 def _extract_mineru_article(
