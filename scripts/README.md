@@ -7,6 +7,8 @@ One-off tools that are not part of the `ingest` command.
 | `generate_manifest.py` | build a JSONL identifiers manifest from a list of ids |
 | `run_elsevier_tables.py` | fetch a few Elsevier articles and dump their tables, for debugging |
 | `symbols_as_digits_manifest.py` | list the articles whose stored PDF text the pdf extractor now repairs or sets aside, for `--refresh extract:pdf` |
+| `repeated_table_ids_manifest.py` | list the articles whose stored pdf extraction gives two tables one id (a table continued over pages, before 7e3ac063), for `--refresh extract:pdf`, and the exclusions to record again for the pieces numbered on |
+| `pdf_rerun.py` | read stored PDFs again with `pdf_engines` on another GPU machine (`export`, `run`), then record the reads through the extract stage (`import`), refusing any whose download changed since |
 | `backfill_download_copies.py` | record the copy (route, version, access, url) of each download stored before the download stage recorded it; a dry run unless `--apply --backup <path>` |
 | `rekey_metadata_reads.py` | give triage and prose, and what is made from them, the fingerprints of what they now read of the metadata, where the former formula matches; run once, before the metadata stage re-runs; a dry run unless `--apply --backup <path>` |
 | `rekey_analyses_reads.py` | give analyses, and what is made from them, the fingerprints of what analyses now reads (triage's verdict, the extraction, the title and abstract), read from a copy of the catalog from before triage ran again; run once, before analyses re-runs; a dry run unless `--apply --backup <path>` |
