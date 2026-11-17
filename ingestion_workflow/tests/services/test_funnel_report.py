@@ -506,7 +506,8 @@ def test_a_plan_s_verdict_says_what_a_run_would_do_with_each_record():
         == SPENT
     assert at("extract", failed, extract=Verdict(planning.PERMANENT, None, (BACKING_OFF,)))[0] \
         == FAILED
-    assert at("extract", failed, extract=Verdict(planning.PENDING))[0] == FAILED
+    # One the plan tries again waits, as a dry run would select it.
+    assert at("extract", failed, extract=Verdict(planning.PENDING))[0] == RERUN
     # A plan that holds an article whose input passed says why; a bad page is refused.
     why = f"prose {READ_FROM_BAD_PAGE}"
     assert at("sync", sync=Verdict(planning.BLOCKED, why)) == (REFUSED, why)
@@ -526,9 +527,14 @@ def test_a_plan_s_verdict_says_what_a_run_would_do_with_each_record():
 
 
 def test_only_the_stages_something_waits_for_are_in_the_flow():
-    gating = flow_stages(stage_graph(True))
-    assert not {"reflist", "references", "links", "linkprobe", "notices"} & set(gating)
-    assert gating == [n for n in STAGE_ORDER if getattr(STAGE_TYPES[n], "gates", True)]
+    """Not those no stage waits for (`gates`), nor the opt-in ones a default run skips
+    (reflist, the offloaded record chain, record_upload)."""
+    assert flow_stages(stage_graph(True)) == [
+        "download", "extract", "passages", "metadata", "triage", "analyses", "prose",
+        "resolve", "roles", "space", "sync", "upload", "datasources"]
+    assert flow_stages(stage_graph(False)) == [
+        "download", "extract", "metadata", "triage", "analyses", "roles", "space", "sync",
+        "upload", "datasources"]
 
 
 def test_dimensions_include_tried_sources_and_registration_day(wide):
@@ -879,8 +885,9 @@ def failing(tmp_path, evidence):
                         f"Weird failure at step 7 token={secret} then " + "x " * 450),
         # One reason group in two states: the page's command must keep the state.
         Outcome.failure(c, "download", "pdf", "PDF fetch failed: 403 Client Error: Forbidden"),
-        Outcome.failure(d, "download", "pdf", "PDF fetch failed: 403 Client Error: Forbidden",
-                        permanent=True),
+        # d's is spent at every source a default run tries, so its plan leaves it.
+        *(Outcome.failure(d, "download", source, "PDF fetch failed: 403 Client Error: Forbidden",
+                          permanent=True) for source in Settings().download_sources),
     ])
     cat.close()
     return tmp_path / "failing", (a, b, c, d), secret
@@ -929,12 +936,9 @@ def test_page_trace_shows_raw_errors_only_as_technical_detail(failing):
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="needs node")
 def test_page_command_keeps_the_state_of_a_group_in_two_states(failing):
+    """Planned as the command plans: c's download backs off, d's is spent everywhere."""
     root, (_, _, c, d), _ = failing
-    conn = open_readonly(root)
-    try:
-        funnel = build_funnel(conn, samples=50)
-    finally:
-        conn.close()
+    funnel = funnel_of(root, _cli_settings(root), samples=50)
     states = {key[1] for key in funnel.cells
               if key[0] == "download" and reason_group(key[2]) == "HTTP 403 forbidden"}
     assert states == {FAILED, PERMANENT}
@@ -1095,6 +1099,24 @@ def test_the_kept_records_notes_are_counted_by_field(tmp_path, evidence):
                                             "abstract": [0, 0, 2]}}
     finally:
         conn.close()
+
+
+def test_a_failure_due_its_retry_waits_as_a_dry_run_selects_it(tmp_path, evidence):
+    from ingestion_workflow.pipeline.selection import Select, everything, narrow
+
+    root = tmp_path / "dl"
+    cat = Catalog.open(root)
+    due = cat.register(Identifier(pmcid="PMC6100"), evidence).id
+    cat.record([Outcome.failure(due, "download", "pubget", "Read timed out")])
+    settings = Settings(catalog_root=root, data_root=tmp_path / "d", cache_root=tmp_path / "c",
+                        download_sources=["pubget"], max_attempts=3, retry_after_hours=0)
+    selected = {ref.id for ref in narrow(cat, everything(cat), Select.PENDING, "download",
+                                         settings=settings).refs}
+    cat.close()
+
+    assert selected == {due}
+    assert _where(funnel_of(root, settings, samples=50), due, "download")[:2] == (
+        RERUN, "tried again: timeout")
 
 
 def test_the_funnel_waits_on_what_a_dry_run_would_do_and_no_more(tmp_path, evidence):

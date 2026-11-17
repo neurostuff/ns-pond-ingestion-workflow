@@ -1849,15 +1849,3 @@ def retry_state(
     now = now if now is not None else datetime.now(timezone.utc)
     return RETRY_DUE if now - when >= backoff else BACKING_OFF
 
-
-def is_retryable(
-    artifact: Optional[Artifact],
-    attempts: int,
-    last_attempt: Optional[str],
-    *,
-    max_attempts: int,
-    backoff: timedelta,
-) -> bool:
-    """Whether a failed artifact has earned another try."""
-    return retry_state(artifact, attempts, last_attempt, max_attempts=max_attempts,
-                       backoff=backoff) == RETRY_DUE

@@ -32,11 +32,11 @@ class CountingStage:
         for ref in refs:
             existing = artifacts.get(ref.id, {}).get("test")
             if ctx.is_fresh(existing, self.fingerprint_for()):
-                plan.fresh += 1
+                plan.add_fresh(ref)
                 continue
             count, last = attempts.get(ref.id, (0, None))
             if not ctx.should_attempt(existing, count, last, self.name):
-                plan.permanent += 1
+                plan.add_permanent(ref)
                 continue
             plan.pending.append(Work(ref=ref, source="test", fingerprint=self.fingerprint_for()))
         return plan

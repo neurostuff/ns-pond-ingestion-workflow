@@ -43,33 +43,48 @@ class StagePlan:
 
     stage: str
     pending: List[Work] = field(default_factory=list)
-    fresh: int = 0
-    blocked: int = 0
-    skipped: int = 0
-    permanent: int = 0
     #: Why articles were blocked, when the stage can say: {reason: count}.
     reasons: Dict[str, int] = field(default_factory=dict)
     #: article_id -> (verdict, reason) of each article not put to work.
     verdicts: Dict[str, Tuple[str, Optional[str]]] = field(default_factory=dict)
     #: The blocked articles that wait on the operator (`wait`).
     waiting: Set[str] = field(default_factory=set)
+    #: verdict -> count, kept by the methods below. The counts are read-only, so a stage
+    #: cannot count an article without giving it a verdict.
+    _counts: Dict[str, int] = field(default_factory=dict, repr=False)
+
+    def _count(self, ref, verdict: str, reason: Optional[str]) -> None:
+        self._counts[verdict] = self._counts.get(verdict, 0) + 1
+        self.verdicts[ref.id] = (verdict, reason)
+
+    @property
+    def fresh(self) -> int:
+        return self._counts.get(FRESH, 0)
+
+    @property
+    def blocked(self) -> int:
+        return self._counts.get(BLOCKED, 0)
+
+    @property
+    def skipped(self) -> int:
+        return self._counts.get(SKIPPED, 0)
+
+    @property
+    def permanent(self) -> int:
+        return self._counts.get(PERMANENT, 0)
 
     def add_fresh(self, ref) -> None:
-        self.fresh += 1
-        self.verdicts[ref.id] = (FRESH, None)
+        self._count(ref, FRESH, None)
 
     def add_skipped(self, ref, reason: Optional[str] = None) -> None:
-        self.skipped += 1
-        self.verdicts[ref.id] = (SKIPPED, reason)
+        self._count(ref, SKIPPED, reason)
 
     def add_permanent(self, ref) -> None:
-        self.permanent += 1
-        self.verdicts[ref.id] = (PERMANENT, None)
+        self._count(ref, PERMANENT, None)
 
     def block(self, ref, reason: Optional[str] = None) -> None:
         """Count one article blocked, for `reason` when the stage can say."""
-        self.blocked += 1
-        self.verdicts[ref.id] = (BLOCKED, reason)
+        self._count(ref, BLOCKED, reason)
         if reason is not None:
             self.reasons[reason] = self.reasons.get(reason, 0) + 1
 
