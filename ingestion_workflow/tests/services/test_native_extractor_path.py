@@ -831,3 +831,19 @@ def test_an_article_none_of_whose_tables_could_be_read_still_fails():
 
     with pytest.raises(UnreadableAnswer):
         _service_reading({}).run(_tables_bundle("t1", "t2"))
+
+
+def test_a_supplement_repeating_a_main_text_table_loses_to_it(tmp_path):
+    """The supplement's copy has the caption and the longer markup, which win between two
+    main-text copies; the main text's copy is still the one kept."""
+    from ingestion_workflow.services.create_analyses import CreateAnalysesService
+
+    rows = "<tr><td>L insula</td><td>-34</td><td>16</td><td>-6</td><td>5.2</td></tr>"
+    main = _tbl(tmp_path, "tbl2.html", f"<table><tbody>{rows}</tbody></table>")
+    supp = _tbl(tmp_path, "s1-table-001.html",
+                f'<table class="supplementary"><tbody>{rows.replace("<td>", "<td class=c>")}</tbody></table>',
+                caption="Supplementary file 1 (mmc1.docx): Table S2. Peaks")
+    supp.metadata = {"supplement": 1, "table_label": "Table S2"}
+    svc = CreateAnalysesService.__new__(CreateAnalysesService)
+
+    assert svc._redundant([main, supp], "slug") == {"s1-table-001"}
