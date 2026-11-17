@@ -40,6 +40,9 @@ LIST_THREADS = 8
 
 #: Most processes reading Word files and sheets at once: each holds a Docling converter.
 READ_WORKERS = 8
+#: The most while the batch's PDFs are read beside them: a MinerU worker and its engine hold
+#: 5 to 8 GB, three of them beside eight Docling readers left beast (62 GB) a few GB.
+READ_WORKERS_BESIDE_PDFS = 5
 
 
 def routes_for(ref: ArticleRef, ok: Iterable[str], wanted: Sequence[str]) -> List[str]:
@@ -223,17 +226,24 @@ class SupplementsStage:
         return sp.publisher_items(page.read_bytes(), _page_address(stored.get("ace"))) if page is not None else []
 
     def _read(self, root: Path, jobs) -> None:
-        """Read each fetched file: PDFs together through `pdf_engines`, the rest in a pool of
-        `max_workers` processes (Docling reads a Word file in seconds, on the CPU). A PDF no
-        engine could run on is left `transient`, to be read on the article's retry."""
+        """Read each fetched file: PDFs together through `pdf_engines` on the GPUs, and at the
+        same time the rest in a pool of processes on the CPU (Docling reads a Word file in
+        seconds), so neither waits for the other. A PDF no engine could run on is left
+        `transient`, to be read on the article's retry."""
         pdfs = [job for job in jobs if job[2].extension == "pdf"]
         rest = [job for job in jobs if job[2].extension != "pdf"]
-        if rest:
-            self._read_rest(root, rest)
-        if pdfs:
+        if not (pdfs and rest):
+            if rest:
+                self._read_rest(root, rest)
+            if pdfs:
+                self._read_pdfs(root, pdfs)
+            return
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            beside = pool.submit(self._read_rest, root, rest, None, READ_WORKERS_BESIDE_PDFS)
             self._read_pdfs(root, pdfs)
+            beside.result()
 
-    def _read_rest(self, root: Path, jobs, worker=None) -> None:
+    def _read_rest(self, root: Path, jobs, worker=None, most: int = READ_WORKERS) -> None:
         """Read the Word files and sheets, each in a child the parent kills over the PDF
         limits (`bounded_map`): a reader that crashes or runs away fails its file alone, where
         a broken process pool failed the whole batch and the scheduler halved it again."""
@@ -244,7 +254,7 @@ class SupplementsStage:
 
         tasks = [(item.to_dict(), str(root / article_id / "read" / f"{index:02d}"))
                  for article_id, index, item in jobs]
-        workers = min(max(1, int(getattr(self.settings, "max_workers", 1) or 1)), READ_WORKERS, len(tasks))
+        workers = min(max(1, int(getattr(self.settings, "max_workers", 1) or 1)), most, len(tasks))
         answers = bounded_map(
             tasks, worker or _read_one, (), workers=workers,
             limits=Limits(memory_mb=self.settings.pdf_extract_memory_mb,

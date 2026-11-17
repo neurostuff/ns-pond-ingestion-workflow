@@ -259,6 +259,38 @@ def test_word_files_and_sheets_are_read_in_a_pool_into_their_own_directories(env
     assert "region a22" in Path(jobs[2][2].text_path).read_text()
 
 
+def test_a_batch_s_pdfs_are_read_while_its_word_files_are(env, tmp_path, monkeypatch):
+    """The GPUs' PDFs and the CPU's Word files are read at the same time, the Word files by
+    fewer readers: read one after the other, each waits at the barrier for the other in vain."""
+    import threading
+
+    from ingestion_workflow.pipeline.stages import supplements as stage_module
+
+    settings, _, _ = env
+    both = threading.Barrier(2, timeout=10)
+    seen = {}
+
+    def read_rest(root, jobs, worker=None, most=stage_module.READ_WORKERS):
+        seen["rest"] = ([s.name for _, _, s in jobs], most)
+        both.wait()
+
+    def read_pdfs(root, pdfs):
+        seen["pdfs"] = [s.name for _, _, s in pdfs]
+        both.wait()
+
+    stage = SupplementsStage(settings)
+    monkeypatch.setattr(stage, "_read_rest", read_rest)
+    monkeypatch.setattr(stage, "_read_pdfs", read_pdfs)
+    jobs = [("a1", 1, sp.Supplement("pmc", "u", "s1.pdf")),
+            ("a1", 2, sp.Supplement("pmc", "u", "s2.docx")),
+            ("a2", 1, sp.Supplement("pmc", "u", "s3.xlsx"))]
+
+    stage._read(tmp_path / "root", jobs)
+
+    assert seen == {"pdfs": ["s1.pdf"],
+                    "rest": (["s2.docx", "s3.xlsx"], stage_module.READ_WORKERS_BESIDE_PDFS)}
+
+
 def test_articles_are_listed_together_from_downloads_read_beforehand(env, tmp_path, monkeypatch):
     """The pool asks only the network: each article's downloads are read from the catalog
     first, on the stage's own thread."""
