@@ -7,11 +7,21 @@ One-off tools that are not part of the `ingest` command.
 | `generate_manifest.py` | build a JSONL identifiers manifest from a list of ids |
 | `run_elsevier_tables.py` | fetch a few Elsevier articles and dump their tables, for debugging |
 | `symbols_as_digits_manifest.py` | list the articles whose stored PDF text the pdf extractor now repairs or sets aside, for `--refresh extract:pdf` |
+| `repeated_table_ids_manifest.py` | list the articles whose stored pdf extraction gives two tables one id (a table continued over pages, before 7e3ac063), for `--refresh extract:pdf`, and the exclusions to record again for the pieces numbered on |
+| `pdf_rerun.py` | read stored PDFs again with `pdf_engines` on another GPU machine (`export`, `run`), then record the reads through the extract stage (`import`), refusing any whose download changed since |
 | `backfill_download_copies.py` | record the copy (route, version, access, url) of each download stored before the download stage recorded it; a dry run unless `--apply --backup <path>` |
 | `rekey_metadata_reads.py` | give triage and prose, and what is made from them, the fingerprints of what they now read of the metadata, where the former formula matches; run once, before the metadata stage re-runs; a dry run unless `--apply --backup <path>` |
 | `rekey_analyses_reads.py` | give analyses, and what is made from them, the fingerprints of what analyses now reads (triage's verdict, the extraction, the title and abstract), read from a copy of the catalog from before triage ran again; run once, before analyses re-runs; a dry run unless `--apply --backup <path>` |
+| `add_metadata_venue.py` | add the venue (METADATA_VERSION 7) to each metadata record stored under version 6, every other field left as it is, so only sync and upload run again; run once, before the metadata stage re-runs; a dry run unless `--apply --backup <path>` |
 | `rewrite_license_ids.py` | respell the licence ids the metadata stored before study_schema 0.11.0 (`cc-by` → `cc_by`), in each metadata payload and summary; run once, before the pipeline runs with 0.11.0; a dry run unless `--apply --backup <path>` |
 | `repair_doi_collisions.py` | settle the DOIs two catalog articles hold in different case, by `doi_collisions.tsv`; run once, before the schema version 3 migration |
+| `data_sources/discover.py` | candidate data sources named in `ns-pond` text but missing from the curated dictionary |
+
+The other `data_sources/` scripts help curate `ingestion_workflow/data_sources/curated.tsv`:
+RRIDs counted in the corpus (`pull_rrid.py`), EBRAINS KG pages (`ebrains_imaging.py`), official
+websites (`*_urls.py`), ENIGMA cohort mining (`enigma*.py`, `fetch_enigma_epmc.py`) and
+`compare_source.py`. Pulling the catalogues and matching papers is `ingest data-sources pull`
+and the `datasources` stage.
 
 Removed in the catalog refactor, because `ingest` now covers them:
 

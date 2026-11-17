@@ -482,6 +482,34 @@ def test_a_served_model_that_cannot_be_used_blocks_the_article_at_plan_time(
     assert stub.requests == []
 
 
+def test_with_its_checkpoint_path_a_down_server_keeps_what_it_labelled_fresh(env, stub, evidence):
+    """Upload asks whether roles are fresh; that needed the server up, so with the GPUs on
+    other work every article was held back. With `path`, the checkpoint the server loads,
+    the model is known while it is down: a labelled article stays fresh, an unlabelled
+    one waits, and nothing is sent."""
+    settings, catalog, ref = env
+    settings.role_model_table = RoleModel(endpoint=stub.url, model=MODEL, path=f"/models/{MODEL}")
+    _, (done,) = _run(RolesStage(settings), settings, catalog, ref)
+    catalog.record([done])
+    other = catalog.register(Identifier(pmid="8"), evidence)
+    catalog.record([Outcome(article_id=other.id, stage="analyses", source="", fingerprint="an-2",
+                            payload=_tables("patients", "Lee"), summary={"tables": 1})])
+    asked = len(stub.requests)
+
+    settings.role_model_table = RoleModel(endpoint=f"http://127.0.0.1:{_free_port()}/v1",
+                                          model=MODEL, path=f"/models/{MODEL}")
+    stage = RolesStage(settings)
+    plan = stage.plan(Context(settings, catalog), [ref, other],
+                      catalog.artifacts([ref.id, other.id], stage.name),
+                      catalog.artifacts([ref.id, other.id], stage.requires))
+
+    assert (plan.fresh, plan.pending) == (1, [])
+    assert any("cannot be reached" in r for r in plan.reasons)
+    assert len(stub.requests) == asked
+    with pytest.raises(ModelUnavailable):
+        stage.classifier("table")
+
+
 def test_a_served_model_trained_on_other_contexts_blocks_the_article(env, stub, monkeypatch):
     settings, catalog, ref = env
     stale = served_prompt.RolePrompt("v5", served_prompt.PROMPT.instruction,
@@ -643,11 +671,12 @@ def test_a_role_model_is_configured_per_origin_in_yaml_or_the_environment(tmp_pa
 
 
 def test_a_role_model_is_loaded_one_way_only(env, stub, tmp_path):
-    """A served model, by its endpoint and name: no model directory, device or threshold."""
+    """A served model, by its endpoint and name: no device or threshold, and its checkpoint
+    `path` only names what the server loads, never loaded here."""
     settings, _, _ = env
     assert [f for f in Settings.model_fields if f.startswith("role_")] == [
         "role_model_table", "role_model_prose"]
-    assert set(RoleModel.model_fields) == {"endpoint", "model"}
+    assert set(RoleModel.model_fields) == {"endpoint", "model", "path"}
     roots = {k: str(tmp_path / k) for k in ("data_root", "cache_root", "catalog_root")}
     for retired in ("/models/set-roles-table-1",
                     {"endpoint": stub.url, "model": MODEL, "result_threshold": 0.3}):

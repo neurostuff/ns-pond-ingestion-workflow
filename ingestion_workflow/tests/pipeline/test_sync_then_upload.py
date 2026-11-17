@@ -163,7 +163,8 @@ def _prose_article(env, monkeypatch, pmid, neurostore=None, doi=None, *, evidenc
 
 
 def test_sync_runs_before_upload_and_upload_reads_what_sync_wrote():
-    assert STAGE_ORDER[-2:] == ("sync", "upload")
+    assert STAGE_ORDER[-7:] == ("sync", "record", "evidence", "normalize", "upload",
+                                "record_upload", "datasources")
     settings = Settings()
     assert [type(s) for s in build(["upload", "sync"], settings)] == [SyncStage, UploadStage]
     for name in STAGE_ORDER:
@@ -1263,6 +1264,9 @@ def test_a_failed_table_reading_holds_back_a_parse_with_only_the_prose(env, monk
      Artifact("a", "x", status=Status.FAILED, error="ReadTimeout"), "failed: ReadTimeout"),
     (StagePlan("x", pending=[Work(ref=None, source="", fingerprint="f")]),
      Artifact("a", "x", status=Status.OK), "stale"),
+    # A skip planned again once triage passes tables (#218) is stale, not failed.
+    (StagePlan("x", pending=[Work(ref=None, source="", fingerprint="f")]),
+     Artifact("a", "x", status=Status.SKIPPED), "stale"),
     (StagePlan("x", pending=[Work(ref=None, source="", fingerprint="f")]), None, "not run"),
     (StagePlan("x", pending=[Work(ref=None, source="", fingerprint=NO_TEXT)]),
      Artifact("a", "x", status=Status.OK), "taken back"),

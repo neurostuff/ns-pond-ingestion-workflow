@@ -7,7 +7,13 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict
-from study_schema.models.paper_parse import Affiliation, License, MetadataSource, ReportedCopy
+from study_schema.models.paper_parse import (
+    Affiliation,
+    License,
+    MetadataSource,
+    ReportedCopy,
+    Venue,
+)
 
 
 class CorrespondingAuthor(BaseModel):
@@ -86,7 +92,7 @@ class ArticleMetadata:
     # Article abstract
     abstract: Optional[str] = None
 
-    # Journal or venue name
+    # The journal's name, as the provider printed it
     journal: Optional[str] = None
 
     # Publication year
@@ -132,6 +138,9 @@ class ArticleMetadata:
     # Correspondence addresses the paper prints that belong to no author in `authors`
     correspondence_emails: List[str] = field(default_factory=list)
 
+    # The OpenAlex source the paper appeared in, decided by the metadata service
+    venue: Optional[Venue] = None
+
     def __post_init__(self) -> None:
         if self.abstract and self.abstract_provider is None:
             self.abstract_provider = self.source
@@ -141,8 +150,8 @@ class ArticleMetadata:
         Merge metadata from another source, filling in missing fields.
 
         Values from `self` take precedence over values from `other`. The licence
-        decisions and the corresponding authors are not merged: the metadata service makes
-        them from every answer.
+        decisions, the corresponding authors and the venue are not merged: the metadata
+        service makes them from every answer.
 
         Parameters
         ----------
@@ -208,6 +217,7 @@ class ArticleMetadata:
             "corresponding_authors": [_dumped(author) for author in self.corresponding_authors],
             "authors_provider": self.authors_provider,
             "correspondence_emails": list(self.correspondence_emails),
+            "venue": _dumped(self.venue),
         }
 
     @classmethod
@@ -238,6 +248,7 @@ class ArticleMetadata:
                                    for author in data.get("corresponding_authors") or []],
             authors_provider=data.get("authors_provider"),
             correspondence_emails=list(data.get("correspondence_emails") or []),
+            venue=Venue.model_validate(data["venue"]) if data.get("venue") else None,
         )
 
     def to_neurostore_format(self) -> Dict[str, Any]:

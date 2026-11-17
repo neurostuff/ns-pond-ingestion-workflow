@@ -11,6 +11,7 @@ nothing in this repo reads stage1. It is still written until its folders are ret
 from __future__ import annotations
 
 import csv
+import math
 import shutil
 from pathlib import Path
 from typing import Dict, List, Mapping, MutableMapping, Optional, Sequence, Tuple
@@ -342,7 +343,7 @@ def _stage1_point(coordinate, collection: AnalysisCollection) -> dict[str, objec
         "sign": coordinate.sign,
         "is_subpeak": coordinate.is_subpeak,
     }
-    if coordinate.statistic_value is not None:
+    if coordinate.statistic_value is not None and math.isfinite(coordinate.statistic_value):
         point["values"] = [
             {
                 "value": coordinate.statistic_value,

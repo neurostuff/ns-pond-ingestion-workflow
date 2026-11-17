@@ -22,6 +22,7 @@ from __future__ import annotations
 import hashlib
 import itertools
 import json
+import math
 import re
 from array import array
 from dataclasses import dataclass, field, replace
@@ -400,6 +401,7 @@ def _bibliography(meta, title: str, types: Sequence[str], corrections=None):
         authors_provider=_provider(meta.authors_provider) if meta.authors_provider else None,
         correspondence_emails=list(meta.correspondence_emails) or None,
         journal=meta.journal,
+        venue=meta.venue,
         publication_year=meta.publication_year,
         abstract=meta.abstract,
         abstract_provider=_provider(meta.abstract_provider) if meta.abstract else None,
@@ -1327,7 +1329,8 @@ def _space_value(space) -> Optional[str]:
 
 def _point(coordinate, collection, found: Optional[Tuple[int, int]], span=None):
     space = coordinate.space.value if coordinate.space else None
-    values = [pp.PointValue(**v) for v in coordinate.values()] or None
+    # SPM prints Z = Inf past its precision; JSON has no infinity, so the point keeps no value.
+    values = [pp.PointValue(**v) for v in coordinate.values() if math.isfinite(v["value"])] or None
     measure = (
         str(coordinate.cluster_measure or "").strip().lower().replace("³", "3").replace("^", "")
     )

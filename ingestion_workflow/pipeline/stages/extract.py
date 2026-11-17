@@ -38,6 +38,9 @@ logger = logging.getLogger(__name__)
 #: pdf 1 -> 2: its text already kept tables; bumped so the whole corpus is
 #: re-extracted in one pass under the same code.
 #:
+#: pdf 2 -> 3: MinerU reads each PDF first (`pdf_engines`), Docling only what MinerU
+#: cannot read.
+#:
 #: A change whose effect on stored extractions can be computed from their stored
 #: output is applied by refreshing just those (`--refresh extract:<source>` over a
 #: manifest) instead: setting aside a PDF whose text layer maps symbols to digits
@@ -57,7 +60,7 @@ EXTRACTOR_VERSIONS = {
     "springer": 1,
     "elsevier": 2,
     "ace": 3,
-    "pdf": 2,
+    "pdf": 3,
 }
 DEFAULT_EXTRACTOR_VERSION = 1
 
@@ -209,9 +212,13 @@ class ExtractStage:
     name = "extract"
     requires = "download"
 
-    def __init__(self, settings) -> None:
+    def __init__(
+        self, settings, extractors: Optional[Dict[DownloadSource, object]] = None
+    ) -> None:
+        """`extractors` stand in for a source's built one: scripts/pdf_rerun.py's import
+        hands back what another machine read."""
         self.settings = settings
-        self._extractors: Dict[DownloadSource, object] = {}
+        self._extractors: Dict[DownloadSource, object] = dict(extractors or {})
         self._order = list(dict.fromkeys(text_source(s) for s in settings.download_sources))
 
     def _priority(self, sources: Sequence[str]) -> List[str]:

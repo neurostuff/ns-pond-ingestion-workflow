@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 import json
 import logging
+import re
 from functools import partial
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
@@ -32,7 +33,9 @@ from ingestion_workflow.extractors.utils import (
     build_failure_extraction,
     coordinate_from_row,
     coordinate_space_from_guess,
+    has_body,
     parse_table_number,
+    recovering_xml_parser,
     safe_hash_stem,
     sanitize_table_id,
 )
@@ -52,6 +55,10 @@ from ingestion_workflow.models import (
 
 
 logger = logging.getLogger(__name__)
+
+
+class UnreadableJats(ValueError):
+    """An article.xml that is no JATS article, or that recovery left without its body."""
 
 
 class PubgetExtractor(BaseExtractor):
@@ -393,6 +400,40 @@ KEEPS_SUPERSCRIPTS = _stylesheet_declares("keep-superscripts")
 KEEPS_SUBSCRIPTS = _stylesheet_declares("keep-subscripts")
 
 
+#: Once libxml2 meets an error it drops every entity reference after it, `&lt;` and
+#: `&amp;` among them ("p &lt; .05" read "p .05"); a character reference it keeps.
+_PREDEFINED = re.compile(rb"&(amp|lt|gt|quot|apos);")
+_CHARACTER_REFERENCE = {b"amp": b"&#38;", b"lt": b"&#60;", b"gt": b"&#62;", b"quot": b"&#34;",
+                        b"apos": b"&#39;"}
+
+
+def read_article(path: Path) -> Tuple[etree._ElementTree, Optional[str]]:
+    """A JATS article.xml as every reader of it parses it, and what recovering from its
+    malformed markup cost (error count and first error; None when well-formed).
+
+    Raises UnreadableJats for a file whose root is not <article> (an error page), and
+    for one that needed recovery and has no <body> or no closing </article> (truncated).
+    """
+    parser = recovering_xml_parser()
+    tree = etree.parse(str(path), parser)
+    if parser.error_log.filter_from_errors():  # a warning (XML 1.1) needs no recovery
+        data = path.read_bytes()
+        parser = recovering_xml_parser()
+        root = etree.fromstring(_PREDEFINED.sub(lambda m: _CHARACTER_REFERENCE[m[1]], data),
+                                parser, base_url=str(path))
+        tree = root.getroottree() if root is not None else tree
+    root = tree.getroot()
+    if root is None or etree.QName(root).localname != "article":
+        raise UnreadableJats(f"{path.name} is not a JATS article")
+    errors = list(parser.error_log.filter_from_errors())
+    if not errors:
+        return tree, None
+    first = f"line {errors[0].line}: {errors[0].message}"
+    if not has_body(root) or not data.rstrip().endswith(b"</article>"):
+        raise UnreadableJats(f"{path.name} is truncated ({first})")
+    return tree, f"article.xml recovered past {len(errors)} XML error(s), first at {first}"
+
+
 def article_text(article_tree: etree._ElementTree, article_input_dir: Path) -> str:
     """An article's text as extraction keeps it: title, keywords, abstract and body, tables in
     place, and the figure captions under "Figure legends" at the end.
@@ -468,7 +509,8 @@ def _extract_pubget_article(
     tables_output_dir = output_dir / "tables"
     tables_output_dir.mkdir(parents=True, exist_ok=True)
 
-    article_tree = etree.parse(str(article_file.file_path))
+    article_tree, recovered = read_article(article_file.file_path)
+    notes = [recovered] if recovered else []
 
     try:
         full_text, figure_captions = article_text_and_captions(article_tree, article_input_dir)
@@ -488,12 +530,12 @@ def _extract_pubget_article(
     article_text = " ".join(article_tree.xpath(".//text()"))
     article_space = coordinate_space_from_guess(_neurosynth_guess_space(article_text))
 
-    tables_tree = etree.parse(str(tables_file.file_path))
+    tables_tree = etree.parse(str(tables_file.file_path), recovering_xml_parser())
     element_by_id, element_by_label = _build_table_lookup(tables_tree)
 
     info_files = get_table_info_files_from_article_dir(article_input_dir)
     if not info_files:
-        message = "Tables metadata not found; returning empty extraction."
+        message = " | ".join(["Tables metadata not found; returning empty extraction.", *notes])
         logger.info("%s: %s", slug, message)
         return ExtractedContent(
             slug=slug,
@@ -619,6 +661,7 @@ def _extract_pubget_article(
         message = "Pubget failed to extract any tables."
         if failure_reasons:
             message = f"{message} Reasons: {' | '.join(failure_reasons)}"
+        message = " | ".join([message, *notes])
         logger.error("%s: %s", slug, message)
         return build_failure_extraction(
             download_result,
@@ -634,9 +677,9 @@ def _extract_pubget_article(
         encoding="utf-8",
     )
 
-    error_message = None
     if failure_reasons:
-        error_message = "Pubget skipped tables: " + " | ".join(failure_reasons)
+        notes.append("Pubget skipped tables: " + " | ".join(failure_reasons))
+    error_message = " | ".join(notes) or None
 
     has_coordinates = any(table.coordinates for table in extracted_tables)
 

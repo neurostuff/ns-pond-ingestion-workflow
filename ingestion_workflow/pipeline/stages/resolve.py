@@ -233,7 +233,7 @@ def resolve(tables: Dict[str, Any], prose: Dict[str, Any], slug: str,
             coordinate = Coordinate(
                 x=xyz[0], y=xyz[1], z=xyz[2], space=space,
                 statistic_value=value, statistic_type=p.get("statistic"),
-                cluster_size=int(size) if isinstance(size, (int, float)) else None,
+                cluster_size=size,
                 cluster_measure=measure if size is not None else None,
             )
             seen[key] = coordinate

@@ -1,0 +1,1339 @@
+[
+ {
+  "brainmap_class": "Acupuncture",
+  "definition": "Stimulation with filamentous needles to elicit cognitive, behavioral, and/or physiological responses.",
+  "first": "Han & Terenius, 1982",
+  "most": "Hui, et al. 2000",
+  "match_type": "narrower",
+  "inventory_id": "tct_sensory_stimulation",
+  "proposed_extension": null,
+  "note": "Needle stimulation; tct_sensory_stimulation already lists acupuncture."
+ },
+ {
+  "brainmap_class": "Affective Pictures",
+  "definition": "Stimuli utilize affective images to elicit a range of emotions.",
+  "first": "Cattell, Glascock & Washburn, 1918",
+  "most": "Cahill, et al. 2004",
+  "match_type": "close",
+  "inventory_id": "hedtsk_affective_picture_viewing",
+  "proposed_extension": null,
+  "note": "Stimulus class; procedure is affective picture viewing."
+ },
+ {
+  "brainmap_class": "Affective Words",
+  "definition": "Stimuli utilize words that are concerned with or arouse feelings or emotions.",
+  "first": "Clore, Ortony & Foss, 1987",
+  "most": "Kensinger & Corkin, 2004",
+  "match_type": "broader",
+  "inventory_id": "tct_valence_judgment",
+  "proposed_extension": null,
+  "note": "Stimulus class; procedures vary (valence judgment, emotional Stroop, encoding)."
+ },
+ {
+  "brainmap_class": "Anti-Saccades",
+  "definition": "Make a saccade (directed rapid eye movement) away from target.",
+  "first": "Hallett, 1978",
+  "most": "Paus, et al. 1993",
+  "match_type": "exact",
+  "inventory_id": "hedtsk_anti_saccade",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Braille Reading",
+  "definition": "Read Braille words with their finger(s).",
+  "first": "Fertsch, 1946",
+  "most": "Sadato, et al. 1996",
+  "match_type": "narrower",
+  "inventory_id": "tct_reading",
+  "proposed_extension": {
+   "id": "tct_bm_braille_reading",
+   "name": "Braille Reading Task",
+   "family": "language",
+   "patterns": [
+    "braille",
+    "tactile (word |letter )?reading"
+   ]
+  },
+  "note": "Tactile reading is a distinct procedure from visual reading."
+ },
+ {
+  "brainmap_class": "Chewing/Swallowing",
+  "definition": "Chew edible or non-edible items, and may be asked to swallow the food/nonfood item.",
+  "first": "Hollingworth, 1939",
+  "most": "Fraser, et al. 2002",
+  "match_type": "broader",
+  "inventory_id": "tct_swallowing",
+  "proposed_extension": {
+   "id": "tct_bm_chewing",
+   "name": "Chewing / Mastication Task",
+   "family": "motor_performance",
+   "patterns": [
+    "\\bchew(ing)?\\b",
+    "mastica(tion|tory)"
+   ]
+  },
+  "note": "Swallowing covered; chewing/mastication has no inventory id."
+ },
+ {
+  "brainmap_class": "Classical Conditioning",
+  "definition": "Respond to a previously neutral stimulus that has been repeatedly paired with an unconditioned (positive/negative) stimulus that elicits the desired response.",
+  "first": "Pavlov, 1927",
+  "most": "LaBar, et al. 1998",
+  "match_type": "broader",
+  "inventory_id": "hedtsk_pavlovian_fear_conditioning",
+  "proposed_extension": null,
+  "note": "Covers fear and appetitive conditioning (tct_appetitive_conditioning)."
+ },
+ {
+  "brainmap_class": "Competition/Cooperation",
+  "definition": "Work together with another participant to achieve a common goal, or strive to gain/win something by defeating another participant.",
+  "first": "Evans, 1965",
+  "most": "Rilling et al, 2002",
+  "match_type": "broader",
+  "inventory_id": "hedtsk_prisoners_dilemma",
+  "proposed_extension": null,
+  "note": "Covers PD, trust, competitive games; Rilling 2002 exemplar is Prisoner's Dilemma."
+ },
+ {
+  "brainmap_class": "Controlled Breathing",
+  "definition": "a task in which the participant controls there own breathing or it is controlled mechanically; often used along with meditation, this task requires the subject manage the inhalation and exhalation of breath; can involve breathing through pursed lips, diaphragmatic breathing or deep breathing",
+  "first": null,
+  "most": null,
+  "match_type": "none",
+  "inventory_id": null,
+  "proposed_extension": {
+   "id": "tct_bm_paced_breathing",
+   "name": "Paced / Controlled Breathing",
+   "family": "pseudo_tasks",
+   "patterns": [
+    "(paced|controlled|slow|deep|diaphragmatic|resonance[- ]frequency) breathing",
+    "breathing (exercise|task|paradigm|technique)",
+    "pranayama"
+   ]
+  },
+  "note": "Voluntary breath pacing differs from breath-hold respiratory challenge."
+ },
+ {
+  "brainmap_class": "Counting/Calculation",
+  "definition": "Count, add, subtract, multiply, or divide various stimuli (numbers, bars, dots, etc.) or solve numerical word problems.",
+  "first": "Piaget, 1953",
+  "most": "Dehaene, et al. 1999",
+  "match_type": "close",
+  "inventory_id": "tct_mental_arithmetic",
+  "proposed_extension": null,
+  "note": "Arithmetic and counting procedures."
+ },
+ {
+  "brainmap_class": "Cued Explicit Recognition/Recall",
+  "definition": "A list of items (words, objects, textures, patterns, pictures, sounds) is presented and participants are subsequently tested with cues to recall previously presented material.",
+  "first": "Tulving & Osler, 1968",
+  "most": "Henson, et al. 1999",
+  "match_type": "broader",
+  "inventory_id": "hedtsk_old_new_recognition_memory",
+  "proposed_extension": null,
+  "note": "Spans recognition and cued recall; source/remember-know have own ids."
+ },
+ {
+  "brainmap_class": "Deception",
+  "definition": "Perform a task and either lie or be truthful in his/her response.",
+  "first": "Yerkes & Berry, 1909",
+  "most": "Langleben, et al. 2001",
+  "match_type": "exact",
+  "inventory_id": "tct_deception",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Delay Discounting",
+  "definition": "Perform a reward task, and is asked to choose between a small immediate reward or large delayed reward.",
+  "first": "Loewenstein, 1987",
+  "most": "McClure, et al. 2004",
+  "match_type": "exact",
+  "inventory_id": "hedtsk_delay_discounting",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Delayed Match to Sample",
+  "definition": "A stimulus that is followed by a probe item after a brief delay; subject is then asked to recall if the probe item was presented before the delay.",
+  "first": "Sternberg, 1969",
+  "most": "Smith, Jonides & Koeppe, 1996",
+  "match_type": "broader",
+  "inventory_id": "hedtsk_delayed_match_to_sample",
+  "proposed_extension": null,
+  "note": "Definition and First citation also cover Sternberg item recognition."
+ },
+ {
+  "brainmap_class": "Divided Auditory Attention",
+  "definition": "Respond to an auditory stimuli (tone or word) while performing an unrelated task. If the participants are presented with tones, then this is also often co-coded with Tone Monitor/Discrimination.",
+  "first": "Cherry, 1953",
+  "most": "Anderson, et al. 2000",
+  "match_type": "none",
+  "inventory_id": null,
+  "proposed_extension": {
+   "id": "tct_bm_dual_task",
+   "name": "Dual-Task / Divided Attention Paradigm",
+   "family": "executive_and_reasoning",
+   "patterns": [
+    "dual[- ]task",
+    "divided attention",
+    "\\bmulti[- ]?tasking\\b",
+    "concurrent (secondary )?task"
+   ]
+  },
+  "note": "Auditory dual-task; shares dual-task extension with Multi-Tasking."
+ },
+ {
+  "brainmap_class": "Drawing",
+  "definition": "Draw lines, circles or more complex figures using a pen or stylus.",
+  "first": "Greenspoon & Foreman, 1956",
+  "most": "van Mier, et al. 1998",
+  "match_type": "none",
+  "inventory_id": null,
+  "proposed_extension": {
+   "id": "tct_bm_drawing",
+   "name": "Drawing Task",
+   "family": "motor_performance",
+   "patterns": [
+    "\\bdrawing (task|condition|paradigm|movements?)",
+    "(figure|line|circle|shape|spiral) drawing",
+    "\\bdraw(ing)? (lines|circles|shapes|figures|spirals)"
+   ]
+  },
+  "note": "Drawing from memory maps to tct_visual_reproduction instead."
+ },
+ {
+  "brainmap_class": "Driving",
+  "definition": "Control the operation and movement of a vehicle in a real or simulated driving environment.",
+  "first": "Gibson & Crooks, 1938",
+  "most": "Hsieh, et al. 2008",
+  "match_type": "none",
+  "inventory_id": null,
+  "proposed_extension": {
+   "id": "tct_bm_driving",
+   "name": "Simulated Driving Task",
+   "family": "motor_performance",
+   "patterns": [
+    "driving (simulat|task|game|paradigm)",
+    "(simulated|virtual) (driving|car|vehicle)",
+    "lane[- ]keeping",
+    "car[- ]following"
+   ]
+  },
+  "note": "No driving paradigm in inventory."
+ },
+ {
+  "brainmap_class": "Drug Challenge",
+  "definition": "a task in which the sole point of the task is to look at the effects of a certain drug",
+  "first": null,
+  "most": null,
+  "match_type": "none",
+  "inventory_id": null,
+  "proposed_extension": null,
+  "note": "Not a task: pharmacological manipulation crossed with any task or rest."
+ },
+ {
+  "brainmap_class": "Emotion Induction",
+  "definition": "Stimuli with emotional valence (e.g., statements, films, music, pictures) to induce effect on mood.",
+  "first": "Velten, 1968",
+  "most": "Lieberman, et al. 2007",
+  "match_type": "exact",
+  "inventory_id": "tct_mood_induction",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Emotional Body Language Perception",
+  "definition": "The recognition of emotions expressed by another’s body pose, posture or body movement. Tasks usually require participants to infer the emotional meaning of non-verbal stimuli by paying particular attention to head, hand and body cues in the judgment of emotionally valent criteria. Based on popular beliefs that certain body postures communicate things like deceit/lying, pain/discomfort and sexual interest and cognitive neuroscience models that the purport that the visual system analyzes human motion differently from object motion.",
+  "first": "Mattick, 1967",
+  "most": "Grèzes, Pinchon, & de Gelder, 2006",
+  "match_type": "close",
+  "inventory_id": "hedtsk_facial_emotion_recognition",
+  "proposed_extension": null,
+  "note": "Emotion recognition procedure with body stimuli; stimulus content only."
+ },
+ {
+  "brainmap_class": "Encoding",
+  "definition": "Memorize stimuli such as words, pictures, letters, etc. Includes Incidental Encoding, which is a task in which the participant is creating new memories without purposely knowing that memorization is the task at hand. Participants’ memories are created through working in their environment and picking up information in the process.",
+  "first": "Tulving & Pearstone, 1966",
+  "most": "Henson, et al. 1999",
+  "match_type": "exact",
+  "inventory_id": "tct_episodic_encoding",
+  "proposed_extension": null,
+  "note": "Includes incidental encoding."
+ },
+ {
+  "brainmap_class": "Episodic Recall",
+  "definition": "Recall from episodic memory (autobiographical, long-term memories) in a guided/unguided manner. Episodic information can be personal experiences as well as the specific objects, people, and events experienced at a particular time and place and can involve, for example, items defined as constituting discrete story elements or personal memories such as those elicited from each participant during a pre-scanning interview and then recalled via recording/script in the scanner. Recall of memories to elicit emotions such as happiness or sadness, should be co-coded with Emotion Induction.",
+  "first": "Tulving, 1972",
+  "most": "Mayberg, et al. 1999",
+  "match_type": "broader",
+  "inventory_id": "hedtsk_autobiographical_memory",
+  "proposed_extension": null,
+  "note": "Also covers recall of experimental episodes and story elements."
+ },
+ {
+  "brainmap_class": "Estimation",
+  "definition": "Calculate approximately the amount, extent, magnitude, position, or value of something.",
+  "first": "Kaufman & Lord, 1949",
+  "most": "Herwig, et al. 2011",
+  "match_type": "broader",
+  "inventory_id": "tct_numerosity",
+  "proposed_extension": null,
+  "note": "Magnitude/position/value estimation; time estimation maps to tct_time_estimation."
+ },
+ {
+  "brainmap_class": "Face Monitor/Discrimination",
+  "definition": "View face passively or discriminate human faces according to their order, gender, location, emotion, or appearance, etc. If the participants view the faces passively, then the experiment is co-coded with Passive Viewing.",
+  "first": "Langfeld, 1918",
+  "most": "Whalen, et al. 1998",
+  "match_type": "broader",
+  "inventory_id": "hedtsk_face_processing",
+  "proposed_extension": null,
+  "note": "Also covers implicit emotional face and emotion recognition ids."
+ },
+ {
+  "brainmap_class": "Figurative Language",
+  "definition": "Respond to items/statements that convey non-literal/figurative language. Figurative language includes: similes, metaphors, personification, alliteration, onomatopoeia, hyperbole, idioms, proverbs, irony, sarcasm, metonymy, and cliché.",
+  "first": "Myers, 1940",
+  "most": "Aziz-Zadeh, et al. 2006",
+  "match_type": "narrower",
+  "inventory_id": "hedtsk_sentence_comprehension",
+  "proposed_extension": null,
+  "note": "Stimulus class (metaphor, idiom, irony); procedure is sentence comprehension/judgment."
+ },
+ {
+  "brainmap_class": "Film Viewing",
+  "definition": "View movies or film clips.",
+  "first": "Emery, 1959",
+  "most": "Buccino, et al. 2001",
+  "match_type": "exact",
+  "inventory_id": "tct_naturalistic_viewing",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Finger Tapping/Button Press",
+  "definition": "Tap fingers or press a button in a cued/non-cued manner. Used for all experiments with a response type of Finger.",
+  "first": "Shimoyama, Ninchoji & Uemura, 1990",
+  "most": "Colebatch, et al. 1991",
+  "match_type": "broader",
+  "inventory_id": "hedtsk_finger_tapping",
+  "proposed_extension": null,
+  "note": "BrainMap also codes any button-press response here."
+ },
+ {
+  "brainmap_class": "Fixation",
+  "definition": "Direct attention or gaze toward a visual stimulus, often a cross.",
+  "first": "Hackman & Guilford, 1936",
+  "most": "Corbetta, et al. 1991",
+  "match_type": "exact",
+  "inventory_id": "hedtsk_fixate",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Flanker",
+  "definition": "Respond to target stimulus that is surrounded by distracting or facilitating stimuli.",
+  "first": "Eriksen & Spencer, 1969",
+  "most": "Ullsperger & Cramon, 2001",
+  "match_type": "exact",
+  "inventory_id": "hedtsk_eriksen_flanker",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Flashing Checkerboard",
+  "definition": "Flashing or reverse high contrast checkerboard.",
+  "first": "Spehlmann, 1965",
+  "most": "Moradi, et al. 2003",
+  "match_type": "exact",
+  "inventory_id": "tct_checkerboard",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Flexion/Extension",
+  "definition": "Move (flex and extend) hands, arms, legs, feet, lips, tongue, etc.",
+  "first": "Dearborn, Spindler & Delabarre, 1897",
+  "most": "Dapretto, et al. 2005",
+  "match_type": "close",
+  "inventory_id": "tct_motor_execution",
+  "proposed_extension": null,
+  "note": "Simple limb/orofacial movements."
+ },
+ {
+  "brainmap_class": "Fluency Induction",
+  "definition": "Perform different fluency tasks in order to enhance the smoothness or flow with which sounds, syllables, words and phrases are joined together when speaking quickly. Tasks often including: verbal (semantic and/or phonological), perceptual (frequency, duration, font size, ease/difficulty to understand, and/or attractiveness), or speech production (masking, chorus reading, whispering, rhythmic stimulation, metronome pacing).",
+  "first": "Fletcher, 1914",
+  "most": "Watkins, et al. 2007",
+  "match_type": "narrower",
+  "inventory_id": "tct_speech_production",
+  "proposed_extension": {
+   "id": "tct_bm_fluency_induction",
+   "name": "Fluency-Inducing Speech (choral/paced)",
+   "family": "language",
+   "patterns": [
+    "chor(al|us) (reading|speech)",
+    "fluency[- ](induc|enhanc|shaping)",
+    "metronome[- ](paced|timed) (speech|reading)"
+   ]
+  },
+  "note": "Stuttering fluency-inducing speech conditions; distinct speech procedure."
+ },
+ {
+  "brainmap_class": "Free List Word Recall",
+  "definition": "Study a list of words presented in different order on successive trials; and then prompted to recall the items in any order.",
+  "first": "Waugh, 1961",
+  "most": "Fize, et al. 1996",
+  "match_type": "exact",
+  "inventory_id": "hedtsk_free_recall",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Gambling",
+  "definition": "Make decisions about chance gambles.",
+  "first": "Tversky & Kahneman, 1974",
+  "most": "Izuma, Saito & Sadato, 2008",
+  "match_type": "close",
+  "inventory_id": "tct_risky_decision",
+  "proposed_extension": null,
+  "note": "Choices among chance gambles; IGT/BART have own ids."
+ },
+ {
+  "brainmap_class": "Go/No-Go",
+  "definition": "Perform a binary decision (go or no-go) on a continuous stream of stimuli.",
+  "first": "Drewe, 1975",
+  "most": "Konishi, et al. 1999",
+  "match_type": "exact",
+  "inventory_id": "hedtsk_go_no_go",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Grasping",
+  "definition": "Grasp or grip a presented stimulus with their hand or mimic grasping one that is not physically present (i.e., imaginary or presented as a picture or video).",
+  "first": "Jeannerod, 1981",
+  "most": "Stephan, et al. 1995",
+  "match_type": "exact",
+  "inventory_id": "tct_grasping",
+  "proposed_extension": null,
+  "note": "Same paradigm; imagined grasping co-maps to tct_motor_imagery."
+ },
+ {
+  "brainmap_class": "Hand-Eye Coordination",
+  "definition": "Coordinate eye movement with hand movement to process visual input and guide a behavioral response (i.e., spatial/orientation discrimination, motor planning, timing, monitoring, response selection, motor [sequence] learning).",
+  "first": "Korins, 1934",
+  "most": "Farrer, et al. 2004",
+  "match_type": "broader",
+  "inventory_id": "tct_visuomotor_adaptation",
+  "proposed_extension": null,
+  "note": "General visuomotor coordination; spans tracking, adaptation, pointing."
+ },
+ {
+  "brainmap_class": "Hunger/Satiety",
+  "definition": "The desire to eat, or to satisfy one's appetite. Measures often include pre-post hunger and satiety state, and/or hedonic value (reward/punishment) of food or solution.",
+  "first": "Matsuda, et al. 1999",
+  "most": "Small, et al. 2001",
+  "match_type": "none",
+  "inventory_id": null,
+  "proposed_extension": null,
+  "note": "Not a task: physiological state manipulation; food-cue tasks map to tct_cue_reactivity."
+ },
+ {
+  "brainmap_class": "Hypercapnia/Air Hunger",
+  "definition": "The state of excessive carbon dioxide in the bloodstream, typically caused by inadequate respiration. Classically known as respiratory distress or air-hunger, it can be experimentally induced by having the subject perform a static apnea or breath-holding task; by training subjects to use a mechanical ventilator or using an experimenter-controlled air-supply device; or by having the subject inhale different mixtures of oxygen and carbon dioxide.",
+  "first": "Opie, Smith & Spalding, 1959",
+  "most": "Evans, et al. 2002",
+  "match_type": "close",
+  "inventory_id": "tct_breath_hold",
+  "proposed_extension": null,
+  "note": "Breath-hold and CO2 inhalation respiratory challenges."
+ },
+ {
+  "brainmap_class": "Imagined Movement",
+  "definition": "Subjects imagine performing some motor task (e.g., walking, reaching).",
+  "first": "Jacobson, 1932",
+  "most": "Grafton, et al. 1996",
+  "match_type": "exact",
+  "inventory_id": "tct_motor_imagery",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Imagined Objects/Scenes",
+  "definition": "Visualize patterns, objects, scenes, places, concepts, real/hypothetical events (not from personal memories), in a cued/non-cued manner.",
+  "first": "Overton & Jackson, 1973",
+  "most": "Ochsner, et al. 2002",
+  "match_type": "close",
+  "inventory_id": "tct_mental_imagery",
+  "proposed_extension": null,
+  "note": "Visual imagery subset of mental imagery."
+ },
+ {
+  "brainmap_class": "Induced Panic",
+  "definition": "Experimentally induced panic created by injection or inhalation of chemicals, usually done to create trigger symptoms in individuals that resemble those of panic attacks or anticipatory anxiety.",
+  "first": "Reiman, et al. 1986",
+  "most": "Eser, et al. 2009",
+  "match_type": "none",
+  "inventory_id": null,
+  "proposed_extension": null,
+  "note": "Not a task: pharmacological/CO2 panic challenge."
+ },
+ {
+  "brainmap_class": "Isometric Force",
+  "definition": "Use hands or fingers to apply isometric force or complete a precision grip task.",
+  "first": "Hartree & Hill, 1921",
+  "most": "Ehrsson, Fagergren & Forssberg, 2001",
+  "match_type": "narrower",
+  "inventory_id": "tct_motor_execution",
+  "proposed_extension": null,
+  "note": "Grip-force production; tct_motor_execution patterns include grip force."
+ },
+ {
+  "brainmap_class": "Lexical Decision",
+  "definition": "Discriminate between words and pseudowords (orthographically and phonologically legal nonwords).",
+  "first": "Meyer & Schvaneveldt, 1971",
+  "most": "Farrer, et al. 2004",
+  "match_type": "exact",
+  "inventory_id": "hedtsk_lexical_decision",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Lip Pursing/Tongue Movement",
+  "definition": "a task which requires the participant to purse their lips or protrude their tongue or move their tongue side-to-side or up and down",
+  "first": null,
+  "most": null,
+  "match_type": "narrower",
+  "inventory_id": "tct_motor_execution",
+  "proposed_extension": null,
+  "note": "Orofacial movement subset of simple motor execution."
+ },
+ {
+  "brainmap_class": "Lower-body Negative Pressure (LBNP)",
+  "definition": "Lower-body Negative Pressure (LBNP)- is a task in which the blood from the upper body is redistributed to the pelvis and legs, thus reducing central venous pressure and venous return; the subject is placed in an air-tight metal tank, which is then sealed, and sub-atmospheric pressure is produced using a vacuum pump",
+  "first": null,
+  "most": null,
+  "match_type": "none",
+  "inventory_id": null,
+  "proposed_extension": null,
+  "note": "Not a task: hemodynamic physiological manipulation."
+ },
+ {
+  "brainmap_class": "Magnitude Comparison (Distance)",
+  "definition": "Perform a task in which the distance between stimuli is estimated.",
+  "first": "Gilinsky, 1951",
+  "most": "Bartolo, et al, 2014",
+  "match_type": "narrower",
+  "inventory_id": "tct_perceptual_decision",
+  "proposed_extension": null,
+  "note": "Non-numerical perceptual magnitude discrimination."
+ },
+ {
+  "brainmap_class": "Magnitude Comparison (Luminance)",
+  "definition": "Perform a task in which the luminance or intensity of light between stimuli is estimated.",
+  "first": "Herrick 1956",
+  "most": "Pinel et al, 2014",
+  "match_type": "narrower",
+  "inventory_id": "tct_perceptual_decision",
+  "proposed_extension": null,
+  "note": "Non-numerical perceptual magnitude discrimination."
+ },
+ {
+  "brainmap_class": "Magnitude Comparison (Non-symbolic/Numerical)",
+  "definition": "Perform a task in which the differences between non-symbols or numbers is estimated (e.g., choose the more numerous array of dots).",
+  "first": "Buckley & Gillman, 1974",
+  "most": "Venkatraman et al, 2006",
+  "match_type": "narrower",
+  "inventory_id": "tct_numerosity",
+  "proposed_extension": null,
+  "note": "Non-symbolic subset of numerosity/magnitude comparison."
+ },
+ {
+  "brainmap_class": "Magnitude Comparison (Physical Size)",
+  "definition": "Perform a task in which the physical size between stimuli is estimated.",
+  "first": "Singer, 1952",
+  "most": "Lewis & Miall, 2003",
+  "match_type": "narrower",
+  "inventory_id": "tct_perceptual_decision",
+  "proposed_extension": null,
+  "note": "Size discrimination; size-congruity designs may fit numerical comparison."
+ },
+ {
+  "brainmap_class": "Magnitude Comparison (Symbolic/Numerical)",
+  "definition": "Perform a task in which the differences between symbols or numbers is estimated (e.g., choose the larger Arabic numeral or number).",
+  "first": "Moyer & Landaur, 1967",
+  "most": "Pesenti et al, 2000",
+  "match_type": "narrower",
+  "inventory_id": "tct_numerosity",
+  "proposed_extension": null,
+  "note": "Symbolic number comparison subset."
+ },
+ {
+  "brainmap_class": "Meditation",
+  "definition": "Conscious mental process that induces a relaxation response. Concominant measures often include cognitive, behavior, and or physiological activity.",
+  "first": "Anand, Chhina & Singh, 1961",
+  "most": "Lazar, et al. 2000",
+  "match_type": "exact",
+  "inventory_id": "tct_meditation",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Mental Rotation",
+  "definition": "Mentally rotate visually presented 2D and 3D figures.",
+  "first": "Shepard & Metzler, 1971",
+  "most": "Kosslyn, et al. 2003",
+  "match_type": "exact",
+  "inventory_id": "hedtsk_mental_rotation",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Micturition",
+  "definition": "Think about voiding urine, or provide urine samples.",
+  "first": "Tang & Ruck, 1956",
+  "most": "Blok, Willemsen & Holstege, 1997",
+  "match_type": "none",
+  "inventory_id": null,
+  "proposed_extension": {
+   "id": "tct_bm_bladder_control",
+   "name": "Bladder Filling / Micturition Control Paradigm",
+   "family": "metacognition_and_interoception",
+   "patterns": [
+    "micturition",
+    "\\bvoiding (task|paradigm|attempt|phase)",
+    "bladder (filling|control|distension|sensation)",
+    "(urine|urinary) (withholding|retention|holding)",
+    "pelvic[- ]floor (contraction|muscle)"
+   ]
+  },
+  "note": "Bladder/voiding scanner protocol; shares extension with Urine Witholding."
+ },
+ {
+  "brainmap_class": "Motor Learning",
+  "definition": "Repeatedly execute a motor task to improve performance.",
+  "first": "Sanderson, 1929",
+  "most": "Anguera, et al. 2007",
+  "match_type": "broader",
+  "inventory_id": "hedtsk_motor_sequence_learning",
+  "proposed_extension": null,
+  "note": "Any motor skill learning, including visuomotor adaptation."
+ },
+ {
+  "brainmap_class": "Multi-Tasking",
+  "definition": "Perform simultaneous execution of one or more tasks that can be presented in different modalities.",
+  "first": "Shallice & Burgess, 1991",
+  "most": "Bowyer, 2009",
+  "match_type": "broader",
+  "inventory_id": "hedtsk_psychological_refractory_period",
+  "proposed_extension": {
+   "id": "tct_bm_dual_task",
+   "name": "Dual-Task / Divided Attention Paradigm",
+   "family": "executive_and_reasoning",
+   "patterns": [
+    "dual[- ]task",
+    "divided attention",
+    "\\bmulti[- ]?tasking\\b",
+    "concurrent (secondary )?task"
+   ]
+  },
+  "note": "PRP is one dual-task; generic dual-task paradigm absent."
+ },
+ {
+  "brainmap_class": "Music Comprehension",
+  "definition": "Listen to tones, melodies, chords, dissonant/consonant music, rhythms, spoken lyrics, musical excerpts/notes.",
+  "first": "Brust, 1980",
+  "most": "Halpern & Zatorre, 1999",
+  "match_type": "broader",
+  "inventory_id": "tct_auditory_stimulation",
+  "proposed_extension": null,
+  "note": "Music listening; discrimination variants map to tct_auditory_discrimination."
+ },
+ {
+  "brainmap_class": "Music Production",
+  "definition": "Produce music by singing (overly/covertly), or by playing an instrument.",
+  "first": "Sergent, et al. 1992",
+  "most": "Halpern & Zatorre, 1999",
+  "match_type": "none",
+  "inventory_id": null,
+  "proposed_extension": {
+   "id": "tct_bm_music_production",
+   "name": "Music Production (singing / instrument playing)",
+   "family": "motor_performance",
+   "patterns": [
+    "\\bsinging\\b",
+    "(piano|instrument|keyboard|violin|cello|guitar) playing",
+    "playing (the |an? )?(piano|instrument|keyboard|violin|cello|guitar)",
+    "music(al)? (production|performance|improvisation)"
+   ]
+  },
+  "note": "No music-production procedure in inventory."
+ },
+ {
+  "brainmap_class": "Naming (Covert)",
+  "definition": "View objects (pictures, line drawings, etc.) and name them silently.",
+  "first": "Martin, et al. 1996",
+  "most": "Same as First",
+  "match_type": "narrower",
+  "inventory_id": "hedtsk_picture_naming",
+  "proposed_extension": null,
+  "note": "Covert variant of picture naming."
+ },
+ {
+  "brainmap_class": "Naming (Overt)",
+  "definition": "View objects (pictures, line drawings, etc.) and name them aloud.",
+  "first": "Ligon, 1932",
+  "most": "Martin, et al. 1996",
+  "match_type": "narrower",
+  "inventory_id": "hedtsk_picture_naming",
+  "proposed_extension": null,
+  "note": "Overt variant of picture naming."
+ },
+ {
+  "brainmap_class": "Object Manipulation/Discrimination",
+  "definition": "Physically interact with one or more objects, and/or discriminate between its physical (shape, color, texture) and/or semantic properties (use, previous experience, relationship to other objects).",
+  "first": "Tatarsky, 1974",
+  "most": "Stephan, et al. 1995",
+  "match_type": "broader",
+  "inventory_id": "tct_perceptual_decision",
+  "proposed_extension": null,
+  "note": "Mixed class: object manipulation plus physical/semantic property discrimination."
+ },
+ {
+  "brainmap_class": "Oddball Discrimination",
+  "definition": "Detect the presence of an oddball (infrequent/distinct) stimulus from a continuous stream of stimuli. Examples include when participants listen to tones and indicate when they hear a target tone (oddball) or when participants view letters or objects and indicate when they see a target stimulus (oddball).",
+  "first": "Sutton, et al. 1965",
+  "most": "Braver, et al. 2001",
+  "match_type": "exact",
+  "inventory_id": "hedtsk_oddball",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Olfactory Monitor/Discrimination",
+  "definition": "Smell odors passively and/or discriminate according to some feature (pleasant/unpleasant, strong/weak, same/different, etc.).",
+  "first": "Adrian, 1950",
+  "most": "Wicker, et al. 2003",
+  "match_type": "close",
+  "inventory_id": "tct_sensory_stimulation",
+  "proposed_extension": null,
+  "note": "Passive odor delivery; odor discrimination tests map to tct_odor_test."
+ },
+ {
+  "brainmap_class": "Orthographic Discrimination",
+  "definition": "View letters and discriminate according to some written/printed feature (i.e., upper–case/lower–case, alphabetic order, same/different spelling of words, vowel/consonant, font type/size).",
+  "first": "Reicher, 1969",
+  "most": "Oldrack, et al. 1999",
+  "match_type": "none",
+  "inventory_id": null,
+  "proposed_extension": {
+   "id": "tct_bm_orthographic_judgment",
+   "name": "Orthographic / Letter-Case Judgment Task",
+   "family": "language",
+   "patterns": [
+    "orthographic (judg|decision|discrimination|matching|comparison|task)",
+    "letter[- ]case (judg|decision|discrimination|task)",
+    "(upper|lower)[- ]?case (judg|decision|discrimination)",
+    "letter (identity )?matching"
+   ]
+  },
+  "note": "No orthographic judgment id; phonological/semantic judgments exist."
+ },
+ {
+  "brainmap_class": "Pain Monitor/Discrimination",
+  "definition": "Stimulation (i.e., thermal, electrical, tactile) at a painful threshold.",
+  "first": "Hardy, Wolff & Goodell, 1947",
+  "most": "Singer, et al. 2004",
+  "match_type": "exact",
+  "inventory_id": "tct_pain_stimulation",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Paired Associate Recall",
+  "definition": "Encode paired items, and subsequently asked to recall the associated pair.",
+  "first": "Feldman & Underwood, 1957",
+  "most": "Paus, et al. 1993",
+  "match_type": "exact",
+  "inventory_id": "hedtsk_paired_associates_learning",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Passive Listening",
+  "definition": "Listen to auditory stimuli (speech, noise, tones, etc.) and make no response. If the participants are presented with tones, then this is also often co-coded with Tone Monitor/Discrimination. If the participants are presented with music, i.e., a melody not just tones, then code as Music Comprehension.",
+  "first": "Nichols, 1948",
+  "most": "Mayberg, et al. 1999",
+  "match_type": "exact",
+  "inventory_id": "tct_auditory_stimulation",
+  "proposed_extension": null,
+  "note": "Passive auditory stimulation; stories map to tct_story_listening."
+ },
+ {
+  "brainmap_class": "Passive Viewing",
+  "definition": "View visual stimuli (objects, faces, letter strings, etc.) and make no response. If the presented stimuli are faces, the experiments are co-coded with Face Monitor/Discrimination. If presented stimuli are words, the experiments are not coded as passive viewing but rather as Reading (Covert).",
+  "first": "Alexander & Barrett, 1975",
+  "most": "Corbetta, et al. 1993",
+  "match_type": "none",
+  "inventory_id": null,
+  "proposed_extension": {
+   "id": "tct_bm_passive_viewing",
+   "name": "Passive Visual Viewing",
+   "family": "perceptual_judgment",
+   "patterns": [
+    "passive(ly)? (view|viewing|watch|watching|observ\\w*)",
+    "passive (visual|picture|image|object) (stimulation|presentation|task)"
+   ]
+  },
+  "note": "Generic no-response viewing; specific stimuli map to face/affective/localizer ids."
+ },
+ {
+  "brainmap_class": "Phonological Discrimination",
+  "definition": "View or listen to phonemes, syllables, or words and discriminate according to some feature of their sounds (rhyming, number of syllables, homophones, pronounceable nonwords, etc.).",
+  "first": "Liberman, et al. 1957",
+  "most": "Demonet, et al. 1992",
+  "match_type": "exact",
+  "inventory_id": "tct_phonological_judgment",
+  "proposed_extension": null,
+  "note": "Rhyme/syllable/sound judgments."
+ },
+ {
+  "brainmap_class": "Pitch Monitor/Discrimination",
+  "definition": "Listen passively or discriminate stimuli (human speech and non-speech vocalizations, animal vocalization, mechanical noise, etc.) based on pitch (i.e., duration, familiarity, pleasantness, gender, frequency). If participants only listen passively, then also co-code with Passive Listening.",
+  "first": "Knudsen, 1923",
+  "most": "Royet, et al. 2000",
+  "match_type": "close",
+  "inventory_id": "tct_auditory_discrimination",
+  "proposed_extension": null,
+  "note": "Pitch discrimination; voice gender variants fit tct_sound_categorization."
+ },
+ {
+  "brainmap_class": "Pointing",
+  "definition": "Point at a target mentally or physically (e.g., point with finger, or imagine pointing with finger).",
+  "first": "Peterson, 1965",
+  "most": "Simon, et al. 2002",
+  "match_type": "close",
+  "inventory_id": "tct_grasping",
+  "proposed_extension": null,
+  "note": "Reaching without grasp; add pointing patterns to tct_grasping."
+ },
+ {
+  "brainmap_class": "Pursuit Rotor/Manual Tracking",
+  "definition": "Follow/pursue a small disc on a rotating turntable. Co-coded with Motor Learning, if participants are given practice trials to improve performance and accuracy.",
+  "first": "Ammons, 1955",
+  "most": "Grafton, et al. 1992",
+  "match_type": "close",
+  "inventory_id": "tct_visuomotor_adaptation",
+  "proposed_extension": null,
+  "note": "Inventory id covers manual/pursuit tracking."
+ },
+ {
+  "brainmap_class": "Reading (Covert)",
+  "definition": "Silently read words, pseudo-words, characters, phrases, or sentences.",
+  "first": "Locke, 1971",
+  "most": "Petersen, et al., 1988",
+  "match_type": "narrower",
+  "inventory_id": "tct_reading",
+  "proposed_extension": null,
+  "note": "Silent reading variant."
+ },
+ {
+  "brainmap_class": "Reading (Overt)",
+  "definition": "Read aloud words, pseudo-words, logograms, phrases, or sentences",
+  "first": "Haber & Haber, 1982",
+  "most": "Turkeltaub, 2002",
+  "match_type": "narrower",
+  "inventory_id": "tct_reading",
+  "proposed_extension": null,
+  "note": "Reading aloud variant; overlaps tct_speech_production."
+ },
+ {
+  "brainmap_class": "Reasoning/Problem Solving",
+  "definition": "Make judgements, inferences, generalizations and/or conclusions through the use of logic. Tasks can include integration of different elements/information, probabilistic classification, text comprehension, falsification of a conditional rule, and word problems.",
+  "first": "Golding, 1981",
+  "most": "Aziz-Zadeh, et al. 2006",
+  "match_type": "broader",
+  "inventory_id": "tct_deductive_reasoning",
+  "proposed_extension": null,
+  "note": "Broad class; Raven, Wason, Tower have own ids."
+ },
+ {
+  "brainmap_class": "Recitation/Repetition (Covert)",
+  "definition": "Silently repeat or recite phonemes, words, or well-known text (nursery rhymes, Pledge of Allegiance, months of the year, etc.).",
+  "first": "Gagné & Smith, 1962",
+  "most": "Warburton, et al. 1996",
+  "match_type": "narrower",
+  "inventory_id": "tct_speech_production",
+  "proposed_extension": null,
+  "note": "Covert recitation; tct_speech_production patterns include covert speech."
+ },
+ {
+  "brainmap_class": "Recitation/Repetition (Overt)",
+  "definition": "Repeat or recite aloud phonemes, words, or well-known text (nursery rhymes, Pledge of Allegiance, months of the year, etc.).",
+  "first": "Gagné & Smith, 1962",
+  "most": "Petersen, et al., 1988",
+  "match_type": "narrower",
+  "inventory_id": "tct_speech_production",
+  "proposed_extension": null,
+  "note": "Overt repetition/recitation."
+ },
+ {
+  "brainmap_class": "Reward",
+  "definition": "A stimulus that serves the role of reinforcing a desired response. Participants perform a task in which correct performance is associated with reward, often monetary reward.",
+  "first": "Lorge, 1933",
+  "most": "O'Doherty, et al. 2001",
+  "match_type": "broader",
+  "inventory_id": "tct_reward_feedback",
+  "proposed_extension": null,
+  "note": "Any rewarded task; MID, card guessing, wheel of fortune have ids."
+ },
+ {
+  "brainmap_class": "Saccades",
+  "definition": "Perform a rapid eye movement or saccade to capture an object in the visual field.",
+  "first": "Stark, Vossius & Young, 1962",
+  "most": "Corbetta, et al. 1998",
+  "match_type": "exact",
+  "inventory_id": "tct_saccade",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Self-Reflection",
+  "definition": "Meditate or think about one's character, actions, and motives. Co-code with the paradigm Meditation if this is part of a meditation task.",
+  "first": "Pollack, et al. 1962",
+  "most": "Modinos, Ormel & Aleman",
+  "match_type": "close",
+  "inventory_id": "tct_self_referential",
+  "proposed_extension": null,
+  "note": "Self-referential judgment/reflection."
+ },
+ {
+  "brainmap_class": "Semantic Monitor/Discrimination",
+  "definition": "Discriminate between the meanings of individual lexical items or to indicate if target word is semantically related to the probe word. Stimuli in discrimination tasks can be words or pictures representing words.",
+  "first": "Xiang, et al. 2003",
+  "most": "Demonet, et al. 1992",
+  "match_type": "exact",
+  "inventory_id": "tct_semantic_judgment",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Sequence Recall/Learning",
+  "definition": "Learn and/or perform a complex sequence of finger tapping, button pressing, pointing/clicking, or various other motor responses.",
+  "first": "Wilding & Mohindra, 1980",
+  "most": "Jenkins, et al. 1994",
+  "match_type": "broader",
+  "inventory_id": "hedtsk_motor_sequence_learning",
+  "proposed_extension": null,
+  "note": "Also covers serial reaction time (hedtsk_serial_reaction_time)."
+ },
+ {
+  "brainmap_class": "Sexual Arousal/Gratification",
+  "definition": "Induction of sexual readiness with or without sexual climax.",
+  "first": "Zuckerman, 1971",
+  "most": "Seftel, 2010",
+  "match_type": "narrower",
+  "inventory_id": "hedtsk_affective_picture_viewing",
+  "proposed_extension": null,
+  "note": "Erotic stimulus class; films map to tct_naturalistic_viewing."
+ },
+ {
+  "brainmap_class": "Sleep",
+  "definition": "Sleep with or without sleep stage monitoring.",
+  "first": "Johnson, Swan & Weigand, 1926",
+  "most": "Lerner, et al. 2007",
+  "match_type": "exact",
+  "inventory_id": "tct_sleep",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Stroop-Color",
+  "definition": "Name the color of the ink for a list of words (color names) printed in congruent/incongruent colors, or determine if ink color and color name are congruent/incongruent. Color-congruent stimuli: ink color and color name are the same (e.g., the word GREEN printed in green ink). Color-incongruent stimuli: ink color and color name differ (e.g., the word GREEN printed in red ink).",
+  "first": "Stroop, 1935",
+  "most": "MacDonald, et al. 2000",
+  "match_type": "exact",
+  "inventory_id": "hedtsk_stroop_color_word",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Stroop-Counting",
+  "definition": "Report the number of words presented regardless of the word meaning. Congruent stimuli: semantic meaning and numerical value match (e.g., word TWO presented twice on the screen). Incongruent stimuli: semantic meaning and numerical value differ (e.g., word TWO presented four times). Neutral stimuli: semantic meaning and numerical value are unrelated (e.g., word DOG presented four times).",
+  "first": "Reisberg, Baron & Kemier, 1980",
+  "most": "Bush, et al. 1999",
+  "match_type": "close",
+  "inventory_id": "hedtsk_stroop_color_word",
+  "proposed_extension": {
+   "id": "tct_bm_counting_stroop",
+   "name": "Counting Stroop Task",
+   "family": "conflict_and_interference",
+   "patterns": [
+    "counting[- ]stroop",
+    "stroop[- ]counting"
+   ]
+  },
+  "note": "Counting response differs from color naming; precursor of MSIT."
+ },
+ {
+  "brainmap_class": "Stroop-Emotional",
+  "definition": "Name the ink color of emotionally charged words (i.e., positively or negatively valenced words).",
+  "first": "Whalen, et al. 1998",
+  "most": "Watts, et al. 2011",
+  "match_type": "exact",
+  "inventory_id": "hedtsk_emotional_stroop",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Stroop-Other",
+  "definition": "Allocate attentional resources to process a specific stimulus feature in a context with competing (interfering), typically more prepotent, information.",
+  "first": "Shor, 1975",
+  "most": "Huang, et al. 2011",
+  "match_type": "narrower",
+  "inventory_id": "tct_interference_generic",
+  "proposed_extension": null,
+  "note": "Other Stroop-like variants; picture-word, Navon have own ids."
+ },
+ {
+  "brainmap_class": "Stroop-Spatial",
+  "definition": "The spatial Stroop effect demonstrates interference between the stimulus location with the location information in the stimuli. It is elicited when the direction of the arrow is incompatible with its spatial location. For example, subjects are presented with a word either to the right or left of a central fixation point. For congruent trials, subjects see either the word ‘right’ presented to the right of fixation, or the word ‘left’ presented to the left of fixation. For incongruent trials, subjects see either the word ‘right’ presented to the left of fixation or the word ‘left’ presented to the right of fixation.",
+  "first": "Shor, 1998",
+  "most": "Schmitz, et al. 2005",
+  "match_type": "close",
+  "inventory_id": "hedtsk_simon",
+  "proposed_extension": {
+   "id": "tct_bm_spatial_stroop",
+   "name": "Spatial Stroop Task",
+   "family": "conflict_and_interference",
+   "patterns": [
+    "spatial[- ]stroop",
+    "stroop[- ]spatial",
+    "spatial (word|arrow)[- ](stroop|interference|conflict)"
+   ]
+  },
+  "note": "Stimulus-stimulus spatial conflict, distinct from Simon stimulus-response conflict."
+ },
+ {
+  "brainmap_class": "Syntactic Discrimination",
+  "definition": "Discriminate between grammatically correct and incorrect sentences. This class also includes morphosyntactic tasks such as gender discrimination of words.",
+  "first": "Dennis & Kohn, 1985",
+  "most": "Wartenburger, et al. 2003",
+  "match_type": "none",
+  "inventory_id": null,
+  "proposed_extension": {
+   "id": "tct_bm_grammaticality_judgment",
+   "name": "Grammaticality Judgment Task",
+   "family": "language",
+   "patterns": [
+    "grammaticality (judg|decision|task)",
+    "(syntactic|grammatical|morphosyntactic) (judg|decision|violation|error detection|discrimination)",
+    "acceptability judg"
+   ]
+  },
+  "note": "Natural-language grammaticality judgment; artificial grammar learning is different."
+ },
+ {
+  "brainmap_class": "Tactile Monitor/Discrimination",
+  "definition": "Manipulate, recognize and/or discriminate objects through touch (i.e., shape, texture, same-different).",
+  "first": "Lamb, 1983",
+  "most": "Paus, et al. 1993",
+  "match_type": "narrower",
+  "inventory_id": "tct_perceptual_decision",
+  "proposed_extension": null,
+  "note": "Haptic shape/texture discrimination; passive touch maps to tct_sensory_stimulation."
+ },
+ {
+  "brainmap_class": "Task Switching",
+  "definition": "Switch from one task or goal to another.",
+  "first": "Spector & Biederman, 1976",
+  "most": "Braver, Reynolds & Donaldson, 2003",
+  "match_type": "exact",
+  "inventory_id": "hedtsk_task_switching",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Taste",
+  "definition": "Discriminate/rate flavor intensity, pleasantness, solution content (i.e., fat content) of an item, food, or solution with or without swallowing the item. Participants may be asked to evaluate the affective significance of other stimuli (i.e., pictures, words, objects) when paired with food.",
+  "first": "Gowers, 1882",
+  "most": "Hare, Camerer & Rangel, 2009",
+  "match_type": "broader",
+  "inventory_id": "tct_sensory_stimulation",
+  "proposed_extension": null,
+  "note": "Gustatory delivery/rating; Hare 2009 exemplar is food choice."
+ },
+ {
+  "brainmap_class": "Theory of Mind",
+  "definition": "Understand another's personal beliefs and feelings or form hypotheses regarding the mental states of others.",
+  "first": "Gallagher & Frith, 2003",
+  "most": "Ochsner, et al. 2004",
+  "match_type": "exact",
+  "inventory_id": "tct_theory_of_mind",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Thirst Induction",
+  "definition": "Inducing a sensation of dryness in the mouth and throat associated with a desire for liquids; dehydration.",
+  "first": "Giddan, 1966",
+  "most": "Egan, et al. 2003",
+  "match_type": "none",
+  "inventory_id": null,
+  "proposed_extension": null,
+  "note": "Not a task: physiological state induction (e.g. hypertonic saline)."
+ },
+ {
+  "brainmap_class": "Tone Monitor/Discrimination",
+  "definition": "Listen to tones passively or discriminate according to a sound property (e.g., order, timing, pitch, frequency, amplitude), and/or detect presence/absence of a tone.",
+  "first": "Strainer, et al. 1997",
+  "most": "Critchley, et al. 2004",
+  "match_type": "broader",
+  "inventory_id": "tct_auditory_discrimination",
+  "proposed_extension": null,
+  "note": "Passive tone variants map to tct_auditory_stimulation."
+ },
+ {
+  "brainmap_class": "Tower of London",
+  "definition": "Mentally or physically rearrange a set of three (or more) colored beads/discs arranged on pegs, in the fewest possible moves, to match a specified configuration. Also includes Tower of Hanoi tests for taxonomic parsimony.",
+  "first": "Shallice, 1982",
+  "most": "van den Heuvel, et al. 2005",
+  "match_type": "exact",
+  "inventory_id": "hedtsk_tower_of_london",
+  "proposed_extension": null,
+  "note": "Includes Tower of Hanoi, as inventory does."
+ },
+ {
+  "brainmap_class": "Transcranial Magnetic Stimulation",
+  "definition": "Electromagnetic pulses are applied at the scalp to induce electrical currents in the brain (TMS).",
+  "first": "Barker, Jalinous & Freeston, 1985",
+  "most": "Fox, et al. 1997",
+  "match_type": "none",
+  "inventory_id": null,
+  "proposed_extension": null,
+  "note": "Not a task: brain stimulation intervention."
+ },
+ {
+  "brainmap_class": "Trauma Recall",
+  "definition": "Cued recall/re-experience of a previous traumatic event. Often achieved using a patient-generated script or set of cues calling to mind the trauma.",
+  "first": "Burgess & Holmstrom, 1979",
+  "most": "Bremner, et al. 2003",
+  "match_type": "narrower",
+  "inventory_id": "tct_mood_induction",
+  "proposed_extension": null,
+  "note": "Script-driven trauma imagery; tct_mood_induction covers script-driven paradigms."
+ },
+ {
+  "brainmap_class": "Urine Witholding",
+  "definition": "a task that usually requires that the subject withhold urine with a partially full or full bladder, while controlling voiding",
+  "first": null,
+  "most": null,
+  "match_type": "none",
+  "inventory_id": null,
+  "proposed_extension": {
+   "id": "tct_bm_bladder_control",
+   "name": "Bladder Filling / Micturition Control Paradigm",
+   "family": "metacognition_and_interoception",
+   "patterns": [
+    "micturition",
+    "\\bvoiding (task|paradigm|attempt|phase)",
+    "bladder (filling|control|distension|sensation)",
+    "(urine|urinary) (withholding|retention|holding)",
+    "pelvic[- ]floor (contraction|muscle)"
+   ]
+  },
+  "note": "Bladder/voiding scanner protocol; shares extension with Micturition."
+ },
+ {
+  "brainmap_class": "Vestibular Stimulation",
+  "definition": "Vestibular (labyrinthine) excitability under caloric, mechanic, or turning stimulation. Galvanic Vestibular Stimulation: uses direct current electricity stimulation to stimulate vestibular system. Also includes Caloric Vestibular Stimulation, a task in which cold and warm water to stimulate the vestibular system.",
+  "first": "Atkinson, 1939",
+  "most": "Bottini, et al. 1994",
+  "match_type": "narrower",
+  "inventory_id": "tct_sensory_stimulation",
+  "proposed_extension": {
+   "id": "tct_bm_vestibular_stimulation",
+   "name": "Vestibular Stimulation (caloric/galvanic)",
+   "family": "perceptual_judgment",
+   "patterns": [
+    "vestibular stimulation",
+    "caloric (irrigation|stimulation|vestibular)",
+    "galvanic vestibular",
+    "\\bgvs\\b"
+   ]
+  },
+  "note": "Vestibular modality not covered by somatosensory/chemosensory patterns."
+ },
+ {
+  "brainmap_class": "Vibrotactile Monitor/Discrimination",
+  "definition": "Vibrotactile stimulation (perception of vibration through touch) to skin or joints.",
+  "first": "Verrillo, 1963",
+  "most": "Coghill, et al. 1994",
+  "match_type": "narrower",
+  "inventory_id": "tct_sensory_stimulation",
+  "proposed_extension": null,
+  "note": "Vibrotactile subset; tct_sensory_stimulation lists vibrotactile."
+ },
+ {
+  "brainmap_class": "Video Games",
+  "definition": "Play video games often to measure emotional changes (e.g., aggression), perceptual learning/transfer of skills, or skilled vs. unskilled players.",
+  "first": "Jones, Kennedy & Bittner, 1981",
+  "most": "Mathaik & Weber, 2006",
+  "match_type": "none",
+  "inventory_id": null,
+  "proposed_extension": {
+   "id": "tct_bm_video_game",
+   "name": "Video Game Play",
+   "family": "motor_performance",
+   "patterns": [
+    "video[- ]?gam(e|es|ing)",
+    "first[- ]person shooter",
+    "\\b(tetris|space fortress|pac[- ]?man|super mario)\\b",
+    "computer game (play|playing|task)"
+   ]
+  },
+  "note": "No video game paradigm in inventory."
+ },
+ {
+  "brainmap_class": "Visual Motion",
+  "definition": "Infer the speed and direction of elements in a scene based on visual input, or discriminate between coherent/incoherent biological motion.",
+  "first": "Ludvigh, 1949",
+  "most": "Deutschländer, et al. 2002",
+  "match_type": "close",
+  "inventory_id": "tct_motion_perception",
+  "proposed_extension": null,
+  "note": "Biological-motion variants map to hedtsk_biological_motion_perception."
+ },
+ {
+  "brainmap_class": "Visual Object Identification",
+  "definition": "Identify an object based on its visual attributes (e.g., shape, color, viewing angle), or detect/discriminate changes on the object's visual properties (e.g., size, illumination, position, relation between parts).",
+  "first": "Beauvois, 1982",
+  "most": "Lu, et al. 2009",
+  "match_type": "broader",
+  "inventory_id": "tct_categorization",
+  "proposed_extension": null,
+  "note": "Object recognition/discrimination; spans categorization and perceptual decision."
+ },
+ {
+  "brainmap_class": "Visual Pursuit/Tracking",
+  "definition": "Observe a moving target(s) and track its movement across the screen, or track visual changes on the moving target (e.g., velocity, trajectory, location in space).",
+  "first": "Barten, Birns & Ronch, 1971",
+  "most": "Corbetta, et al. 1991",
+  "match_type": "broader",
+  "inventory_id": "hedtsk_multiple_object_tracking",
+  "proposed_extension": null,
+  "note": "Smooth pursuit eye-movement variants map to tct_saccade."
+ },
+ {
+  "brainmap_class": "Visuospatial Attention",
+  "definition": "Make cued/noncued shifts of visual attention to a particular spatial location in the visual field. Responses can be overt (with eye movement to target location) or covert (fixating on a central target while paying attention to spatial location changes of peripheral target). Also includes the Posner and Simon task.",
+  "first": "Eriksen & Hoffman, 1972",
+  "most": "Paus, et al. 1993",
+  "match_type": "broader",
+  "inventory_id": "hedtsk_posner_spatial_cueing",
+  "proposed_extension": null,
+  "note": "Also includes Simon (hedtsk_simon) by BrainMap definition."
+ },
+ {
+  "brainmap_class": "Wisconsin Card Sorting Test",
+  "definition": "Sort cards into groups based on some dimension (i.e., color, form, or number) that is changed intermittently, and requires participants to identify a new correct group dimension.",
+  "first": "Berg, 1947",
+  "most": "Monchi, et al. 2001",
+  "match_type": "exact",
+  "inventory_id": "hedtsk_wisconsin_card_sorting",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "Word Generation (Covert)",
+  "definition": "Semantic: Listen to or view nouns and silently generate an associated verb, or view a category and silently generate as many exemplars as possible. Orthographic: Listen to or view a letter and silently generate as many words as possible that start with that letter. Phonologic: Listen to or view a word and silently generate words that rhyme.",
+  "first": "Friston, et al. 1995",
+  "most": "Same as First",
+  "match_type": "broader",
+  "inventory_id": "hedtsk_verb_generation",
+  "proposed_extension": null,
+  "note": "Covert verb generation plus fluency (hedtsk_verbal_fluency)."
+ },
+ {
+  "brainmap_class": "Word Generation (Overt)",
+  "definition": "Semantic: Listen to or view nouns and overtly generate an associated verb, or view a category and overtly generate as many exemplars as possible. Orthographic: Listen to or view a letter and overtly generate as many words as possible that start with that letter. Phonologic: Listen to or view a word and overtly generate words that rhyme.",
+  "first": "Petersen, et al., 1988",
+  "most": "Same as First",
+  "match_type": "broader",
+  "inventory_id": "hedtsk_verb_generation",
+  "proposed_extension": null,
+  "note": "Overt verb generation plus fluency (hedtsk_verbal_fluency)."
+ },
+ {
+  "brainmap_class": "Word Imageability",
+  "definition": "Participants are presented with a task that reflects how easy or difficult it is to imagine a word.",
+  "first": "Paivio, Yuille & Madigan, 1968",
+  "most": "Sabsevitz, et al. 2005",
+  "match_type": "narrower",
+  "inventory_id": "tct_semantic_judgment",
+  "proposed_extension": null,
+  "note": "Stimulus property; typically concrete/abstract or imageability judgment."
+ },
+ {
+  "brainmap_class": "Word Stem Completion (Covert)",
+  "definition": "Silently generate a word that completes the word stem.",
+  "first": "Graf, Mandler & Haden, 1982",
+  "most": "Buckner, et al. 2000",
+  "match_type": "none",
+  "inventory_id": null,
+  "proposed_extension": {
+   "id": "tct_bm_word_stem_completion",
+   "name": "Word Stem Completion Task",
+   "family": "language",
+   "patterns": [
+    "(word[- ])?stem[- ]completion",
+    "word[- ]stem (task|cued|priming)",
+    "word[- ]fragment completion"
+   ]
+  },
+  "note": "Covert variant; shares extension with overt."
+ },
+ {
+  "brainmap_class": "Word Stem Completion (Overt)",
+  "definition": "Overtly generate a word that completes the word stem.",
+  "first": "Warrington & Weiskrantz, 1970",
+  "most": "Heckers, et al. 1998",
+  "match_type": "none",
+  "inventory_id": null,
+  "proposed_extension": {
+   "id": "tct_bm_word_stem_completion",
+   "name": "Word Stem Completion Task",
+   "family": "language",
+   "patterns": [
+    "(word[- ])?stem[- ]completion",
+    "word[- ]stem (task|cued|priming)",
+    "word[- ]fragment completion"
+   ]
+  },
+  "note": "Overt variant; shares extension with covert."
+ },
+ {
+  "brainmap_class": "Writing",
+  "definition": "Write letters or words with a pen, stylus, or their finger.",
+  "first": "Pennebaker, 1997",
+  "most": "Longcamp, et al. 2003",
+  "match_type": "exact",
+  "inventory_id": "tct_writing",
+  "proposed_extension": null,
+  "note": "Same paradigm."
+ },
+ {
+  "brainmap_class": "n-back",
+  "definition": "The state or process of overtly moving.",
+  "first": null,
+  "most": null,
+  "match_type": "exact",
+  "inventory_id": "hedtsk_n_back",
+  "proposed_extension": null,
+  "note": "BrainMap definition text is erroneous (copied from Action.Execution)."
+ }
+]

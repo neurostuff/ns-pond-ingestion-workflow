@@ -29,6 +29,7 @@ from study_schema.models.paper_parse import (
     MetadataSource,
 )
 
+from ingestion_workflow.extractors.utils import recovering_xml_parser
 from ingestion_workflow.models.download import DownloadSource
 
 #: A held copy's own record: its file, or PMC's cloud record of it.
@@ -539,8 +540,8 @@ def own_license(source: str, files: Iterable[Path]) -> Optional[License]:
         if found is not None:
             return found
     if "article.xml" in by_name:
-        parser = etree.XMLParser(recover=True, huge_tree=True, resolve_entities=False)
-        return jats_license(etree.parse(str(by_name["article.xml"]), parser).getroot())
+        article = etree.parse(str(by_name["article.xml"]), recovering_xml_parser())
+        return jats_license(article.getroot())
     content = next((p for name, p in by_name.items() if name.startswith("content.")
                     and name.endswith(".xml")), None)
     if source == "elsevier" and content is not None:

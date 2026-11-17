@@ -1,0 +1,296 @@
+interactions:
+- request:
+    body: '{"ids": ["PMID:15814932"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '26'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '[{"paperId": "64b8ceebca048c8c260cc6311821c23aca1e3c39", "title": "Detectability
+        of hypometabolic regions in mild Alzheimer disease: function of time after
+        the injection of 2-[fluorine 18]-fluoro-2-deoxy-D-glucose.", "venue": "AJNR.
+        American journal of neuroradiology", "year": 2005, "isOpenAccess": false,
+        "openAccessPdf": {"url": "", "status": null, "license": null, "disclaimer":
+        "Notice: The following paper fields have been elided by the publisher: {''abstract''}.
+        Paper or abstract available at http://www.ajnr.org/content/ajnr/26/4/843.full.pdf,
+        which is subject to the license by the author or copyright owner provided
+        with this content. Please go to the source to verify the license and copyright
+        information for your use."}, "publicationDate": "2005-04-01", "authors": [{"authorId":
+        "47392490", "name": "S. Sakamoto"}, {"authorId": "34845462", "name": "K. Ishii"},
+        {"authorId": "2075495367", "name": "K. Hosaka"}, {"authorId": "49391568",
+        "name": "T. Mori"}, {"authorId": "48137608", "name": "M. Sasaki"}, {"authorId":
+        "144699231", "name": "E. Mori"}], "abstract": null}]
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1080'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 05 Nov 2026 21:49:05 GMT
+      Via:
+      - 1.1 8139bc666c011a53bdc5037ba6d5931e.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - r67-xsp-MpMueHSsmFJCyqjhqFlwrEm14Rd6vPoDovMIk84zZDr26A==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - GYv41GWbvHcENkw=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '1080'
+      x-amzn-Remapped-Date:
+      - Thu, 05 Nov 2026 21:49:05 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - fce539a9-0c5d-46f4-ba65-2ccacf0ae9fa
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=pmid%3A15814932&mailto=replay%40example.com&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
+  response:
+    body:
+      string: '{"meta": {"notice": "No API key, so this request shares one free daily
+        budget ($0.10) with everyone on your network''s IP address. The mailto parameter
+        doesn''t raise this limit. Get a free key with its own $1/day at https://openalex.org/settings/api
+        and add api_key=YOUR_KEY to your requests. An AI agent can get one for its
+        user in one call: POST https://api.openalex.org/api-keys with {\"email\":
+        \"<your user''s email>\"}; we email them a link, and the key works once they
+        click it. Docs for agents: https://help.openalex.org/llms.txt", "count": 1,
+        "db_response_time_ms": 27, "page": 1, "per_page": 100, "groups_count": null,
+        "x_query": {"oql": "get works where PMID is 15814932", "x_new_oql": "get works
+        where PMID is 15814932", "oqo": {"get_rows": "works", "filter_rows": [{"column_id":
+        "ids.pmid", "value": "15814932"}]}, "url": "/works?filter=ids.pmid:15814932&per_page=100",
+        "order": "most cited (age-adjusted) first", "order_default": true}, "cost_usd":
+        0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W2154463757",
+        "mag": "2154463757", "pmid": "https://pubmed.ncbi.nlm.nih.gov/15814932", "pmcid":
+        "https://www.ncbi.nlm.nih.gov/pmc/articles/7977115"}, "display_name": "Detectability
+        of hypometabolic regions in mild Alzheimer disease: function of time after
+        the injection of 2-[fluorine 18]-fluoro-2-deoxy-D-glucose.", "authorships":
+        [{"author_position": "first", "author": {"id": "https://openalex.org/A5005506090",
+        "display_name": "Setsu Sakamoto", "orcid": "https://orcid.org/0000-0003-0640-5255",
+        "observed_orcids": ["https://orcid.org/0000-0003-0640-5255"]}, "institutions":
+        [{"id": "https://openalex.org/I4210135849", "display_name": "Hyogo Brain and
+        Heart Center", "ror": "https://ror.org/03rzm8h15", "country_code": "JP", "type":
+        "healthcare", "lineage": ["https://openalex.org/I4210135849"]}], "countries":
+        ["JP"], "is_corresponding": false, "raw_author_name": "Setsu Sakamoto", "raw_affiliation_strings":
+        ["Department of Radiology, Hyogo Brain and Heart Center, Himeji, Hyogo, Japan"],
+        "raw_orcid": null, "affiliations": [{"raw_affiliation_string": "Department
+        of Radiology, Hyogo Brain and Heart Center, Himeji, Hyogo, Japan", "institution_ids":
+        ["https://openalex.org/I4210135849"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5077973419", "display_name": "Kazunari Ishii",
+        "orcid": "https://orcid.org/0000-0001-6601-952X", "observed_orcids": ["https://orcid.org/0000-0001-6601-952X"]},
+        "institutions": [{"id": "https://openalex.org/I4210135849", "display_name":
+        "Hyogo Brain and Heart Center", "ror": "https://ror.org/03rzm8h15", "country_code":
+        "JP", "type": "healthcare", "lineage": ["https://openalex.org/I4210135849"]}],
+        "countries": ["JP"], "is_corresponding": false, "raw_author_name": "Kazunari
+        Ishii", "raw_affiliation_strings": ["Hyogo Brain and Heart Center"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "Hyogo Brain and Heart Center",
+        "institution_ids": ["https://openalex.org/I4210135849"]}]}, {"author_position":
+        "middle", "author": {"id": "https://openalex.org/A5111978799", "display_name":
+        "Kayo Hosaka", "orcid": null, "observed_orcids": []}, "institutions": [{"id":
+        "https://openalex.org/I65837984", "display_name": "Kobe University", "ror":
+        "https://ror.org/03tgsfw79", "country_code": "JP", "type": "education", "lineage":
+        ["https://openalex.org/I65837984"]}], "countries": ["JP"], "is_corresponding":
+        false, "raw_author_name": "Kayo Hosaka", "raw_affiliation_strings": ["Kobe
+        University,"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Kobe University,", "institution_ids": ["https://openalex.org/I65837984"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5049591594",
+        "display_name": "Tetsuya Mori", "orcid": "https://orcid.org/0000-0003-0695-6954",
+        "observed_orcids": ["https://orcid.org/0000-0003-0695-6954"]}, "institutions":
+        [{"id": "https://openalex.org/I4210135849", "display_name": "Hyogo Brain and
+        Heart Center", "ror": "https://ror.org/03rzm8h15", "country_code": "JP", "type":
+        "healthcare", "lineage": ["https://openalex.org/I4210135849"]}], "countries":
+        ["JP"], "is_corresponding": false, "raw_author_name": "Tetsuya Mori", "raw_affiliation_strings":
+        ["Hyogo Brain and Heart Center"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Hyogo Brain and Heart Center", "institution_ids": ["https://openalex.org/I4210135849"]}]},
+        {"author_position": "middle", "author": {"id": "https://openalex.org/A5110493017",
+        "display_name": "Masahiro Sasaki", "orcid": "https://orcid.org/0000-0001-8979-9039",
+        "observed_orcids": ["https://orcid.org/0000-0001-8979-9039"]}, "institutions":
+        [], "countries": [], "is_corresponding": false, "raw_author_name": "Masahiro
+        Sasaki", "raw_affiliation_strings": ["Himeji Central Hospital"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "Himeji Central Hospital",
+        "institution_ids": []}]}, {"author_position": "last", "author": {"id": "https://openalex.org/A5023019678",
+        "display_name": "Etsuro Mori", "orcid": "https://orcid.org/0000-0003-4247-9948",
+        "observed_orcids": ["https://orcid.org/0000-0003-4247-9948"]}, "institutions":
+        [], "countries": [], "is_corresponding": false, "raw_author_name": "Etsuro
+        Mori", "raw_affiliation_strings": ["MED - Disability Science"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "MED - Disability Science",
+        "institution_ids": []}]}], "publication_year": 2005, "abstract_inverted_index":
+        {"BACKGROUND": [0], "AND": [1], "PURPOSE:": [2], "2-[Fluorine": [3], "18]-fluoro-2-deoxy-D-glucose":
+        [4], "(FDG)": [5], "positron": [6], "emission": [7, 205], "tomography": [8],
+        "(PET)": [9], "has": [10, 35], "played": [11], "an": [12], "important": [13],
+        "role": [14], "in": [15, 19, 65, 132, 151, 193, 197], "detecting": [16, 194],
+        "hypometabolic": [17, 153, 178, 195], "regions": [18, 154, 196], "the": [20,
+        29, 47, 50, 120, 149, 152, 156, 161, 166, 209], "brains": [21], "of": [22,
+        41, 49, 122, 171, 211], "patients": [23, 66, 73, 141, 198, 202], "with": [24,
+        55, 67, 74, 136, 142, 199, 203], "dementia.": [25], "To": [26], "our": [27],
+        "knowledge,": [28], "optimal": [30], "imaging": [31], "time": [32], "for":
+        [33, 59], "dementia": [34], "not": [36, 215], "been": [37], "investigated.":
+        [38], "The": [39], "aim": [40], "this": [42], "study": [43], "was": [44],
+        "to": [45, 191], "evaluate": [46], "sensitivity": [48], "early": [51], "scanning":
+        [52, 57, 206], "(ES)": [53], "compared": [54, 127], "late": [56], "(LS)":
+        [58], "demonstrating": [60], "decreased": [61], "regional": [62, 128], "glucose":
+        [63, 104], "metabolism": [64], "Alzheimer": [68], "disease": [69], "(AD).":
+        [70], "METHODS:": [71], "Twenty": [72], "mild": [75], "AD": [76, 143], "(mean":
+        [77], "age": [78], "+/-": [79, 83, 95], "standard": [80], "deviation,": [81],
+        "64.8": [82], "5.2": [84], "years)": [85, 97], "and": [86, 89, 114, 144, 147,
+        176], "20": [87], "age-": [88], "sex-matched": [90], "healthy": [91], "volunteers":
+        [92], "(age,": [93], "65.9": [94], "4.5": [96], "were": [98, 107], "underwent":
+        [99], "FDG": [100, 123, 212], "PET.": [101], "Their": [102], "cerebral": [103,
+        129], "metabolic": [105, 130], "images": [106, 131], "obtained": [108], "on":
+        [109], "ES": [110, 192], "at": [111, 116, 165], "30-42": [112], "minutes":
+        [113, 118], "LS": [115, 164, 188], "60-72": [117], "after": [119, 208], "administration":
+        [121, 210], "185-346": [124], "MBq.": [125], "We": [126], "a": [133], "voxel-by-voxel":
+        [134], "analysis": [135], "statistical": [137], "parametric": [138], "mapping":
+        [139], "between": [140, 155], "control": [145], "subjects": [146], "evaluated":
+        [148], "difference": [150], "two": [157], "scans.": [158], "RESULTS:": [159],
+        "In": [160], "AD-to-healthy": [162], "comparison,": [163], "P": [167], "<":
+        [168], ".001": [169], "level": [170], "significance": [172], "showed": [173],
+        "more": [174], "extensive": [175], "significant": [177], "areas": [179], "than":
+        [180], "did": [181], "ES.": [182], "CONCLUSION:": [183], "These": [184], "results":
+        [185], "indicate": [186], "that": [187], "is": [189, 213], "superior": [190],
+        "AD.": [200], "For": [201], "AD,": [204], "soon": [207], "probably": [214],
+        "advised.": [216]}, "primary_location": {"id": "pmh:oai:pubmedcentral.nih.gov:7977115",
+        "doi": null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/7977115",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "AJNR Am J Neuroradiol",
+        "raw_type": "Text"}, "best_oa_location": {"id": "pmh:oai:pubmedcentral.nih.gov:7977115",
+        "doi": null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/7977115",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "AJNR Am J Neuroradiol",
+        "raw_type": "Text"}, "locations": [{"id": "pmh:oai:pubmedcentral.nih.gov:7977115",
+        "doi": null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/7977115",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "AJNR Am J Neuroradiol",
+        "raw_type": "Text"}, {"id": "pmid:15814932", "doi": null, "is_oa": false,
+        "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/15814932", "pdf_url":
+        null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "AJNR. American
+        journal of neuroradiology", "raw_type": "Comparative Study"}, {"id": "mag:2154463757",
+        "doi": null, "is_oa": false, "landing_page_url": "http://www.ajnr.org/content/26/4/843.full.pdf",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S101278519", "display_name":
+        "American Journal of Neuroradiology", "issn_l": "0195-6108", "issn": ["0195-6108",
+        "1936-959X"], "is_oa": false, "is_in_doaj": false, "is_core": true, "listed_in":
+        ["cwts-core", "dongbi-b", "doyens", "jufo-1", "ki-jl-1", "medline", "norway-1",
+        "poland-100", "russia-white-list-1", "vabb-shw"], "host_organization": "https://openalex.org/P4310316165",
+        "host_organization_name": "American Society of Neuroradiology", "host_organization_lineage":
+        ["https://openalex.org/P4310316165"], "host_organization_lineage_names": ["American
+        Society of Neuroradiology"], "type": "journal"}, "license": null, "license_id":
+        null, "version": null, "is_accepted": false, "is_published": false, "raw_source_name":
+        "American Journal of Neuroradiology", "raw_type": null}], "open_access": {"is_oa":
+        true, "oa_status": "green", "oa_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/7977115",
+        "any_repository_has_fulltext": true}}], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a55f10ff8e3f45f3-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 05 Nov 2026 21:49:05 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '1000'
+      X-RateLimit-Limit-USD:
+      - '0.1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '175'
+      X-RateLimit-Remaining-USD:
+      - '0.0175'
+      X-RateLimit-Reset:
+      - '7855'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=HPQz3OyZjOHBKxbf%2BUGfdFsfM0aXbBv%2Bq5wLTvsGU34%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1793915345"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=HPQz3OyZjOHBKxbf%2BUGfdFsfM0aXbBv%2Bq5wLTvsGU34%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1793915345"
+    status:
+      code: 200
+      message: OK
+version: 1

@@ -12,7 +12,7 @@ import logging
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, List, Literal, Mapping, Optional
 
 import yaml
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
@@ -71,6 +71,44 @@ class RoleModel(BaseModel):
 
     endpoint: str = Field(description="Base URL of the server, up to /v1")
     model: str = Field(description="The served model name it answers to")
+    path: Optional[str] = Field(
+        default=None,
+        description=(
+            "The checkpoint directory the server loads, spelled as it is served. With it the "
+            "model's identity is known while the server is down, so the articles it has "
+            "labelled stay fresh and can be uploaded; labelling still needs the server"
+        ),
+    )
+
+
+class Machine(BaseModel):
+    """A cluster the offloaded stages run on (`ingest offload push/submit/status/pull`)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    ssh: str = Field(description=(
+        "The SSH host alias. Commands reuse its connection, which you open (and answer MFA "
+        "for) and keep open; when it is closed a command stops and the bundle stays pending"))
+    work: str = Field(description="Bundles, adapters and job logs go under this directory")
+    scratch: str = Field(description="Merged models go under this directory")
+    partition: str
+    account: str
+    gpus_per_node: int = 1
+    serve_python: str = Field(description="The python of the environment with vLLM")
+    train_python: str = Field(description=(
+        "The python of the environment with torch, peft and transformers, for the merge"))
+    hf_home: str = Field(description="HF_HOME holding the base models; jobs run offline")
+    environment: Dict[str, str] = Field(
+        default_factory=dict,
+        description="Exported in every job before it starts: the machine's compiler and vLLM traps",
+    )
+    infer_group: Optional[str] = Field(default=None, description=(
+        "The optional-dependency group the serve environment must match (`offload setup`)"))
+    merge_group: Optional[str] = Field(default=None, description=(
+        "The optional-dependency group the train environment must match"))
+    max_queued: int = Field(default=30, description="Jobs pending or running at once, at most")
+    su_per_node_hour: float = Field(default=1.0, description="What a node-hour is charged")
+    su_cap: float = Field(description="`submit` needs --yes for an estimate above this")
 
 
 class Settings(BaseSettings):
@@ -151,6 +189,11 @@ class Settings(BaseSettings):
     semantic_scholar_api_key: Optional[str] = Field(
         default=None,
         description=("Optional API key for Semantic Scholar (increases rate limits)"),
+    )
+
+    scicrunch_api_key: Optional[str] = Field(
+        default=None,
+        description="API key for the SciCrunch registry, one of the data-source catalogues",
     )
 
     openalex_email: Optional[str] = Field(
@@ -352,6 +395,26 @@ class Settings(BaseSettings):
         ),
     )
 
+    machines: Dict[str, Machine] = Field(
+        default_factory=dict,
+        description="The clusters offloaded stages run on, by name (`ingest offload --machine`)",
+    )
+    normalize_fit_dir: Optional[Path] = Field(
+        default=None,
+        description=("The saved normalization fit the normalize stage assigns with "
+                     "(`ingest normalize fit` prints it). Unset, normalize waits for an import"),
+    )
+    normalize_workers: int = Field(
+        default=1,
+        description="Processes the normalize stage assigns articles in (forked; ~5 s each)",
+    )
+    normalize_fixed_dir: Optional[Path] = Field(
+        default=None,
+        validation_alias=AliasChoices("normalize_fixed_dir", "NORMALIZE_FIXED_DIR"),
+        description=("A local copy of the fixed fits `ingest normalize fit` builds on. Unset, "
+                     "the pinned Hub revision is fetched, with HF_TOKEN"),
+    )
+
     sync_overwrite: bool = Field(
         default=True,
         description="Overwrite individual files when writing ns-pond sync outputs",
@@ -399,6 +462,17 @@ class Settings(BaseSettings):
             "parsing, which makes extraction network-bound and fails when the "
             "publisher is unreachable. With this set, a table already in the "
             "table cache is still used and only the fetch is skipped"
+        ),
+    )
+
+    ace_prefer_pmc: bool = Field(
+        default=False,
+        description=(
+            "Ask ACE for an article's PMC copy before the publisher's page. Only for "
+            "selected articles whose publisher pages are gone or walled: PMC's page "
+            "holds the tables inline, and a failed PMC fetch does not fall back to the "
+            "publisher. ACE reuses a page already in ace_cache_root, so set a fresh "
+            "ace_cache_root for the run, or the old publisher page is recorded again"
         ),
     )
 
@@ -636,11 +710,62 @@ class Settings(BaseSettings):
         default=None,
         description="Optional override for the cache of XML fetched from Europe PMC",
     )
+    pdf_engines: List[Literal["mineru", "docling"]] = Field(
+        # MinerU reads each page from its image, so a text layer that maps the minus to
+        # 2 does not reach its tables; Docling reads that layer. On PDFs set aside for
+        # such a layer MinerU recovered 98% of ACE's coordinates and Docling 15%, and on
+        # PDFs extract kept, 529 of 530 against 432 (wiki PR-189-MinerU-PDF-Extractor).
+        default_factory=lambda: ["mineru", "docling"],
+        min_length=1,
+        description=(
+            "Ordered PDF readers: each PDF is read by the first that can read it. An "
+            "engine that cannot run at all stops the extract stage instead"
+        ),
+    )
+    mineru_extract_memory_mb: int = Field(
+        # A MinerU worker and its vLLM engine held 7.8 GB on 12-page PDFs.
+        default=16384,
+        gt=0,
+        description=(
+            "Resident memory (MB) a MinerU worker, with its vLLM engine, may reach "
+            "before it is killed and that article failed; MinerU's own settings "
+            "(MINERU_HOME, MINERU_MODEL_SOURCE) come from the environment"
+        ),
+    )
+    mineru_workers_per_gpu: int = Field(
+        default=1,
+        ge=1,
+        description="MinerU workers on each GPU with room for one; more fit a card with room",
+    )
+    mineru_max_workers: Optional[int] = Field(
+        default=None,
+        ge=1,
+        description=(
+            "At most this many MinerU workers, for a machine others share (each holds "
+            "about 11 GB of memory); None means every one the GPUs fit"
+        ),
+    )
     pdf_extract_workers: Optional[int] = Field(
         default=None,
         description=(
             "Docling worker processes for PDF extraction; None means one per "
             "CUDA device, or 1 on CPU"
+        ),
+    )
+    pdf_extract_memory_mb: int = Field(
+        default=8192,
+        gt=0,
+        description=(
+            "Resident memory (MB) a Docling worker may reach before it is killed "
+            "and that article failed"
+        ),
+    )
+    pdf_extract_timeout_s: float = Field(
+        default=600.0,
+        gt=0,
+        description=(
+            "Seconds one PDF extraction may run before its worker is killed and that "
+            "article failed; the first article a worker reads also loads its models"
         ),
     )
 
@@ -748,6 +873,14 @@ class Settings(BaseSettings):
             "Audience of that token: the Auth0 API neurostore checks tokens against, not "
             "the URL uploads go to. Unset, the deployment's own "
             "(https://staging.synth.neurostore.xyz/api/ for staging)"
+        ),
+    )
+    neurostore_upload_workers: int = Field(
+        default=1,
+        ge=1,
+        description=(
+            "Papers uploaded at once. Neurostore ingests one per API worker, so up to its "
+            "worker count (WEB_CONCURRENCY) is faster; 1 sends them one after another"
         ),
     )
 

@@ -10,6 +10,8 @@ from .models import (
     Artifact,
     Notes,
     Outcome,
+    Run,
+    RunKind,
     Status,
     utcnow,
 )
@@ -25,6 +27,8 @@ __all__ = [
     "NO_SOURCE",
     "Notes",
     "Outcome",
+    "Run",
+    "RunKind",
     "Status",
     "WHOLE_ARTICLE",
     "fingerprint",

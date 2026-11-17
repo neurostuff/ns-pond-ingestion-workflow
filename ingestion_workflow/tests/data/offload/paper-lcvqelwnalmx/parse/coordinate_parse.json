@@ -1,0 +1,106 @@
+{
+  "header": {
+    "artifact_kind": "coordinate_parse",
+    "schema_version": "0.11.0",
+    "article_id": "lcvqelwnalmx",
+    "identifiers": {
+      "pmid": "22959120",
+      "pmcid": null,
+      "doi": "10.1016/j.biopsych.2012.07.023",
+      "alternative_pmids": null,
+      "alternative_pmcids": null,
+      "alternative_dois": null,
+      "preprint_dois": null,
+      "preprint_pmids": null,
+      "preprint_pmcids": null,
+      "publication_status": "published"
+    },
+    "producer": {
+      "name": "ns-pond-ingestion-workflow",
+      "version": "paper_parse.13",
+      "stage": "sync",
+      "model": null,
+      "prompt_version": null
+    },
+    "inputs": [
+      {
+        "artifact_kind": "parsed_paper",
+        "fingerprint": "f91c38db88e8ec698427d060474ac6e72a86e5b401632643c86779c8e7738e04",
+        "producer_version": null
+      },
+      {
+        "artifact_kind": "analyses",
+        "fingerprint": "b9555c4797c3cd85b5677a09873749f5",
+        "producer_version": null
+      }
+    ],
+    "created_at": null,
+    "neurostore_base_study_id": "DRhjeuSZLsHu"
+  },
+  "parse_id": "205efa713851ec8ca1e9b8ddc59561f9a24076b765ca26656d55c5ccd64191b4",
+  "text_sha256": "f91c38db88e8ec698427d060474ac6e72a86e5b401632643c86779c8e7738e04",
+  "revision_of": null,
+  "analyses": [
+    {
+      "key": "analysis#5fa7d67fee70b632",
+      "cells": null,
+      "text_spans": [
+        {
+          "start_char": 7985,
+          "end_char": 8005,
+          "text": null
+        }
+      ],
+      "origin": "text",
+      "table_id": null,
+      "name": "meta-analysis of rewarding stimuli",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "MNI",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "anchor",
+      "anchor_kind": "roi",
+      "from_prior_study": null,
+      "prior_study_evidence": null,
+      "role_confidence": 0.9450631163755876,
+      "role_source": "role-text@v5+d83dae2b8718",
+      "split": null,
+      "derived_from": null,
+      "statistic": null,
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            -16.0,
+            28.0,
+            -18.0
+          ],
+          "space": null,
+          "row": null,
+          "column_group": null,
+          "text_span": {
+            "start_char": 7985,
+            "end_char": 8005,
+            "text": null
+          },
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    }
+  ],
+  "tables": null,
+  "omitted_analyses": null,
+  "text_sweep": {
+    "passages_found": 1,
+    "passages_read": 1,
+    "truncated": false,
+    "points_dropped_as_table_restatements": 0
+  },
+  "verdicts": null
+}

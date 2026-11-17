@@ -9,6 +9,11 @@ which neurostore stores as one of the base study's full texts. The upload is one
 transaction keyed by the parse's analysis content keys, so sending the same parse again
 changes nothing.
 
+A record (`upload_record`) is sent alone, as `{"record", "parse_id", "base_study_id",
+"run_id", "pipeline"}`, after its parse: neurostore attaches it to that stored parse, and
+keys the record's config on `pipeline.runs` (neurostore ADR 0018). It is answered and
+recorded as a parse is, in its own artifact, `<study>/upload/neurostore_record_<source>.json`.
+
 Each paper gets one artifact, `<study>/upload/neurostore_ingest.json`: the latest
 upload's outcome at the top, the last successful summary per endpoint under
 `last_uploaded`, and every upload's outcome, in order, under `history`. A dry run
@@ -60,6 +65,7 @@ import json
 import logging
 import os
 import re
+import threading
 import time
 from enum import Enum
 from pathlib import Path
@@ -123,6 +129,13 @@ BODY_EXCERPT = 2000
 MAX_DELAY = 120.0
 #: What the ingester's summary of a parse upload says it was.
 SUMMARY_KINDS = ("parse", "revision")
+#: ... and of a record sent alone.
+RECORD_KINDS = ("record",)
+
+
+def record_artifact_name(source: str) -> str:
+    """The artifact of one extractor family's record uploads, beside the parse's."""
+    return f"neurostore_record_{source}.json"
 _SECRET_WORDS = ("token", "authorization", "password", "secret", "api_key", "apikey", "cookie")
 REDACTED = "[redacted]"
 #: A bearer token is one run of visible ASCII; anything else is not a legal header
@@ -218,14 +231,23 @@ def auth0(settings) -> Optional[Tuple[str, str]]:
     return (url.rstrip("/"), audience) if url and audience else None
 
 
-def _holds_nul(value: Any) -> bool:
+# Postgres stores no NUL in text: the ingester would answer 500, and again on every retry.
+# A parse holding one is refused, since its text is the source every offset points into; a
+# record holding one is sent with it marked unreadable, since its strings are the model's
+# (`\u0000` in its JSON answer) and point into nothing.
+def without_nul(value: Any) -> Any:
+    """`value` with each NUL as U+FFFD."""
     if isinstance(value, str):
-        return "\x00" in value
+        return value.replace("\x00", "\ufffd")
     if isinstance(value, dict):
-        return any(_holds_nul(k) or _holds_nul(v) for k, v in value.items())
+        return {without_nul(k): without_nul(v) for k, v in value.items()}
     if isinstance(value, list):
-        return any(_holds_nul(v) for v in value)
-    return False
+        return [without_nul(v) for v in value]
+    return value
+
+
+def _holds_nul(value: Any) -> bool:
+    return without_nul(value) != value
 
 
 def build_payload(study_dir: Path) -> Tuple[Dict[str, Any], List[str]]:
@@ -268,7 +290,6 @@ def build_payload(study_dir: Path) -> Tuple[Dict[str, Any], List[str]]:
         text = (Path(study_dir) / text_path).read_bytes().decode("utf-8")
     except UnicodeDecodeError as exc:
         raise InvalidParse([f"{text_path} is not UTF-8: {exc}"]) from None
-    # Postgres stores no NUL in text: the ingester would answer 500, and again on every retry.
     held = [name for name, value in (("coordinate_parse", raw_parse), ("parsed_paper", raw_paper),
                                      (str(text_path), text)) if _holds_nul(value)]
     if held:
@@ -370,6 +391,8 @@ class NeurostoreIngester:
         self._sleep = sleep or time.sleep
         self._clock = clock or time.monotonic
         self._down: Optional[str] = None
+        #: One refresh at a time when several uploads run at once.
+        self._token_lock = threading.Lock()
         #: The tenant, audience, client id and secret a token is asked for with; the token
         #: and when it expires, none until the first upload asks for one.
         self._grant: Optional[Tuple[str, str, str, str]] = None
@@ -458,10 +481,46 @@ class NeurostoreIngester:
             return self._finish(out, record, Result.DRY_RUN)
         if self._down:
             raise NeurostoreUnavailable(self._down)
-        return self._send(out, record, body, parse)
+        return self._send(out, record, body, SUMMARY_KINDS, parse.get("parse_id"),
+                          parse["header"].get("neurostore_base_study_id"))
+
+    def upload_record(
+        self, study_dir: Path, source: str, request: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Send one record `request` for the paper at `study_dir`, write its artifact
+        (`record_artifact_name(source)`), and return it. A dry run writes the body beside
+        that artifact's dry-run record instead. Raises a StopRun as `upload` does."""
+        study_dir = Path(study_dir)
+        name = record_artifact_name(source)
+        out = self.dry_run_root / study_dir.name if self.dry_run else study_dir / UPLOAD_DIR
+        record: Dict[str, Any] = {
+            "artifact_version": ARTIFACT_VERSION,
+            "study_id": study_dir.name,
+            "endpoint": self.url,
+            "dry_run": self.dry_run,
+            "at": utcnow(),
+            "source": source,
+            "parse_id": request.get("parse_id"),
+            "run_id": request.get("run_id"),
+            "runs": [run.get("run_id")
+                     for run in (request.get("pipeline") or {}).get("runs") or []],
+        }
+        body = json.dumps(request, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+        record["payload_sha256"] = hashlib.sha256(body).hexdigest()
+        if self.dry_run:
+            out.mkdir(parents=True, exist_ok=True)
+            payload = out / name.replace(".json", ".payload.json")
+            _write_atomic(payload, body)
+            record["payload_path"] = str(payload)
+            return self._finish(out, record, Result.DRY_RUN, name=name)
+        if self._down:
+            raise NeurostoreUnavailable(self._down)
+        return self._send(out, record, body, RECORD_KINDS, request.get("parse_id"),
+                          request.get("base_study_id"), name=name)
 
     def _send(
-        self, out: Path, record: Dict[str, Any], body: bytes, parse: Dict[str, Any]
+        self, out: Path, record: Dict[str, Any], body: bytes, kinds, parse_id: Optional[str],
+        base_study_id: Optional[str], name: str = ARTIFACT_NAME,
     ) -> Dict[str, Any]:
         attempts: List[Dict[str, Any]] = []
         record["attempts"] = attempts
@@ -473,9 +532,8 @@ class NeurostoreIngester:
             retry_after = None
             unsendable = False
             record.pop("http_status", None)
-            if self._clock() >= self._expires - REFRESH_MARGIN:
-                self._ask_token()
-            headers = {"Authorization": f"Bearer {self._token}",
+            token = self._current_token()
+            headers = {"Authorization": f"Bearer {token}",
                        "Content-Type": "application/json"}
             try:
                 response = self._client.post(self.url, content=body, headers=headers)
@@ -490,18 +548,21 @@ class NeurostoreIngester:
                 attempts.append({"attempt": attempt, "http_status": status})
                 record["http_status"] = status
                 if response.is_success:
-                    summary, problem, foreign = self._summary(response, parse)
+                    summary, problem, foreign = self._summary(response, kinds, parse_id,
+                                                              base_study_id)
                     if problem is None:
-                        return self._finish(out, record, Result.UPLOADED, summary=summary)
+                        return self._finish(out, record, Result.UPLOADED, summary=summary,
+                                            name=name)
                     error = {**self._error(response), "detail": problem}
                     if foreign:
-                        return self._finish(out, record, Result.REFUSED, error=error)
+                        return self._finish(out, record, Result.REFUSED, error=error,
+                                            name=name)
                 elif status == 401 and not refreshed:
                     # Revoked or expired early: one new token, and the same try again.
                     refreshed = True
                     attempt -= 1
                     attempts[-1]["token_refused"] = True
-                    self._ask_token()
+                    self._current_token(refused=token)
                     continue
                 else:
                     error = self._error(response)
@@ -509,7 +570,8 @@ class NeurostoreIngester:
                     if stop is not None:
                         raise stop
                     if status not in RETRIED and status < 500:
-                        return self._finish(out, record, Result.REFUSED, error=error)
+                        return self._finish(out, record, Result.REFUSED, error=error,
+                                            name=name)
                     retry_after = _seconds(response.headers.get("Retry-After"))
             if unsendable:
                 # Raised here, outside the except block, so the httpx error (whose text
@@ -528,7 +590,16 @@ class NeurostoreIngester:
             raise NeurostoreUnavailable(self._down)
         # Up, and failing on this paper every time: its failure, not an outage, so the
         # papers after it are still sent.
-        return self._finish(out, record, Result.BLOCKED, error=error)
+        return self._finish(out, record, Result.BLOCKED, error=error, name=name)
+
+    def _current_token(self, refused: Optional[str] = None) -> str:
+        """The token to send: asked of Auth0 when it is about to expire or `refused` (the one
+        a 401 answered) is still the current one, by one upload at a time."""
+        with self._token_lock:
+            if self._clock() >= self._expires - REFRESH_MARGIN or (
+                    refused is not None and refused == self._token):
+                self._ask_token()
+            return self._token
 
     def _ask_token(self) -> None:
         """A token for the client, from its Auth0 tenant: NeurostoreAuthError when the
@@ -605,21 +676,22 @@ class NeurostoreIngester:
                 )
         return None
 
-    def _summary(self, response: httpx.Response, parse: Dict[str, Any]):
-        """(the redacted summary, why it is not this parse's, whether it is this parse's
-        filed under a base study the header does not name)."""
+    def _summary(self, response: httpx.Response, kinds, parse_id: Optional[str],
+                 expected: Optional[str]):
+        """(the redacted summary, why it is not this upload's, whether it is this upload's
+        filed under a base study other than `expected`, the one it names)."""
         try:
             summary = response.json()
         except ValueError:
             return None, "the 2xx body is not JSON, so not the ingester's summary", False
-        if not isinstance(summary, dict) or summary.get("kind") not in SUMMARY_KINDS:
-            return None, "the 2xx body is not the ingester's summary of a parse upload", False
-        if summary.get("parse_id") != parse.get("parse_id"):
+        if not isinstance(summary, dict) or summary.get("kind") not in kinds:
+            what = "parse" if kinds == SUMMARY_KINDS else " or ".join(kinds)
+            return None, f"the 2xx body is not the ingester's summary of a {what} upload", False
+        if summary.get("parse_id") != parse_id:
             return (None, f"the summary is of parse {summary.get('parse_id')!r}, not this one",
                     False)
         if not summary.get("base_study_id"):
             return None, "the summary names no base study", False
-        expected = parse["header"].get("neurostore_base_study_id")
         if expected and summary["base_study_id"] != expected \
                 and expected not in (summary.get("merged_from") or []):
             # Its id would be learned as this article's alias; the same body gets the same
@@ -658,6 +730,7 @@ class NeurostoreIngester:
         *,
         summary: Any = None,
         error: Optional[Dict[str, Any]] = None,
+        name: str = ARTIFACT_NAME,
     ) -> Dict[str, Any]:
         record["status"] = result.value
         if summary is not None:
@@ -667,9 +740,10 @@ class NeurostoreIngester:
         out.mkdir(parents=True, exist_ok=True)
         if self.dry_run:
             artifact = record
-            _write_json(out / DRY_RUN_NAME, artifact)
+            _write_json(out / (DRY_RUN_NAME if name == ARTIFACT_NAME
+                               else name.replace(".json", ".dry_run.json")), artifact)
         else:
-            artifact = self._append(out / ARTIFACT_NAME, record, result)
+            artifact = self._append(out / name, record, result)
         log = logger.info if result in (Result.UPLOADED, Result.DRY_RUN) else logger.warning
         log(
             "neurostore upload %s: %s%s",

@@ -731,7 +731,7 @@ def test_a_catalog_opened_during_its_migration_waits_and_finds_it_current(
     first.join()
     second.join()
     assert errors == []
-    assert _version_and_dois(root) == ("4", {(UPPER.lower(), "a1")})
+    assert _version_and_dois(root) == ("5", {(UPPER.lower(), "a1")})
     assert sorted(p.name for p in root.glob("catalog.pre-*")) == ["catalog.pre-v2.sqlite"]
 
 
@@ -759,9 +759,9 @@ def test_code_older_than_the_catalog_refuses_to_open_it(tmp_path, monkeypatch):
     root = tmp_path / "cat"
     Catalog.open(root).close()
     monkeypatch.setattr(store, "SCHEMA_VERSION", 2)
-    with pytest.raises(RuntimeError, match="schema version 4; this code reads version 2"):
+    with pytest.raises(RuntimeError, match="schema version 5; this code reads version 2"):
         Catalog.open(root)
-    assert _version_and_dois(root)[0] == "4"
+    assert _version_and_dois(root)[0] == "5"
 
 
 def test_a_paper_s_duplicate_pubmed_records_are_presented_beside_its_pmid(catalog, evidence):

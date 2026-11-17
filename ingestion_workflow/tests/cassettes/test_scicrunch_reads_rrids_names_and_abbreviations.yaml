@@ -1,0 +1,515 @@
+interactions:
+- request:
+    body: '{"size": 25, "from": 0, "sort": [{"item.identifier.aggregate": "asc"}],
+      "_source": ["item.identifier", "item.name", "item.synonyms", "item.types", "item.keywords",
+      "item.description", "item.abbreviations"], "query": {"bool": {"must": [{"query_string":
+      {"query": "MRI OR fMRI OR PET OR \"magnetic resonance\" OR neuroimaging OR \"positron
+      emission\" OR \"brain imaging\" OR connectome OR DTI OR \"diffusion tensor\"",
+      "lenient": true, "fields": ["item.name", "item.description", "item.keywords.keyword",
+      "item.synonyms.name"]}}, {"terms": {"item.types.name.aggregate": ["database",
+      "data set", "data repository", "image repository", "image collection", "project
+      portal", "organization portal", "consortium", "biobank", "topical portal", "data
+      or information resource"]}}]}}}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '773'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - ns-pond-ingestion-workflow (https://github.com/neurostuff/ns-pond-ingestion-workflow)
+    method: POST
+    uri: https://scicrunch.org/api/1/elastic/RIN_Tool_pr/_search
+  response:
+    body:
+      string: '{"took":12,"timed_out":false,"_shards":{"total":2,"successful":2,"skipped":0,"failed":0},"hits":{"total":456,"max_score":null,"hits":[{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_000093","_score":null,"_source":{"item":{"identifier":"SCR_000093","types":[{"name":"consortium","type":"category"},{"name":"data
+        or information resource","type":"category"},{"name":"organization portal","type":"category"},{"name":"portal","type":"category"}],"keywords":[{"keyword":"epilepsy"},{"keyword":"genetics"},{"keyword":"gene"},{"keyword":"mri"},{"keyword":"genetic
+        variation"},{"keyword":"clinical"}],"synonyms":[{"name":"EPIGEN: An international
+        consortium dedicated to tackling epilepsy through genetics"},{"name":"EPIGEN
+        Consortium"}],"name":"EPIGEN","description":"THIS RESOURCE IS NO LONGER IN
+        SERVICE. Documented on August 16,2023. Group of clinical care and epilepsy
+        research centers who are committed to improving the lives of people with epilepsy
+        through an understanding of the genetics of epilepsy. The consoritum was in
+        an effort to speed discovery to epilepsy genetics by pooling the resources
+        of several research centres., THIS RESOURCE IS NO LONGER IN SERVICE. Documented
+        on September 16,2025.","abbreviations":[{"name":"EPIGEN"}]}},"sort":["scr_000093"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_000113","_score":null,"_source":{"item":{"identifier":"SCR_000113","types":[{"name":"blog","type":"category"},{"name":"data
+        or information resource","type":"category"},{"name":"narrative resource","type":"category"}],"keywords":[{"keyword":"brain"},{"keyword":"science"},{"keyword":"blog"},{"keyword":"technology"},{"keyword":"writing"},{"keyword":"education"}],"synonyms":[{"name":"BrainTechSci"}],"name":"BrainTechSci.","description":"Blog
+        about brain technology and science news that covers topics such as high-resolution
+        brain imaging, brain maps API and whole-brain atlases.","abbreviations":[{"name":""}]}},"sort":["scr_000113"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_000155","_score":null,"_source":{"item":{"identifier":"SCR_000155","types":[{"name":"data
+        or information resource","type":"category"},{"name":"data set","type":"category"}],"keywords":[{"keyword":"morphometry"},{"keyword":"mri"},{"keyword":"neuroinformatics"},{"keyword":"subcortical"},{"keyword":"dicom"},{"keyword":"magnetic
+        resonance"},{"keyword":"nifti"},{"keyword":"quantification"},{"keyword":"segmentation"},{"keyword":"visualization"},{"keyword":"workflow"},{"keyword":"image
+        collection"},{"keyword":"structural mri"},{"keyword":"male"},{"keyword":"female"},{"keyword":"neuroimaging"}],"synonyms":[{"name":"Morphometry
+        BIRN Multi-site Multi-session Structural MRI Data"},{"name":"Brain Morphometry
+        Testbed"},{"name":"Morphometry Testbed"},{"name":"mBIRN_calib"},{"name":"mbirn
+        calibration"}],"name":"Morphometry BIRN","description":"THIS RESOURCE IS NO
+        LONGER IN SERVICE. Documented on August 4th,2023. Calibration data set of
+        spoiled gradient-recalled echo magnetic resonance imaging data from five healthy
+        volunteers (four males and one female) scanned twice at four sites having
+        1.5T systems from different vendors (Siemens, GE, Marconi Medical Systems)
+        pooled by the Morphometry Testbed''s (MBIRN). Some subjects were also scanned
+        a single time at another site. One subject was only scanned twice at three
+        sites (subject 73213384) and once at another site. For each subject, four
+        Fast Low-Angle Shot (FLASH) scans with flip angles of 3, 5, 20, and 30 degrees
+        were obtained in a single scan session, from which tissue proton density and
+        T1 maps can be derived. These data were acquired to investigate various metrics
+        of within-site and across-site reproducibility. The images have been defaced
+        so that no facial features can be reconstructed from these data. The Morphometry
+        Testbed (MBIRN) of the Biomedical Informatics Research Network (BIRN) focused
+        on pooling and analyzing of neuroimaging data acquired at multiple sites.
+        Specific applications include potential relationships between anatomical differences
+        and specific memory dysfunctions, such as Alzheimer''s disease. With the completion
+        of the initial BIRN testbed phase, each of the original BIRN testbeds have
+        now been retired in order to focus on new users in other biomedical domains.","abbreviations":[{"name":"MBIRN"}]}},"sort":["scr_000155"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_000160","_score":null,"_source":{"item":{"identifier":"SCR_000160","types":[{"name":"atlas","type":"category"},{"name":"data
+        or information resource","type":"category"}],"keywords":[{"keyword":"nifti-1"},{"keyword":"magnetic
+        resonance"}],"synonyms":[{"name":"Colin 3T / 7T High-resolution Atlas"}],"name":"Colin
+        3T/7T High-resolution Atlas","description":"High-field extension of the Colin27
+        single-subject atlas with additional high-resolution, quantitative, averaged
+        scans at both 3T and 7T.","abbreviations":[{"name":"Colin 3T/7T High-resolution
+        Atlas"}]}},"sort":["scr_000160"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_000195","_score":null,"_source":{"item":{"identifier":"SCR_000195","types":[{"name":"data
+        or information resource","type":"category"},{"name":"portal","type":"category"}],"keywords":[{"keyword":"magnetic
+        resonance imaging assay"},{"keyword":"image"},{"keyword":"fmri"},{"keyword":"brain"},{"keyword":"science"},{"keyword":"neuroimaging"},{"keyword":"project"}],"synonyms":[{"name":"BrainHack"}],"name":"brainhack.org","description":"Forum
+        for collaborative projects in the field of brain science. Everyone is invited
+        to submit projects, either existing ones that you want to see featured or
+        new ones that you want launch and work on in a collaborative, open way.","abbreviations":[{"name":"brainhack.org"}]}},"sort":["scr_000195"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_000232","_score":null,"_source":{"item":{"identifier":"SCR_000232","types":[{"name":"consortium","type":"category"},{"name":"data
+        or information resource","type":"category"},{"name":"organization portal","type":"category"},{"name":"portal","type":"category"}],"keywords":[{"keyword":"drug
+        development"},{"keyword":"drug"},{"keyword":"taxonomy"},{"keyword":"biomarker"},{"keyword":"etiology"},{"keyword":"epidemiology"},{"keyword":"neuroimaging"},{"keyword":"mechanism"},{"keyword":"clinical"},{"keyword":"clinical
+        trial"},{"keyword":"database"},{"keyword":"classification"},{"keyword":"biological
+        pathway"},{"keyword":"bio.tools"}],"synonyms":[{"name":""}],"name":"AETIONOMY","description":"Consortium
+        founded to establish mechanism-based taxonomies for Alzheimer''s and Parkinson''s
+        disease and other neurodegenerative disorders (NDD), with the goal of facilitating
+        development of more effective and targeted treatments. To do this, the consortium
+        collects and analyzes data to: * Create new ways to combine underutilized
+        data currently available in the literature, public databases, and from private
+        companies * Determine how to dynamically organize and structure different
+        types of knowledge about NDD * Determine how to apply this knowledge to construct
+        new patient group classification * Identify correlations between disease features
+        at molecular, tissue or organ-specific, and clinical levels * Identify sub-groups
+        of patients based on the molecular cause of their disease, as opposed to the
+        nature and location of their symptoms * Deliver data, tools, and recommendations
+        for the biomedical community in the treatment of NDD A mechanism-based taxonomy
+        is hoped to advance the: # Description and organization of the indication-specific
+        data # Linking of data to disease models, based on causal and correlative
+        relationships The expected outcome of AETIONOMY is a new NDD taxonomy system
+        that distinguishes mixed pathologies, allowing for new features or classes
+        to be added into the taxonomy, all with the goal of aiding drug and biomarker
+        discovery.","abbreviations":[{"name":"AETIONOMY"}]}},"sort":["scr_000232"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_000334","_score":null,"_source":{"item":{"identifier":"SCR_000334","types":[{"name":"data
+        or information resource","type":"category"},{"name":"organization portal","type":"category"},{"name":"portal","type":"category"}],"keywords":[{"keyword":"functional"},{"keyword":"genetic"},{"keyword":"biological
+        system"},{"keyword":"brain"},{"keyword":"clinical"},{"keyword":"computational"},{"keyword":"computational
+        mathematic"},{"keyword":"disease"},{"keyword":"health"},{"keyword":"image
+        processing"},{"keyword":"physiological"},{"keyword":"population"},{"keyword":"structural"},{"keyword":"neuroimaging"},{"keyword":"computational
+        neuroscience"},{"keyword":"imaging genomics"},{"keyword":"magnetic resonance"},{"keyword":"pet"},{"keyword":"spect"}],"synonyms":[{"name":"CCB
+        at UCLA"},{"name":"Center for Computational Biology"}],"name":"Center for
+        Computational Biology at UCLA","description":"THIS RESOURCE IS NO LONGER IN
+        SERVICE. Documented on August 31, 2022. Center focused on the development
+        of computational biological atlases of different populations, subjects, modalities,
+        and spatio-temporal scales with 3 types of resources: (1) Stand-alone computational
+        software tools (image and volume processing, analysis, visualization, graphical
+        workflow environments). (2) Infrastructure Resources (Databases, computational
+        Grid, services). (3) Web-services (web-accessible resources for processing,
+        validation and exploration of multimodal/multichannel data including clinical
+        data, imaging data, genetics data and phenotypic data). The CCB develops novel
+        mathematical, computational, and engineering approaches to map biological
+        form and function in health and disease. CCB computational tools integrate
+        neuroimaging, genetic, clinical, and other relevant data to enable the detailed
+        exploration of distinct spatial and temporal biological characteristics. Generalizable
+        mathematical approaches are developed and deployed using Grid computing to
+        create practical biological atlases that describe spatiotemporal change in
+        biological systems. The efforts of CCB make possible discovery-oriented science
+        and the accumulation of new biological knowledge. The Center has been divided
+        into cores organized as follows: - Core 1 is focused on mathematical and computational
+        research. Core 2 is involved in the development of tools to be used by Core
+        3. Core 3 is composed of the driving biological projects; Mapping Genomic
+        Function, Mapping Biological Structure, and Mapping Brain Phenotype. - Cores
+        4 - 7 provide the infrastructure for joint structure within the Center as
+        well as the development of new approaches and procedures to augment the research
+        and development of Cores 1-3. These cores are: (4)Infrastructure and Resources,
+        (5) Education and Training, (6) Dissemination, and (7) Administration and
+        Management. The main focus of the CCB is on the brain, and specifically on
+        neuroimaging. This area has a long tradition of sophisticated mathematical
+        and computational techniques. Nevertheless, new developments in related areas
+        of mathematics and computational science have emerged in recent years, some
+        from related application areas such as Computer Graphics, Computer Vision,
+        and Image Processing, as well as from Computational Mathematics and the Computational
+        Sciences. We are confident that many of these ideas can be applied beneficially
+        to neuroimaging.","abbreviations":[{"name":"CCB"},{"name":"UCLA CCB"},{"name":"USC
+        CCB"}]}},"sort":["scr_000334"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_000419","_score":null,"_source":{"item":{"identifier":"SCR_000419","types":[{"name":"data
+        or information resource","type":"category"},{"name":"portal","type":"category"},{"name":"project
+        portal","type":"category"}],"keywords":[{"keyword":"meeting"},{"keyword":"neuroimaging"},{"keyword":"nitrc"},{"keyword":"informatics"},{"keyword":"tools"},{"keyword":"collaboration"},{"keyword":"discussion"}],"synonyms":[{"name":""}],"name":"Grantees
+        Meeting for NITRC","description":"This project is meant for planning the NITRC
+        Grantee meetings. A website for organizing meetings for the Neuroimaging Informatics
+        Tools and Resources Clearinghouse, to facilitate participants meeting one
+        another, and promote discussion of common interests and collaboration.","abbreviations":[{"name":""}]}},"sort":["scr_000419"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_000421","_score":null,"_source":{"item":{"identifier":"SCR_000421","types":[{"name":"atlas","type":"category"},{"name":"data
+        or information resource","type":"category"}],"keywords":[{"keyword":"magnetic
+        resonance"},{"keyword":"nifti"},{"keyword":"hippocampus"},{"keyword":"mri"},{"keyword":"postmortem"}],"synonyms":[{"name":""}],"name":"Penn
+        Hippocampus Atlas","description":"Atlas of segmented and normalized high-resolution
+        postmortem MRI of the human hippocampus. Additional data (raw images) is available
+        through the SCM link. It requires knowing how to use CVS.","abbreviations":[{"name":"Penn
+        Hippocampus Atlas"}]}},"sort":["scr_000421"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_000426","_score":null,"_source":{"item":{"identifier":"SCR_000426","types":[{"name":"atlas","type":"category"},{"name":"data
+        or information resource","type":"category"},{"name":"reference atlas","type":"category"}],"keywords":[{"keyword":"atlas
+        data"},{"keyword":"magnetic resonance"},{"keyword":"adult"},{"keyword":"mri"}],"synonyms":[{"name":""}],"name":"Vervet
+        Probabilistic Atlas","description":"Vervet (Chlorocebus aethiops sabaeus)
+        probabilistic atlas that defines an anatomical space (template) with associated
+        tissue and regional prior probability maps. The atlas was produced from whole
+        head MRI of 10 normal adult animal subjects. The package consists of two atlases.
+        The Biased directory contains the average template and probabilistic atlases
+        for selected tissue classes constructed by registering the training population
+        to one subject. The Unbiased directory contains the atlas constructed using
+        unbiased estimation. The atlas is suitable for use in any segmentation tool
+        using a probabilistic atlas, for example those in Slicer.","abbreviations":[{"name":"Vervet
+        Probabilistic Atlas"}]}},"sort":["scr_000426"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_000434","_score":null,"_source":{"item":{"identifier":"SCR_000434","types":[{"name":"data
+        or information resource","type":"category"},{"name":"portal","type":"category"},{"name":"project
+        portal","type":"category"}],"keywords":[{"keyword":"mni coordinate"},{"keyword":"mri"},{"keyword":"matlab"},{"keyword":"talaraich"},{"keyword":"coordinate"}],"synonyms":[{"name":""}],"name":"MNI
+        brain and the Talairach atlas","description":"Resource that discusses MNI
+        brain, and the difference between the MNI brain and the brain in the Talairach
+        atlas. Approaches to converting MNI coordinates to Talairach coordinates and
+        a few other methods for locating your activation are also presented.Matlab
+        function that transforms MNI coordinates to Talaraich coordinates. The inverse
+        function, tal2mni is also available.","abbreviations":[{"name":"mni2tal"}]}},"sort":["scr_000434"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_000445","_score":null,"_source":{"item":{"identifier":"SCR_000445","types":[{"name":"atlas","type":"category"},{"name":"data
+        or information resource","type":"category"},{"name":"database","type":"category"},{"name":"reference
+        atlas","type":"category"}],"keywords":[{"keyword":"Brain atlases"},{"keyword":"fmri"},{"keyword":"genetics"},{"keyword":"anatomy"},{"keyword":"architecture"},{"keyword":"atlas"},{"keyword":"brainstem"},{"keyword":"cerebellum"},{"keyword":"cortex"},{"keyword":"gray
+        matter"},{"keyword":"histology"},{"keyword":"imaging"},{"keyword":"map"},{"keyword":"morphology"},{"keyword":"mri"},{"keyword":"neuroinformatics"},{"keyword":"pet"},{"keyword":"receptor"},{"keyword":"segmentation"},{"keyword":"subcortical"},{"keyword":"volume"},{"keyword":"warping"},{"keyword":"white
+        matter"},{"keyword":"brain"},{"keyword":"early adult human"},{"keyword":"structural
+        anatomy"},{"keyword":"functional anatomy"},{"keyword":"in vivo"},{"keyword":"post
+        mortem"},{"keyword":"neuroanatomy"},{"keyword":"image collection"}],"synonyms":[{"name":""},{"name":"ICBM
+        Subject Database"},{"name":"ICBM - International Consortium for Brain Mapping"},{"name":"International
+        Consortium for Brain Mapping (ICBM)"},{"name":"ICBM Atlas"}],"name":"International
+        Consortium for Brain Mapping","description":"Probabilistic reference system
+        for human brain, including tools to establish this reference system for structural
+        and functional anatomy on both macroscopic (in vivo) and microscopic (post
+        mortem) levels. Project has expanded neuroinformatics tools for data sharing
+        and created Conforming Site System that allows laboratories worldwide to contribute
+        data to evolving atlas. Through implementation of ICBM data sharing policy
+        space, they are fostering data exchange while still providing for scientific
+        credit assignment and subject confidentiality.ICBM atlas collection consists
+        of ICBM Template,  tool developed to provide reference that includes both
+        set of coordinates and associated anatomical labels; the ICBM 452 T1 atlas,
+        average of T1-weighted MRIs of normal young adult brains, ICBM probabilistic
+        atlases, and Cytoarchitectonic Atlas. ICBM Subject Database is web-based database
+        infrastructure that simplifies image dataset collection, organization and
+        dissemination. Authorized users may view representations of data and form
+        collections of datasets that can be downloaded or fed directly into Pipeline
+        environment for distributed processing and analysis.","abbreviations":[{"name":"ICBM"}]}},"sort":["scr_000445"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_000448","_score":null,"_source":{"item":{"identifier":"SCR_000448","types":[{"name":"atlas","type":"category"},{"name":"data
+        or information resource","type":"category"},{"name":"database","type":"category"},{"name":"software
+        application","type":"category"},{"name":"software resource","type":"category"}],"keywords":[{"keyword":"anatomical
+        structure"},{"keyword":"atlas"},{"keyword":"fmri"},{"keyword":"pet"},{"keyword":"activation
+        foci"},{"keyword":"cognition"},{"keyword":"talairach"},{"keyword":"human"},{"keyword":"brain"},{"keyword":"brain
+        mapping"},{"keyword":"atlas application"},{"keyword":"database application"},{"keyword":"atlas
+        application"},{"keyword":"database application"},{"keyword":"java"},{"keyword":"magnetic
+        resonance"},{"keyword":"os independent"},{"keyword":"label"},{"keyword":"probability
+        map"},{"keyword":"FASEB list"}],"synonyms":[{"name":"Talairach Software"}],"name":"Talairach
+        Daemon","description":"Software automated coordinate based system to retrieve
+        brain labels from the 1988 Talairach Atlas. Talairach Daemon database contains
+        anatomical names for brain areas using x-y-z coordinates defined by the 1988
+        Talairach Atlas.","abbreviations":[{"name":"talairach.org"}]}},"sort":["scr_000448"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_000561","_score":null,"_source":{"item":{"identifier":"SCR_000561","types":[{"name":"data
+        or information resource","type":"category"},{"name":"database","type":"category"}],"keywords":[{"keyword":"brain"},{"keyword":"neural
+        circuitry"},{"keyword":"connectivity"},{"keyword":"brain region"},{"keyword":"neuroanatomy"},{"keyword":"neuronal
+        tract tracing"},{"keyword":"connectome"}],"synonyms":[{"name":"Brain Architecture
+        Management System Connectivity Data"}],"name":"BAMS Connectivity","description":"THIS
+        RESOURCE IS NO LONGER IN SERVICE. Documented on September 9,2022. Database
+        of information about brain region circuitry, it collates data from the literature
+        on tract tracing studies and provides tools for analysis and visualization
+        of connectivity between brain regions., THIS RESOURCE IS NO LONGER IN SERVICE.
+        Documented on September 16,2025.","abbreviations":[{"name":""}]}},"sort":["scr_000561"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_000576","_score":null,"_source":{"item":{"identifier":"SCR_000576","types":[{"name":"data
+        or information resource","type":"category"},{"name":"data set","type":"category"}],"keywords":[{"keyword":"mri"},{"keyword":"fmri"},{"keyword":"brain"},{"keyword":"neuroimaging"},{"keyword":"attention
+        deficit-hyperactivity disorder"},{"keyword":"anatomical"},{"keyword":"resting
+        state"},{"keyword":"child"},{"keyword":"adolescent"},{"keyword":"human"},{"keyword":"young"},{"keyword":"early
+        adult human"},{"keyword":"functional imaging"},{"keyword":"structural imaging"}],"synonyms":[{"name":""}],"name":"ADHD-200
+        Preprocessed Data","description":"Preprocessed versions of the ADHD-200 Global
+        Competition data including both preprocessed versions of structural and functional
+        datasets previously made available by the ADHD-200 consortium, as well as
+        initial standard subject-level analyses. The ADHD-200 Sample is pleased to
+        announce the unrestricted public release of 776 resting-state fMRI and anatomical
+        datasets aggregated across 8 independent imaging sites, 491 of which were
+        obtained from typically developing individuals and 285 in children and adolescents
+        with ADHD (ages: 7-21 years old). Accompanying phenotypic information includes:
+        diagnostic status, dimensional ADHD symptom measures, age, sex, intelligence
+        quotient (IQ) and lifetime medication status. Preliminary quality control
+        assessments (usable vs. questionable) based upon visual timeseries inspection
+        are included for all resting state fMRI scans. In accordance with HIPAA guidelines
+        and 1000 Functional Connectomes Project protocols, all datasets are anonymous,
+        with no protected health information included. They hope this release will
+        open collaborative possibilities and contributions from researchers not traditionally
+        addressing brain data so for those whose specialties lay outside of MRI and
+        fMRI data processing, the competition is now one step easier to join. The
+        preprocessed data is being made freely available through efforts of The Neuro
+        Bureau as well as the ADHD-200 consortium. They ask that you acknowledge both
+        of these organizations in any publications (conference, journal, etc.) that
+        make use of this data. None of the preprocessing would be possible without
+        the freely available imaging analysis packages, so please also acknowledge
+        the relevant packages and resources as well as any other specific release
+        related acknowledgements. You must be logged into NITRC to download the ADHD-200
+        datasets, http://www.nitrc.org/projects/neurobureau","abbreviations":[{"name":"ADHD-200
+        Preprocessed Data"}]}},"sort":["scr_000576"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_000651","_score":null,"_source":{"item":{"identifier":"SCR_000651","types":[{"name":"data
+        or information resource","type":"category"},{"name":"database","type":"category"},{"name":"disease-related
+        portal","type":"category"},{"name":"funding resource","type":"category"},{"name":"portal","type":"category"},{"name":"topical
+        portal","type":"category"}],"keywords":[{"keyword":"autism"},{"keyword":"brain"},{"keyword":"tissue"},{"keyword":"clinical
+        data"},{"keyword":"post-mortem"},{"keyword":"brain tissue"},{"keyword":"donate"},{"keyword":"brain
+        donation"},{"keyword":"autism spectrum disorder"},{"keyword":"pervasive development
+        disorder"},{"keyword":"formalin fixation"},{"keyword":"snap frozen"},{"keyword":"tissue
+        section"},{"keyword":"stained slide"},{"keyword":"dna"},{"keyword":"skin fibroblast
+        culture"},{"keyword":"control"},{"keyword":"clinical"},{"keyword":"clinical
+        neuroinformatics"},{"keyword":"imaging genomics"},{"keyword":"magnetic resonance"},{"keyword":"optical
+        imaging"},{"keyword":"FASEB list"}],"synonyms":[{"name":""}],"name":"Autism
+        Tissue Program","description":"Autism research program that makes available
+        post-mortem brain tissue to qualified scientists all over the world. Working
+        directly with tissue banks, organ procurement agencies, medical examiners
+        and the general public, this is the largest program dedicated to increasing
+        and enhancing the availability of post-mortem brain tissue for basic research
+        in autism. To date, the ATP has collected and stored more than 170 brains
+        in their repositories at Harvard (US) and Oxford (UK). These brains are processed
+        by formalin fixation and/or snap frozen to properly provide high quality tissue
+        of all brain regions, in support of biological research in autism. The ATP
+        is unique in that they diligently pursue all available clinical data (pre
+        and post mortem) on tissue donors in order to create the most biologically
+        relevant brain repository for autism research. These data, together with tissue
+        resources from both banks and associated repositories, are presented to all
+        interested researchers through their extensive web-based data portal (login
+        required). The ATP is not a brain bank, but works directly with the Harvard
+        Brain Tissue Resource Center in Boston (HBTRC), Massachusetts to serve as
+        its tissue repository. This program augments brain bank functions by: * Creating
+        the most biologically relevant brain tissue repository possible * Fully covering
+        all costs associated with brain extraction and transfer to the repositories
+        at Harvard (US and Canada) and Oxford (UK). * Providing scientific oversight
+        of tissue distributions * Overseeing and managing all tissue grants * Clinically
+        phenotyping and acquiring extensive medical data on all of their donors *
+        Providing continuing family support and communication to all of their donors
+        * Directly supporting researchers to facilitate autism research * Maintaining
+        a robust web based data management and secure on-line global interface system
+        * Developing and supporting ATP established scientific initiatives * Actively
+        providing public outreach and education The ATP is not a clinical organ procurement
+        agency, but rather they facilitate the wishes of donors and families to donate
+        their tissue to autism research. Through the ATP''s established international
+        infrastructure, they work with any accredited tissue bank, organ procurement
+        agency, or medical examiner that receives a family''s request to donate their
+        loved one''s tissue to the program. Once contacted, the ATP will insure that
+        the family''s request to donate their loved one''s tissue is faithfully met,
+        covering all costs to the family and partnering agency as well as ensuring
+        the tissues'' proper and rapid transport to the ATP''s repository at the Harvard
+        Brain Tissue Resource Center (HBTRC) in Boston, Massachusetts.","abbreviations":[{"name":"ATP"}]}},"sort":["scr_000651"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_000712","_score":null,"_source":{"item":{"identifier":"SCR_000712","types":[{"name":"data
+        or information resource","type":"category"},{"name":"database","type":"category"},{"name":"funding
+        resource","type":"category"},{"name":"knowledge environment","type":"category"}],"keywords":[{"keyword":"funding
+        resource"},{"keyword":"database"},{"keyword":"knowledge environment"},{"keyword":"human
+        brain"},{"keyword":"neuroscience network"},{"keyword":"cognitive data"},{"keyword":"clinical
+        data"},{"keyword":"genomic data"},{"keyword":"mri"}],"synonyms":[{"name":"Brain
+        Research And Integrative Neuroscience Network"}],"name":"BRAINnet-Brain Research
+        And Integrative Neuroscience Network","description":"A neuroscience network
+        providing access to a database of brain, cognitive, genomic and clinical data
+        for research and scientific publication. Data include genomic information,
+        electrical measures of brain and body function, structural and functional
+        MRI, and cognitive and medical history. All data are collected using a standardized
+        assessment protocols. These data are from healthy people and those experiencing
+        a range of brain-related illnesses.","abbreviations":[{"name":"BRAINnet"}]}},"sort":["scr_000712"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_000746","_score":null,"_source":{"item":{"identifier":"SCR_000746","types":[{"name":"data
+        or information resource","type":"category"},{"name":"video resource","type":"category"}],"keywords":[{"keyword":"neuroimage"},{"keyword":"youtbue"},{"keyword":"video"},{"keyword":"channel"},{"keyword":"view"},{"keyword":"post"},{"keyword":"neuroscience"},{"keyword":"journal"},{"keyword":"media"}],"synonyms":[{"name":"NeuroImage''s
+        Channel"}],"name":"NeuroImages YouTube Channel","description":"A platform
+        for posting and viewing videos related to all areas of neuroimaging.","abbreviations":[{"name":""}]}},"sort":["scr_000746"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_000805","_score":null,"_source":{"item":{"identifier":"SCR_000805","types":[{"name":"data
+        or information resource","type":"category"},{"name":"data repository","type":"category"},{"name":"data
+        set","type":"category"},{"name":"service resource","type":"category"},{"name":"storage
+        service resource","type":"category"}],"keywords":[{"keyword":"mri"},{"keyword":"fmri"},{"keyword":"neuropsychological
+        assessment"},{"keyword":"neuroimaging"},{"keyword":"diffusion tensor imaging
+        assay"},{"keyword":"magnetic resonance imaging assay"},{"keyword":"functional
+        mri assay"},{"keyword":"diffusion magnetic resonance imaging"},{"keyword":"magnetoencephalography"},{"keyword":"electroencephalography"},{"keyword":"brain"},{"keyword":"behavior"},{"keyword":"data
+        sharing"},{"keyword":"data management"},{"keyword":"clinical"},{"keyword":"computed
+        tomography"},{"keyword":"magnetic resonance"},{"keyword":"single photon emission
+        computed tomography"},{"keyword":"positron emission tomography"},{"keyword":"clinical
+        assessment clinical neuroinformatics"},{"keyword":"image collection"},{"keyword":"mri
+        2d image"},{"keyword":"database application"}],"synonyms":[{"name":"Mind Research
+        Network - Collaborative Informatics and Neuroimaging Suite"},{"name":"Collaborative
+        Informatics Neuroimaging Suite"},{"name":"Collaborative Informatics and Neuroimaging
+        Suite"}],"name":"Mind Research Network - COINS","description":"A web-based
+        neuroimaging and neuropsychology software suite that offers versatile, automatable
+        data upload/import/entry options, rapid and secure sharing of data among PIs,
+        querying and export all data, real-time reporting, and HIPAA and IRB compliant
+        study-management tools suitable to large institutions as well as smaller scale
+        neuroscience and neuropsychology researchers. COINS manages over over 400
+        studies, more than 265,000 clinical neuropsychological assessments, and 26,000
+        MRI, EEG, and MEG scan sessions collected from 18,000 participants at over
+        ten institutions on topics related to the brain and behavior. As neuroimaging
+        research continues to grow, dynamic neuroinformatics systems are necessary
+        to store, retrieve, mine and share the massive amounts of data. The Collaborative
+        Informatics and Neuroimaging Suite (COINS) has been created to facilitate
+        communication and cultivate a data community. This tool suite offers versatile
+        data upload/import/entry options, rapid and secure sharing of data among PIs,
+        querying of data types and assessments, real-time reporting, and study-management
+        tools suitable to large institutions as well as smaller scale researchers.
+        It manages studies and their data at the Mind Research Network, the Nathan
+        Kline Institute, University of Colorado Boulder, the Olin Neuropsychiatry
+        Research Center (at) Hartford Hospital, and others. COINS is dynamic and evolves
+        as the neuroimaging field grows. COINS consists of the following collaboration-centric
+        tools: * Subject and Study Management: MICIS (Medical Imaging Computer Information
+        System) is a centralized PostgreSQL-based web application that implements
+        best practices for participant enrollment and management. Research site administrators
+        can easily create and manage studies, as well as generate reports useful for
+        reporting to funding agencies. * Scan Data Collection: An automated DICOM
+        receiver collects, archives, and imports imaging data into the file system
+        and COINS, requiring no user intervention. The database also offers scan annotation
+        and behavioral data management, radiology review event reports, and scan time
+        billing. * Assessment Data Collection: Clinical data gathered from interviews,
+        questionnaires, and neuropsychological tests are entered into COINS through
+        the web application called Assessment Manager (ASMT). ASMT''s intuitive design
+        allows users to start data collection with little or no training. ASMT offers
+        several options for data collection/entry: dual data entry, for paper assessments,
+        the Participant Portal, an online tool that allows subjects to fill out questionnaires,
+        and Tablet entry, an offline data entry tool. * Data Sharing: De-identified
+        neuroimaging datasets with associated clinical-data, cognitive-data, and associated
+        meta-data are available through the COINS Data Exchange tool. The Data Exchange
+        is an interface that allows investigators to request and share data. It also
+        tracks data requests and keeps an inventory of data that has already been
+        shared between users. Once requests for data have been approved, investigators
+        can download the data directly from COINS.","abbreviations":[{"name":"COINS"}]}},"sort":["scr_000805"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_001143","_score":null,"_source":{"item":{"identifier":"SCR_001143","types":[{"name":"atlas","type":"category"},{"name":"data
+        or information resource","type":"category"},{"name":"data repository","type":"category"},{"name":"database","type":"category"},{"name":"service
+        resource","type":"category"},{"name":"storage service resource","type":"category"}],"keywords":[{"keyword":"epinephrine"},{"keyword":"gaba"},{"keyword":"acetylcholine"},{"keyword":"agonist"},{"keyword":"antagonist"},{"keyword":"aspartate"},{"keyword":"dopamine"},{"keyword":"glutamate"},{"keyword":"glycine"},{"keyword":"human"},{"keyword":"molecular
+        biology"},{"keyword":"murine chromosome"},{"keyword":"mutant"},{"keyword":"neural"},{"keyword":"neural
+        factor"},{"keyword":"neurokine"},{"keyword":"neurological"},{"keyword":"neurotransmitter"},{"keyword":"n
+        eurotrophin"},{"keyword":"norepinephrine"},{"keyword":"serotonin"},{"keyword":"molecular
+        neuroanatomy resource"},{"keyword":"nervous system"},{"keyword":"adult"},{"keyword":"murine"}],"synonyms":[{"name":""}],"name":"NeuroMouse
+        Database","description":"THIS RESOURCE IS NO LONGER IN SERVICE. Documented
+        on February 17, 2023.Toolbook(tm) based, interactive graphical database which
+        provides structural, molecular, and genetic information on the adult murine
+        nervous system; and its relevance to human neurobiology. This resource is
+        primarily designed as a platform for users to interact, each sharing knowledge
+        on their own area of expertise, which is compiled to a master database. This
+        hypertext atlas presently comprises more than 1000 pages and is designed to
+        provide a flexible integrated resource for the description and discussion
+        of all forms mammalian neurologic data. Version 4.0 of the NeuroMouse program
+        extends the program''s basic framework to include a number of areas in modern
+        molecular neurobiology. This system provides an integrated resource for the
+        characterization and description of mammalian neurological data. Major divisions
+        include: Neural Atlas, Molecular Atlas, Genetics/Surgical Lesion Atlas. Neuromouse
+        has been integrated into our strain-specific three dimensional MRI and surgical
+        atlases of the murine CNS. Database contents: Neural Atlas: - Rotational representation
+        of the murine brain. - Neural structures: visual and alphabetic point and
+        click index of neural structures, pathways and systems. - Brain atlas:photographic
+        serial sections in the coronal, sagittal, and horizontal planes (average plate
+        distance - 300 um). Physical brain distances are also provided as are meta-index
+        grids to allow rapid movement between different planes and regions. # Catalog
+        of primary and immortalized neural cells indexed to relevant neural structures.
+        Molecular Atlas: - Index of neurotransmitters: Acetylcholine, GABA, Glutamate,
+        Aspartate, Glycine, Dopamine, Norepinephrine, Epinephrine, Serotonin (synthesis,
+        distribution, degradation, molecular modules, receptors, subunits, agonists,
+        antagonists, gene structure, localization, physical properties and transgenics
+        are indicated for each item). - Index of neurotrophins / neurokines: NGF,
+        BDNF, NT-3, NT-4/5, CNTF, LIF, Onostain M, IL-6, GDNF, FGF''s, S100b (ligand,
+        receptors, expression pattern, physical properties, homologous factors, transgenics/knockouts,
+        chromosomal location, effects of agent, and effects of factors on agent are
+        indicated for each item). - Index of additional neural agents: Bcl-2, TNF/Fas,
+        TGF-beta, P53/Rb, PDGF, EGF family (ligand, receptor, expression patterns,
+        physical properties, homologous factors, transgenics/ knockouts, chromosomal
+        location, effects of agent, effects of factors on agent are indicated for
+        each item). - Molecular biology: Molecular biology of important neural genes
+        with integrated l links, plus selected neural topics (ex. programmed cell
+        death, inducible gene systems, protein motifs, neural gene elements, and selected
+        signal transduction pathways). Genetics Atlas: - Lesion paradigms: Index of
+        common neuronal structural and chemical lesion paradigms. - Selected procedures:
+        description of common neurosurgical, cell tracing, culturing and laboratory
+        procedures. - Neurologic syndromes: Index of important human neurologic syndromes
+        and appropriate animals models. - Neural mutant database: Index and description
+        of naturally occurring and genetically modified murine neurologic mutations;
+        including pages on double knockout animals. Interactive maps of each murine
+        chromosome and human syntenic maps.","abbreviations":[{"name":"NeuroMouse"}]}},"sort":["scr_001143"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_001145","_score":null,"_source":{"item":{"identifier":"SCR_001145","types":[{"name":"atlas","type":"category"},{"name":"data
+        or information resource","type":"category"},{"name":"video resource","type":"category"}],"keywords":[{"keyword":"e10"},{"keyword":"e15"},{"keyword":"embryology"},{"keyword":"anatomy"},{"keyword":"developmental
+        biology"},{"keyword":"magnetic resonance imaging"},{"keyword":"mouse"},{"keyword":"development"},{"keyword":"newborn
+        mouse"},{"keyword":"embryonic mouse"},{"keyword":"stage of development"},{"keyword":"magnetic
+        resonance microscopy"}],"synonyms":[{"name":"MRI Embryos"}],"name":"Magnetic
+        Resonance Microscopy of Mouse Embryo Specimens","description":"THIS RESOURCE
+        IS NO LONGER IN SERVICE, documented on February 14, 2013. A multidimensional,
+        digital atlas based on magnetic resonance images of normal mouse embryos from
+        9.5 days after conception (E9) to the newborn (P0). The images include surface
+        views and cross-sectional views from the transverse, coronal, and sagittal
+        planes for each embryo. Several movies have also been included to demonstrate
+        growth of the embryos and to present a variety of visualization tools available
+        for studying and documenting embryonic anatomy. These images are organized
+        as a reference for educators and researchers who want to understand better
+        the embryological anatomy of their own specimens and to understand how their
+        images relate to the whole embryo at many stages of development.","abbreviations":[{"name":""}]}},"sort":["scr_001145"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_001226","_score":null,"_source":{"item":{"identifier":"SCR_001226","types":[{"name":"blog","type":"category"},{"name":"data
+        or information resource","type":"category"},{"name":"narrative resource","type":"category"}],"keywords":[{"keyword":"neuroscience"},{"keyword":"blog"},{"keyword":"writing"},{"keyword":"journalism"},{"keyword":"brain
+        imaging"}],"synonyms":[{"name":"Brain Windows Blog"}],"name":"Brain Windows","description":"Blog
+        devoted to reporting, analyzing and interpreting the latest results in the
+        field of brain imaging technologies, particularly at the levels of systems,
+        circuits, single cells and below. The site content is produced by Andrew Hires.","abbreviations":[{"name":""}]}},"sort":["scr_001226"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_001379","_score":null,"_source":{"item":{"identifier":"SCR_001379","types":[{"name":"blog","type":"category"},{"name":"data
+        or information resource","type":"category"},{"name":"narrative resource","type":"category"}],"keywords":[{"keyword":"neuroscience"},{"keyword":"cell"}],"synonyms":[{"name":"The
+        Cellular Scale"},{"name":"TheCellularScale"}],"name":"Cellular Scale","description":"Blog
+        focusing on cellular-level neuroscience for everyone. While a higher level
+        of neuroscience, such as behavioral studies and human fMRI scans level of
+        neuroscience is interesting to everyone, some people might want to focus a
+        little closer in. That is what The Cellular Scale is for.","abbreviations":[{"name":"Cellular
+        Scale"}]}},"sort":["scr_001379"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_001387","_score":null,"_source":{"item":{"identifier":"SCR_001387","types":[{"name":"data
+        or information resource","type":"category"},{"name":"experimental protocol","type":"category"},{"name":"narrative
+        resource","type":"category"},{"name":"training resource","type":"category"},{"name":"video
+        resource","type":"category"}],"keywords":[{"keyword":"workshop"},{"keyword":"protocol"},{"keyword":"specimen
+        preparation"},{"keyword":"transparent brain"},{"keyword":"glass brain"},{"keyword":"brain"},{"keyword":"neuroimaging"},{"keyword":"phenotyping"},{"keyword":"tissue"},{"keyword":"brain
+        tissue"},{"keyword":"cortex"},{"keyword":"hippocampus"},{"keyword":"thalamus"},{"keyword":"ventral"},{"keyword":"brainstem"}],"synonyms":[{"name":"Clarity
+        resource"}],"name":"Clarity resources","description":"Protocols and other
+        training materials related to the CLARITY protocol, a technique for the transformation
+        of intact tissue into a nanoporous hydrogel-hybridized form (crosslinked to
+        a three-dimensional network of hydrophilic polymers) that is fully assembled
+        but optically transparent and macromolecule-permeable.","abbreviations":[{"name":"CLARITY
+        Resources"}]}},"sort":["scr_001387"]},{"_index":"scr_005400-registry_resources_dev-rin-2025feb05","_type":"rin","_id":"rrid:scr_001400","_score":null,"_source":{"item":{"identifier":"SCR_001400","types":[{"name":"data
+        or information resource","type":"category"},{"name":"portal","type":"category"},{"name":"software
+        application","type":"category"},{"name":"software resource","type":"category"},{"name":"topical
+        portal","type":"category"}],"keywords":[{"keyword":"neuroinformatics"},{"keyword":"neural
+        network"},{"keyword":"functional neuroimaging"},{"keyword":"multimedia"},{"keyword":"signal
+        processing"},{"keyword":"biomedical"},{"keyword":"neuroscience"},{"keyword":"biomedical"},{"keyword":"brain"}],"synonyms":[{"name":"Technology
+        by Highly Oriented Research Center for Neuroinformatics"}],"name":"THOR Center
+        for Neuroinformatics","description":"THIS RESOURCE IS NO LONGER IN SERVICE.
+        Documented on September 23,2022.Center hosting a number of related projects
+        concerning neural networks, functional neuroimaging, multimedia signal processing,
+        and biomedical signal processing. Neuroinformatics is a research field rooted
+        in classical disciplines like signal processing, biology, physics, computer
+        science and engineering. Neuroinformatics combines learning from the brain
+        and learning about the brain. By studying information processing in the brain
+        neuroinformatics invents new computing paradigms (e.g., artificial neural
+        networks) with the objective of understanding the dynamics of the conscious
+        mind. Artificial neural networks is an active neuroinformatics research field,
+        which combines many approaches to adaptive signal processing in solving real
+        world problems. They began using neural networks for general nonlinear adaptive
+        signal processing. Since 1991 the CONNECT groups have participated in the
+        development of neural computing as an advanced, non-linear statistical tool,
+        which has been applied to forecasting within dynamical systems, pattern recognition,
+        and medical image analysis, particularly functional neuroimages. While neural
+        computing has largely been viewed as a black box approach, they have initiated
+        research aimed at opening this black box, using hypertext, multimedia, and
+        interactivity. Their key objective is to convert abstract models into intuitive
+        knowledge through interactive visualization.","abbreviations":[{"name":"THOR
+        Center"}]}},"sort":["scr_001400"]}]}}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      - '*'
+      - '*'
+      CF-RAY:
+      - a554ed7e79a94796-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '13747'
+      Content-Type:
+      - application/json; charset=UTF-8
+      Date:
+      - Wed, 04 Nov 2026 16:17:14 GMT
+      Nel:
+      - '{"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}'
+      Report-To:
+      - '{"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=sl1Vn4XjiyS2UTU3NPZqhLUPyV%2FtIPgSyH1hbnXeqnjoRVzbkDk6EJcxBgfF9JPf4RxNV39dMn7zvSbytUfYUoPHp1OU4Rvf3e26m6FIN6JocqB4a2PLgvmZpUdPrlM%3D"}]}'
+      Server:
+      - cloudflare
+      X-Cloud-Request-Id:
+      - P0rH5-3wQYKZbwyHe8I2XQ
+      X-Found-Handling-Cluster:
+      - d7a5e34a1de3435db617d90cabe61286
+      X-Found-Handling-Instance:
+      - instance-0000000019
+      cf-cache-status:
+      - DYNAMIC
+      vary:
+      - accept-encoding
+    status:
+      code: 200
+      message: OK
+version: 1

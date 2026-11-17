@@ -867,7 +867,7 @@ class ACEExtractor(BaseExtractor):
                 # Whether to fetch again is the catalog's call (`--refresh download:ace`);
                 # by the time this runs it has decided to, so a file already on disk is reused.
                 overwrite=False,
-                prefer_pmc_source=False,
+                prefer_pmc_source=self.settings.ace_prefer_pmc,
             )
         except Exception as exc:  # pragma: no cover - surfaced to caller
             logger.exception("ACE scraper failed for PMID %s", pmid)

@@ -1,0 +1,449 @@
+{
+ "metadata": {
+  "file_suffix": "pdf",
+  "producer": {
+   "name": "mineru",
+   "version": "4.0.12"
+  },
+  "document": {
+   "title": "scan.nsv114.full.pdf?keytype=ref&ijkey=o5datEeM1NtrDBe",
+   "creator_application": "Chrome",
+   "producer_application": "Mac OS X 10.9.5 Quartz PDFContext",
+   "page_count": 10,
+   "page_count_kind": "physical"
+  }
+ },
+ "pages": [
+  {
+   "page_idx": 0,
+   "blocks": [
+    {
+     "type": "header",
+     "index": 0,
+     "bbox": [
+      0.14,
+      0.045,
+      0.858,
+      0.063
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "Social Cognitive and Affective Neuroscience Advance Access published October 6, 2015"
+      }
+     ]
+    },
+    {
+     "type": "doc_title",
+     "index": 5,
+     "bbox": [
+      0.122,
+      0.217,
+      0.745,
+      0.273
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "Reading fiction and reading minds: the role of simulation in the default network"
+      }
+     ],
+     "level": 1
+    },
+    {
+     "type": "text",
+     "index": 6,
+     "bbox": [
+      0.12,
+      0.284,
+      0.721,
+      0.326
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "Diana I. Tamir, "
+      },
+      {
+       "type": "equation_inline",
+       "content": "^{1}"
+      },
+      {
+       "type": "text",
+       "content": "  Andrew B. Bricker, "
+      },
+      {
+       "type": "equation_inline",
+       "content": "^{2}"
+      },
+      {
+       "type": "text",
+       "content": "  David Dodell-Feder, "
+      },
+      {
+       "type": "equation_inline",
+       "content": "^{3}"
+      },
+      {
+       "type": "text",
+       "content": "  and Jason P. Mitchell "
+      },
+      {
+       "type": "equation_inline",
+       "content": "^{3}"
+      }
+     ]
+    },
+    {
+     "type": "paragraph_title",
+     "index": 9,
+     "bbox": [
+      0.123,
+      0.446,
+      0.192,
+      0.459
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "Abstract"
+      }
+     ],
+     "level": 2
+    },
+    {
+     "type": "text",
+     "index": 10,
+     "bbox": [
+      0.12,
+      0.466,
+      0.867,
+      0.623
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "Research in psychology has suggested that reading fiction can improve individuals' social-cognitive abilities. Findings from neuroscience show that reading and social cognition both recruit the default network, a network which is known to support our capacity to simulate hypothetical scenes, spaces "
+      }
+     ]
+    },
+    {
+     "type": "footer",
+     "index": 16,
+     "bbox": [
+      0.121,
+      0.877,
+      0.509,
+      0.888
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "Received: 25 May 2015; Revised: 1 September 2015; Accepted: 1 September 2015"
+      }
+     ]
+    },
+    {
+     "type": "page_number",
+     "index": 18,
+     "bbox": [
+      0.846,
+      0.915,
+      0.856,
+      0.925
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "1"
+      }
+     ]
+    },
+    {
+     "type": "aside_text",
+     "index": 19,
+     "bbox": [
+      0.94,
+      0.346,
+      0.958,
+      0.654
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "Downloaded from http://scan.oxfordjournals.org/ by guest on October 16, 2015"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "page_idx": 4,
+   "blocks": [
+    {
+     "type": "text",
+     "index": 4,
+     "bbox": [
+      0.121,
+      0.38,
+      0.488,
+      0.516
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "Follow-up  "
+      },
+      {
+       "type": "equation_inline",
+       "content": "2 \\times 2"
+      },
+      {
+       "type": "text",
+       "content": "  repeated-measures ANOVA within subnetworks revealed that the vividness of the passages significantly affected activity in the MTL subnetwork,  "
+      },
+      {
+       "type": "equation_inline",
+       "content": "F(1, 25) = 4.38"
+      },
+      {
+       "type": "text",
+       "content": " , P < 0.05, Cohen's d = 0.42, but the presence of people or mental content in the passages had no effect on the MTL subnetwork,  "
+      },
+      {
+       "type": "equation_inline",
+       "content": "F(1, 25) = 0.21"
+      },
+      {
+       "type": "text",
+       "content": " , P = 0.65, d = 0.09. This suggests that the MTL network responded most robustly to passages that vividly described scenes but did not differentiate between passages with or without people. No interaction effects between the social and vivid factors were observed,  "
+      },
+      {
+       "type": "equation_inline",
+       "content": "F(1, 25) = 2.66"
+      },
+      {
+       "type": "text",
+       "content": " , P = 0.12, partial  "
+      },
+      {
+       "type": "equation_inline",
+       "content": "\\eta^{2} = 0.10"
+      },
+      {
+       "type": "text",
+       "content": " ."
+      }
+     ]
+    },
+    {
+     "type": "image",
+     "index": 12,
+     "bbox": [
+      0.129,
+      0.662,
+      0.87,
+      0.863
+     ],
+     "content": [
+      {
+       "type": "image_body",
+       "index": 12,
+       "bbox": [
+        0.129,
+        0.662,
+        0.87,
+        0.863
+       ],
+       "content": ""
+      },
+      {
+       "type": "image_caption",
+       "index": 13,
+       "bbox": [
+        0.121,
+        0.872,
+        0.875,
+        0.905
+       ],
+       "content": [
+        {
+         "type": "text",
+         "content": "Fig 1. BOLD differences for main effect of (A) Social > Non-social (B) Vivid > Abstract, (C) and results of ROI analysis of both contrasts. Both whole-brain and ROI analyses show that the dmPFC subnetwork of the default network responded most robustly to literary passages containing people or mental content, whereas the MTL subnetwork responded most robustly to vivid physical descriptions."
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "page_idx": 5,
+   "blocks": [
+    {
+     "type": "page_number",
+     "index": 0,
+     "bbox": [
+      0.142,
+      0.067,
+      0.153,
+      0.077
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "6"
+      }
+     ]
+    },
+    {
+     "type": "header",
+     "index": 1,
+     "bbox": [
+      0.176,
+      0.066,
+      0.516,
+      0.079
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "Social Cognitive and Affective Neuroscience, 2015, Vol. 0, No. 0"
+      }
+     ]
+    },
+    {
+     "type": "table",
+     "index": 3,
+     "bbox": [
+      0.122,
+      0.143,
+      0.489,
+      0.884
+     ],
+     "content": [
+      {
+       "type": "table_caption",
+       "index": 2,
+       "bbox": [
+        0.122,
+        0.105,
+        0.486,
+        0.14
+       ],
+       "content": [
+        {
+         "type": "text",
+         "content": "Table 1. Peak voxel and cluster size for all regions obtained from a contrast of Social > Non-social and Vivid > Abstract (cluster-level corrected P < 0.05)"
+        }
+       ]
+      },
+      {
+       "type": "table_body",
+       "index": 3,
+       "bbox": [
+        0.122,
+        0.143,
+        0.489,
+        0.884
+       ],
+       "content": "<table><tr><td>Anatomic label</td><td>x</td><td>y</td><td>z</td><td>Volume</td><td>Max t</td></tr><tr><td colspan=\"6\">Social &gt; non-social</td></tr><tr><td>Anterior temporal pole</td><td>34</td><td>31</td><td>-42</td><td>5362</td><td>6.99</td></tr><tr><td></td><td>-44</td><td>9</td><td>-36</td><td>6189</td><td>6.96</td></tr><tr><td>Primary motor cortex</td><td>-42</td><td>-15</td><td>72</td><td>1159</td><td>6.94</td></tr><tr><td></td><td>54</td><td>1</td><td>58</td><td>591</td><td>5.74</td></tr><tr><td></td><td>22</td><td>-5</td><td>84</td><td>202</td><td>4.49</td></tr><tr><td>Inferior frontal gyrus</td><td>60</td><td>27</td><td>6</td><td>502</td><td>5.21</td></tr><tr><td></td><td>46</td><td>29</td><td>-10</td><td>88</td><td>3.39</td></tr><tr><td>Cerebellum</td><td>26</td><td>-83</td><td>-34</td><td>586</td><td>5.01</td></tr><tr><td></td><td>-26</td><td>-79</td><td>-38</td><td>146</td><td>4.21</td></tr><tr><td></td><td>0</td><td>-51</td><td>-36</td><td>77</td><td>3.12</td></tr><tr><td>Dorsomedial prefrontal cortex</td><td>-10</td><td>59</td><td>46</td><td>1741</td><td>4.75</td></tr><tr><td>Ventromedial prefrontal cortex</td><td>6</td><td>49</td><td>-14</td><td>302</td><td>4.38</td></tr><tr><td>Occipital cortex</td><td>16</td><td>-107</td><td>24</td><td>55</td><td>3.98</td></tr><tr><td></td><td>-8</td><td>-81</td><td>10</td><td>139</td><td>3.57</td></tr><tr><td></td><td>-50</td><td>-97</td><td>6</td><td>55</td><td>3.43</td></tr><tr><td></td><td>16</td><td>-79</td><td>14</td><td>61</td><td>2.86</td></tr><tr><td colspan=\"6\">Non-social &gt; social</td></tr><tr><td>Inferior temporal gyrus</td><td>-58</td><td>-55</td><td>-12</td><td>2554</td><td>7.45</td></tr><tr><td>Middle frontal gyrus</td><td>48</td><td>37</td><td>24</td><td>16836</td><td>7.02</td></tr><tr><td></td><td>-30</td><td>35</td><td>-12</td><td></td><td>6.85</td></tr><tr><td>Inferior parietal lobule</td><td>-50</td><td>-49</td><td>52</td><td>12634</td><td>6.78</td></tr><tr><td></td><td>52</td><td>-41</td><td>50</td><td></td><td>6.10</td></tr><tr><td>Middle temporal gyrus</td><td>60</td><td>-47</td><td>-10</td><td>1028</td><td>6.08</td></tr><tr><td>Superior temporal gyrus</td><td>52</td><td>1</td><td>-6</td><td>1186</td><td>4.68</td></tr><tr><td></td><td>-52</td><td>-7</td><td>-2</td><td>142</td><td>4.29</td></tr><tr><td>Parahippocampal gyrus</td><td>24</td><td>-37</td><td>-4</td><td>113</td><td>4.40</td></tr><tr><td></td><td>-32</td><td>-43</td><td>-10</td><td>589</td><td>3.85</td></tr><tr><td></td><td>34</td><td>-21</td><td>-32</td><td>60</td><td>3.26</td></tr><tr><td>Cerebellum</td><td>56</td><td>-67</td><td>-42</td><td>348</td><td>4.14</td></tr><tr><td>Insula</td><td>-36</td><td>13</td><td>4</td><td>451</td><td>3.98</td></tr><tr><td>Occipital cortex</td><td>44</td><td>-75</td><td>4</td><td>98</td><td>3.48</td></tr><tr><td colspan=\"6\">Vivid &gt; abstract</td></tr><tr><td>Parahippocampal gyrus</td><td>18</td><td>-13</td><td>-20</td><td>1038</td><td>6.82</td></tr><tr><td>Inferior parietal lobule</td><td>-66</td><td>-35</td><td>38</td><td>1098</td><td>6.71</td></tr><tr><td></td><td>62</td><td>-39</td><td>44</td><td>58</td><td>3.01</td></tr><tr><td>Fusiform gyrus</td><td>-34</td><td>-35</td><td>-20</td><td>1556</td><td>6.63</td></tr><tr><td>Angular gyrus</td><td>-36</td><td>-87</td><td>36</td><td>809</td><td>6.37</td></tr><tr><td></td><td>44</td><td>-75</td><td>32</td><td>640</td><td>4.77</td></tr><tr><td>Middle temporal gyrus</td><td>-52</td><td>-63</td><td>-2</td><td>679</td><td>5.54</td></tr><tr><td>PCC</td><td>10</td><td>-53</td><td>14</td><td>1743</td><td>4.94</td></tr><tr><td>Middle frontal gyrus</td><td>-38</td><td>35</td><td>18</td><td>931</td><td>4.88</td></tr><tr><td></td><td>48</td><td>51</td><td>24</td><td>66</td><td>3.21</td></tr><tr><td>Inferior frontal gyrus</td><td>48</td><td>31</td><td>6</td><td>326</td><td>3.98</td></tr><tr><td></td><td>22</td><td>27</td><td>-12</td><td>162</td><td>3.38</td></tr><tr><td>Precuneus</td><td>-8</td><td>-35</td><td>46</td><td>378</td><td>3.60</td></tr><tr><td>STS</td><td>-40</td><td>-1</td><td>-20</td><td>87</td><td>3.29</td></tr><tr><td>Superior frontal gyrus</td><td>22</td><td>13</td><td>48</td><td>76</td><td>3.01</td></tr><tr><td colspan=\"6\">Abstract &gt; vivid</td></tr><tr><td>Superior temporal gyrus</td><td>-50</td><td>11</td><td>-24</td><td>10531</td><td>9.10</td></tr><tr><td>Inferior frontal gyrus</td><td>-50</td><td>27</td><td>-12</td><td></td><td>8.25</td></tr><tr><td></td><td>64</td><td>19</td><td>22</td><td>61</td><td>3.36</td></tr><tr><td></td><td>62</td><td>9</td><td>38</td><td>166</td><td>3.26</td></tr><tr><td>Middle temporal gyrus</td><td>-60</td><td>-23</td><td>-6</td><td>10531</td><td>7.96</td></tr><tr><td></td><td>64</td><td>-41</td><td>-12</td><td>2546</td><td>6.31</td></tr><tr><td>Dorsomedial prefrontal cortex</td><td>-10</td><td>49</td><td>46</td><td>4539</td><td>8.08</td></tr><tr><td>Ventromedial prefrontal cortex</td><td>0</td><td>43</td><td>-20</td><td>1478</td><td>6.71</td></tr><tr><td>Temporo-parietal junction</td><td>-52</td><td>-63</td><td>30</td><td>1929</td><td>6.70</td></tr><tr><td>Insula</td><td>-32</td><td>3</td><td>8</td><td>591</td><td>6.54</td></tr></table>"
+      }
+     ]
+    },
+    {
+     "type": "text",
+     "index": 4,
+     "bbox": [
+      0.43,
+      0.89,
+      0.487,
+      0.9
+     ],
+     "content": [
+      {
+       "type": "text",
+       "content": "continued"
+      }
+     ]
+    },
+    {
+     "type": "table",
+     "index": 6,
+     "bbox": [
+      0.509,
+      0.118,
+      0.877,
+      0.254
+     ],
+     "content": [
+      {
+       "type": "table_caption",
+       "index": 5,
+       "bbox": [
+        0.51,
+        0.106,
+        0.622,
+        0.117
+       ],
+       "content": [
+        {
+         "type": "text",
+         "content": "Table 1. (continued)"
+        }
+       ]
+      },
+      {
+       "type": "table_body",
+       "index": 6,
+       "bbox": [
+        0.509,
+        0.118,
+        0.877,
+        0.254
+       ],
+       "content": "<table><tr><td>Anatomic label</td><td>x</td><td>y</td><td>z</td><td>Volume</td><td>Max t</td></tr><tr><td rowspan=\"2\">Cerebellum</td><td>30</td><td>-83</td><td>-26</td><td>2659</td><td>6.12</td></tr><tr><td>-42</td><td>-73</td><td>-22</td><td>167</td><td>3.99</td></tr><tr><td rowspan=\"2\">Middle frontal gyrus</td><td>-46</td><td>11</td><td>52</td><td>1294</td><td>5.78</td></tr><tr><td>40</td><td>59</td><td>-4</td><td>814</td><td>4.22</td></tr><tr><td>Inferior parietal lobule</td><td>44</td><td>-57</td><td>40</td><td>1132</td><td>4.69</td></tr><tr><td rowspan=\"3\">Occipital cortex</td><td>46</td><td>-83</td><td>-4</td><td>272</td><td>4.43</td></tr><tr><td>-4</td><td>-91</td><td>-20</td><td>71</td><td>3.51</td></tr><tr><td>36</td><td>-83</td><td>18</td><td>78</td><td>3.40</td></tr><tr><td>PCC</td><td>-2</td><td>-43</td><td>32</td><td>191</td><td>3.90</td></tr></table>"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "page_idx": 7,
+   "blocks": [
+    {
+     "type": "list",
+     "index": 19,
+     "bbox": [
+      0.509,
+      0.767,
+      0.875,
+      0.905
+     ],
+     "content": [
+      {
+       "type": "ref_text",
+       "index": 16,
+       "bbox": [
+        0.509,
+        0.767,
+        0.875,
+        0.817
+       ],
+       "content": [
+        {
+         "type": "text",
+         "content": "Addis, D. R., Wong, A. T., Schacter, D. L. (2007) Remembering the past and imagining the future: common and distinct neural substrates during event construction and elaboration. Neuropsychologia, 45(7), 1363–77."
+        }
+       ]
+      }
+     ],
+     "sub_type": "ref_text"
+    }
+   ]
+  }
+ ],
+ "is_full_document": true,
+ "schema": "docvortex.middle",
+ "schema_version": "2.0"
+}

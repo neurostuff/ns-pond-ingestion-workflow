@@ -17,6 +17,12 @@ test on, so a caller that catches the error cannot hide it.
 Uploads are answered by the answers a test scripts, in order, then by their summary. The
 summary is built from the upload: the header's base study (or one it creates for a paper
 whose header names none) and, per base study, how many of the parse's keys are new.
+
+A record sent alone (`record` with `parse_id`, `base_study_id`, `run_id` and
+`pipeline.runs`, as `RecordUploadStage` sends it) is checked against study_schema's
+extraction-record and answered as neurostore's ingester answers it: 422 UNKNOWN_PARSE
+for a parse this server was never sent for the base study, 422 RUN_CONFLICT for a run_id
+it holds with other fields, else a `record` summary whose provenance holds the runs.
 """
 
 from __future__ import annotations
@@ -167,8 +173,11 @@ class Neurostore:
         self.uploads: List[Dict[str, Any]] = []
         self.violations: List[str] = []
         self._script: List[Answer] = []
-        #: The analysis keys each base study holds.
+        #: The analysis keys each base study holds, and the parses it was sent.
         self._keys: Dict[str, Set[str]] = {}
+        self._parses: Dict[str, Set[str]] = {}
+        #: Each run it holds, by run_id, as it was first sent.
+        self.runs: Dict[str, Dict[str, Any]] = {}
         self._errors = 0
         #: How the route answers a GET, the ingester's health check: neurostore serves the
         #: route and takes only POST there.
@@ -286,7 +295,8 @@ class Neurostore:
             return self._send(self.error(405, "Method Not Allowed"), request)
         body = self._check_upload(request, content)
         self.uploads.append(body)
-        answer = self._script.pop(0) if self._script else self.summary()
+        answer = self._script.pop(0) if self._script else (
+            self._record_refusal(body) or self.summary())
         return self._send(answer, request, body)
 
     def _grant(self, request: httpx.Request, content: bytes) -> httpx.Response:
@@ -317,7 +327,15 @@ class Neurostore:
         except ValueError as exc:
             self._violate([*problems, f"the body is not JSON: {exc}"])
         problems += spec_problems(request_schema(), body)
-        if isinstance(body, dict):
+        if isinstance(body, dict) and "record" in body:
+            # A record sent alone: the parts RecordUploadStage always sends.
+            for name in ("parse_id", "base_study_id", "run_id", "pipeline"):
+                if name not in body:
+                    problems.append(f"the record upload has no {name}")
+            if not (body.get("pipeline") or {}).get("runs"):
+                problems.append("the record upload names no runs")
+            problems += study_schema_problems("extraction-record", body["record"])
+        elif isinstance(body, dict):
             # The parts this client's upload always sends; the spec allows others alone.
             for name in ("coordinate_parse", "parsed_paper", "text"):
                 if name not in body:
@@ -346,10 +364,47 @@ class Neurostore:
         if answer.summary is not None:
             body = {**self._summary_of(upload), **answer.summary}
             self._check_answer(answer.status, body)
-            self._keys[body["base_study_id"]] = _keys(upload)
+            if "record" in upload:
+                for run in upload["pipeline"]["runs"]:
+                    self.runs.setdefault(run["run_id"], run)
+            else:
+                self._keys[body["base_study_id"]] = _keys(upload)
+                self._parses.setdefault(body["base_study_id"], set()).add(body["parse_id"])
         return httpx.Response(answer.status, json=body, headers=answer.headers)
 
+    def _record_refusal(self, upload: Dict[str, Any]) -> Optional[Answer]:
+        """neurostore's 422 for a record it cannot attach, or None."""
+        if "record" not in upload:
+            return None
+        if upload["parse_id"] not in self._parses.get(upload["base_study_id"], set()):
+            return self.error(422, "A record attaches to a stored parse; this one is not "
+                              "stored for the paper.", codes=("UNKNOWN_PARSE",),
+                              field_name="parse_id")
+        for i, run in enumerate(upload["pipeline"]["runs"]):
+            held = self.runs.get(run["run_id"])
+            if held is not None and held != run:
+                return self.error(422, "This run_id names a stored run with other fields.",
+                                  codes=("RUN_CONFLICT",), field_name=f"pipeline/runs/{i}")
+        return None
+
     def _summary_of(self, upload: Dict[str, Any]) -> Dict[str, Any]:
+        if "record" in upload:
+            base, pipeline = upload["base_study_id"], upload["pipeline"]
+            config = "config-" + hashlib.sha256(json.dumps(
+                pipeline, sort_keys=True).encode()).hexdigest()[:9]
+            return {
+                "kind": "record",
+                "base_study_id": base,
+                "study_id": f"study-{base}",
+                "parse_id": upload["parse_id"],
+                "record": {"config_id": config,
+                           "analyses": {"resolved": len(upload["record"].get("analyses") or []),
+                                        "unresolved": [], "parked": [], "superseded": []}},
+                "provenance": {"record": {"config_id": config, "run_id": upload["run_id"],
+                                          "pipeline": pipeline["name"],
+                                          "version": pipeline["version"],
+                                          "runs": pipeline["runs"]}},
+            }
         parse = upload["coordinate_parse"]
         header = parse["header"]
         base = header.get("neurostore_base_study_id") or _created_base_study(header)

@@ -1,0 +1,578 @@
+interactions:
+- request:
+    body: '{"ids": ["PMID:15090336"]}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '26'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - python-requests/2.34.2
+    method: POST
+    uri: https://api.semanticscholar.org/graph/v1/paper/batch?fields=title%2Cauthors%2Cabstract%2Cyear%2Cvenue%2CpublicationDate%2CisOpenAccess%2CopenAccessPdf
+  response:
+    body:
+      string: '[{"paperId": "2302ef82874992ac5dc779a898bcd9daf4658887", "title": "Functional
+        MR imaging study of language-related differences in bilingual cerebellar activation.",
+        "venue": "AJNR. American journal of neuroradiology", "year": 2004, "isOpenAccess":
+        false, "openAccessPdf": {"url": "", "status": null, "license": null, "disclaimer":
+        "Notice: The following paper fields have been elided by the publisher: {''abstract''}.
+        Paper or abstract available at http://www.ajnr.org/content/ajnr/25/4/523.full.pdf,
+        which is subject to the license by the author or copyright owner provided
+        with this content. Please go to the source to verify the license and copyright
+        information for your use."}, "publicationDate": "2004-04-01", "authors": [{"authorId":
+        "145960981", "name": "J. Pillai"}, {"authorId": "153759428", "name": "J. Allison"},
+        {"authorId": "103605286", "name": "S. Sethuraman"}, {"authorId": "5423592",
+        "name": "J. M. Araque"}, {"authorId": "2570904", "name": "D. Thiruvaiyaru"},
+        {"authorId": "32090867", "name": "Claro B. Ison"}, {"authorId": "2833478",
+        "name": "D. Loring"}, {"authorId": "153581258", "name": "T. Lavin"}], "abstract":
+        null}]
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1140'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 05 Nov 2026 22:01:48 GMT
+      Via:
+      - 1.1 2918cacbb3dda2d143059f9b5f341e32.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - o1xoK1sPXxTsHlZQisT26ck7Raktl6uyF9LuEwfBSaIWheeRjPbUmw==
+      X-Amz-Cf-Pop:
+      - DFW57-P1
+      X-Cache:
+      - Miss from cloudfront
+      x-amz-apigw-id:
+      - GYxwCHFlvHcEpRw=
+      x-amzn-Remapped-Connection:
+      - keep-alive
+      x-amzn-Remapped-Content-Length:
+      - '1140'
+      x-amzn-Remapped-Date:
+      - Thu, 05 Nov 2026 22:01:48 GMT
+      x-amzn-Remapped-Server:
+      - gunicorn
+      x-amzn-RequestId:
+      - d3fc07db-8fbd-41c9-8bc9-57b283d465cf
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - '*/*'
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      host:
+      - eutils.ncbi.nlm.nih.gov
+      user-agent:
+      - python-httpx/0.28.1
+    method: GET
+    uri: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&email=replay%40example.com&id=15090336&retmode=xml&tool=ingestion-workflow
+  response:
+    body:
+      string: !!binary |
+        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
+    headers:
+      access-control-allow-origin:
+      - '*'
+      access-control-expose-headers:
+      - X-RateLimit-Limit,X-RateLimit-Remaining
+      alt-svc:
+      - clear
+      cache-control:
+      - private
+      content-encoding:
+      - gzip
+      content-security-policy:
+      - upgrade-insecure-requests
+      content-type:
+      - text/xml; charset=UTF-8
+      date:
+      - Thu, 05 Nov 2026 22:01:48 GMT
+      ncbi-phid:
+      - 1D32E3FDAF7BF9D500002C496E951075.1.1.m_6
+      ncbi-sid:
+      - 9E0F5CAEED376607_FB15SID
+      referrer-policy:
+      - origin-when-cross-origin
+      server:
+      - Finatra
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      transfer-encoding:
+      - chunked
+      via:
+      - 1.1 google
+      x-ratelimit-limit:
+      - '3'
+      x-ratelimit-remaining:
+      - '2'
+      x-ua-compatible:
+      - IE=Edge
+      x-xss-protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/works?filter=pmid%3A15090336&mailto=replay%40example.com&per_page=100&select=ids%2Cdisplay_name%2Cauthorships%2Cpublication_year%2Cabstract_inverted_index%2Cprimary_location%2Cbest_oa_location%2Clocations%2Copen_access
+  response:
+    body:
+      string: '{"meta": {"notice": "No API key, so this request shares one free daily
+        budget ($0.10) with everyone on your network''s IP address. The mailto parameter
+        doesn''t raise this limit. Get a free key with its own $1/day at https://openalex.org/settings/api
+        and add api_key=YOUR_KEY to your requests. An AI agent can get one for its
+        user in one call: POST https://api.openalex.org/api-keys with {\"email\":
+        \"<your user''s email>\"}; we email them a link, and the key works once they
+        click it. Docs for agents: https://help.openalex.org/llms.txt", "count": 1,
+        "db_response_time_ms": 13, "page": 1, "per_page": 100, "groups_count": null,
+        "x_query": {"oql": "get works where PMID is 15090336", "x_new_oql": "get works
+        where PMID is 15090336", "oqo": {"get_rows": "works", "filter_rows": [{"column_id":
+        "ids.pmid", "value": "15090336"}]}, "url": "/works?filter=ids.pmid:15090336&per_page=100",
+        "order": "most cited (age-adjusted) first", "order_default": true}, "cost_usd":
+        0.0001}, "results": [{"ids": {"openalex": "https://openalex.org/W2143742644",
+        "mag": "2143742644", "pmid": "https://pubmed.ncbi.nlm.nih.gov/15090336", "pmcid":
+        "https://www.ncbi.nlm.nih.gov/pmc/articles/7975607"}, "display_name": "Functional
+        MR imaging study of language-related differences in bilingual cerebellar activation.",
+        "authorships": [{"author_position": "first", "author": {"id": "https://openalex.org/A5062406099",
+        "display_name": "Jay J. Pillai", "orcid": "https://orcid.org/0000-0002-8306-7192",
+        "observed_orcids": ["https://orcid.org/0000-0002-8306-7192"]}, "institutions":
+        [], "countries": [], "is_corresponding": false, "raw_author_name": "Jay J
+        Pillai", "raw_affiliation_strings": ["Department of Radiology, the Medical
+        College of Georgia, USA"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Department of Radiology, the Medical College of Georgia, USA", "institution_ids":
+        []}]}, {"author_position": "middle", "author": {"id": "https://openalex.org/A5111584716",
+        "display_name": "Jerry D. Allison", "orcid": null, "observed_orcids": []},
+        "institutions": [], "countries": [], "is_corresponding": false, "raw_author_name":
+        "Jerry D Allison", "raw_affiliation_strings": ["Radiology and Imaging"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "Radiology and Imaging",
+        "institution_ids": []}]}, {"author_position": "middle", "author": {"id": "https://openalex.org/A5021293694",
+        "display_name": "Sankar Sethuraman", "orcid": null, "observed_orcids": []},
+        "institutions": [{"id": "https://openalex.org/I25041050", "display_name":
+        "Augusta University", "ror": "https://ror.org/012mef835", "country_code":
+        "US", "type": "education", "lineage": ["https://openalex.org/I25041050"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Sankar
+        Sethuraman", "raw_affiliation_strings": ["Augusta University"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "Augusta University", "institution_ids":
+        ["https://openalex.org/I25041050"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5055140199", "display_name": "Julio M. Araque",
+        "orcid": null, "observed_orcids": []}, "institutions": [], "countries": [],
+        "is_corresponding": false, "raw_author_name": "Julio M Araque", "raw_affiliation_strings":
+        ["Radiology and Imaging"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Radiology and Imaging", "institution_ids": []}]}, {"author_position": "middle",
+        "author": {"id": "https://openalex.org/A5072673415", "display_name": "Dharma
+        S. Thiruvaiyaru", "orcid": "https://orcid.org/0000-0002-4779-9003", "observed_orcids":
+        ["https://orcid.org/0000-0002-4779-9003"]}, "institutions": [{"id": "https://openalex.org/I25041050",
+        "display_name": "Augusta University", "ror": "https://ror.org/012mef835",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I25041050"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Dharma
+        Thiruvaiyaru", "raw_affiliation_strings": ["Augusta University"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "Augusta University", "institution_ids":
+        ["https://openalex.org/I25041050"]}]}, {"author_position": "middle", "author":
+        {"id": "https://openalex.org/A5026028079", "display_name": "Claro B. Ison",
+        "orcid": null, "observed_orcids": []}, "institutions": [{"id": "https://openalex.org/I25041050",
+        "display_name": "Augusta University", "ror": "https://ror.org/012mef835",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I25041050"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "Claro
+        B Ison", "raw_affiliation_strings": ["Medical College of Georgia"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "Medical College of Georgia",
+        "institution_ids": ["https://openalex.org/I25041050"]}]}, {"author_position":
+        "middle", "author": {"id": "https://openalex.org/A5088890091", "display_name":
+        "David W. Loring", "orcid": "https://orcid.org/0000-0003-2497-1074", "observed_orcids":
+        ["https://orcid.org/0000-0003-2497-1074"]}, "institutions": [{"id": "https://openalex.org/I25041050",
+        "display_name": "Augusta University", "ror": "https://ror.org/012mef835",
+        "country_code": "US", "type": "education", "lineage": ["https://openalex.org/I25041050"]}],
+        "countries": ["US"], "is_corresponding": false, "raw_author_name": "David
+        W Loring", "raw_affiliation_strings": ["Medical College of Georgia"], "raw_orcid":
+        null, "affiliations": [{"raw_affiliation_string": "Medical College of Georgia",
+        "institution_ids": ["https://openalex.org/I25041050"]}]}, {"author_position":
+        "last", "author": {"id": "https://openalex.org/A5022312856", "display_name":
+        "T. Lavin", "orcid": null, "observed_orcids": []}, "institutions": [{"id":
+        "https://openalex.org/I25041050", "display_name": "Augusta University", "ror":
+        "https://ror.org/012mef835", "country_code": "US", "type": "education", "lineage":
+        ["https://openalex.org/I25041050"]}], "countries": ["US"], "is_corresponding":
+        false, "raw_author_name": "Thomas Lavin", "raw_affiliation_strings": ["Medical
+        College of Georgia"], "raw_orcid": null, "affiliations": [{"raw_affiliation_string":
+        "Medical College of Georgia", "institution_ids": ["https://openalex.org/I25041050"]}]}],
+        "publication_year": 2004, "abstract_inverted_index": {"BACKGROUND": [0], "AND":
+        [1], "PURPOSE:": [2], "Reports": [3], "in": [4, 16, 42, 68, 123, 160, 165,
+        185, 190, 200, 215], "the": [5, 10, 37, 135, 140, 161, 166, 186, 191, 201,
+        207, 216], "monolingual": [6], "literature": [7], "suggest": [8], "that":
+        [9], "cerebellum": [11], "has": [12], "an": [13], "important": [14], "role":
+        [15], "language": [17, 226], "processing.": [18], "The": [19], "purpose":
+        [20], "of": [21, 39, 112, 126, 130, 195], "this": [22], "study": [23], "was":
+        [24, 114, 144, 183], "to": [25, 104], "determine": [26], "whether": [27],
+        "bilingual": [28], "cerebellar": [29, 124, 218, 230], "functional": [30, 79],
+        "MR": [31], "imaging": [32], "(fMRI)": [33], "activation": [34, 151, 182,
+        198], "differs": [35], "during": [36], "performance": [38], "comparable":
+        [40], "tasks": [41, 67, 138, 143, 163, 168, 188, 203, 227, 233], "subjects''":
+        [43], "primary": [44], "and": [45, 64, 72, 77, 97, 224], "secondary": [46],
+        "languages.": [47], "METHODS:": [48], "Eight": [49], "bilingual,": [50], "right-handed":
+        [51], "individuals": [52], "underwent": [53], "echo-planar": [54], "fMRI":
+        [55], "at": [56], "1.5": [57], "T.": [58], "They": [59], "performed": [60,
+        115, 146], "semantic": [61], "(noun-verb": [62], "association)": [63], "phonological":
+        [65], "(rhyming)": [66], "Spanish": [69, 137, 167, 170, 192, 208, 225], "(primary":
+        [70], "language)": [71], "English": [73, 142, 162, 174, 187, 202, 223, 232],
+        "(secondary": [74], "language).": [75], "Individual": [76], "group": [78],
+        "datasets": [80], "were": [81, 158, 212], "analyzed": [82], "using": [83],
+        "Statistical": [84], "Parametric": [85], "Mapping": [86], "software": [87],
+        "(SPM99;": [88], "P": [89], "<.001": [90, 150], "with": [91, 206], "a": [92,
+        105], "10-voxel": [93], "spatial": [94], "extent": [95], "threshold)": [96],
+        "overlaid": [98], "on": [99, 116], "T1-weighted": [100], "anatomic": [101],
+        "images": [102], "normalized": [103, 132], "standard": [106], "(Montreal":
+        [107], "Neurologic": [108], "Institute)": [109], "space.": [110], "Analysis":
+        [111], "variance": [113], "laterality": [117], "indices": [118, 157], "derived":
+        [119], "from": [120, 134, 139], "voxel": [121], "counts": [122], "regions":
+        [125], "interest": [127], "(ROIs).": [128], "Subtraction": [129], "group-averaged":
+        [131], "results": [133], "combined": [136, 141], "also": [145], "within":
+        [147], "SPM99": [148], "(P": [149], "threshold).": [152], "RESULTS:": [153],
+        "Significantly": [154], "greater": [155, 197, 235], "lateralilty": [156],
+        "noted": [159], "than": [164, 189], "(mean": [169], "LI,": [171, 175], "0.3286;":
+        [172], "mean": [173], "0.5141": [176], "[P": [177], "=.0143]).": [178], "Overall,":
+        [179], "more": [180, 213], "robust": [181], "seen": [184], "tasks.": [193],
+        "Areas": [194], "significantly": [196], "existed": [199], "as": [204], "compared":
+        [205], "tasks;": [209], "these": [210], "areas": [211], "prominent": [214],
+        "left": [217, 229, 236], "hemisphere.": [219], "CONCLUSION:": [220], "Although":
+        [221], "both": [222], "demonstrate": [228, 234], "dominance,": [231], "hemispheric":
+        [237], "lateralization.": [238]}, "primary_location": {"id": "pmh:oai:pubmedcentral.nih.gov:7975607",
+        "doi": null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/7975607",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "AJNR Am J Neuroradiol",
+        "raw_type": "Text"}, "best_oa_location": {"id": "pmh:oai:pubmedcentral.nih.gov:7975607",
+        "doi": null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/7975607",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "AJNR Am J Neuroradiol",
+        "raw_type": "Text"}, "locations": [{"id": "pmh:oai:pubmedcentral.nih.gov:7975607",
+        "doi": null, "is_oa": true, "landing_page_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/7975607",
+        "pdf_url": null, "source": {"id": "https://openalex.org/S2764455111", "display_name":
+        "PubMed Central", "issn_l": null, "issn": null, "is_oa": true, "is_in_doaj":
+        false, "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "AJNR Am J Neuroradiol",
+        "raw_type": "Text"}, {"id": "pmid:15090336", "doi": null, "is_oa": false,
+        "landing_page_url": "https://pubmed.ncbi.nlm.nih.gov/15090336", "pdf_url":
+        null, "source": {"id": "https://openalex.org/S4306525036", "display_name":
+        "PubMed", "issn_l": null, "issn": null, "is_oa": false, "is_in_doaj": false,
+        "is_core": false, "listed_in": [], "host_organization": "https://openalex.org/I1299303238",
+        "host_organization_name": "National Institutes of Health", "host_organization_lineage":
+        ["https://openalex.org/I1299303238"], "host_organization_lineage_names": [],
+        "type": "repository"}, "license": null, "license_id": null, "version": "publishedVersion",
+        "is_accepted": true, "is_published": true, "raw_source_name": "AJNR. American
+        journal of neuroradiology", "raw_type": "Journal Article"}, {"id": "pmh:oai:CiteSeerX.psu:10.1.1.487.9045",
+        "doi": null, "is_oa": false, "landing_page_url": "http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.487.9045",
+        "pdf_url": null, "source": null, "license": null, "license_id": null, "version":
+        "submittedVersion", "is_accepted": false, "is_published": false, "raw_source_name":
+        "http://www.ajnr.org/content/25/4/523.full.pdf", "raw_type": "text"}], "open_access":
+        {"is_oa": true, "oa_status": "green", "oa_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/7975607",
+        "any_repository_has_fulltext": true}}], "group_by": []}'
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a55f23a14898323e-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 05 Nov 2026 22:01:49 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0.0001'
+      X-RateLimit-Credits-Used:
+      - '1'
+      X-RateLimit-Limit:
+      - '1000'
+      X-RateLimit-Limit-USD:
+      - '0.1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '173'
+      X-RateLimit-Remaining-USD:
+      - '0.0173'
+      X-RateLimit-Reset:
+      - '7091'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=mzSfyhH682VSR0oS%2B5lds0nz9tc%2BR2jNkF5WdyCJZZI%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1793916109"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=mzSfyhH682VSR0oS%2B5lds0nz9tc%2BR2jNkF5WdyCJZZI%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1793916109"
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.34.2
+    method: GET
+    uri: https://api.openalex.org/sources/issn:0195-6108?mailto=replay%40example.com&select=id%2Cdisplay_name%2Ctype%2Cworks_count
+  response:
+    body:
+      string: '{"id":"https://openalex.org/S101278519","display_name":"American Journal
+        of Neuroradiology","type":"journal","works_count":8640}
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-Ray:
+      - a55f23a32ef5323e-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 05 Nov 2026 22:01:49 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Via:
+      - 2.0 heroku-router
+      X-RateLimit-Cost-USD:
+      - '0'
+      X-RateLimit-Credits-Used:
+      - '0'
+      X-RateLimit-Limit:
+      - '1000'
+      X-RateLimit-Limit-USD:
+      - '0.1'
+      X-RateLimit-Onetime-Remaining:
+      - '0'
+      X-RateLimit-Prepaid-Remaining-USD:
+      - '0'
+      X-RateLimit-Remaining:
+      - '173'
+      X-RateLimit-Remaining-USD:
+      - '0.0173'
+      X-RateLimit-Reset:
+      - '7091'
+      access-control-allow-headers:
+      - Accept, Accept-Language, Accept-Encoding, Authorization, Content-Type, X-OpenAlex-UI,
+        X-Impersonate-User
+      access-control-allow-methods:
+      - GET, HEAD, POST, PATCH, DELETE, OPTIONS
+      access-control-expose-headers:
+      - Cache-Control, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Onetime-Remaining,
+        X-RateLimit-Credits-Used, X-RateLimit-Credits-Required, X-RateLimit-Reset,
+        X-RateLimit-Limit-USD, X-RateLimit-Remaining-USD, X-RateLimit-Prepaid-Remaining-USD,
+        X-RateLimit-Cost-USD, X-RateLimit-Cost-Required-USD, Retry-After, Location,
+        Content-Disposition, X-OpenAlex-UI-Token
+      nel:
+      - '{"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}'
+      report-to:
+      - '{"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=mzSfyhH682VSR0oS%2B5lds0nz9tc%2BR2jNkF5WdyCJZZI%3D\u0026sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add\u0026ts=1793916109"}],"max_age":3600}'
+      reporting-endpoints:
+      - heroku-nel="https://nel.heroku.com/reports?s=mzSfyhH682VSR0oS%2B5lds0nz9tc%2BR2jNkF5WdyCJZZI%3D&sid=c46efe9b-d3d2-4a0c-8c76-bfafa16c5add&ts=1793916109"
+    status:
+      code: 200
+      message: OK
+version: 1

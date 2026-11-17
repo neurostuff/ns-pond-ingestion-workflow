@@ -18,7 +18,7 @@ from ingestion_workflow.models.download import DownloadSource
 from ingestion_workflow.models.extract import ExtractedContent
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.models.metadata import ArticleMetadata, Author
-from ingestion_workflow.services.metadata import MetadataService, _filled
+from ingestion_workflow.services.metadata import J_MEDLINE_CACHE, MetadataService, _filled
 from ingestion_workflow.tests import cassette_secrets
 
 
@@ -30,7 +30,7 @@ def _licences_decided(service) -> bool:
 @pytest.fixture
 def test_settings(tmp_path):
     """Create test settings with API keys."""
-    return Settings(
+    return _with_journal_list(Settings(
         data_root=tmp_path / "data",
         cache_root=tmp_path / "cache",
         ns_pond_root=tmp_path / "ns-pond",
@@ -38,7 +38,16 @@ def test_settings(tmp_path):
         openalex_api_key="test_openalex_key",
         pubmed_email="test@example.com",
         pubmed_api_key="test_pubmed_key",
-    )
+    ))
+
+
+def _with_journal_list(settings):
+    """`settings`, with the records of NLM's journal list the venue tests use in its cache,
+    so that a journal name no id identified is not matched against the whole list, fetched."""
+    target = settings.get_cache_dir("metadata") / J_MEDLINE_CACHE
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy(Path(__file__).parents[1] / "data" / "venues" / "J_Medline.txt", target)
+    return settings
 
 
 @pytest.fixture
@@ -67,10 +76,10 @@ def _enrich(service, contents, held=None):
 
 def _with_openalex(tmp_path) -> MetadataService:
     """`openalex_email` is read through its alias, so it is set on the client."""
-    service = MetadataService(Settings(
+    service = MetadataService(_with_journal_list(Settings(
         data_root=tmp_path / "data", cache_root=tmp_path / "cache",
         ns_pond_root=tmp_path / "ns-pond", semantic_scholar_api_key="test_s2_key",
-    ))
+    )))
     service._openalex_client = OpenAlexClient("test@example.com")
     service._get_crossref_metadata_cached = lambda identifiers, unanswered=None: {}
     return service
@@ -388,6 +397,34 @@ class TestMetadataService:
         shutil.copy(fixture / "1a4" / "pmcid_9056519" / "article.xml", target / "article.xml")
         extracted = ExtractedContent(
             slug="pubget-by-pmcid",
+            source=DownloadSource.PUBGET,
+            identifier=Identifier(pmcid="PMC9056519"),
+            has_coordinates=False,
+            full_text_path=tmp_path / "elsewhere" / "text.txt",
+        )
+
+        metadata = metadata_service._get_pubget_fallback(extracted)
+
+        assert metadata is not None
+        assert metadata.title.startswith("Preliminary findings demonstrating latent effects")
+
+    def test_pubget_fallback_reads_malformed_jats_as_the_extraction_does(
+        self, metadata_service, tmp_path
+    ):
+        """A closing tag broken in the body, as pubget's copy of PMC4542504 is, leaves the
+        front matter readable; a strict parse found no metadata at all."""
+        fixture = Path(__file__).resolve().parents[1] / "data" / "test_pubget" / "articles"
+        root = metadata_service.settings.pubget_cache_root or (
+            metadata_service.settings.cache_root / "pubget"
+        )
+        target = root / "articles" / "1a4" / "pmcid_9056519"
+        target.mkdir(parents=True)
+        xml = (fixture / "1a4" / "pmcid_9056519" / "article.xml").read_text(encoding="utf-8")
+        at = xml.index("<back>")
+        (target / "article.xml").write_text(
+            xml[:at].replace("</italic>", "</italic=", 1) + xml[at:], encoding="utf-8")
+        extracted = ExtractedContent(
+            slug="pubget-malformed",
             source=DownloadSource.PUBGET,
             identifier=Identifier(pmcid="PMC9056519"),
             has_coordinates=False,

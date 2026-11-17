@@ -17,6 +17,7 @@ both record are the ones below and `stage.TAKE_BACK_REASONS`.
 
 from __future__ import annotations
 
+import contextlib
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
@@ -86,6 +87,13 @@ def tables_reading(ctx: Context, article_id: str, analyses: Optional[Artifact]) 
         summary = analyses.summary or {}
         unread = {k: v for k, v in (summary.get("unread") or {}).items()
                   if v not in _UNREAD_AS_NOTHING}
+        empty = (analyses.status is Status.SKIPPED and not summary.get("tables")) or (
+            analyses.status is Status.OK and not unread and not summary.get("tables"))
+        if empty and _passes_unseen(ctx, article_id, analyses):
+            # Stale while triage passes tables (emcznvwqpaor: skipped for "no coordinate
+            # tables" on 09-30, triage passed two on 10-15).
+            return Reading(Kind.UNKNOWN, f"{TABLES_NOT_READ}: the analyses reading is stale "
+                                         "and triage passes tables")
         if analyses.status is Status.SKIPPED and not summary.get("tables"):
             return Reading(Kind.EMPTY)
         if analyses.status is Status.OK and not unread:
@@ -104,6 +112,17 @@ def tables_reading(ctx: Context, article_id: str, analyses: Optional[Artifact]) 
                          for e in extracted.values()):
         return Reading(Kind.EMPTY)
     return Reading(Kind.UNKNOWN, f"{TABLES_NOT_READ}: triage has not run")
+
+
+def _passes_unseen(ctx: Context, article_id: str, analyses: Artifact) -> bool:
+    """The analyses plan's own rule (`analyses.passes_unseen`), without the plan."""
+    from .stages.analyses import AnalysesStage, passes_unseen
+
+    triaged = ctx.catalog.artifacts([article_id], "triage").get(article_id, {}).get("")
+    if triaged is None or triaged.status is not Status.OK:
+        return False
+    current = AnalysesStage(ctx.settings).current(ctx, article_id, triaged)
+    return passes_unseen(analyses, current, triaged)
 
 
 def prose_reading(prose: Optional[Artifact]) -> Reading:
@@ -151,7 +170,7 @@ def upstream_state(plan: StagePlan, existing: Optional[Artifact]) -> Optional[st
             return "taken back"
         if existing is None:
             return "not run"
-        if existing.status is Status.OK:
+        if existing.status in (Status.OK, Status.SKIPPED):
             return "stale"
         return f"failed: {short_reason(existing.error)}"
     if plan.permanent:
@@ -212,18 +231,23 @@ class Assessor:
         marks = ctx.catalog.exclusions(ids)
         found_by_stage: Dict[str, Dict[str, Dict[str, Artifact]]] = {}
         behind: Dict[str, Dict[str, str]] = {ref.id: {} for ref in refs}
-        for name, stage in self.stages():
-            found = found_by_stage[name] = ctx.catalog.artifacts(ids, name)
-            parents = ctx.catalog.artifacts(ids, stage.requires) if stage.requires else {}
-            # Sync's claims on shared base studies are one query over the whole catalog:
-            # asked once for every article here, not once per article's plan.
-            shared = stage.contended(ctx, refs, parents) if name == "sync" else None
-            for ref in refs:
-                plan = (stage.plan(ctx, [ref], found, parents) if shared is None
-                        else stage.plan_contended(ctx, [ref], found, parents, shared))
-                state = upstream_state(plan, found.get(ref.id, {}).get(""))
-                if state:
-                    behind[ref.id][name] = state
+        with contextlib.ExitStack() as held:
+            # A stage that asks a server in each plan (roles) asks it once for all of these.
+            for _, stage in self.stages():
+                if hasattr(stage, "remembering"):
+                    held.enter_context(stage.remembering())
+            for name, stage in self.stages():
+                found = found_by_stage[name] = ctx.catalog.artifacts(ids, name)
+                parents = ctx.catalog.artifacts(ids, stage.requires) if stage.requires else {}
+                # Sync's claims on shared base studies are one query over the whole catalog:
+                # asked once for every article here, not once per article's plan.
+                shared = stage.contended(ctx, refs, parents) if name == "sync" else None
+                for ref in refs:
+                    plan = (stage.plan(ctx, [ref], found, parents) if shared is None
+                            else stage.plan_contended(ctx, [ref], found, parents, shared))
+                    state = upstream_state(plan, found.get(ref.id, {}).get(""))
+                    if state:
+                        behind[ref.id][name] = state
         if "prose" not in found_by_stage:
             found_by_stage["prose"] = {}
         out = {}

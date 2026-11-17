@@ -107,20 +107,14 @@ def _torch_can_use_cuda() -> tuple[bool, str]:
     return _TORCH_CUDA_OK
 
 
-def usable_cuda_devices() -> list[int]:
-    """Indices of CUDA devices with enough free memory for a Docling worker.
+def free_cuda_devices(min_free_mib: int) -> list[int]:
+    """Indices of CUDA devices with at least `min_free_mib` free, as ``nvidia-smi`` says.
 
     Probed with ``nvidia-smi`` rather than torch on purpose. The workers are
     forked or spawned from whichever process calls this, and a parent that has
     already initialised CUDA poisons forked children ("Cannot re-initialize
     CUDA in forked subprocess"). A subprocess probe keeps the parent clean.
     Devices busy with someone else's job are skipped rather than contended for.
-
-    Hardware alone is not enough: a torch built for a newer CUDA than the
-    driver lists every device and then refuses to initialise, so Docling falls
-    back to the CPU silently and runs an order of magnitude slower. Returning
-    no device when torch cannot use one makes that visible and stops workers
-    being handed a GPU they cannot reach.
     """
     try:
         completed = subprocess.run(
@@ -143,9 +137,21 @@ def usable_cuda_devices() -> list[int]:
             free_mib = int(line)
         except ValueError:
             continue
-        if free_mib >= _MIN_FREE_GPU_MIB:
+        if free_mib >= min_free_mib:
             usable.append(index)
+    return usable
 
+
+def usable_cuda_devices() -> list[int]:
+    """Indices of CUDA devices with enough free memory for a Docling worker.
+
+    Hardware alone is not enough: a torch built for a newer CUDA than the
+    driver lists every device and then refuses to initialise, so Docling falls
+    back to the CPU silently and runs an order of magnitude slower. Returning
+    no device when torch cannot use one makes that visible and stops workers
+    being handed a GPU they cannot reach.
+    """
+    usable = free_cuda_devices(_MIN_FREE_GPU_MIB)
     if usable:
         ok, why = _torch_can_use_cuda()
         if not ok:
