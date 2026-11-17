@@ -164,6 +164,19 @@ def _select_html_file(
     return None
 
 
+def _held_page_whole(page: Path) -> bool:
+    """Whether a page already under ACE's root can stand as the download: it passes the
+    check and ends its document. ACE writes pages in place, so one another scrape left
+    half-written can pass the check with its later tables missing."""
+    try:
+        with page.open("rb") as handle:
+            handle.seek(max(0, page.stat().st_size - 4096))
+            tail = handle.read().lower()
+    except FileNotFoundError:
+        return False
+    return b"</html>" in tail and _validate_downloaded_html(page)[0]
+
+
 def _validate_downloaded_html(file_path: Path) -> tuple[bool, Optional[str]]:
     """Validate downloaded HTML content to catch placeholders or errors."""
     try:
@@ -854,10 +867,12 @@ class ACEExtractor(BaseExtractor):
 
         pmid = str(pmid_value).strip()
 
-        held = next((page for page in self._pages_for(pmid) if _validate_downloaded_html(page)[0]),
-                    None)
-        if held is not None:
-            return self._success(identifier, held)
+        # A run that prefers PMC asks for it: every held page is a publisher's.
+        if not self.settings.ace_prefer_pmc:
+            held = next((page for page in self._pages_for(pmid) if _held_page_whole(page)),
+                        None)
+            if held is not None:
+                return self._success(identifier, held)
 
         active_scraper = scraper or self._build_scraper()
 
@@ -869,8 +884,8 @@ class ACEExtractor(BaseExtractor):
                 journal,
                 delay=None,
                 mode=self._download_mode,
-                # Whether to fetch again is the catalog's call (`--refresh download:ace`);
-                # by the time this runs it has decided to, so a file already on disk is reused.
+                # A page held under the root that passes the check was recorded above, so
+                # ACE's own reuse fires only for an invalid one, which is set aside below.
                 overwrite=False,
                 prefer_pmc_source=self.settings.ace_prefer_pmc,
             )
@@ -878,7 +893,7 @@ class ACEExtractor(BaseExtractor):
             logger.exception("ACE scraper failed for PMID %s", pmid)
             return self._failure(identifier, f"ACE scrape failed: {exc}")
 
-        resolved_path = self._resolve_file_path(file_path, pmid)
+        resolved_path = self._resolve_file_path(file_path, pmid, journal)
 
         if valid is False:
             message = f"ACE validation failed for PMID {pmid}."
@@ -911,22 +926,33 @@ class ACEExtractor(BaseExtractor):
             api_key=self.settings.pubmed_api_key,
         )
 
-    def _resolve_file_path(self, file_path: Path | str | None, pmid: str) -> Optional[Path]:
+    def _resolve_file_path(self, file_path: Path | str | None, pmid: str,
+                           journal: str) -> Optional[Path]:
+        """The page ACE wrote or reused: the path it returned, else the one its
+        `overwrite=False` reuse checks."""
         candidate = Path(file_path) if file_path else None
         if candidate and candidate.exists():
             return candidate
-        return next(iter(self._pages_for(pmid, corpus=False)), None)
+        own = self._cache_root / "html" / journal / f"{pmid}.html"
+        return own if own.exists() else None
 
-    def _pages_for(self, pmid: str, *, corpus: bool = True) -> list[Path]:
+    def _pages_for(self, pmid: str) -> list[Path]:
         """The pages held for `pmid`: ACE's own scrapes first, then the corpus's, each newest
         first. `ace_cache_root` is ACE's store, which keeps <root>/html/<journal>/<pmid>.html.
         On beast it names the corpus's html/ directory, so the corpus's pages sit at
-        <root>/<journal>/<pmid>.html and ns-pond's own scrapes at <root>/html/IngestionWorkflow."""
-        patterns = [f"html/*/{pmid}.html"] + ([f"*/{pmid}.html"] if corpus else [])
-        return [page for pattern in patterns
-                for page in sorted(self._cache_root.glob(pattern),
-                                   key=lambda page: (page.stat().st_mtime, str(page)),
-                                   reverse=True)]
+        <root>/<journal>/<pmid>.html and ns-pond's own scrapes at <root>/html/IngestionWorkflow.
+        A page gone between the listing and its stat (a re-scrape, a set-aside) is left out."""
+        def newest_first(pattern: str) -> list[Path]:
+            dated = []
+            for page in self._cache_root.glob(pattern):
+                try:
+                    dated.append((page.stat().st_mtime, str(page), page))
+                except FileNotFoundError:
+                    continue
+            return [page for *_, page in sorted(dated, reverse=True)]
+
+        return [page for pattern in (f"html/*/{pmid}.html", f"*/{pmid}.html")
+                for page in newest_first(pattern)]
 
     def _build_downloaded_file(self, file_path: Path) -> DownloadedFile:
         return build_downloaded_file(

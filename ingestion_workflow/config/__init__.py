@@ -471,8 +471,9 @@ class Settings(BaseSettings):
             "Ask ACE for an article's PMC copy before the publisher's page. Only for "
             "selected articles whose publisher pages are gone or walled: PMC's page "
             "holds the tables inline, and a failed PMC fetch does not fall back to the "
-            "publisher. ACE reuses a page already in ace_cache_root, so set a fresh "
-            "ace_cache_root for the run, or the old publisher page is recorded again"
+            "publisher. Pages already held in ace_cache_root are not reused for the "
+            "article then; ACE's own reuse of <root>/html/IngestionWorkflow still is, so "
+            "set a fresh ace_cache_root for the run, or the old publisher page is recorded again"
         ),
     )
 
