@@ -122,7 +122,11 @@ class SupplementsStage:
         def get(job):
             article_id, index, item = job
             dest = root / article_id / "files" / sp.file_name(index, item)
-            sp.fetch(item, dest, session, max_bytes=self.settings.supplement_max_mb * 2**20, reuse=reuse)
+            try:
+                sp.fetch(item, dest, session, max_bytes=self.settings.supplement_max_mb * 2**20, reuse=reuse)
+            except Exception as exc:  # noqa: BLE001 - a disk full or the like: this file, retried
+                logger.warning("supplements: fetching %s failed: %s", item.url, exc)
+                item.path, item.reason = None, f"{sp.TRANSIENT}: fetch failed: {type(exc).__name__}: {str(exc)[:200]}"
 
         with ThreadPoolExecutor(FETCH_THREADS) as pool:
             list(pool.map(get, jobs))
@@ -209,22 +213,30 @@ class SupplementsStage:
         if pdfs:
             self._read_pdfs(root, pdfs)
 
-    def _read_rest(self, root: Path, jobs) -> None:
+    def _read_rest(self, root: Path, jobs, worker=None) -> None:
+        """Read the Word files and sheets, each in a child the parent kills over the PDF
+        limits (`bounded_map`): a reader that crashes or runs away fails its file alone, where
+        a broken process pool failed the whole batch and the scheduler halved it again."""
         import multiprocessing
-        from concurrent.futures import ProcessPoolExecutor
 
+        from ingestion_workflow.extractors.bounded import Limits, bounded_map
         from ingestion_workflow.services import supplements as sp
 
         tasks = [(item.to_dict(), str(root / article_id / "read" / f"{index:02d}"))
                  for article_id, index, item in jobs]
         workers = min(max(1, int(getattr(self.settings, "max_workers", 1) or 1)), READ_WORKERS, len(tasks))
-        if workers == 1:
-            answers = [_read_one(task) for task in tasks]
-        else:
+        answers = bounded_map(
+            tasks, worker or _read_one, (), workers=workers,
+            limits=Limits(memory_mb=self.settings.pdf_extract_memory_mb,
+                          timeout_s=self.settings.pdf_extract_timeout_s),
             # spawn: Docling's torch must not be forked from a parent that has started threads
-            with ProcessPoolExecutor(workers, mp_context=multiprocessing.get_context("spawn")) as pool:
-                answers = list(pool.map(_read_one, tasks, chunksize=4))
-        for (_, _, item), answer in zip(jobs, answers):
+            context=multiprocessing.get_context("spawn"))
+        for index, answer, error in answers:
+            item = jobs[index][2]
+            if error is not None:
+                item.text_path, item.tables, item.read_by = None, [], None
+                item.reason = f"unreadable: {type(error).__name__}: {str(error)[:200]}"
+                continue
             read = sp.Supplement.from_dict(answer)
             item.text_path, item.tables, item.read_by, item.reason = (
                 read.text_path, read.tables, read.read_by, read.reason)
