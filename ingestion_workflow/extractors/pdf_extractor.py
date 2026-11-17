@@ -891,6 +891,7 @@ class PdfExtractor(BaseExtractor):
             limits=Limits(
                 memory_mb=self.settings.mineru_extract_memory_mb,
                 timeout_s=self.settings.pdf_extract_timeout_s,
+                start_s=self.settings.mineru_start_timeout_s,
             ),
             worker_initializer=_start_mineru_worker,
             worker_initargs=(gpus,),

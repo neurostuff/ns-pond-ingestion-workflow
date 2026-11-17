@@ -178,3 +178,38 @@ def test_a_killed_worker_takes_what_it_started_with_it(tmp_path):
     while not _gone(engine) and time.monotonic() < deadline:
         time.sleep(0.1)
     assert _gone(engine)
+
+
+def slow_start(slot, seconds):
+    """An initializer that takes as long as MinerU's engines do to load."""
+    time.sleep(seconds)
+
+
+def echo(item):
+    return item
+
+
+def test_a_worker_slow_to_start_is_given_its_start_limit_not_the_item_s():
+    """Four MinerU workers took over 8 minutes to load their engines on beast, past the
+    10-minute item limit that bounded their start too: each was killed and replaced before
+    its first PDF, and none was ever read."""
+    answers = bounded_map(
+        ["a", "b"],
+        echo,
+        (),
+        workers=1,
+        limits=Limits(memory_mb=MEMORY_MB, timeout_s=0.5, start_s=30),
+        context=multiprocessing.get_context("spawn"),
+        initializer=slow_start,
+        initargs=(1.5,),
+    )
+
+    assert sorted((result, error) for _, result, error in answers) == [("a", None), ("b", None)]
+
+
+def test_without_a_start_limit_the_item_s_bounds_the_start():
+    ((_, result, error),) = bounded_map(
+        ["a"], echo, (), workers=1, limits=Limits(memory_mb=MEMORY_MB, timeout_s=0.5),
+        context=multiprocessing.get_context("spawn"), initializer=slow_start, initargs=(1.5,))
+
+    assert result is None and error is not None

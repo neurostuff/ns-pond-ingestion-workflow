@@ -40,6 +40,9 @@ class Limits:
     memory_mb: int
     #: Wall time for one item, from when the child is handed it.
     timeout_s: float
+    #: Wall time for a child to start: imports and the initializer (a model loaded).
+    #: The item's own limit when unset.
+    start_s: Optional[float] = None
 
 
 class Stopped(RuntimeError):
@@ -147,11 +150,12 @@ class _Child:
             self._process, self._conn = process, mine
         # Imports and the initializer are not the item's, but are bounded all the same:
         # a child that cannot start would otherwise be waited on forever.
-        if self._answer() != _READY:
+        if self._answer(self._limits.start_s or self._limits.timeout_s) != _READY:
             raise Stopped("worker process started wrong")
 
-    def _answer(self) -> Any:
-        deadline = time.monotonic() + self._limits.timeout_s
+    def _answer(self, seconds: Optional[float] = None) -> Any:
+        seconds = self._limits.timeout_s if seconds is None else seconds
+        deadline = time.monotonic() + seconds
         while True:
             if self._conn.poll(POLL_SECONDS):
                 try:
@@ -168,7 +172,7 @@ class _Child:
                 )
             if time.monotonic() > deadline:
                 self._kill()
-                raise Stopped(f"killed after {self._limits.timeout_s:g} s, its time limit")
+                raise Stopped(f"killed after {seconds:g} s, its time limit")
 
     def _kill(self) -> Optional[int]:
         with self._lock:
