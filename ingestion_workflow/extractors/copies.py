@@ -137,14 +137,27 @@ _PAGE_DOI = ("//meta[translate(@name, 'CITATONDIENFR', 'citatondienfr') = 'citat
              " or translate(@name, 'CITATONDIENFR', 'citatondienfr') = 'dc.identifier']/@content")
 
 
+#: PMC's article pages say they are PMC's, as ACE's PMC source matches them, and mark an
+#: author manuscript by its NIH manuscript domain.
+_PMC_PAGE = "//meta[@name='ncbi_db']/@content"
+_PMC_DOMAIN = "//meta[@name='ncbi_domain']/@content"
+_PMC_MANUSCRIPT = "nihpa"
+
+
 def _ace_copy(result: DownloadResult) -> DownloadCopy:
     """The publisher's page, scraped as our network sees it, often through the university's
     subscription: not what any reader could fetch. A page that names a preprint DOI as its
     own is the preprint, at its server; the article's DOIs may be its journal's and its
-    preprint's, and ACE reads either."""
+    preprint's, and ACE reads either. A PMC page (`ace_prefer_pmc`) is PMC's copy."""
     page = next((f.file_path for f in result.files if f.file_type is FileType.HTML), None)
-    dois = (etree.parse(str(page), etree.HTMLParser(encoding="utf-8")).xpath(_PAGE_DOI)
-            if page is not None else [])
+    tree = (etree.parse(str(page), etree.HTMLParser(encoding="utf-8"))
+            if page is not None else None)
+    if tree is not None and "pmc" in tree.xpath(_PMC_PAGE):
+        manuscript = _PMC_MANUSCRIPT in tree.xpath(_PMC_DOMAIN)
+        return DownloadCopy(route=CopyRoute.pmc,
+                            version=CopyVersion.am if manuscript else CopyVersion.vor,
+                            access=CopyAccess.unrecorded)
+    dois = tree.xpath(_PAGE_DOI) if tree is not None else []
     server = next((s for s in map(preprint_server, dois) if s), None)
     if server is not None:
         return DownloadCopy(route=CopyRoute.preprint_server, version=CopyVersion.submitted,
