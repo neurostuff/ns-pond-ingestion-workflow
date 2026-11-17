@@ -254,3 +254,52 @@ def test_word_files_and_sheets_are_read_in_a_pool_into_their_own_directories(env
     assert [Path(s.text_path).parent.relative_to(tmp_path / "root").as_posix() for _, _, s in jobs] == [
         "a1/read/01", "a2/read/01", "a2/read/02"]
     assert "region a22" in Path(jobs[2][2].text_path).read_text()
+
+
+def test_articles_are_listed_together_from_downloads_read_beforehand(env, tmp_path, monkeypatch):
+    """The pool asks only the network: each article's downloads are read from the catalog
+    first, on the stage's own thread."""
+    import threading
+
+    settings, catalog, ctx = env
+    refs = [_article(catalog, f"a{n}", pmcid=f"PMC{n + 1}") for n in range(6)]
+    for ref in refs:
+        _download(catalog, tmp_path, ref, "pubget")
+    stage = SupplementsStage(settings)
+    seen = {}
+
+    def listed(work, stored, session):
+        seen[work.article_id] = (sorted(stored), threading.current_thread().name)
+        return [sp.Supplement("pmc", None, f"{work.article_id}.docx", reason="not in PMC's Cloud Service package")]
+
+    monkeypatch.setattr(stage, "_list", listed)
+    plan = _plan(stage, ctx, catalog, refs)
+
+    outcomes = list(stage.execute(ctx, plan.pending))
+
+    assert [o.status for o in outcomes] == [Status.OK] * 6
+    assert {k: v[0] for k, v in seen.items()} == {r.id: ["pubget"] for r in refs}
+    assert all(name != threading.main_thread().name for _, name in seen.values())
+    assert outcomes[0].summary == {"listed": 1, "fetched": 0, "read": 0, "tables": 0, "routes": {"pmc": 1},
+                                   "passed_over": {"not in PMC's Cloud Service package": 1}}
+
+
+def test_a_kept_cloud_record_names_the_package_without_listing_the_bucket(tmp_path):
+    """PMC5520049's record as the PMC download keeps it (`pmc_cloud.json`)."""
+    from ingestion_workflow.pipeline.stages.supplements import _pmc
+
+    jats = tmp_path / "article.xml"
+    jats.write_text('<article xmlns:xlink="http://www.w3.org/1999/xlink"><back><supplementary-material>'
+                    '<caption><title>Supplementary Information</title></caption>'
+                    '<media xlink:href="ncomms16052-s1.pdf"/></supplementary-material></back></article>')
+    cloud = {"version": 1, "media_urls": [
+        "s3://pmc-oa-opendata/PMC5520049.1/ncomms16052-f1.jpg?md5=33ed4299595226bc4c2c9ece05c337ae",
+        "s3://pmc-oa-opendata/PMC5520049.1/ncomms16052-s1.pdf?md5=1816cc4cd107c41bf1a08d8d29ddd0f0"]}
+
+    class NoNetwork:
+        def get(self, *args, **kwargs):
+            raise AssertionError("the bucket was asked")
+
+    [item] = _pmc("PMC5520049", jats, NoNetwork(), cloud)
+
+    assert item.url == f"{sp.PMC_CLOUD}/PMC5520049.1/ncomms16052-s1.pdf"
