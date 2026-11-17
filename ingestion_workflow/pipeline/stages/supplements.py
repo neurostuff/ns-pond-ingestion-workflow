@@ -41,8 +41,8 @@ LIST_THREADS = 8
 #: Most processes reading Word files and sheets at once: each holds a Docling converter.
 READ_WORKERS = 8
 #: The most while the batch's PDFs are read beside them: a MinerU worker and its engine hold
-#: 5 to 8 GB, three of them beside eight Docling readers left beast (62 GB) a few GB.
-READ_WORKERS_BESIDE_PDFS = 5
+#: 5 to 8 GB, and beast (62 GB) is shared; when it ran out, the kernel killed MinerU's engines.
+READ_WORKERS_BESIDE_PDFS = 3
 
 
 def routes_for(ref: ArticleRef, ok: Iterable[str], wanted: Sequence[str]) -> List[str]:
