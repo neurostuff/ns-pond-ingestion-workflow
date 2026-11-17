@@ -97,13 +97,15 @@ def _text(root: Path):
     return parse, parsed, text, text_sha256
 
 
-def _row(job, text_sha256, parse_keys, n_in, content, kwargs, record_digest=None) -> dict:
+def _row(job, text_sha256, parse_keys, n_in, content, kwargs, record_digest=None,
+         response_schema=None) -> dict:
     article_id, _, base_study_id, _, serve, _ = job
     room = serve["max_len"] - n_in - serve["reserve"]
     return InputRow(article_id=article_id, base_study_id=base_study_id, text_sha256=text_sha256,
                     parse_keys=parse_keys, record_digest=record_digest, n_input_tokens=n_in,
                     content=content, chat_template_kwargs=kwargs,
-                    max_tokens=max(256, min(serve["max_tokens"], room))).model_dump()
+                    max_tokens=max(256, min(serve["max_tokens"], room)),
+                    response_schema=response_schema).model_dump()
 
 
 def build_record(job) -> Tuple[Optional[dict], str]:
@@ -123,7 +125,10 @@ def build_record(job) -> Tuple[Optional[dict], str]:
     template = prompt.template()
     content, kwargs = prompt.user_content(paper_prompt, template, job[3])
     n_in = prompt.ntok(prompt.user_turn(paper_prompt, template))
-    return _row(job, text_sha256, list(listed), n_in, content, kwargs), ""
+    schema = (prompt.record_shape(prompt.schema_index(), "schema", keys=list(listed))
+              if job[4].get("guided") else None)
+    return _row(job, text_sha256, list(listed), n_in, content, kwargs,
+                response_schema=schema), ""
 
 
 def build_evidence(job) -> Tuple[Optional[dict], str]:
@@ -171,13 +176,19 @@ def candidates(catalog: Catalog, articles: Optional[Iterable[str]]) -> List[str]
                   if catalog.live(a))
 
 
+def retry_of(spec: RunSpec) -> Optional[str]:
+    """The spec's version when it decodes otherwise than greedy (sampled or guided): a retry,
+    which asks again the papers another version had no usable answer for."""
+    return spec.version if spec.serve.temperature > 0 or spec.serve.guided else None
+
+
 def _due(ctx: Context, spec: RunSpec, ids: List[str], report: ExportReport):
     """{article: its record, for evidence} of the articles the spec's source is not fresh for,
     and the skipped rows of the evidence whose record was skipped."""
     catalog = ctx.catalog
     stage = (RecordStage if spec.stage == "record" else EvidenceStage)(ctx.settings)
     fresh = stage.fresh_sources(ctx, ids, catalog.artifacts(ids, stage.name),
-                                catalog.artifacts(ids, stage.requires))
+                                catalog.artifacts(ids, stage.requires), retry=retry_of(spec))
     todo = [a for a in ids if spec.source not in fresh.get(a, ())]
     report.fresh = len(ids) - len(todo)
     if spec.stage == "record":
