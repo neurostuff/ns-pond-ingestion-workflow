@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -79,6 +80,21 @@ class CoordinatePoint:
                 raise ValueError(f"Coordinate at index {index} must be numeric") from exc
         self.coordinates = coerced
 
+        # A table's stray dash before a size: the size is its magnitude.
+        if self.cluster_size is not None:
+            try:
+                size = int(self.cluster_size)
+                self.cluster_size = abs(size)
+            except (TypeError, ValueError):
+                self.cluster_size = None
+
+        if self.cluster_measure is not None:
+            normalized_measure = str(self.cluster_measure).strip().lower()
+            if normalized_measure in {"voxels", "mm^3", "mm3"}:
+                self.cluster_measure = "mm^3" if normalized_measure in {"mm^3", "mm3"} else "voxels"
+            else:
+                self.cluster_measure = None
+
         if self.values is None:
             return
         if not isinstance(self.values, list):
@@ -96,20 +112,6 @@ class CoordinatePoint:
                 continue
             raise ValueError("values entries must be PointsValue, mapping, number, or string")
         self.values = parsed_values
-
-        if self.cluster_size is not None:
-            try:
-                size = int(self.cluster_size)
-                self.cluster_size = abs(size)
-            except (TypeError, ValueError):
-                self.cluster_size = None
-
-        if self.cluster_measure is not None:
-            normalized_measure = str(self.cluster_measure).strip().lower()
-            if normalized_measure in {"voxels", "mm^3", "mm3"}:
-                self.cluster_measure = "mm^3" if normalized_measure in {"mm^3", "mm3"} else "voxels"
-            else:
-                self.cluster_measure = None
 
 
 @dataclass
@@ -182,6 +184,17 @@ class Coordinate:
     #: set's role, which the roles stage decides), and `sign`, which `to_dict`
     #: writes but is always derived again on read.
     NON_FIELD_KEYS = ("is_deactivation", "is_seed", "sign")
+
+    def __post_init__(self) -> None:
+        # A cluster size is a count; one printed or read with a minus is its magnitude,
+        # as a table's is (CoordinatePoint). What is not a finite number is no size.
+        size = self.cluster_size
+        if size is None:
+            return
+        if isinstance(size, bool) or not isinstance(size, (int, float)) or not math.isfinite(size):
+            self.cluster_size = self.cluster_measure = None
+        else:
+            self.cluster_size = abs(int(size))
 
     @property
     def sign(self) -> str:
