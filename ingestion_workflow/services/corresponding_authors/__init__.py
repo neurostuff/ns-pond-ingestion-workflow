@@ -16,6 +16,7 @@ from typing import Iterable, List, Optional, Sequence
 
 from lxml import etree
 
+from ingestion_workflow.extractors.utils import recovering_xml_parser
 from ingestion_workflow.models.metadata import CorrespondingAuthor
 
 from .ace import from_page
@@ -31,7 +32,6 @@ __all__ = ["decide", "mark_corresponding", "from_held", "from_jats", "from_elsev
 
 #: Sources whose copy is a PDF, read from the text its extraction gave.
 PDF_SOURCES = ("pdf", "wiley")
-_XML = etree.XMLParser(recover=True, huge_tree=True, resolve_entities=False)
 
 
 def from_held(source: str, files: Iterable[Path],
@@ -46,7 +46,8 @@ def from_held(source: str, files: Iterable[Path],
         return from_pdf_text(text) if text is not None and text.exists() else []
     by_name = {path.name: path for path in files}
     if "article.xml" in by_name and by_name["article.xml"].exists():
-        return from_jats(etree.parse(str(by_name["article.xml"]), _XML).getroot())
+        article = etree.parse(str(by_name["article.xml"]), recovering_xml_parser())
+        return from_jats(article.getroot())
     content = next((p for name, p in by_name.items()
                     if name.startswith("content.") and name.endswith(".xml")), None)
     if content is not None and content.exists():

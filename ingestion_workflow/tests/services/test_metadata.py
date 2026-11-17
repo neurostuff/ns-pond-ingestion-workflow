@@ -408,6 +408,34 @@ class TestMetadataService:
         assert metadata is not None
         assert metadata.title.startswith("Preliminary findings demonstrating latent effects")
 
+    def test_pubget_fallback_reads_malformed_jats_as_the_extraction_does(
+        self, metadata_service, tmp_path
+    ):
+        """A closing tag broken in the body, as pubget's copy of PMC4542504 is, leaves the
+        front matter readable; a strict parse found no metadata at all."""
+        fixture = Path(__file__).resolve().parents[1] / "data" / "test_pubget" / "articles"
+        root = metadata_service.settings.pubget_cache_root or (
+            metadata_service.settings.cache_root / "pubget"
+        )
+        target = root / "articles" / "1a4" / "pmcid_9056519"
+        target.mkdir(parents=True)
+        xml = (fixture / "1a4" / "pmcid_9056519" / "article.xml").read_text(encoding="utf-8")
+        at = xml.index("<back>")
+        (target / "article.xml").write_text(
+            xml[:at].replace("</italic>", "</italic=", 1) + xml[at:], encoding="utf-8")
+        extracted = ExtractedContent(
+            slug="pubget-malformed",
+            source=DownloadSource.PUBGET,
+            identifier=Identifier(pmcid="PMC9056519"),
+            has_coordinates=False,
+            full_text_path=tmp_path / "elsewhere" / "text.txt",
+        )
+
+        metadata = metadata_service._get_pubget_fallback(extracted)
+
+        assert metadata is not None
+        assert metadata.title.startswith("Preliminary findings demonstrating latent effects")
+
 
 class TestMetadataIntegration:
     """Integration tests for metadata workflow."""

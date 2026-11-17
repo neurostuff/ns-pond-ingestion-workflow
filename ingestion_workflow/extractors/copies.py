@@ -14,6 +14,7 @@ from lxml import etree
 from study_schema.models.paper_parse import CopyAccess, CopyRoute, CopyVersion
 
 from ingestion_workflow.extractors.pdf_extractor import _is_pmc_copy
+from ingestion_workflow.extractors.utils import recovering_xml_parser
 from ingestion_workflow.models import (
     DownloadCopy,
     DownloadResult,
@@ -48,9 +49,7 @@ def _file(result: DownloadResult, name: str) -> Optional[Path]:
 
 def _pmc_copy(result: DownloadResult) -> DownloadCopy:
     """A PMC article's JATS says whether it is a preprint or an author manuscript."""
-    # As the PMC sources read it: some of PMC's JATS is malformed past the front matter.
-    parser = etree.XMLParser(recover=True, huge_tree=True, resolve_entities=False)
-    article = etree.parse(str(_file(result, "article.xml")), parser).getroot()
+    article = etree.parse(str(_file(result, "article.xml")), recovering_xml_parser()).getroot()
     # Malformed JATS can lose its front matter, and with it what says the version.
     meta = article.find("front/article-meta")
     version = None if meta is None else _pmc_version(meta)
