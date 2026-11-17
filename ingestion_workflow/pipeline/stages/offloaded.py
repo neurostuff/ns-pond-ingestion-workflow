@@ -31,6 +31,8 @@ AWAITS_IMPORT = "waits for an offload import"
 NO_NORMALIZE_INPUT = "waits for an evidence record (or a skipped evidence run's record)"
 NO_PARSE = "no coordinate parse"
 NO_RECORD = "no record of this source"
+#: The reason of a skip for want of a usable answer: cut short, or not JSON (pull writes it).
+NO_ANSWER = "no prediction: {}"
 
 OFFLOADED_STAGES = ("record", "evidence", "normalize")
 
@@ -132,9 +134,18 @@ class _Runs:
         return self._held[run_id]
 
 
+def _asked_again(mine: Artifact, run: Run, retry: Optional[str]) -> bool:
+    """Whether `retry`, a version that decodes otherwise (sampled or guided), asks again the
+    paper of `mine`, a skip: one another version made for want of a usable answer. A skip for
+    an over-long request, or for a skipped record, is the same whoever asks."""
+    return (retry is not None and run.version not in (None, retry)
+            and (mine.error or "").startswith(NO_ANSWER.format("")))
+
+
 class _OffloadedStage:
     """A stage whose output is imported. Fresh per source when its fingerprint, worked out
-    again from what it read, still matches; a SKIPPED one counts as done."""
+    again from what it read, still matches; a SKIPPED one counts as done, but for a retry
+    (`_asked_again`)."""
 
     name: str
     requires: str
@@ -155,8 +166,10 @@ class _OffloadedStage:
         ids: Sequence[str],
         artifacts: Dict[str, Dict[str, Artifact]],
         upstream: Dict[str, Dict[str, Artifact]],
+        retry: Optional[str] = None,
     ) -> Dict[str, Set[str]]:
-        """{article: the sources whose artifact is fresh}."""
+        """{article: the sources whose artifact is fresh}, for `retry`'s run when one is
+        named."""
         runs = _Runs(ctx)
         inputs = self.inputs(ctx, list(ids), upstream)
         out: Dict[str, Set[str]] = {}
@@ -165,7 +178,10 @@ class _OffloadedStage:
                 run = runs(mine.run_id)
                 if run is None or mine.status not in (Status.OK, Status.SKIPPED):
                     continue
-                if mine.status is Status.SKIPPED or (
+                if mine.status is Status.SKIPPED:
+                    if not _asked_again(mine, run, retry):
+                        out.setdefault(article_id, set()).add(source)
+                elif (
                         self.expected(ctx, run, mine, inputs.get(article_id, {}), source)
                         == mine.fingerprint and ctx.is_fresh(mine, mine.fingerprint)):
                     out.setdefault(article_id, set()).add(source)

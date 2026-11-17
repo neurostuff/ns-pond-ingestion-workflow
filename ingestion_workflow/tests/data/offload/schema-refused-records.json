@@ -1,0 +1,4786 @@
+{
+"5bqhpxh2brgm": {
+"acquisitions": [
+{
+"acquisition_duration_seconds": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"acquisition_type": "OtherModality",
+"brain_coverage": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "acq_gnss",
+"modality": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "other",
+"value_source": "generated"
+},
+"modality_label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "GNSS navigation signals",
+"value_source": "generated"
+},
+"reason_no_modality_class_used": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Simulated radio-frequency array signals, not MRI, EEG, fNIRS, or PET data.",
+"value_source": "generated"
+}
+}
+],
+"analyses": [
+{
+"acquisitions": [
+"acq_gnss"
+],
+"coordinate_space": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "OTHER",
+"value_source": "generated"
+},
+"definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Simulation 1 compared spatial resolution of ICA-CS and SS-MUSIC for four GNSS signals with multipath components.",
+"value_source": "generated"
+},
+"details": {
+"details_type": "OtherAnalysisDetails",
+"method_label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "ICA-CS and SS-MUSIC",
+"value_source": "generated"
+},
+"reason_first_class_type_not_used": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "This is a signal-processing simulation comparison, not a neuroimaging inferential analysis.",
+"value_source": "generated"
+},
+"structured_details": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "{\"simulation\":1,\"SNR_db\":20,\"snapshots\":2000,\"array_elements\":12,\"second_signal_multipath_angle_deg\":-22,\"comparison\":\"ICA-CS versus SS-MUSIC\",\"outcome\":\"spatial resolution\"}",
+"value_source": "generated"
+}
+},
+"effect": {
+"cells": [],
+"kind": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"statistic": {
+"degrees_of_freedom_denominator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"degrees_of_freedom_numerator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"family": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+},
+"groups": [],
+"interpretations": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"The ICA-CS algorithm has sharper peaks than SS-MUSIC; when the direct component and its multipath component are separated by 2 degrees, the SS-MUSIC algorithm cannot distinguish their arrival directions, and the ICS-CS algorithm can obtain the desired result."
+],
+"value_source": "generated"
+},
+"local_id": "a_pone_0181838_t001_1",
+"model_estimation": "mod_ica_cs",
+"model_representation_notes": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "The table entry supplies simulation geometry, not inferential coordinates or a tested effect. The paper reports no statistical significance test for the algorithm comparison.",
+"value_source": "generated"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "GNSS navigation signals",
+"value_source": "generated"
+},
+"outcome": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"prespecification": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"source_table_analysis": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analysis#9629a7d885fd86ab",
+"value_source": "generated"
+},
+"spatial_scope": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"tasks": [
+"tsk_gnss"
+]
+}
+],
+"coordinate_sets": [
+{
+"anchor_kind": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Table 1 reports simulated signal incident angles, not neuroimaging coordinates or inferential results.",
+"value_source": "generated"
+},
+"local_id": "analysis#9629a7d885fd86ab",
+"result_kind": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"role": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "other",
+"value_source": "generated"
+}
+}
+],
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Simulation study of a complex fast independent component analysis and compressive sensing algorithm for estimating directions of arrival of direct and multipath GNSS signals, compared with spatial smoothing MUSIC. No human neuroimaging data or participant cohorts were studied.",
+"value_source": "generated"
+},
+"design": {
+"allocation": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "not_applicable",
+"value_source": "generated"
+},
+"assignment_structure": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "simulation studies",
+"value_source": "generated"
+},
+"blinding": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "not_applicable",
+"value_source": "generated"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Four software simulations evaluated spatial resolution, DOA estimation error across SNRs, DOA estimation error across snapshot counts, and underdetermined array configurations. Practical experiments were deferred to future studies.",
+"value_source": "generated"
+}
+},
+"extraction_metadata": {
+"extractor_model": "vista-compact",
+"extractor_version": "0"
+},
+"hypothesis": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "uQUyRaV7ymiu",
+"measures": [
+{
+"family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "array signal processing",
+"value_source": "generated"
+},
+"local_id": "mea_doa",
+"source_label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "DOA estimation",
+"value_source": "generated"
+},
+"specific_metric": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Estimated directions of arrival of direct and multipath components",
+"value_source": "generated"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "direction-of-arrival estimation",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "degrees",
+"value_source": "generated"
+}
+}
+],
+"model_estimations": [
+{
+"estimator": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "cFastICA and interior point method",
+"value_source": "generated"
+},
+"hrf_model": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "mod_ica_cs",
+"model_family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "complex fast independent component analysis and compressive sensing",
+"value_source": "generated"
+},
+"model_settings": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "cFastICA estimates the array manifold; compressive sensing solves an l1-norm optimization converted to second-order cone programming using the interior point method. The bearing space is discretized into a 0.1\u00b0 grid.",
+"value_source": "generated"
+},
+"model_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "ICA-CS",
+"value_source": "generated"
+},
+"preprocessing": [
+"prp_ica"
+],
+"software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"spatial_unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "source signal",
+"value_source": "generated"
+},
+"stage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "source signal separation and DOA estimation",
+"value_source": "generated"
+}
+}
+],
+"preprocessings": [
+{
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Preprocessing of received array signals before ICA.",
+"value_source": "generated"
+},
+"local_id": "prp_ica",
+"smoothing_fwhm_mm": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"steps": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Centering",
+"Whitening"
+],
+"value_source": "generated"
+}
+}
+],
+"result_reporting": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analyses_reported",
+"value_source": "generated"
+},
+"tables": [
+{
+"caption": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "The general simulation conditions.",
+"value_source": "generated"
+},
+"column_headings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"footer": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "tbl1",
+"purpose": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"table_number": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Table 1",
+"value_source": "generated"
+}
+}
+],
+"tasks": [
+{
+"acquisitions": [
+"acq_gnss"
+],
+"conditions": [
+{
+"condition_kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "simulated signal reception",
+"value_source": "generated"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Four direct signals at -40\u00b0, -20\u00b0, 10\u00b0, and 40\u00b0; two multipath components for the first signal, one each for the second and third, and none for the fourth.",
+"value_source": "generated"
+},
+"local_id": "cond_gnss",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "GNSS navigation signals",
+"value_source": "generated"
+},
+"stimulus_content": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Simulated GNSS navigation signals from four satellites incident on a uniform linear array, with direct and multipath components. This is a signal-processing simulation, not a human task paradigm.",
+"value_source": "generated"
+},
+"design_type": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"instructions": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "tsk_gnss",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "GNSS navigation signals",
+"value_source": "generated"
+},
+"performance_measures": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"DOA estimation root-mean-square error",
+"Spatial resolution"
+],
+"value_source": "generated"
+},
+"presentation_software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"references": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"response_modality": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"none"
+],
+"value_source": "generated"
+},
+"stimuli": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Simulated GNSS navigation signals from four satellites"
+],
+"value_source": "generated"
+},
+"stimulus_content": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"stimulus_modality": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"none"
+],
+"value_source": "generated"
+}
+}
+]
+},
+"dhaj42u2kyja": {
+"acquisitions": [
+{
+"acquisition_duration_seconds": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"acquisition_type": "MRI",
+"acquisition_voxel_size_mm": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"brain_coverage": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"echo_time_seconds": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "acq_fmri",
+"magnetic_field_strength_tesla": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"modality": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "fMRI",
+"value_source": "generated"
+},
+"mr_acquisition_type": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"number_of_volumes": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"pulse_sequence_type": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"repetition_time_seconds": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"analyses": [
+{
+"acquisitions": [
+"acq_fmri"
+],
+"coordinate_space": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "MNI",
+"value_source": "generated"
+},
+"definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Following eight days of repeated experimental pain, peak levels of decreased activity were found in the medial thalamus including the Pa in healthy individuals.",
+"value_source": "generated"
+},
+"details": {
+"details_type": "MassUnivariateDetails"
+},
+"effect": {
+"cells": [
+{
+"direction": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "negative",
+"value_source": "generated"
+},
+"label": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "repeated experimental pain",
+"value_source": "generated"
+},
+"term": "trm_pain"
+}
+],
+"kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "simple_effect",
+"value_source": "generated"
+},
+"statistic": {
+"degrees_of_freedom_denominator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"degrees_of_freedom_numerator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"family": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+},
+"groups": [
+{
+"group": "grp_healthy",
+"n": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"interpretations": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"This finding is consistent with the role of the Pa in regulating the effects of chronic stress in animal models."
+],
+"value_source": "generated"
+},
+"local_id": "a_prose_1",
+"measure": "mea_bold",
+"model_estimation": "mod_pain",
+"model_representation_notes": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "The result is reported from Bingel et al. (2007), not a newly acquired sample. The review does not specify the pain-versus-baseline contrast, statistical test, or threshold.",
+"value_source": "generated"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "repeated experimental pain in healthy individuals",
+"value_source": "generated"
+},
+"outcome": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "significant_effect",
+"value_source": "generated"
+},
+"prespecification": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"source_table_analysis": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analysis#670bbefca8faa612",
+"value_source": "generated"
+},
+"spatial_scope": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"tasks": [
+"tsk_pain"
+]
+}
+],
+"coordinate_sets": [
+{
+"analysis": "a_prose_1",
+"anchor_kind": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Peak decreased activity in the medial thalamus including the Pa following eight days of repeated experimental pain; MNI coordinates (0, -9, 6).",
+"value_source": "generated"
+},
+"local_id": "analysis#670bbefca8faa612",
+"result_kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "contrast",
+"value_source": "generated"
+},
+"role": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "result",
+"value_source": "generated"
+}
+}
+],
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Narrative review of the paraventricular thalamic nucleus's connections and role in stress, motivation, mood, anxiety, drug relapse, and depression. It summarizes animal experiments and previously published human neuroimaging studies rather than reporting a new primary imaging experiment.",
+"value_source": "generated"
+},
+"design": {
+"allocation": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "not_applicable",
+"value_source": "generated"
+},
+"assignment_structure": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "review of published studies",
+"value_source": "generated"
+},
+"blinding": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Review of animal and human studies; no new participant allocation or acquisition is reported.",
+"value_source": "generated"
+}
+},
+"extraction_metadata": {
+"extractor_model": "vista-compact",
+"extractor_version": "0"
+},
+"groups": [
+{
+"acquired_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_maximum": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_mean": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_median": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_minimum": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_standard_deviation": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"approached_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"clinical_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"consented_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Healthy participants in the previously published repeated experimental pain study by Bingel et al. (2007).",
+"value_source": "generated"
+},
+"diagnostic_system": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"education_summary": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"enrolled_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"excluded_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"exclusion_criteria": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"inclusion_criteria": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"is_healthy": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": true,
+"value_source": "generated"
+},
+"local_id": "grp_healthy",
+"medical_condition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"healthy"
+],
+"value_source": "generated"
+},
+"medication_status": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"medications": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "healthy individuals",
+"value_source": "generated"
+},
+"other_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"population_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"recruitment_dates": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"recruitment_method": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"sample_overlap_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"sample_source": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "previously_reported",
+"value_source": "generated"
+},
+"sample_source_reference": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Bingel et al. (2007)",
+"value_source": "generated"
+},
+"socioeconomic_status_summary": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"species": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "human",
+"value_source": "generated"
+}
+}
+],
+"hypothesis": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "dhaj42u2kyja",
+"measures": [
+{
+"family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "functional_bold",
+"value_source": "generated"
+},
+"local_id": "mea_bold",
+"source_label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "activity",
+"value_source": "generated"
+},
+"specific_metric": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "bold_response",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"model_estimations": [
+{
+"estimator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"hrf_model": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "mod_pain",
+"model_family": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"model_settings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"model_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Repeated experimental pain fMRI analysis",
+"value_source": "generated"
+},
+"software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"source_definition": "Following eight days of repeated experimental pain, peak levels of decreased activity were found in the medial thalamus including the Pa in healthy individuals.",
+"spatial_unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"stage": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"result_reporting": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analyses_reported",
+"value_source": "generated"
+},
+"tasks": [
+{
+"acquisitions": [
+"acq_fmri"
+],
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Eight days of repeated experimental pain in healthy individuals.",
+"value_source": "generated"
+},
+"design_type": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"instructions": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "tsk_pain",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "repeated experimental pain",
+"value_source": "generated"
+},
+"performance_measures": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"behavioral habituation to the repeated pain"
+],
+"value_source": "generated"
+},
+"presentation_software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"references": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Bingel et al. (2007)"
+],
+"value_source": "generated"
+},
+"response_modality": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"stimuli": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"experimental pain"
+],
+"value_source": "generated"
+},
+"stimulus_content": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"stimulus_modality": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"tactile"
+],
+"value_source": "generated"
+}
+}
+]
+},
+"f2j36xnh2r7e": {
+"analyses": [
+{
+"coordinate_space": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "The third sentence of the paragraph after Equation 3 should read \"the nearby voxels include (32, 12, 16), (32, 12, 17), (32, 13, 16), (32, 13, 17), (33, 12, 16), (33, 12, 17), (33, 13, 16), and (33, 13, 17).\"",
+"value_source": "generated"
+},
+"effect": {
+"cells": [],
+"kind": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"statistic": {
+"degrees_of_freedom_denominator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"degrees_of_freedom_numerator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"family": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+},
+"groups": [],
+"interpretations": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "a_prose_1",
+"model_representation_notes": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "nearby voxels",
+"value_source": "generated"
+},
+"outcome": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"prespecification": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"source_table_analysis": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"spatial_scope": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"coordinate_sets": [
+{
+"analysis": "a_prose_1",
+"anchor_kind": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Eight nearby voxels specified in the corrected Methods sentence, not a reported inferential result.",
+"value_source": "generated"
+},
+"local_id": "analysis#6fb4ee0b833c126c",
+"result_kind": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"role": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "other",
+"value_source": "generated"
+}
+}
+],
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Correction to the Materials and Methods and Table 1 of PONE-0080713, concerning deterministic diffusion fiber tracking improved by quantitative anisotropy. The supplied text does not contain the original study's participant, acquisition, or inferential results.",
+"value_source": "generated"
+},
+"design": {
+"allocation": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"assignment_structure": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"blinding": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Correction notice; no intervention or study design is described in the supplied text.",
+"value_source": "generated"
+}
+},
+"extraction_metadata": {
+"extractor_model": "vista-compact",
+"extractor_version": "0"
+},
+"hypothesis": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "f2j36xnh2r7e",
+"result_reporting": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "no_analyses_reported",
+"value_source": "generated"
+}
+},
+"h5745hs3o36p": {
+"acquisitions": [
+{
+"acquisition_duration_seconds": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"acquisition_type": "MRI",
+"acquisition_voxel_size_mm": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"brain_coverage": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"echo_time_seconds": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "acq_smri",
+"magnetic_field_strength_tesla": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"modality": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "sMRI",
+"value_source": "generated"
+},
+"mr_acquisition_type": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"number_of_volumes": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"pulse_sequence_type": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"repetition_time_seconds": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"analyses": [
+{
+"acquisitions": [
+"acq_smri"
+],
+"coordinate_space": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"defines_regions": [
+"reg_cerebellum"
+],
+"definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Brain-wide association between BMI and gray matter voxel-based morphometry was tested using a standard linear mass-univariate approach in the total sample of n=3401.",
+"value_source": "generated"
+},
+"details": {
+"details_type": "MassUnivariateDetails"
+},
+"effect": {
+"cells": [
+{
+"direction": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "negative",
+"value_source": "generated"
+},
+"label": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"level": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"term": "trm_bmi"
+}
+],
+"kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "cross_subject_regression",
+"value_source": "generated"
+},
+"statistic": {
+"degrees_of_freedom_denominator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"degrees_of_freedom_numerator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"family": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+},
+"groups": [
+{
+"group": "grp_adults",
+"n": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 3401,
+"value_source": "generated"
+}
+}
+],
+"interpretations": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Without cross-validation the brain-wide largest effect in the total sample (n=3401) was located within the cerebellum (peak voxel at x=-24, y=-72, z=-60) where BMI was negatively associated with gray matter density (effect size R p=.036)."
+],
+"value_source": "generated"
+},
+"local_id": "a_prose_1",
+"measure": "mea_gmd",
+"model_estimation": "mod_vbm",
+"model_representation_notes": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "The paper reports an effect size, not the underlying test statistic or a significance threshold. The supplied parse label calls this a correlation, but the paper describes a linear mass-univariate association. The reported R p=.036 is not a correlation coefficient.",
+"value_source": "generated"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "negative correlation between BMI and gray matter density",
+"value_source": "generated"
+},
+"outcome": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"prespecification": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"source_table_analysis": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analysis#893bbbbf6bd86edb",
+"value_source": "generated"
+},
+"spatial_scope": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "whole_brain",
+"value_source": "generated"
+}
+}
+],
+"coordinate_sets": [
+{
+"analysis": "a_prose_1",
+"anchor_kind": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Cerebellar peak of the negative BMI\u2013gray matter density association in the full sample, subsequently used for effect-size estimation analyses.",
+"value_source": "generated"
+},
+"local_id": "analysis#893bbbbf6bd86edb",
+"result_kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "association",
+"value_source": "generated"
+},
+"role": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "result",
+"value_source": "generated"
+}
+}
+],
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Methodological study of how sample size and cross-validation affect estimation of BMI\u2013gray matter density associations in a pooled sample of 3401 adults. A full-sample non-cross-validated analysis identified voxels for subsequent bootstrap and five-fold cross-validation analyses.",
+"value_source": "generated"
+},
+"design": {
+"allocation": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "not_applicable",
+"value_source": "generated"
+},
+"assignment_structure": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "observational_cohorts",
+"value_source": "generated"
+},
+"blinding": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Observational secondary analysis pooling three independent cohorts with and without major depressive disorder. No intervention was assigned. The study used the full sample to identify effects and bootstrap subsamples to evaluate effect-size estimation and generalization.",
+"value_source": "generated"
+}
+},
+"extraction_metadata": {
+"extractor_model": "vista-compact",
+"extractor_version": "0"
+},
+"groups": [
+{
+"acquired_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_maximum": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_mean": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_median": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_minimum": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_standard_deviation": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"approached_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"clinical_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"consented_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Pooled sample of 3401 adults from three independent cohorts comprising participants with and without major depressive disorder.",
+"value_source": "generated"
+},
+"diagnostic_system": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"education_summary": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"enrolled_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"excluded_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"exclusion_criteria": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"inclusion_criteria": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"is_healthy": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "grp_adults",
+"medical_condition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"major depressive disorder"
+],
+"value_source": "generated"
+},
+"medication_status": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"medications": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "adults",
+"value_source": "generated"
+},
+"other_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"population_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"recruitment_dates": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"recruitment_method": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"sample_overlap_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"sample_source": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "pooled from three independent cohorts",
+"value_source": "generated"
+},
+"sample_source_reference": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"socioeconomic_status_summary": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"species": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "human",
+"value_source": "generated"
+}
+}
+],
+"hypothesis": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "h5745hs3o36p",
+"measures": [
+{
+"family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "structural_morphometry",
+"value_source": "generated"
+},
+"local_id": "mea_gmd",
+"source_label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "gray matter voxel-based morphometry; gray matter density",
+"value_source": "generated"
+},
+"specific_metric": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "gray matter density",
+"value_source": "generated"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "gray_matter_density",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"model_estimations": [
+{
+"estimator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"hrf_model": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "mod_vbm",
+"model_family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "glm",
+"value_source": "generated"
+},
+"model_settings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"model_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "standard linear mass-univariate approach",
+"value_source": "generated"
+},
+"software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"spatial_unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "voxel",
+"value_source": "generated"
+},
+"stage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "total sample",
+"value_source": "generated"
+},
+"terms": [
+{
+"functional_form": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "linear",
+"value_source": "generated"
+},
+"local_id": "trm_bmi",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "BMI",
+"value_source": "generated"
+},
+"source_definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Body mass index (BMI) used as an exemplary predictor.",
+"value_source": "generated"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "continuous",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"variation_level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "between_subject",
+"value_source": "generated"
+}
+}
+]
+}
+],
+"regions": [
+{
+"atlas": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"definition_method": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "same_study_analysis",
+"value_source": "generated"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Peak voxel at x=-24, y=-72, z=-60 from the non-cross-validated full-sample BMI\u2013gray matter density association; subsequently used to examine effect-size estimation.",
+"value_source": "generated"
+},
+"local_id": "reg_cerebellum",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "cerebellum",
+"value_source": "generated"
+},
+"region_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "peak voxel",
+"value_source": "generated"
+}
+}
+],
+"result_reporting": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analyses_reported",
+"value_source": "generated"
+}
+},
+"k7hdanh6l63v": {
+"analyses": [
+{
+"coordinate_space": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "OTHER",
+"value_source": "generated"
+},
+"definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "We compare the positions of twelve founder cells at the time when they divide in simulation and observational cases.",
+"value_source": "generated"
+},
+"details": {
+"details_type": "OtherAnalysisDetails",
+"method_label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Analysis of dividing positions of 12 founder cells.",
+"value_source": "generated"
+},
+"reason_first_class_type_not_used": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "This is a computational model-validation comparison of cell positions, not a neuroimaging inferential analysis.",
+"value_source": "generated"
+},
+"structured_details": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "{\"simulation_rmse\":{\"x\":0.0059,\"y\":0.0067,\"z\":0.0033}}",
+"value_source": "generated"
+}
+},
+"effect": {
+"cells": [
+{
+"direction": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "positive",
+"value_source": "generated"
+},
+"label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Simulation result",
+"value_source": "generated"
+},
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Simulation result",
+"value_source": "generated"
+},
+"term": "trm_source"
+}
+],
+"kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "simple_effect",
+"value_source": "generated"
+},
+"statistic": {
+"degrees_of_freedom_denominator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"degrees_of_freedom_numerator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"family": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+},
+"groups": [
+{
+"group": "grp_simulation",
+"n": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"inference_settings": "inf_rmse",
+"interpretations": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Compared with the standard deviations of observational data on each direction (data not shown here), the deviations between simulation result and observational data are extremely small."
+],
+"value_source": "generated"
+},
+"local_id": "a_pone_0166551_t007_1",
+"measure": "mea_position",
+"model_estimation": "mod_positions",
+"model_representation_notes": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "The positive source-level cell records the simulation side of a descriptive comparison, not a significant biological effect. The paper reports RMSE and deviations but no inferential test or significance threshold.",
+"value_source": "generated"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Simulation result",
+"value_source": "generated"
+},
+"outcome": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "no_significant_effect",
+"value_source": "generated"
+},
+"prespecification": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"source_table_analysis": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analysis#fb62a67db12d770d",
+"value_source": "generated"
+},
+"spatial_scope": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "whole embryo",
+"value_source": "generated"
+},
+"tables": [
+"tbl7"
+],
+"tasks": [
+"tsk_early_embryogenesis"
+]
+},
+{
+"coordinate_space": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "OTHER",
+"value_source": "generated"
+},
+"definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "We compare the positions of twelve founder cells at the time when they divide in simulation and observational cases.",
+"value_source": "generated"
+},
+"details": {
+"details_type": "OtherAnalysisDetails",
+"method_label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Analysis of dividing positions of 12 founder cells.",
+"value_source": "generated"
+},
+"reason_first_class_type_not_used": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "This is a computational model-validation comparison of cell positions, not a neuroimaging inferential analysis.",
+"value_source": "generated"
+},
+"structured_details": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "{\"simulation_rmse\":{\"x\":0.0059,\"y\":0.0067,\"z\":0.0033}}",
+"value_source": "generated"
+}
+},
+"effect": {
+"cells": [
+{
+"direction": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "positive",
+"value_source": "generated"
+},
+"label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Observational data",
+"value_source": "generated"
+},
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Observational data",
+"value_source": "generated"
+},
+"term": "trm_source"
+}
+],
+"kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "simple_effect",
+"value_source": "generated"
+},
+"statistic": {
+"degrees_of_freedom_denominator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"degrees_of_freedom_numerator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"family": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+},
+"groups": [
+{
+"group": "grp_observational",
+"n": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"inference_settings": "inf_rmse",
+"interpretations": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Compared with the standard deviations of observational data on each direction (data not shown here), the deviations between simulation result and observational data are extremely small."
+],
+"value_source": "generated"
+},
+"local_id": "a_pone_0166551_t007_2",
+"measure": "mea_position",
+"model_estimation": "mod_positions",
+"model_representation_notes": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "The positive source-level cell records the observational side of a descriptive comparison, not a significant biological effect. The paper reports RMSE and deviations but no inferential test or significance threshold.",
+"value_source": "generated"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Observational data",
+"value_source": "generated"
+},
+"outcome": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "no_significant_effect",
+"value_source": "generated"
+},
+"prespecification": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"source_table_analysis": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analysis#1c5ac20fa2a615c0",
+"value_source": "generated"
+},
+"spatial_scope": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "whole embryo",
+"value_source": "generated"
+},
+"tables": [
+"tbl7"
+],
+"tasks": [
+"tsk_early_embryogenesis"
+]
+}
+],
+"coordinate_sets": [
+{
+"anchor_kind": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Example of output data format, not a result coordinate.",
+"value_source": "generated"
+},
+"local_id": "analysis#ea8d4e151891c874",
+"result_kind": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"role": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "other",
+"value_source": "generated"
+}
+},
+{
+"analysis": "a_pone_0166551_t007_1",
+"anchor_kind": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Simulation dividing positions of twelve founder cells.",
+"value_source": "generated"
+},
+"local_id": "analysis#fb62a67db12d770d",
+"result_kind": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"role": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "result",
+"value_source": "generated"
+}
+},
+{
+"analysis": "a_pone_0166551_t007_2",
+"anchor_kind": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Observational dividing positions of twelve founder cells.",
+"value_source": "generated"
+},
+"local_id": "analysis#1c5ac20fa2a615c0",
+"result_kind": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"role": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "result",
+"value_source": "generated"
+}
+}
+],
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Development and validation of an observation-driven agent-based model of C. elegans embryogenesis, comparing simulated cell numbers, division timing, cell cycles, migration and dividing positions with observational data. This is a computational modeling study, not a human neuroimaging study.",
+"value_source": "generated"
+},
+"design": {
+"allocation": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "not_applicable",
+"value_source": "generated"
+},
+"assignment_structure": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "not_applicable",
+"value_source": "generated"
+},
+"blinding": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "not_applicable",
+"value_source": "generated"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Computational validation of a NetLogo agent-based model against observational C. elegans embryogenesis data. No intervention arms or participant allocation are reported.",
+"value_source": "generated"
+}
+},
+"extraction_metadata": {
+"extractor_model": "vista-compact",
+"extractor_version": "0"
+},
+"groups": [
+{
+"acquired_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_maximum": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_mean": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_median": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_minimum": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_standard_deviation": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"approached_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"clinical_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"consented_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Simulated C. elegans embryogenesis from the 4-cell to 350-cell stage using an observation-driven agent-based model.",
+"value_source": "generated"
+},
+"diagnostic_system": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"education_summary": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"enrolled_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"excluded_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"exclusion_criteria": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"inclusion_criteria": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"is_healthy": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "grp_simulation",
+"medical_condition": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"medication_status": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"medications": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Simulation result",
+"value_source": "generated"
+},
+"other_characteristics": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Wild-type embryogenesis"
+],
+"value_source": "generated"
+},
+"population_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"recruitment_dates": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"recruitment_method": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"sample_overlap_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"sample_source": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "simulation",
+"value_source": "generated"
+},
+"sample_source_reference": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"socioeconomic_status_summary": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"species": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "C. elegans",
+"value_source": "generated"
+}
+},
+{
+"acquired_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_maximum": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_mean": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_median": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_minimum": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_standard_deviation": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"approached_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"clinical_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"consented_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Observational C. elegans embryogenesis data used to validate the simulation.",
+"value_source": "generated"
+},
+"diagnostic_system": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"education_summary": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"enrolled_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"excluded_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"exclusion_criteria": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"inclusion_criteria": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"is_healthy": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "grp_observational",
+"medical_condition": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"medication_status": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"medications": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Observational data",
+"value_source": "generated"
+},
+"other_characteristics": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Wild-type embryogenesis"
+],
+"value_source": "generated"
+},
+"population_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"recruitment_dates": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"recruitment_method": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"sample_overlap_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"sample_source": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"sample_source_reference": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "[ 7 ]",
+"value_source": "generated"
+},
+"socioeconomic_status_summary": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"species": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "C. elegans",
+"value_source": "generated"
+}
+}
+],
+"hypothesis": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"inference_settings": [
+{
+"alpha_level": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"cluster_extent_threshold": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"clusterwise_threshold_value": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"correction_scope": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"height_threshold_type": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"height_threshold_value": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"inference_level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "descriptive model validation",
+"value_source": "generated"
+},
+"local_id": "inf_rmse",
+"multiple_comparison_method": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"neighborhood_definition": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"number_of_tests": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"permutation_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"search_volume": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"tfce_parameters": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"tfce_used": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"local_id": "WENGgXhZ67dj",
+"measures": [
+{
+"family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "cell migration",
+"value_source": "generated"
+},
+"local_id": "mea_position",
+"source_label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "dividing positions of 12 founder cells",
+"value_source": "generated"
+},
+"specific_metric": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "x, y, z coordinates at division",
+"value_source": "generated"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "dividing positions of founder cells",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"model_estimations": [
+{
+"estimator": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "agent-based simulation",
+"value_source": "generated"
+},
+"hrf_model": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "mod_positions",
+"model_family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "agent-based modeling",
+"value_source": "generated"
+},
+"model_settings": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Cell division and migration are controlled by statistical models of observational data; division times receive random disturbances based on their standard deviations.",
+"value_source": "generated"
+},
+"model_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "observation-driven ABM framework",
+"value_source": "generated"
+},
+"software": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "NetLogo",
+"value_source": "generated"
+},
+"spatial_unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "cell",
+"value_source": "generated"
+},
+"stage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "simulation",
+"value_source": "generated"
+},
+"terms": [
+{
+"functional_form": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"levels": [
+{
+"groups": [
+"grp_simulation"
+],
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Simulation result",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"groups": [
+"grp_observational"
+],
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Observational data",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"local_id": "trm_source",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "data source",
+"value_source": "generated"
+},
+"source_definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Simulation and observational dividing positions of twelve founder cells.",
+"value_source": "generated"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "categorical",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"variation_level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "between simulation and observational data",
+"value_source": "generated"
+}
+}
+]
+}
+],
+"result_reporting": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analyses_reported",
+"value_source": "generated"
+},
+"tables": [
+{
+"caption": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Agent variables used in model.",
+"value_source": "generated"
+},
+"column_headings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"footer": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "tbl1",
+"purpose": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"table_number": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Table 1",
+"value_source": "generated"
+}
+},
+{
+"caption": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Environmental variables used in model.",
+"value_source": "generated"
+},
+"column_headings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"footer": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "tbl2",
+"purpose": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"table_number": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Table 2",
+"value_source": "generated"
+}
+},
+{
+"caption": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Input parameters of each table and example values.",
+"value_source": "generated"
+},
+"column_headings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"footer": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "tbl3",
+"purpose": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"table_number": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Table 3",
+"value_source": "generated"
+}
+},
+{
+"caption": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Example of output data format.",
+"value_source": "generated"
+},
+"column_headings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"footer": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "tbl4",
+"purpose": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"table_number": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Table 4",
+"value_source": "generated"
+}
+},
+{
+"caption": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Number of cells in embryo over time sampled every 5 minutes from simulation and observational data.",
+"value_source": "generated"
+},
+"column_headings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"footer": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "The following sampling points for simulation result and observational data vary: *124.2464 and 124.2027, **132.3937 and 132.576, ***140.541 and 140.9492, ****146.6515 and 146.5313, *****152.762 and 152.1134.",
+"value_source": "generated"
+},
+"local_id": "tbl5",
+"purpose": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"table_number": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Table 5",
+"value_source": "generated"
+}
+},
+{
+"caption": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Cell cycle analysis of 12 founder cells.",
+"value_source": "generated"
+},
+"column_headings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"footer": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "*Born time standard deviation.**Divided time standard deviation.***Cell cycle standard deviation.",
+"value_source": "generated"
+},
+"local_id": "tbl6",
+"purpose": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"table_number": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Table 6",
+"value_source": "generated"
+}
+},
+{
+"caption": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Analysis of dividing positions of 12 founder cells.",
+"value_source": "generated"
+},
+"column_headings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"footer": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "tbl7",
+"purpose": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "reported_effect",
+"value_source": "generated"
+},
+"table_number": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Table 7",
+"value_source": "generated"
+}
+}
+],
+"tasks": [
+{
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Observational cell-lineage tracking and simulation of cell division and migration from the 4-cell to 350-cell stage, with an ellipsoidal eggshell and three body axes.",
+"value_source": "generated"
+},
+"design_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "continuous",
+"value_source": "generated"
+},
+"instructions": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "tsk_early_embryogenesis",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "C. elegans early embryogenesis",
+"value_source": "generated"
+},
+"performance_measures": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Number of cells over time",
+"Cell cycle length",
+"Cell migration patterns",
+"Dividing positions of founder cells"
+],
+"value_source": "generated"
+},
+"presentation_software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"references": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"[ 7 ]",
+"[ 28 ]"
+],
+"value_source": "generated"
+},
+"response_modality": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"none"
+],
+"value_source": "generated"
+},
+"stimuli": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"stimulus_content": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"stimulus_modality": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"none"
+],
+"value_source": "generated"
+}
+}
+],
+"tasks2": [
+{
+"description": "Observational cell-lineage tracking and simulation of cell division and migration from the 4-cell to 350-cell stage, with an ellipsoidal eggshell and three body axes.",
+"design_type": "continuous",
+"local_id": "tsk_early_embryogenesis",
+"name": "C. elegans early embryogenesis",
+"performance_measures": [
+"Number of cells over time",
+"Cell cycle length",
+"Cell migration patterns",
+"Dividing positions of founder cells"
+],
+"references": [
+"[ 7 ]",
+"[ 28 ]"
+],
+"response_modality": [
+"none"
+],
+"stimulus_modality": [
+"none"
+]
+}
+]
+},
+"me7qqodzmq5a": {
+"acquisitions": [
+{
+"acquisition_duration_seconds": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"acquisition_type": "OtherModality",
+"brain_coverage": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"device": "dev_bx4",
+"local_id": "acq_microscopy",
+"modality": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "other",
+"value_source": "generated"
+},
+"modality_label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Immunohistochemical staining and immunofluorescent labeling",
+"value_source": "generated"
+},
+"reason_no_modality_class_used": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "The study uses anatomical microscopy and tissue staining, not MRI, EEG, fNIRS or PET.",
+"value_source": "generated"
+}
+}
+],
+"analyses": [
+{
+"acquisitions": [
+{
+"local_id": "acq_microscopy"
+}
+],
+"coordinate_space": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Two extra mice were injected in the lateral ventricle (LV) to evaluate possible unspecific staining in the peripheral tissue.",
+"value_source": "generated"
+},
+"details": {
+"details_type": "OtherAnalysisDetails",
+"method_label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "anterograde tracing",
+"value_source": "generated"
+},
+"reason_first_class_type_not_used": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "This is a descriptive anatomical tracer experiment, not a statistical imaging analysis; no inferential test or threshold is reported.",
+"value_source": "generated"
+},
+"structured_details": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+"effect": {
+"cells": [
+{
+"direction": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "positive",
+"value_source": "generated"
+},
+"label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "LV injected mice",
+"value_source": "generated"
+},
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "lateral ventricle",
+"value_source": "generated"
+},
+"term": "trm_injection"
+}
+],
+"kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "simple_effect",
+"value_source": "generated"
+},
+"statistic": {
+"degrees_of_freedom_denominator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"degrees_of_freedom_numerator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"family": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+},
+"groups": [
+{
+"group": "grp_lv",
+"n": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"interpretations": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"No dextran-labeled fibers were observed in LV injected mice."
+],
+"value_source": "generated"
+},
+"local_id": "a_prose_1",
+"measure": "mea_dextran",
+"model_estimation": "mod_tracer",
+"model_representation_notes": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "The supplied parse label is retained, but the coordinate is an injection site, not a statistical result. The source reports no inferential test. The positive cell records the observed tracer signal, not a significant effect.",
+"value_source": "generated"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "lateral ventricle injection",
+"value_source": "generated"
+},
+"outcome": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"prespecification": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"source_table_analysis": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analysis#5337701a2cb70980",
+"value_source": "generated"
+},
+"spatial_scope": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "whole mount intestinal tissue preparation",
+"value_source": "generated"
+}
+}
+],
+"coordinate_sets": [
+{
+"anchor_kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "injection site",
+"value_source": "generated"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Lateral ventricle injection coordinates: AP \u22120.5 mm, L \u22121.0 mm and V \u22122.0/\u22121.50/\u22121.0 mm. These are injection sites, not statistical result coordinates.",
+"value_source": "generated"
+},
+"local_id": "analysis#5337701a2cb70980",
+"regions": [
+"reg_lv"
+],
+"result_kind": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"role": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "anchor",
+"value_source": "generated"
+}
+}
+],
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Mouse anatomical study using dextran anterograde tracing and immunohistochemistry to investigate vagal innervation of the spleen and anatomical relationships between vagal efferents, enteric neurons and intestinal resident macrophages. No human neuroimaging or inferential imaging analysis was reported.",
+"value_source": "generated"
+},
+"design": {
+"allocation": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "not_applicable",
+"value_source": "generated"
+},
+"assignment_structure": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "experimental anatomical study with tracer-injection groups",
+"value_source": "generated"
+},
+"blinding": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Experimental mouse anatomical study with DMV tracer injections and lateral ventricle injections to evaluate nonspecific peripheral staining. Tissues were examined 19 days after injection. No imaging-based statistical model or inferential comparison was reported.",
+"value_source": "generated"
+},
+"timepoints": [
+{
+"local_id": "tp_19days",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "19 days after injection",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 1,
+"value_source": "generated"
+},
+"relation_to_intervention": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "post_intervention",
+"value_source": "generated"
+},
+"time_from_intervention": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "19 days",
+"value_source": "generated"
+}
+}
+]
+},
+"devices": [
+{
+"local_id": "dev_bx4",
+"manufacturer": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Olympus",
+"value_source": "generated"
+},
+"model": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "BX4 epifluorescence microscope",
+"value_source": "generated"
+}
+},
+{
+"local_id": "dev_lsm510",
+"manufacturer": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Zeiss",
+"value_source": "generated"
+},
+"model": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "LSM510 Meta confocal microscope",
+"value_source": "generated"
+}
+}
+],
+"extraction_metadata": {
+"extractor_model": "vista-compact",
+"extractor_version": "0"
+},
+"groups": [
+{
+"acquired_count": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 2,
+"value_source": "generated"
+},
+"age_maximum": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_mean": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_median": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_minimum": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_standard_deviation": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "weeks",
+"value_source": "generated"
+},
+"approached_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"clinical_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"consented_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Two extra mice injected in the lateral ventricle to evaluate possible unspecific staining in peripheral tissue.",
+"value_source": "generated"
+},
+"diagnostic_system": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"education_summary": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"enrolled_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"excluded_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"exclusion_criteria": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"inclusion_criteria": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"is_healthy": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "grp_lv",
+"medical_condition": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"medication_status": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Anesthetized during surgical procedures",
+"value_source": "generated"
+},
+"medications": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"fentanylcitrate/fluanisone (Hypnorm)",
+"midozolam (Dormicum)"
+],
+"value_source": "generated"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "LV injected mice",
+"value_source": "generated"
+},
+"other_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"population_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"recruitment_dates": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"recruitment_method": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Harlan Nederland, Horst, The Netherlands",
+"value_source": "generated"
+},
+"sample_overlap_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"sample_source": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "recruited",
+"value_source": "generated"
+},
+"sample_source_reference": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"sex_distribution": [
+{
+"category": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "female",
+"value_source": "generated"
+},
+"count": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 2,
+"value_source": "generated"
+},
+"denominator": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 2,
+"value_source": "generated"
+},
+"percentage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 100,
+"value_source": "generated"
+},
+"reporting_framework": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"category": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "male",
+"value_source": "generated"
+},
+"count": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 0,
+"value_source": "generated"
+},
+"denominator": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 2,
+"value_source": "generated"
+},
+"percentage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 0,
+"value_source": "generated"
+},
+"reporting_framework": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"socioeconomic_status_summary": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"species": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "mouse",
+"value_source": "generated"
+}
+}
+],
+"hypothesis": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "me7qqodzmq5a",
+"measures": [
+{
+"family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "anatomical tracer labeling",
+"value_source": "generated"
+},
+"local_id": "mea_dextran",
+"source_label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "dextran-labeled vagal fibers and terminals",
+"value_source": "generated"
+},
+"specific_metric": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Anterograde dextran amine labeling",
+"value_source": "generated"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "dextran-labeled vagal fibers and terminals",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"model_estimations": [
+{
+"estimator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"hrf_model": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "mod_tracer",
+"model_family": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"model_settings": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Descriptive anatomical observations of dextran-labeled fibers and terminals; no statistical model or inferential test reported.",
+"value_source": "generated"
+},
+"model_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Anterograde tracing experiments",
+"value_source": "generated"
+},
+"preprocessing": [
+"prp_microscopy"
+],
+"software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"spatial_unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "tissue",
+"value_source": "generated"
+},
+"stage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "tissue examination",
+"value_source": "generated"
+},
+"terms": [
+{
+"functional_form": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"levels": [
+{
+"groups": [
+"grp_dmv"
+],
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "DMV",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"groups": [
+"grp_lv"
+],
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "lateral ventricle",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"local_id": "trm_injection",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "injection site",
+"value_source": "generated"
+},
+"source_definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "DMV injections labeled vagal motor efferents; lateral ventricle injections evaluated nonspecific peripheral staining.",
+"value_source": "generated"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "categorical",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"variation_level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "between_subject",
+"value_source": "generated"
+}
+}
+]
+}
+],
+"preprocessings": [
+{
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Tissue preparation and immunohistochemical staining for anatomical visualization; not an imaging-data preprocessing pipeline.",
+"value_source": "generated"
+},
+"local_id": "prp_microscopy",
+"smoothing_fwhm_mm": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"steps": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Transcardiac perfusion with PBS followed by 4% paraformaldehyde",
+"Spleen removal before perfusion, snap freezing and storage at \u221280\u00b0C",
+"Post-fixation and sucrose immersion of collected tissues",
+"Intestinal whole-mount preparation and removal of muscle layers from mucosa and submucosa",
+"ABC/DAB or immunofluorescent staining"
+],
+"value_source": "generated"
+}
+}
+],
+"regions": [
+{
+"atlas": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"definition_method": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "anatomical_a_priori",
+"value_source": "generated"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Injection site at AP \u22120.5 mm, L \u22121.0 mm and V \u22122.0/\u22121.50/\u22121.0 mm, used to evaluate nonspecific peripheral staining.",
+"value_source": "generated"
+},
+"local_id": "reg_lv",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "lateral ventricle",
+"value_source": "generated"
+},
+"region_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "anatomical",
+"value_source": "generated"
+}
+}
+],
+"result_reporting": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analyses_reported",
+"value_source": "generated"
+}
+}
+}

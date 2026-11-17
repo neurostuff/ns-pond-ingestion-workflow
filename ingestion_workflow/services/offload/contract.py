@@ -16,9 +16,10 @@ everything import checks (the text hash and parse keys) travels with each row.
 
 from __future__ import annotations
 
+import gzip
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, Iterator, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -39,6 +40,13 @@ class Serve(BaseModel):
     vllm_args: List[str] = Field(default_factory=list)
     #: What the job leaves of the context for the answer's template wrapping, per family.
     reserve: int
+    #: Sampling for a retry of answers the schema refused; 0 is greedy. The seed fixes it.
+    temperature: float = 0.0
+    seed: Optional[int] = None
+    #: Decode each record answer against the compact record's JSON schema with the paper's
+    #: parse keys enumerated (vLLM guided decoding), for a retry of refused answers. Compact,
+    #: not extraction-record: the model writes the compact form, which pull expands.
+    guided: bool = False
 
 
 class RunSpec(BaseModel):
@@ -103,6 +111,8 @@ class InputRow(BaseModel):
     content: str
     chat_template_kwargs: Dict[str, Any]
     max_tokens: int
+    #: The JSON schema the answer is decoded against, when the spec is guided.
+    response_schema: Optional[Dict[str, Any]] = None
 
 
 class ResultRow(BaseModel):
@@ -171,6 +181,23 @@ class BundleDir:
         tmp = self.state_file.with_suffix(".tmp")
         tmp.write_text(state.model_dump_json(indent=1), "utf-8")
         tmp.replace(self.state_file)
+
+
+def read_rows(paths: Iterable[Path | str]) -> Iterator[Dict[str, Any]]:
+    """The rows of JSON-lines files, gzipped when named `.gz`. Only a newline ends a row:
+    the text in one may hold U+2028, which `str.splitlines` would split on."""
+    for path in paths:
+        opener = gzip.open if str(path).endswith(".gz") else open
+        with opener(path, "rt", encoding="utf-8") as handle:
+            for line in handle:
+                if line.strip():
+                    yield json.loads(line)
+
+
+def write_rows(path: Path, rows: Iterable[dict]) -> None:
+    """A bundle file, one row per line, its text as it is."""
+    with Path(path).open("w", encoding="utf-8") as handle:
+        handle.writelines(json.dumps(r, ensure_ascii=False) + "\n" for r in rows)
 
 
 def load_spec(path: Path) -> RunSpec:

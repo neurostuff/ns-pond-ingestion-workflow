@@ -243,9 +243,13 @@ class ExtractStage:
     name = "extract"
     requires = "download"
 
-    def __init__(self, settings) -> None:
+    def __init__(
+        self, settings, extractors: Optional[Dict[DownloadSource, object]] = None
+    ) -> None:
+        """`extractors` stand in for a source's built one: scripts/pdf_rerun.py's import
+        hands back what another machine read."""
         self.settings = settings
-        self._extractors: Dict[DownloadSource, object] = {}
+        self._extractors: Dict[DownloadSource, object] = dict(extractors or {})
         self._order = list(dict.fromkeys(text_source(s) for s in settings.download_sources))
         #: The supplements each article of the batch being executed has read, with their
         #: fingerprint (`_supplements_of`).
