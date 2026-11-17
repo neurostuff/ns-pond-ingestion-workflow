@@ -1332,7 +1332,7 @@ def report_coverage(
     changed since their upload, by stage. Writes the JSON export too."""
     from ingestion_workflow.services import coverage
 
-    root = _catalog_root(catalog, config)
+    root = _report_settings(catalog, config)[0]
     found = coverage.coverage(root)
     for line in coverage.render(found):
         typer.echo(line)
@@ -1355,7 +1355,7 @@ def runs_list(
     imported, and its articles by status. Read-only."""
     from ingestion_workflow.services import coverage
 
-    found = coverage.coverage(_catalog_root(catalog, config))
+    found = coverage.coverage(_report_settings(catalog, config)[0])
     for run in found["runs"]:
         counts = ", ".join(f"{n:,} {status}" for status, n in sorted(run["articles"].items()))
         typer.echo(f"{run['run_id']}  {run['kind']} {run['stage']}/{run['source']}  "
@@ -1432,7 +1432,7 @@ def offload_import(
     from ingestion_workflow.services.offload import importer as offload
     from ingestion_workflow.services.offload.contract import read_rows
 
-    root = _catalog_root(catalog, config)
+    root = _report_settings(catalog, config)[0]
     run = offload.load_run(run_file)
     with Catalog.open(root) as held:
         report = offload.import_run(held, run, read_rows(results))
