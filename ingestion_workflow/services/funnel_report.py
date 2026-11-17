@@ -514,13 +514,10 @@ _REMADE_WHY = (NO_FINGERPRINT, CHANGED, PAYLOAD_GONE, TRANSIENT_DUE, REFRESHING,
 
 def _overlay(placed: Placed, verdict: Verdict) -> Placed:
     """An article's recorded state at a stage the plan takes, with what the plan will
-    do to it: a record it makes again, or a failure it retries, waits; a failure it will
-    not retry is spent."""
+    do to it: a record it makes again waits; a failure it will not retry is spent."""
     if verdict.plan == planning.PENDING:
-        if placed.state == UNACCOUNTED:
-            return placed  # a bug either way
-        if placed.state == FAILED:  # a retry that is due, or a source not yet tried
-            return Placed(RERUN, f"tried again: {placed.reason}", placed.raw)
+        if placed.state in (FAILED, UNACCOUNTED):
+            return placed  # due a retry, or a bug either way
         why = next((a for a in verdict.answers if a in _REMADE_WHY), REMADE)
         return Placed(RERUN, why, placed.raw)
     if placed.state == FAILED and BACKING_OFF not in verdict.answers:

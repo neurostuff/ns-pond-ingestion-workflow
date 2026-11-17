@@ -506,8 +506,7 @@ def test_a_plan_s_verdict_says_what_a_run_would_do_with_each_record():
         == SPENT
     assert at("extract", failed, extract=Verdict(planning.PERMANENT, None, (BACKING_OFF,)))[0] \
         == FAILED
-    # One the plan tries again waits, as a dry run would select it.
-    assert at("extract", failed, extract=Verdict(planning.PENDING))[0] == RERUN
+    assert at("extract", failed, extract=Verdict(planning.PENDING))[0] == FAILED
     # A plan that holds an article whose input passed says why; a bad page is refused.
     why = f"prose {READ_FROM_BAD_PAGE}"
     assert at("sync", sync=Verdict(planning.BLOCKED, why)) == (REFUSED, why)
@@ -1099,24 +1098,6 @@ def test_the_kept_records_notes_are_counted_by_field(tmp_path, evidence):
                                             "abstract": [0, 0, 2]}}
     finally:
         conn.close()
-
-
-def test_a_failure_due_its_retry_waits_as_a_dry_run_selects_it(tmp_path, evidence):
-    from ingestion_workflow.pipeline.selection import Select, everything, narrow
-
-    root = tmp_path / "dl"
-    cat = Catalog.open(root)
-    due = cat.register(Identifier(pmcid="PMC6100"), evidence).id
-    cat.record([Outcome.failure(due, "download", "pubget", "Read timed out")])
-    settings = Settings(catalog_root=root, data_root=tmp_path / "d", cache_root=tmp_path / "c",
-                        download_sources=["pubget"], max_attempts=3, retry_after_hours=0)
-    selected = {ref.id for ref in narrow(cat, everything(cat), Select.PENDING, "download",
-                                         settings=settings).refs}
-    cat.close()
-
-    assert selected == {due}
-    assert _where(funnel_of(root, settings, samples=50), due, "download")[:2] == (
-        RERUN, "tried again: timeout")
 
 
 def test_the_funnel_waits_on_what_a_dry_run_would_do_and_no_more(tmp_path, evidence):
