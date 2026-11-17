@@ -225,7 +225,10 @@ def _gated(catalog: Catalog, selection: Selection, stage: Optional[str], setting
     passed = catalog.article_ids_where_summary(upstream, flag)
     # One the upstream now passes nothing for still holds this stage's earlier output, which
     # only its plan replaces; dropped here, it stays stale and holds the upload for good.
-    held = catalog.article_ids_holding(stage, NO_TEXT, TAKE_BACK_REASONS) - passed
+    # Only if nothing was ever uploaded for it: replacing an uploaded article's output takes
+    # its coordinates back from Neurostore, so that one stays held for a person to decide.
+    held = (catalog.article_ids_holding(stage, NO_TEXT, TAKE_BACK_REASONS) - passed
+            - catalog.article_ids_ever_uploaded(NO_TEXT))
     refs = [ref for ref in selection.refs if ref.id in passed or ref.id in held]
     dropped = len(selection.refs) - len(refs)
     if dropped:

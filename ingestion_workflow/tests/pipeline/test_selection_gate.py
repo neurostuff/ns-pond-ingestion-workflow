@@ -59,6 +59,33 @@ def test_an_article_triage_now_passes_nothing_for_is_kept_while_it_holds_analyse
     assert {r.id for r in sel.refs} == {refs["a"], refs["b"], refs["c"]}
 
 
+def test_an_uploaded_article_triage_now_passes_nothing_for_stays_held(
+        catalog, settings, evidence):
+    """Releasing it would take its coordinates back from Neurostore: 639 of the 681 the
+    ACE restore kept on 2026-11-07 had been uploaded from pre-v6 analyses. Only one never
+    uploaded, or whose last upload was itself a take-back, is kept to be replaced."""
+    cat, refs = catalog
+    refs["e"] = cat.register(Identifier(pmid="100e"), evidence).id
+    cat.record([Outcome(article_id=refs["e"], stage="triage", source="", status=Status.OK,
+                        fingerprint="fp-e", summary={"source": "ace", "tables": 3,
+                                                     "passed": 0, "passed_tables": []})])
+    for key in ("b", "d", "e"):
+        cat.record([Outcome(article_id=refs[key], stage="analyses", source="",
+                            status=Status.OK, fingerprint="old", summary={"tables": 1})])
+    cat.record([
+        Outcome(article_id=refs["b"], stage="upload", source="", status=Status.OK,
+                fingerprint="up-1", summary={"analyses": 3}),
+        # Uploaded once, then a later upload failed: the record carries the last one.
+        Outcome.failure(refs["d"], "upload", "", "ConnectionError",
+                        summary={"last_upload": {"analyses": 2}}),
+        # The only upload took its analyses back: nothing of it stays on Neurostore.
+        Outcome(article_id=refs["e"], stage="upload", source="", status=Status.OK,
+                fingerprint=NO_TEXT, summary={}),
+    ])
+    sel = narrow(cat, everything(cat), Select.ALL, "analyses", settings=settings)
+    assert {r.id for r in sel.refs} == {refs["a"], refs["c"], refs["e"]}
+
+
 def test_a_take_back_that_went_through_has_nothing_left_to_replace(catalog, settings):
     """A take-back recorded as failed with its reason holds nothing; one that failed
     for any other reason (the connection dropped) is tried again, so it is kept."""
