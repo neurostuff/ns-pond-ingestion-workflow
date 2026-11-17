@@ -471,8 +471,9 @@ class Settings(BaseSettings):
             "Ask ACE for an article's PMC copy before the publisher's page. Only for "
             "selected articles whose publisher pages are gone or walled: PMC's page "
             "holds the tables inline, and a failed PMC fetch does not fall back to the "
-            "publisher. ACE reuses a page already in ace_cache_root, so set a fresh "
-            "ace_cache_root for the run, or the old publisher page is recorded again"
+            "publisher. Pages already held in ace_cache_root are not reused for the "
+            "article then; ACE's own reuse of <root>/html/IngestionWorkflow still is, so "
+            "set a fresh ace_cache_root for the run, or the old publisher page is recorded again"
         ),
     )
 
@@ -709,6 +710,19 @@ class Settings(BaseSettings):
     europepmc_cache_root: Optional[Path] = Field(
         default=None,
         description="Optional override for the cache of XML fetched from Europe PMC",
+    )
+    supplement_routes: List[Literal["pmc", "elsevier", "springer", "publisher"]] = Field(
+        default_factory=lambda: ["pmc", "elsevier", "springer", "publisher"],
+        description=(
+            "Where the supplements stage lists an article's supplementary material: PMC's "
+            "Cloud Service by PMCID, a stored Elsevier XML's objects, a stored Springer JATS, "
+            "and the links on a stored publisher page"
+        ),
+    )
+    supplement_max_mb: int = Field(
+        default=50,
+        gt=0,
+        description="Supplementary files larger than this (MB) are listed and not fetched",
     )
     pdf_engines: List[Literal["mineru", "docling"]] = Field(
         # MinerU reads each page from its image, so a text layer that maps the minus to

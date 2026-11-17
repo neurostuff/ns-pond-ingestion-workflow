@@ -111,6 +111,11 @@ class ExtractedContent:
     #: digits (`pdf_extractor.symbols_as_digits`): the counts that showed it, and how
     #: many tables went with it. Such content holds no text and no tables.
     symbols_as_digits: Optional[Dict[str, int]] = None
+    #: The supplementary material appended to the text (`services.supplements.append`):
+    #: each one's index, route, url, name, label, caption, span in the text and table ids.
+    supplements: List[Dict[str, object]] = field(default_factory=list)
+    #: The extractor's own text, when supplements were appended to a copy of it.
+    base_text_path: Optional[Path] = None
 
     def to_dict(self) -> Dict[str, object]:
         out = {
@@ -128,6 +133,9 @@ class ExtractedContent:
             out["text_source"] = self.text_source
         if self.symbols_as_digits:
             out["symbols_as_digits"] = self.symbols_as_digits
+        if self.supplements:
+            out["supplements"] = self.supplements
+            out["base_text_path"] = str(self.base_text_path) if self.base_text_path else None
         return out
 
     @classmethod
@@ -150,6 +158,10 @@ class ExtractedContent:
             figure_captions=list(payload.get("figure_captions") or []),
             text_source=payload.get("text_source") or None,
             symbols_as_digits=payload.get("symbols_as_digits") or None,  # type: ignore[arg-type]
+            supplements=list(payload.get("supplements") or []),  # type: ignore[arg-type]
+            base_text_path=(
+                Path(str(payload["base_text_path"])) if payload.get("base_text_path") else None
+            ),
         )
 
 

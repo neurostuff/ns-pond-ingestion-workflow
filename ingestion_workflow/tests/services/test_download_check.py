@@ -186,6 +186,106 @@ def test_ace_moves_a_rejected_page_out_of_its_cache_and_says_where(tmp_path, mon
         assert Path(moved).read_bytes() == real("a6mheoqpeocv")
 
 
+def _ace_with_pages(tmp_path, monkeypatch, pages, *, fetched=None, **settings):
+    """An ACE extractor whose root (`tmp_path`/ace/html, as on beast) holds `pages`
+    ({path under the root: (body, mtime)}). Its scraper refuses to fetch unless `fetched`
+    is a list, to which it adds each PMID asked for, answering with nothing."""
+    import os
+
+    extractor = _ace_extractor(tmp_path, monkeypatch, **settings)
+    for relative, (body, mtime) in pages.items():
+        page = tmp_path / "ace" / "html" / relative
+        page.parent.mkdir(parents=True, exist_ok=True)
+        page.write_bytes(body)
+        os.utime(page, (mtime, mtime))
+
+    class Scraper:
+        def process_article(self, pmid, journal, **kwargs):
+            if fetched is None:
+                raise AssertionError("fetched a page the cache already holds")
+            fetched.append(pmid)
+            return None, None
+
+    return extractor, Scraper()
+
+
+def test_ace_reuses_the_scrape_s_own_page_for_the_pmid(tmp_path, monkeypatch):
+    """The scrape corpus keeps a page at <root>/<journal>/<pmid>.html; ACE's scraper looks only
+    under <root>/html, so a second download fetched the page again and a refusal replaced
+    the article's good copy (33797954, Brain connectivity). A page there that passes the
+    check is the download; a corpus page that fails it is left where it is."""
+    from ingestion_workflow.models.ids import Identifier
+
+    extractor, scraper = _ace_with_pages(tmp_path, monkeypatch, {
+        "Brain/123.html": (real("ytpicngb4emb"), 1_000),
+        "Old Journal/123.html": (real("a6mheoqpeocv"), 2_000),  # newer, but refused
+    })
+    result = extractor._download_single(Identifier(pmid="123"), scraper=scraper)
+    brain = tmp_path / "ace/html/Brain/123.html"
+    assert result.success and [f.file_path for f in result.files] == [brain]
+    assert (tmp_path / "ace/html/Old Journal/123.html").read_bytes() == real("a6mheoqpeocv")
+
+
+def test_ace_s_own_scrape_wins_over_a_newer_corpus_page(tmp_path, monkeypatch):
+    """ns-pond's own fetch (<root>/html/IngestionWorkflow) is what `overwrite=False` reused
+    before the corpus was looked at; a corpus copy may have lost its tables."""
+    from ingestion_workflow.models.ids import Identifier
+
+    extractor, scraper = _ace_with_pages(tmp_path, monkeypatch, {
+        "html/IngestionWorkflow/123.html": (real("ytpicngb4emb"), 1_000),
+        "Brain/123.html": (real("ytpicngb4emb"), 2_000),
+    })
+    result = extractor._download_single(Identifier(pmid="123"), scraper=scraper)
+    own = tmp_path / "ace/html/html/IngestionWorkflow/123.html"
+    assert [f.file_path for f in result.files] == [own]
+
+
+def test_ace_takes_the_newest_of_two_corpus_pages(tmp_path, monkeypatch):
+    # B sorts after A, so a path-first or path-reversed order would pick B.
+    from ingestion_workflow.models.ids import Identifier
+
+    extractor, scraper = _ace_with_pages(tmp_path, monkeypatch, {
+        "A Journal/123.html": (real("ytpicngb4emb"), 2_000),
+        "B Journal/123.html": (real("ytpicngb4emb"), 1_000),
+    })
+    result = extractor._download_single(Identifier(pmid="123"), scraper=scraper)
+    assert [f.file_path for f in result.files] == [tmp_path / "ace/html/A Journal/123.html"]
+
+
+def test_ace_fetches_past_a_corpus_page_cut_short_and_leaves_it(tmp_path, monkeypatch):
+    """ACE writes pages in place: one another scrape left half-written passes the check with
+    its later tables gone, so it is not the download. Nor is another PMID's page, and a
+    failed fetch leaves the corpus's own pages where they are."""
+    from ingestion_workflow.models.ids import Identifier
+
+    whole = real("ytpicngb4emb")
+    cut = whole[: len(whole) // 2]
+    fetched = []
+    extractor, scraper = _ace_with_pages(tmp_path, monkeypatch, {
+        "Brain/123.html": (cut, 2_000),
+        "Old Journal/123.html": (real("a6mheoqpeocv"), 1_000),  # refused by the check
+        "Brain/1123.html": (whole, 3_000),
+    }, fetched=fetched)
+    result = extractor._download_single(Identifier(pmid="123"), scraper=scraper)
+    assert fetched == ["123"] and not result.success
+    root = tmp_path / "ace" / "html"
+    assert (root / "Brain/123.html").read_bytes() == cut
+    assert (root / "Old Journal/123.html").read_bytes() == real("a6mheoqpeocv")
+
+
+def test_a_run_preferring_pmc_asks_for_it_over_a_held_publisher_page(tmp_path, monkeypatch):
+    """Every page the corpus holds is a publisher's; a run that prefers PMC is the one whose
+    publisher pages lack the tables."""
+    from ingestion_workflow.models.ids import Identifier
+
+    fetched = []
+    extractor, scraper = _ace_with_pages(tmp_path, monkeypatch, {
+        "Brain/123.html": (real("ytpicngb4emb"), 1_000),
+    }, fetched=fetched, ace_prefer_pmc=True)
+    extractor._download_single(Identifier(pmid="123"), scraper=scraper)
+    assert fetched == ["123"]
+
+
 @pytest.mark.parametrize("prefer", [False, True])
 def test_ace_asks_for_the_pmc_copy_when_settings_prefer_it(tmp_path, monkeypatch, prefer):
     """The publisher's own page is the default; a run whose publisher pages are gone or
