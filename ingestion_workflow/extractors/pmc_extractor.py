@@ -27,7 +27,7 @@ from lxml import etree
 from pubget._articles import extract_articles
 
 from ingestion_workflow.extractors.pubget_extractor import PubgetExtractor
-from ingestion_workflow.extractors.utils import build_downloaded_file
+from ingestion_workflow.extractors.utils import build_downloaded_file, has_body
 from ingestion_workflow.models import DownloadedFile, DownloadResult, DownloadSource, FileType, Identifiers
 from ingestion_workflow.utils.pmcid import normalize_pmcid
 
@@ -36,10 +36,6 @@ logger = logging.getLogger(__name__)
 #: A fetched article without a body is front matter only: PMC answers that way
 #: when the publisher does not allow the full text to be downloaded.
 RESTRICTED = "publisher does not allow full-text download"
-
-
-def has_body(article: etree._Element) -> bool:
-    return article.find(".//body") is not None
 
 
 class _PmcXmlExtractor(PubgetExtractor):

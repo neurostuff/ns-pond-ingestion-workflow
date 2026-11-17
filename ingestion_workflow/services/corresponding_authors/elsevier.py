@@ -13,12 +13,12 @@ from typing import List
 from lxml import etree
 from study_schema.models.paper_parse import MetadataSource
 
+from ingestion_workflow.extractors.utils import recovering_xml_parser
 from ingestion_workflow.models.metadata import CorrespondingAuthor
 
 from .common import authors, squash
 
 _CE = "http://www.elsevier.com/xml/common/dtd"
-_XML = etree.XMLParser(recover=True, huge_tree=True, resolve_entities=False)
 
 
 def _ce(tag: str) -> str:
@@ -27,7 +27,7 @@ def _ce(tag: str) -> str:
 
 def from_elsevier(content_xml: Path) -> List[CorrespondingAuthor]:
     """The authors an Elsevier full-text record cross-refers to a `ce:correspondence`."""
-    root = etree.parse(str(content_xml), _XML).getroot()
+    root = etree.parse(str(content_xml), recovering_xml_parser()).getroot()
     corresp = {el.get("id") for el in root.iter(_ce("correspondence"))}
     found = []
     for author in root.iter(_ce("author")):

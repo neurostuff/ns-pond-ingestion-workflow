@@ -196,7 +196,11 @@ class Context:
         """
         if "all" in self.refresh or stage in self.refresh:
             return True
-        return bool(source) and f"{stage}:{source}" in self.refresh
+        return bool(source) and self.names(stage, source)
+
+    def names(self, stage: str, source: str) -> bool:
+        """Whether `--refresh <stage>:<source>` names this one source."""
+        return f"{stage}:{source}" in self.refresh
 
     def is_fresh(self, artifact: Optional[Artifact], expected: str) -> bool:
         """Reusable iff it succeeded, its inputs are unchanged, and its blob survives.

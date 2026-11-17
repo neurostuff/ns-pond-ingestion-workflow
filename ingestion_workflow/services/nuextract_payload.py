@@ -66,7 +66,7 @@ def _number(value: Any) -> Optional[float]:
 
 def _extent(value: Any) -> Optional[int]:
     number = _number(value)
-    return None if number is None else int(abs(number))
+    return None if number is None else int(number)
 
 
 def _measure(value: Any) -> Optional[str]:

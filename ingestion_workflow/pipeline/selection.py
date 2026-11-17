@@ -113,12 +113,12 @@ def narrow(
     ids = [ref.id for ref in selection.refs]
     stages = [stage] if stage else _stages_present(catalog)
     per_stage = {name: catalog.artifacts(ids, name) for name in stages}
-    wanted = {name.lower() for name in refresh}
+    from ingestion_workflow.pipeline.stage import Context  # noqa: PLC0415
+
+    wanted = Context(settings, catalog, refresh=refresh)
 
     def redoing(artifact) -> bool:
-        if "all" in wanted or artifact.stage in wanted:
-            return True
-        return f"{artifact.stage}:{artifact.source}" in wanted
+        return wanted.refreshing(artifact.stage, artifact.source)
 
     def keep(ref: ArticleRef) -> bool:
         artifacts = [

@@ -20,7 +20,12 @@ from ingestion_workflow.catalog import Catalog, Outcome, Status
 from ingestion_workflow.config import Machine, Settings
 from ingestion_workflow.pipeline import Context
 from ingestion_workflow.services.offload import remote as R
-from ingestion_workflow.services.offload.contract import BundleDir, load_spec
+from ingestion_workflow.services.offload.contract import (
+    BundleDir,
+    load_spec,
+    read_rows,
+    write_rows,
+)
 from ingestion_workflow.services.offload.export import export
 from ingestion_workflow.services.offload.pull import NO_ANSWER, REQUEST_FAILED, pull
 from pondie_astra import prompt
@@ -230,6 +235,28 @@ def test_pull_imports_a_completed_shard_as_the_record_the_collected_set_holds(wo
     assert BundleDir(world["bundle"]).state().imported == state.imported
 
 
+def test_a_shard_whose_text_holds_a_line_separator_is_imported(world):
+    """Export writes the paper as it is, so a U+2028 in it stays inside its row."""
+    _push(world)
+    R.submit(world["remote"], world["bundle"], yes=False)
+    inputs = BundleDir(world["bundle"]).inputs("s000")
+    (row,) = [json.loads(line) for line in inputs.read_text("utf-8").split("\n") if line]
+    row["content"] += " "
+    inputs.write_text(json.dumps(row, ensure_ascii=False) + "\n", "utf-8")
+    job = _job_ran(world, [_result(prediction=PRED["prediction"])])
+    world["cluster"].states[job] = "COMPLETED"
+    pull(world["remote"], world["bundle"], world["catalog"])
+    assert world["catalog"].artifact(ARTICLE, "record", "ns-27b").ok
+
+
+def test_a_bundle_file_keeps_a_line_separator_inside_its_row(tmp_path):
+    rows = [{"article_id": "a", "content": "one\u2028two"}, {"article_id": "b", "content": "é"}]
+    write_rows(tmp_path / "s000.jsonl", rows)
+    raw = (tmp_path / "s000.jsonl").read_text("utf-8")
+    assert "\u2028" in raw and "\\u" not in raw
+    assert list(read_rows([tmp_path / "s000.jsonl"])) == rows
+
+
 @pytest.mark.parametrize("row, status, reason", [
     (dict(finish_reason="length"), "skipped", NO_ANSWER.format("length")),
     (dict(error="invalid_json: JSONDecodeError('Expecting value')"), "skipped",
@@ -291,6 +318,53 @@ def test_the_job_id_is_read_past_tacc_s_banner():
     assert R.sbatch_job_id(SBATCH.format(job=1122428)) == "1122428"
     assert R.sbatch_job_id("1122428;vista\n") == "1122428"
     assert R.sbatch_job_id("sbatch: error: invalid partition\n") is None
+
+
+def test_the_job_asks_greedily_unless_the_spec_samples(world):
+    from ingestion_workflow.services.offload.cluster.job import request_body
+
+    bundle = BundleDir(world["bundle"])
+    (shard,) = bundle.bundle().shards
+    row = json.loads(bundle.inputs(shard.name).read_text().splitlines()[0])
+    greedy = request_body(row, bundle.bundle().spec.serve.model_dump())
+    assert greedy["temperature"] == 0.0 and "seed" not in greedy
+    assert greedy["messages"] == [{"role": "user", "content": row["content"]}]
+    retry = load_spec(SPEC_FILE.with_name("ns-27b-e-r1.json")).serve.model_dump()
+    sampled = request_body(row, retry)
+    assert (sampled["temperature"], sampled["seed"]) == (0.7, 1)
+    assert {k: v for k, v in sampled.items() if k not in ("temperature", "seed")} == \
+        {k: v for k, v in greedy.items() if k != "temperature"}
+
+
+
+def test_a_guided_spec_decodes_against_the_compact_shape_of_the_papers_keys(world):
+    """A guided retry decodes against the compact form the model writes, its parse keys
+    those of the paper. Guided by extraction-record (r3), the model wrote the expanded
+    form, which pull then wrapped a second time: 132 of 160 answers refused."""
+    import jsonschema
+
+    from ingestion_workflow.services.offload.cluster.job import request_body
+
+    spec = load_spec(SPEC_FILE.with_name("ns-27b-e-r4.json")).model_copy(
+        update={"adapter_sha256": hashlib.sha256(b"weights").hexdigest()})
+    held = BundleDir(export(world["ctx"], spec, "vista", workers=1,
+                            now=NOW + timedelta(minutes=1)).bundle)
+    (shard,) = held.bundle().shards
+    row = json.loads(held.inputs(shard.name).read_text().splitlines()[0])
+    schema = row["response_schema"]
+    guided = request_body(row, spec.serve.model_dump())
+    assert guided["response_format"] == {
+        "type": "json_schema", "json_schema": {"name": "compact-record", "schema": schema}}
+    check = jsonschema.validators.validator_for(schema)(schema)
+    assert check.is_valid(PRED["prediction"])
+    assert not check.is_valid(RECORD)
+    wrong = json.loads(json.dumps(PRED["prediction"]))
+    wrong["coordinate_sets"][0]["local_id"] = "analysis#not-in-the-listing"
+    assert not check.is_valid(wrong)
+
+    plain = json.loads(BundleDir(world["bundle"]).inputs(shard.name).read_text().splitlines()[0])
+    assert plain["response_schema"] is None
+    assert request_body(plain, spec.serve.model_dump())["response_format"] == {"type": "json_object"}
 
 
 EV1_PRED = json.loads((DATA / "26klegjq7mhi.ev1.pred.json").read_text())
