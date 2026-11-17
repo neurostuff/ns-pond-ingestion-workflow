@@ -1434,11 +1434,12 @@ def offload_import(
     JSON after."""
     from ingestion_workflow.services import coverage
     from ingestion_workflow.services.offload import importer as offload
+    from ingestion_workflow.services.offload.contract import read_rows
 
     root = _catalog_root(catalog, config)
     run = offload.load_run(run_file)
     with Catalog.open(root) as held:
-        report = offload.import_run(held, run, offload.read_rows(results))
+        report = offload.import_run(held, run, read_rows(results))
     for line in report.lines():
         typer.echo(line)
     typer.echo(f"coverage -> {coverage.write_json(coverage.coverage(root), coverage.default_json(root))}")
