@@ -33,6 +33,9 @@ NO_ROUTE = "no route to supplementary material"
 #: Requests in flight at once, over every host.
 FETCH_THREADS = 4
 
+#: Most processes reading Word files and sheets at once: each holds a Docling converter.
+READ_WORKERS = 8
+
 
 def routes_for(ref: ArticleRef, downloads: Dict[str, Artifact], wanted: Sequence[str]) -> List[str]:
     """The routes an article can be asked by, in `ROUTES` order."""
@@ -182,18 +185,35 @@ class SupplementsStage:
         return out
 
     def _read(self, root: Path, jobs) -> Dict[str, str]:
-        """Read each fetched file: PDFs together through `pdf_engines`, the rest one by one.
+        """Read each fetched file: PDFs together through `pdf_engines`, the rest in a pool of
+        `max_workers` processes (Docling reads a Word file in seconds, on the CPU).
 
         Returns why each article whose PDFs no engine could run on is to be tried again."""
+        pdfs = [job for job in jobs if job[2].extension == "pdf"]
+        rest = [job for job in jobs if job[2].extension != "pdf"]
+        if rest:
+            self._read_rest(root, rest)
+        return self._read_pdfs(root, pdfs) if pdfs else {}
+
+    def _read_rest(self, root: Path, jobs) -> None:
+        import multiprocessing
+        from concurrent.futures import ProcessPoolExecutor
+
         from ingestion_workflow.services import supplements as sp
 
-        pdfs = []
-        for article_id, index, item in jobs:
-            if item.extension == "pdf":
-                pdfs.append((article_id, index, item))
-            else:
-                sp.read(item, root / article_id / "read" / f"{index:02d}")
-        return self._read_pdfs(root, pdfs) if pdfs else {}
+        tasks = [(item.to_dict(), str(root / article_id / "read" / f"{index:02d}"))
+                 for article_id, index, item in jobs]
+        workers = min(max(1, int(getattr(self.settings, "max_workers", 1) or 1)), READ_WORKERS, len(tasks))
+        if workers == 1:
+            answers = [_read_one(task) for task in tasks]
+        else:
+            # spawn: Docling's torch must not be forked from a parent that has started threads
+            with ProcessPoolExecutor(workers, mp_context=multiprocessing.get_context("spawn")) as pool:
+                answers = list(pool.map(_read_one, tasks, chunksize=4))
+        for (_, _, item), answer in zip(jobs, answers):
+            read = sp.Supplement.from_dict(answer)
+            item.text_path, item.tables, item.read_by, item.reason = (
+                read.text_path, read.tables, read.read_by, read.reason)
 
     def _read_pdfs(self, root: Path, pdfs) -> Dict[str, str]:
         from ingestion_workflow.extractors.pdf_extractor import PdfExtractor
@@ -223,6 +243,16 @@ def _parser():
     from lxml import etree
 
     return etree.XMLParser(recover=True, huge_tree=True, resolve_entities=False, no_network=True)
+
+
+def _read_one(task):
+    """Read one non-PDF file in a pool worker: its item as a dict, after reading."""
+    from ingestion_workflow.services import supplements as sp
+
+    payload, out_dir = task
+    item = sp.Supplement.from_dict(payload)
+    sp.read(item, Path(out_dir))
+    return item.to_dict()
 
 
 def _file(download: Optional[DownloadResult], wanted) -> Optional[Path]:

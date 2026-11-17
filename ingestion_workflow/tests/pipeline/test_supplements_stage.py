@@ -232,3 +232,25 @@ def test_a_work_with_the_extraction_s_own_fingerprint_is_read_again_and_gets_the
     assert len(read) == 1
     assert outcome.fingerprint == extraction_fingerprint("pubget", download, "supp-fp")
     assert outcome.summary["supplements"] == 1
+
+
+def test_word_files_and_sheets_are_read_in_a_pool_into_their_own_directories(env, tmp_path):
+    from openpyxl import Workbook
+
+    settings, _, _ = env
+    settings = settings.model_copy(update={"max_workers": 2})
+    jobs = []
+    for article_id, index in (("a1", 1), ("a2", 1), ("a2", 2)):
+        book = Workbook()
+        book.active.append(["Region", "x", "y", "z"])
+        book.active.append([f"region {article_id}{index}", -34, 16, -6])
+        path = tmp_path / f"{article_id}-{index}.xlsx"
+        book.save(path)
+        jobs.append((article_id, index, sp.Supplement("pmc", "u", path.name, path=str(path))))
+
+    SupplementsStage(settings)._read_rest(tmp_path / "root", jobs)
+
+    assert [(s.read, s.read_by) for _, _, s in jobs] == [(True, "sheet")] * 3
+    assert [Path(s.text_path).parent.relative_to(tmp_path / "root").as_posix() for _, _, s in jobs] == [
+        "a1/read/01", "a2/read/01", "a2/read/02"]
+    assert "region a22" in Path(jobs[2][2].text_path).read_text()
