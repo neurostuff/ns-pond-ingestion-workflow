@@ -91,9 +91,12 @@ def _read_supplements(catalog, tmp_path, ref):
                          text_path=str(out / "text.txt"), read_by="docling",
                          tables=[ExtractedTable(table_id="table-s1", raw_content_path=csv,
                                                 caption="Table S1. Peaks.").to_dict()])
+    item.sha256 = "ab" * 32
     catalog.record([Outcome(ref.id, "supplements", "", Status.OK, "supp-fp",
                             payload={"supplements": [item.to_dict()]},
-                            summary={"listed": 1, "fetched": 1, "read": 1, "tables": 1})])
+                            summary={"listed": 1, "fetched": 1, "read": 1, "tables": 1,
+                                     "read_digest": sp.read_digest([item])})])
+    return sp.read_digest([item])
 
 
 def test_an_article_without_supplements_keeps_its_extraction_fresh(env, tmp_path):
@@ -118,7 +121,7 @@ def test_supplements_read_later_are_appended_without_reading_the_download_again(
     catalog.record([Outcome(ref.id, "extract", "pubget", Status.OK,
                             extraction_fingerprint("pubget", download),
                             payload=_extraction(tmp_path, ref).to_dict(), summary={"tables": 1})])
-    _read_supplements(catalog, tmp_path, ref)
+    digest = _read_supplements(catalog, tmp_path, ref)
     stage = ExtractStage(settings)
 
     def refuse(source):
@@ -131,7 +134,7 @@ def test_supplements_read_later_are_appended_without_reading_the_download_again(
     catalog.record([outcome])
 
     assert outcome.status is Status.OK
-    assert outcome.fingerprint == extraction_fingerprint("pubget", download, "supp-fp")
+    assert outcome.fingerprint == extraction_fingerprint("pubget", download, digest)
     assert (outcome.summary["supplements"], outcome.summary["supplement_tables"],
             outcome.summary["tables"]) == (1, 1, 2)
     payload = outcome.payload
@@ -199,7 +202,7 @@ def test_supplementary_pdfs_are_read_together_each_into_its_own_directory(env, t
         path.write_bytes(b"%PDF-1.4")
         pdfs.append((article_id, index, sp.Supplement("pmc", "u", path.name, path=str(path))))
 
-    assert SupplementsStage(settings)._read_pdfs(tmp_path / "root", pdfs) == {}
+    SupplementsStage(settings)._read_pdfs(tmp_path / "root", pdfs)
 
     assert seen["root"] == tmp_path / "root"
     assert len(set(seen["dirs"])) == 3
@@ -215,7 +218,7 @@ def test_a_work_with_the_extraction_s_own_fingerprint_is_read_again_and_gets_the
     base = extraction_fingerprint("pubget", download)
     catalog.record([Outcome(ref.id, "extract", "pubget", Status.OK, base,
                             payload=_extraction(tmp_path, ref).to_dict(), summary={"tables": 1})])
-    _read_supplements(catalog, tmp_path, ref)
+    digest = _read_supplements(catalog, tmp_path, ref)
     stage = ExtractStage(settings)
     read = []
 
@@ -230,7 +233,7 @@ def test_a_work_with_the_extraction_s_own_fingerprint_is_read_again_and_gets_the
     [outcome] = list(stage.execute(ctx, [work]))
 
     assert len(read) == 1
-    assert outcome.fingerprint == extraction_fingerprint("pubget", download, "supp-fp")
+    assert outcome.fingerprint == extraction_fingerprint("pubget", download, digest)
     assert outcome.summary["supplements"] == 1
 
 

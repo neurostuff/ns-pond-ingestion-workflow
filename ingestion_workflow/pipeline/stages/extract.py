@@ -131,10 +131,12 @@ def extraction_fingerprint(source: str, download: Artifact, supplements: Optiona
 
 
 def appended(supplements: Optional[Artifact]) -> Optional[str]:
-    """The fingerprint an extraction names for `supplements`: theirs when any was read."""
+    """What an extraction names of `supplements`: the digest of what they read (each file's
+    bytes and reader, `services.supplements.read_digest`), when anything was read. A file
+    added or changed changes it; asking the routes again and reading the same leaves it."""
     if supplements is None or supplements.status is not Status.OK:
         return None
-    return supplements.fingerprint if (supplements.summary or {}).get("read") else None
+    return (supplements.summary or {}).get("read_digest") or None
 
 
 def base_fingerprint(extraction: Artifact) -> str:
@@ -377,7 +379,14 @@ class ExtractStage:
                 and base_fingerprint(extraction) == extraction_fingerprint(work.upstream.source, work.upstream))
 
     def _rejoined(self, ctx: Context, work: Work, extraction: Artifact) -> Outcome:
+        """The stored extraction with its supplements appended again. Its paths are read as
+        the catalog recorded them (a relative cache_root records them relative); a text that
+        is gone fails the article rather than leave the supplements as its whole text."""
         content = ExtractedContent.from_dict(ctx.payload(extraction))
+        for name in ("full_text_path", "base_text_path"):
+            path = getattr(content, name)
+            if path is not None:
+                setattr(content, name, ctx.recorded_path(str(path)))
         return alone(self.name, work, partial(self._outcome, work, work.source, content))
 
     def _with_supplements(self, work: Work, content: ExtractedContent) -> tuple:
@@ -386,7 +395,8 @@ class ExtractStage:
         from ingestion_workflow.services import supplements as sp
 
         fp, items = self._appending.get(work.article_id, (None, []))
-        content = sp.append(content, items, sp.joined_dir(self.settings, work.article_id))
+        content = sp.append(content, items, sp.joined_dir(self.settings, work.article_id),
+                            max_chars=self.settings.supplement_max_text_chars)
         if not fp:
             return content, {}
         return content, {
@@ -485,10 +495,8 @@ class ExtractStage:
         if content.symbols_as_digits:
             return self._set_aside(work, source, content)
 
-        content, joined = self._with_supplements(work, content)
-        tables = content.tables or []
-        produced_something = bool(content.full_text_path) or bool(tables)
-        if content.error_message and not produced_something:
+        # Judged on what the extractor made, before anything is appended to it.
+        if content.error_message and not (content.full_text_path or content.tables):
             return Outcome.failure(
                 work.article_id,
                 self.name,
@@ -497,6 +505,8 @@ class ExtractStage:
                 fingerprint=work.fingerprint,
             )
 
+        content, joined = self._with_supplements(work, content)
+        tables = content.tables or []
         with_coords = sum(1 for table in tables if table.coordinates)
         summary = {
             "tables": len(tables),
