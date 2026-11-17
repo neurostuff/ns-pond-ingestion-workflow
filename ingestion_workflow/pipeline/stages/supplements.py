@@ -59,6 +59,9 @@ def routes_for(ref: ArticleRef, ok: Iterable[str], wanted: Sequence[str]) -> Lis
 class SupplementsStage:
     name = "supplements"
     requires = "download"
+    #: Articles per batch: each batch starts the PDF readers once, and MinerU's workers took
+    #: 9 minutes to start on the production run, against ~150 articles with PDFs in 500.
+    batch_size = 10_000
 
     def __init__(self, settings) -> None:
         self.settings = settings
