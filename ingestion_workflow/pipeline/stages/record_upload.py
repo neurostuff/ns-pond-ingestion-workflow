@@ -48,7 +48,10 @@ def run_id_of(record: Dict[str, Any]) -> str:
 
 def build_request(record: Dict[str, Any], runs: Sequence[Run], parse_id: str,
                   base_study_id: str) -> Dict[str, Any]:
-    """The body of one record upload."""
+    """The body of one record upload, its run_id the record as sent."""
+    from ingestion_workflow.services.neurostore_ingest import without_nul
+
+    record = without_nul(record)
     return {
         "record": record,
         "parse_id": parse_id,

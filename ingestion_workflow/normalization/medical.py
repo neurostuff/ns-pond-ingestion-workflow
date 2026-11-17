@@ -11,7 +11,8 @@ pondie's per-group loop on one record, then the build's two repairs for heads po
 2. review contained  a review row is accepted when its top candidate's label, folded, occurs whole-word inside the
                      folded head ("atypical anorexia nervosa" -> anorexia nervosa): the coarser concept the string
                      names, never a sibling.
-Both mark `method` ("strip:<method>", "review-contained"). The role of each row:
+Both mark `method` ("strip:<method>", "review-contained"). Then `settle_healthy` decides the groups the model
+called healthy and pondie did not (`services.normalize_assign.apply_derived`). The role of each row:
 
     none      negation sentinel (healthy, no diagnosis)
     comorbid  the string carries a prevalence or history qualifier
@@ -140,6 +141,42 @@ def links(record, study, text, store=None):
                 new.append(placed(x, node, "review-contained", x.score, [])); continue
         new.append(x)
     return new
+
+
+def settle_healthy(record, links_):
+    """`links_` with each healthy group's heads settled, and its `is_healthy` made False where one is a condition.
+
+    A healthy group with heads is one the model called healthy and pondie's wellness phrases did not ("Normal
+    hearing", "Neurotypical"). It stays healthy when every head was rejected, nothing in MONDO coming near it,
+    and its rows become one absence per item; a head placed or under review is a condition."""
+    from pondie.formats import values
+    from pondie.normalization._records import value_of
+    from pondie.vocabularies.phrases import NO_CONDITION
+
+    by_group = {}
+    for x in links_:
+        if x.head:
+            by_group.setdefault(x.group, []).append(x)
+    healthy = set()
+    for group in record.get("groups") or []:
+        if not isinstance(group, dict) or value_of(group.get("is_healthy")) is not True:
+            continue
+        name = str(value_of(group.get("local_id")) or "")
+        if name not in by_group:
+            continue
+        if all(not x.mondo and x.method.endswith("rejected") for x in by_group[name]):
+            healthy.add(name)
+        else:
+            group["is_healthy"] = values.wrap(False, source="generated", evidence="not_found")
+    out, absent = [], set()
+    for x in links_:
+        if x.group not in healthy or not x.head:
+            out.append(x)
+        elif (x.group, x.item) not in absent:
+            absent.add((x.group, x.item))
+            out.append(type(x)(study=x.study, group=x.group, text=x.text, item=x.item, sentinel=NO_CONDITION,
+                               denied=x.denied, scope="flag"))
+    return out
 
 
 def role(link):

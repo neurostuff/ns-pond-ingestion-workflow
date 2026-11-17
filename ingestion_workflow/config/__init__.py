@@ -465,6 +465,17 @@ class Settings(BaseSettings):
         ),
     )
 
+    ace_prefer_pmc: bool = Field(
+        default=False,
+        description=(
+            "Ask ACE for an article's PMC copy before the publisher's page. Only for "
+            "selected articles whose publisher pages are gone or walled: PMC's page "
+            "holds the tables inline, and a failed PMC fetch does not fall back to the "
+            "publisher. ACE reuses a page already in ace_cache_root, so set a fresh "
+            "ace_cache_root for the run, or the old publisher page is recorded again"
+        ),
+    )
+
     node_path: Optional[Path] = Field(
         default=None,
         validation_alias=AliasChoices("node_path", "INGEST_NODE_PATH"),
@@ -719,6 +730,19 @@ class Settings(BaseSettings):
             "Resident memory (MB) a MinerU worker, with its vLLM engine, may reach "
             "before it is killed and that article failed; MinerU's own settings "
             "(MINERU_HOME, MINERU_MODEL_SOURCE) come from the environment"
+        ),
+    )
+    mineru_workers_per_gpu: int = Field(
+        default=1,
+        ge=1,
+        description="MinerU workers on each GPU with room for one; more fit a card with room",
+    )
+    mineru_max_workers: Optional[int] = Field(
+        default=None,
+        ge=1,
+        description=(
+            "At most this many MinerU workers, for a machine others share (each holds "
+            "about 11 GB of memory); None means every one the GPUs fit"
         ),
     )
     pdf_extract_workers: Optional[int] = Field(

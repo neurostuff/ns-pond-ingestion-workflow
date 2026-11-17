@@ -89,11 +89,11 @@ def tables_reading(ctx: Context, article_id: str, analyses: Optional[Artifact]) 
                   if v not in _UNREAD_AS_NOTHING}
         empty = (analyses.status is Status.SKIPPED and not summary.get("tables")) or (
             analyses.status is Status.OK and not unread and not summary.get("tables"))
-        if empty and _passed_since(ctx, article_id, analyses):
-            # A triage run since passed tables this reading never saw (emcznvwqpaor: skipped
-            # for "no coordinate tables" on 09-30, triage passed two on 10-15).
-            return Reading(Kind.UNKNOWN, f"{TABLES_NOT_READ}: triage passed tables since "
-                                         "the analyses stage last ran")
+        if empty and _passes_unseen(ctx, article_id, analyses):
+            # Stale while triage passes tables (emcznvwqpaor: skipped for "no coordinate
+            # tables" on 09-30, triage passed two on 10-15).
+            return Reading(Kind.UNKNOWN, f"{TABLES_NOT_READ}: the analyses reading is stale "
+                                         "and triage passes tables")
         if analyses.status is Status.SKIPPED and not summary.get("tables"):
             return Reading(Kind.EMPTY)
         if analyses.status is Status.OK and not unread:
@@ -114,12 +114,15 @@ def tables_reading(ctx: Context, article_id: str, analyses: Optional[Artifact]) 
     return Reading(Kind.UNKNOWN, f"{TABLES_NOT_READ}: triage has not run")
 
 
-def _passed_since(ctx: Context, article_id: str, analyses: Artifact) -> bool:
-    """Whether the article's triage, run after `analyses`, passes a table."""
+def _passes_unseen(ctx: Context, article_id: str, analyses: Artifact) -> bool:
+    """The analyses plan's own rule (`analyses.passes_unseen`), without the plan."""
+    from .stages.analyses import AnalysesStage, passes_unseen
+
     triaged = ctx.catalog.artifacts([article_id], "triage").get(article_id, {}).get("")
-    if triaged is None or triaged.status is not Status.OK or triaged.updated_at <= analyses.updated_at:
+    if triaged is None or triaged.status is not Status.OK:
         return False
-    return any(v.get("passes") for v in (ctx.payload(triaged) or {}).get("tables", []))
+    current = AnalysesStage(ctx.settings).current(ctx, article_id, triaged)
+    return passes_unseen(analyses, current, triaged)
 
 
 def prose_reading(prose: Optional[Artifact]) -> Reading:
@@ -167,7 +170,7 @@ def upstream_state(plan: StagePlan, existing: Optional[Artifact]) -> Optional[st
             return "taken back"
         if existing is None:
             return "not run"
-        if existing.status is Status.OK:
+        if existing.status in (Status.OK, Status.SKIPPED):
             return "stale"
         return f"failed: {short_reason(existing.error)}"
     if plan.permanent:
