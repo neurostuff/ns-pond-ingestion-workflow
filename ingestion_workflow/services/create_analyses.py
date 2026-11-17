@@ -707,7 +707,7 @@ Raw Table Content:
             found.append((digest, key))
             # A supplement repeating a main-text table loses to it: the main text's is the
             # copy the paper's other stages and its readers point at.
-            rank = ("supplement" not in (table.metadata or {}),
+            rank = ("supplement" not in (getattr(table, "metadata", None) or {}),
                     bool((table.caption or "").strip()), len(text))
             if digest not in best or rank > best[digest][1]:
                 best[digest] = (key, rank)
