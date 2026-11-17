@@ -43,7 +43,10 @@ def schema_kind(letter: Optional[str]) -> str:
 
 
 def point_values(statistic_value: Any, statistic_type: Optional[str]) -> List[Dict[str, Any]]:
-    """A point's statistic as study_schema PointValue dicts: none unless it is a number."""
+    """A point's statistic as study_schema PointValue dicts: none unless it is a number.
+
+    An infinite value is kept, so its sign still places the point; the parse drops it.
+    """
     if isinstance(statistic_value, bool) or not isinstance(statistic_value, (int, float)):
         return []
     if statistic_value != statistic_value:  # NaN
