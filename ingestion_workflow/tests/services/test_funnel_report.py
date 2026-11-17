@@ -530,11 +530,11 @@ def test_only_the_stages_something_waits_for_are_in_the_flow():
     """Not those no stage waits for (`gates`), nor the opt-in ones a default run skips
     (reflist, the offloaded record chain, record_upload)."""
     assert flow_stages(stage_graph(True)) == [
-        "download", "extract", "passages", "metadata", "triage", "analyses", "prose",
-        "resolve", "roles", "space", "sync", "upload", "datasources"]
+        "download", "supplements", "extract", "passages", "metadata", "triage", "analyses",
+        "prose", "resolve", "roles", "space", "sync", "upload", "datasources"]
     assert flow_stages(stage_graph(False)) == [
-        "download", "extract", "metadata", "triage", "analyses", "roles", "space", "sync",
-        "upload", "datasources"]
+        "download", "supplements", "extract", "metadata", "triage", "analyses", "roles",
+        "space", "sync", "upload", "datasources"]
 
 
 def test_dimensions_include_tried_sources_and_registration_day(wide):
