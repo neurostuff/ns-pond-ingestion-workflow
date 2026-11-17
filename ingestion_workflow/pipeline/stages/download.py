@@ -120,8 +120,9 @@ class DownloadStage:
         """The first source `--refresh download:<source>` names that holds a record of the
         article and can address it.
 
-        Fetched even when another source's copy is fresh: the copy an extraction was read
-        from is the one sync needs, and that need not be the copy download stopped at.
+        Run again even when another source's copy is fresh: the copy an extraction was read
+        from is the one sync needs, and that need not be the copy download stopped at. ACE
+        records a page it already holds that passes the check instead of fetching it.
         """
         for source in self._order:
             if (ctx.names(self.name, source.value) and source.value in existing
