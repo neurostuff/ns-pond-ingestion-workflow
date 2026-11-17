@@ -379,6 +379,24 @@ def _word_converter():
     return _WORD_CONVERTER
 
 
+_CAPTION_LINE = re.compile(r"^\W*(?:supplementa\w*\s+)?table\s*s?\d+", re.I)
+
+
+def word_captions(document) -> List[str]:
+    """For each table of a Word document, in order, the nearest paragraph before it that starts
+    "Table N": Docling links no caption to a Word table (supplementary-extraction's rule)."""
+    out, last = [], ""
+    for node, _ in document.iterate_items():
+        if node in document.tables:
+            out.append(last)
+            last = ""
+            continue
+        text = _squash(getattr(node, "text", "") or "")
+        if _CAPTION_LINE.match(text):
+            last = text
+    return out
+
+
 def read_docx(item: Supplement, out_dir: Path, path: Optional[Path] = None) -> None:
     """A Word file through Docling: its text, captions and tables as a PDF's are read."""
     from ingestion_workflow.extractors.docling_convert import normalize_text_tokens
@@ -388,6 +406,8 @@ def read_docx(item: Supplement, out_dir: Path, path: Optional[Path] = None) -> N
     text, _ = pdf_text_and_captions(document, normalize_text_tokens)
     (out_dir / "tables").mkdir(parents=True, exist_ok=True)
     tables = document_tables(item.name, document, out_dir / "tables", None)
+    for table, caption in zip(tables, word_captions(document)):
+        table.caption = table.caption or caption
     item.tables = [t.to_dict() for t in tables]
     _write_text(item, out_dir, text)
     item.read_by = "docling"

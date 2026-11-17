@@ -289,6 +289,8 @@ def test_a_word_file_is_read_with_its_tables(tmp_path):
     assert "normalised to MNI space" in text and "L insula" in text
     [read] = item.tables
     assert "-34" in Path(read["raw_content_path"]).read_text()
+    # Docling links no caption to a Word table: the "Table S1." paragraph before it is taken
+    assert read["caption"] == "Table S1. Peaks of the group difference."
 
 
 @pytest.mark.parametrize("item", [
