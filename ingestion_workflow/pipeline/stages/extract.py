@@ -378,7 +378,7 @@ class ExtractStage:
         from ingestion_workflow.services import supplements as sp
 
         fp, items = self._appending.get(work.article_id, (None, []))
-        content = sp.append(content, items)
+        content = sp.append(content, items, sp.joined_dir(self.settings, work.article_id))
         if not fp:
             return content, {}
         return content, {

@@ -135,6 +135,7 @@ def test_supplements_read_later_are_appended_without_reading_the_download_again(
             outcome.summary["tables"]) == (1, 1, 2)
     payload = outcome.payload
     assert [t["table_id"] for t in payload["tables"]] == ["t1", "s1-table-s1"]
+    assert Path(payload["full_text_path"]).is_relative_to(settings.cache_root)
     text = Path(payload["full_text_path"]).read_text()
     assert text.startswith("## Methods\n\nTwenty-four patients.")
     assert "x = -34, y = 16, z = -6" in text

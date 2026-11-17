@@ -485,13 +485,13 @@ def without_supplements(content: ExtractedContent) -> ExtractedContent:
     return content
 
 
-def append(content: ExtractedContent, supplements: Sequence[Supplement]) -> ExtractedContent:
+def append(content: ExtractedContent, supplements: Sequence[Supplement], out_dir: Path) -> ExtractedContent:
     """`content` with each read supplement's text after the text (after the figure legends)
     and its tables after the tables.
 
     The text before is unchanged, so every offset into it holds (figure captions, references,
-    links). The joined text is written beside the extractor's, which is left as it is and
-    named `base_text_path`. Each supplement's span in the joined text is recorded in
+    links). The joined text is written to `out_dir`, never beside the extractor's: that text may
+    sit in a shared source cache, and is left as it is and named `base_text_path`. Each supplement's span in the joined text is recorded in
     `content.supplements`; each table's id is `s<k>-<its id>`, its `metadata.supplement` the
     supplement's index k (1-based), and its `metadata.table_label` how the paper cites it."""
     content = without_supplements(content)
@@ -523,15 +523,18 @@ def append(content: ExtractedContent, supplements: Sequence[Supplement]) -> Extr
                         "label": item.label, "caption": item.caption, "read_by": item.read_by,
                         "span": [start, len(text)], "tables": table_ids})
     text += "\n"
-    if base_path is not None:
-        joined = base_path.with_name(base_path.stem + "+supplements.txt")
-    else:
-        joined = Path(read[0].text_path).parent.parent / "article+supplements.txt"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    joined = out_dir / f"{content.source.value}+supplements.txt"
     joined.write_text(text, encoding="utf-8")
     content.base_text_path = base_path
     content.full_text_path = joined
     content.supplements = entries
     return content
+
+
+def joined_dir(settings, article_id: str) -> Path:
+    """Where an article's text joined with its supplements is written: the run's own cache."""
+    return Path(settings.cache_root) / "supplements" / article_id / "joined"
 
 
 def supplement_spans(payload: Optional[Dict[str, Any]]) -> List[Tuple[int, int]]:

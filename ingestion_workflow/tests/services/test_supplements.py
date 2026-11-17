@@ -150,7 +150,8 @@ def test_a_workbook_is_read_sheet_by_sheet(tmp_path):
 
 
 def _content(tmp_path) -> ExtractedContent:
-    text = tmp_path / "article.txt"
+    text = tmp_path / "extract" / "article.txt"
+    text.parent.mkdir(exist_ok=True)
     body = "## Methods\n\nWe scanned 24 patients.\n\n## Figure legends\n\nFig. 1. Activation."
     text.write_text(body, encoding="utf-8")
     return ExtractedContent(
@@ -178,10 +179,13 @@ def test_a_supplement_is_appended_after_the_text_leaving_every_offset_in_it_as_i
     content = _content(tmp_path)
     before = Path(content.full_text_path).read_text()
 
-    joined = sp.append(content, [_read_supplement(tmp_path)])
+    joined = sp.append(content, [_read_supplement(tmp_path)], tmp_path / "joined")
 
     text = Path(joined.full_text_path).read_text()
     assert text.startswith(before) and Path(joined.base_text_path).read_text() == before
+    # never beside the extractor's text, which may sit in a shared source cache
+    assert Path(joined.full_text_path).parent == tmp_path / "joined"
+    assert sorted(p.name for p in Path(joined.base_text_path).parent.iterdir()) == ["article.txt"]
     [entry] = joined.supplements
     a, b = entry["span"]
     assert text[a:b].strip() == "Table S1. Peaks of the conjunction.\nL insula -34 16 -6"
@@ -196,13 +200,13 @@ def test_a_supplement_is_appended_after_the_text_leaving_every_offset_in_it_as_i
 
 def test_appending_again_replaces_what_was_appended_and_none_takes_it_off(tmp_path):
     content = _content(tmp_path)
-    once = sp.append(content, [_read_supplement(tmp_path)])
+    once = sp.append(content, [_read_supplement(tmp_path)], tmp_path / "joined")
     payload = ExtractedContent.from_dict(once.to_dict())
 
-    twice = sp.append(payload, [_read_supplement(tmp_path)])
+    twice = sp.append(payload, [_read_supplement(tmp_path)], tmp_path / "joined")
     assert [t.table_id for t in twice.tables] == ["t1", "s1-table-s1"]
 
-    bare = sp.append(ExtractedContent.from_dict(twice.to_dict()), [])
+    bare = sp.append(ExtractedContent.from_dict(twice.to_dict()), [], tmp_path / "joined")
     assert (bare.supplements, [t.table_id for t in bare.tables]) == ([], ["t1"])
     assert bare.full_text_path.name == "article.txt"
 
