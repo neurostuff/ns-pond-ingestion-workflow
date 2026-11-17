@@ -369,6 +369,10 @@ class ExtractStage:
         this download, so they are appended to it again without reading the download again."""
         return (extraction is not None and extraction.status is Status.OK
                 and not ctx.refreshing(self.name, work.source)
+                # The plan queued it because its fingerprint moved: a caller that hands in the
+                # extraction's own fingerprint (`scripts/pdf_rerun.py` replaying a read) wants
+                # the extractor run.
+                and extraction.fingerprint != work.fingerprint
                 and ctx.payload(extraction) is not None
                 and base_fingerprint(extraction) == extraction_fingerprint(work.upstream.source, work.upstream))
 
@@ -390,6 +394,12 @@ class ExtractStage:
             "supplements": len(content.supplements),
             "supplement_tables": sum(len(s["tables"]) for s in content.supplements),
         }
+
+    def _made_fingerprint(self, work: Work) -> str:
+        """The fingerprint of what was made: the download read and the supplements appended,
+        whatever fingerprint the caller computed for the work."""
+        fp, _ = self._appending.get(work.article_id, (None, []))
+        return extraction_fingerprint(work.upstream.source, work.upstream, fp) if fp else work.fingerprint
 
     def _fingerprints(self, work: Work) -> Dict[str, str]:
         """What `current_extractions` checks an extraction made with supplements against:
@@ -510,7 +520,7 @@ class ExtractStage:
             stage=self.name,
             source=source,
             status=Status.OK,
-            fingerprint=work.fingerprint,
+            fingerprint=self._made_fingerprint(work),
             payload=content.to_dict(),
             summary=summary,
         )
@@ -527,7 +537,7 @@ class ExtractStage:
             stage=self.name,
             source=source,
             status=Status.OK,
-            fingerprint=work.fingerprint,
+            fingerprint=self._made_fingerprint(work),
             payload=content.to_dict(),
             summary={
                 "tables": 0,

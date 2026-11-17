@@ -13,6 +13,7 @@ from ingestion_workflow.config import Settings
 from ingestion_workflow.models import (DownloadResult, DownloadSource, DownloadedFile, ExtractedContent,
                                        ExtractedTable, FileType, Identifier)
 from ingestion_workflow.pipeline import Context
+from ingestion_workflow.pipeline.plan import Work
 from ingestion_workflow.pipeline.stages import STAGE_ORDER, OPT_IN_STAGES, ExtractStage, SupplementsStage
 from ingestion_workflow.pipeline.stages.extract import current_extractions, extraction_fingerprint
 from ingestion_workflow.pipeline.stages.passages import find_passages
@@ -203,3 +204,31 @@ def test_supplementary_pdfs_are_read_together_each_into_its_own_directory(env, t
     assert seen["root"] == tmp_path / "root"
     assert len(set(seen["dirs"])) == 3
     assert [(s.read, s.read_by) for _, _, s in pdfs] == [(True, "docling")] * 3
+
+
+def test_a_work_with_the_extraction_s_own_fingerprint_is_read_again_and_gets_the_supplements(env, tmp_path):
+    """A caller replaying a read (scripts/pdf_rerun.py) hands in the extraction's fingerprint:
+    the extractor runs, and the outcome names the supplements appended to what it read."""
+    settings, catalog, ctx = env
+    ref = _article(catalog, "a1", pmcid="PMC1")
+    download = _download(catalog, tmp_path, ref, "pubget")
+    base = extraction_fingerprint("pubget", download)
+    catalog.record([Outcome(ref.id, "extract", "pubget", Status.OK, base,
+                            payload=_extraction(tmp_path, ref).to_dict(), summary={"tables": 1})])
+    _read_supplements(catalog, tmp_path, ref)
+    stage = ExtractStage(settings)
+    read = []
+
+    class Replay:
+        def extract(self, downloads):
+            read.extend(downloads)
+            return [_extraction(tmp_path, ref)]
+
+    stage.extractor = lambda source: Replay()
+    work = Work(ref=ref, source="pubget", fingerprint=base, upstream=download)
+
+    [outcome] = list(stage.execute(ctx, [work]))
+
+    assert len(read) == 1
+    assert outcome.fingerprint == extraction_fingerprint("pubget", download, "supp-fp")
+    assert outcome.summary["supplements"] == 1
