@@ -27,8 +27,14 @@ from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, Set, 
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.clients.model_server import ModelUnavailable
-from ingestion_workflow.services.set_roles import Unanswered, decide, prose_context, table_context
-from ingestion_workflow.services.set_roles.labels import is_decided
+from ingestion_workflow.services.set_roles import (
+    Unanswered,
+    decide,
+    geometry,
+    prose_context,
+    table_context,
+)
+from ingestion_workflow.services.set_roles.labels import RoleDecision, SetRole, is_decided
 from ingestion_workflow.services.set_roles.served import (
     WORKERS,
     ServedClassifier,
@@ -46,7 +52,7 @@ from .space import _article_text
 logger = logging.getLogger(__name__)
 
 #: Bump when what the stage writes changes, apart from the models and the contexts.
-ROLES_VERSION = 4
+ROLES_VERSION = 5
 
 #: Articles classified at once, their inputs held in memory meanwhile. An article
 #: waits on one origin's server at a time, so both servers are supplied only while
@@ -176,16 +182,28 @@ def assign_roles(
     a localization -- are held: they stay in
     the collection's `analyses`, in their place, so a set's position (pondie's
     `table_id#ordinal`) never moves, and upload leaves them out (`uploaded_sets`).
+
+    A set whose points cannot be template brain coordinates (`geometry.not_brain`)
+    is decided before any model is asked: no role, held, with the rule's reason. It
+    stays in its place here and is left out of the parse.
     """
     found = list(set_contexts(payload, passages, text, raw_tables, unread))
+    decisions, unanswered = {}, {}
     by_origin: Dict[str, list] = collections.defaultdict(list)
     for item in found:
-        by_origin[item[2]].append(item)
+        table_id, index, origin, _, context = item
+        reason = geometry.not_brain(context.points)
+        if reason is None:
+            by_origin[origin].append(item)
+            continue
+        decisions[(table_id, index)] = RoleDecision(
+            decided=SetRole(None), confidence=1.0, source=geometry.SOURCE, origin=origin,
+            reason=reason,
+        )
     chosen = {}
     for origin in sorted(by_origin):
         # The stage's mapping raises `ModelUnavailable` with the reason its model cannot be used.
         chosen[origin] = classifiers[origin]
-    decisions, unanswered = {}, {}
     for origin, items in by_origin.items():
         classifier = chosen[origin]
         predictions = classifier.predict([module.serialize(ctx) for *_, module, ctx in items])
@@ -226,7 +244,8 @@ def assign_roles(
                 },
             }
             # An anchor by its kind.
-            roles[decision.anchor_kind or decision.role] += 1
+            if decision.role is not None:
+                roles[decision.anchor_kind or decision.role] += 1
             held += not decision.uploaded
             kept.append(analysis)
             values.append([table_id, index, decision.role, decision.anchor_kind,
@@ -236,11 +255,13 @@ def assign_roles(
     summary = {
         "tables": sum(1 for c in out.values() if (c or {}).get("analyses")),
         "sets": len(found),
-        "sets_by_origin": {o: len(items) for o, items in sorted(by_origin.items())},
+        "sets_by_origin": dict(sorted(collections.Counter(o for _, _, o, *_ in found).items())),
         # Prose sets whose points the classifier could not find in their passage.
-        "text_sets_without_local": sum(not ctx.local for *_, ctx in by_origin.get("text", [])),
+        "text_sets_without_local": sum(not ctx.local for _, _, o, _, ctx in found if o == "text"),
         "roles": dict(roles),
         "held": held,
+        # Sets refused by `geometry` before any model was asked.
+        "not_brain": sum(d.source == geometry.SOURCE for d in decisions.values()),
         "sources": {o: c.source for o, c in chosen.items()},
         # The decided roles alone, without confidences or the model that
         # decided them: what upload's freshness follows, so a retrained model

@@ -40,6 +40,14 @@ prior-study flag: every set gets a role, `from_prior_study` is true for a `refer
 The stage refuses the prompt when its context versions are not the ones this code builds, and a
 server that does not list the model.
 
+Before any model is asked, each set's points are checked (`services/set_roles/geometry.py`). A set
+whose numbers cannot be template brain coordinates gets no role: most of its points outside the
+brain box `prose_passages.plausible` checks, every value within 10 of zero, or every point the same
+number three times. That catches voxel indices, latitude and longitude, positions from bregma or a
+head frame, and counts read as x, y, z. Its `role` is null, `role_source` is `geometry@<version>`,
+`role_reason` says which rule, and the model never sees it. A set with no readable point is the
+model's.
+
 ## Artifact
 
 `stage = "roles"`, `source = ""`.
@@ -52,28 +60,32 @@ collection is an `AnalysisCollection` dict (`slug`, `identifier`, `coordinate_sp
 
    | Field | Type | Meaning |
    |---|---|---|
-   | `role` | `CoordinateRole` value | `result`, `anchor`, `localization`, `reference`, `other` |
+   | `role` | `CoordinateRole` value or null | `result`, `anchor`, `localization`, `reference`, `other`; null when the numbers are not template brain coordinates |
    | `anchor_kind` | `AnchorKind` value or null | for an `anchor` only: `roi`, `seed`, `stimulation_target`, `node`; null when the model gave no kind |
    | `from_prior_study` | bool or null | the coordinates come from another publication: true for `reference`, null (unknown) for the other roles |
    | `prior_study_evidence` | list of TextSpan | the citing sentences, `{start_char, end_char, text}` into the article text, or `{text}` when the sentence was not found there; empty unless `from_prior_study` |
    | `role_confidence` | float | the model's probability for the role it answered, at the role's first token: p(result) for a result |
-   | `role_source` | string | the model that decided, `<served model name>@<prompt version>+<checkpoint digest>`: the digest of the path `/v1/models` gives as the model's `root` (and, when that path is readable, its config, weights index and weight files) |
+   | `role_source` | string | `geometry@<version>` for a set the geometry check refused; otherwise the model that decided, `<served model name>@<prompt version>+<checkpoint digest>`: the digest of the path `/v1/models` gives as the model's `root` (and, when that path is readable, its config, weights index and weight files) |
    | `role_origin` | `table` or `text` | which of the two models read the set |
+   | `role_reason` | string, only on a null role | the geometry rule that refused the set; absent on a model's decision |
 
    The values of `role` and `anchor_kind` are study_schema's enums
    (`study_schema.models.paper_parse`), and the field names are `CoordinateParse`'s.
 
-2. Every analysis gains `metadata.held`: true for a set whose role is not uploaded (anything
-   but `result` and `anchor`). A held set stays in the collection's `analyses`, in its place, so
-   a set's position -- pondie's `table_id#ordinal` key -- never moves. `upload` leaves held sets
-   out (`roles.uploaded_sets`); `space` and stage1 keep them.
+2. Every analysis gains `metadata.held`: true for a set whose role is not `result` or `anchor`.
+   A held set stays in the collection's `analyses`, in its place, so a set's position -- pondie's
+   `table_id#ordinal` key -- never moves. `space` and stage1 keep held sets. The coordinate
+   parse writes every set with a role, held or not, and neurostore stores each with its role;
+   studyset releases export results only. A set with a null role is left out of the parse
+   (`paper_parse.NOT_BRAIN_REASON`, with its `role_source` and `role_reason`).
 
-The summary is `{tables, sets, sets_by_origin, text_sets_without_local, tables_without_text, roles, held, sources, role_values, input}`:
+The summary is `{tables, sets, sets_by_origin, text_sets_without_local, tables_without_text, roles, held, not_brain, sources, role_values, input}`:
 `tables` counts collections that have an analysis (the selection gate reads it),
 `text_sets_without_local` counts prose sets whose points the classifier could not find in their
 passage, `tables_without_text` names each table whose sets were read without its header and rows
 (no raw table file recorded, the file missing or unreadable), with the reason, `roles` counts
-sets by role (an anchor by its kind), `sources` names each
+sets by role (an anchor by its kind; a null role is not counted), `not_brain` counts the sets the
+geometry check refused, `sources` names each
 origin's model, `role_values` is a digest of every set's decided `role`, `anchor_kind`,
 `from_prior_study` and `held` (no confidence, no model), and `input` is a digest of what the
 stage read.

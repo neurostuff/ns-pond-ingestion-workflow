@@ -118,6 +118,8 @@ class RoleDecision:
     origin: str
     #: The sentences showing the coordinates come from another publication.
     prior_study_evidence: Tuple[dict, ...] = field(default=())
+    #: Why a set has no role, when a rule rather than a model refused it (`geometry`).
+    reason: Optional[str] = None
 
     @property
     def role(self) -> Optional[str]:
@@ -136,11 +138,18 @@ class RoleDecision:
         return self.role in UPLOADED_ROLES
 
     def to_metadata(self) -> dict:
-        """The decision in CoordinateParse's field names, plus who decided and how surely."""
-        return {
+        """The decision in CoordinateParse's field names, plus who decided and how surely.
+
+        `role_reason` is there only for a set a rule refused, so a model's
+        decisions keep the record they always had.
+        """
+        out = {
             **self.decided.fields(),
             "prior_study_evidence": list(self.prior_study_evidence),
             "role_confidence": self.confidence,
             "role_source": self.source,
             "role_origin": self.origin,
         }
+        if self.reason is not None:
+            out["role_reason"] = self.reason
+        return out

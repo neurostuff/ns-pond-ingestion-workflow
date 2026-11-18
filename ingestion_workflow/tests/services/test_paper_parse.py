@@ -2059,6 +2059,22 @@ def test_a_bregma_table_is_left_out_with_its_reason(tmp_path):
     assert (reading.reading, reading.reason) == ("no_coordinates", paper_parse.RODENT_ATLAS_REASON)
 
 
+def test_a_set_the_roles_stage_gave_no_role_is_left_out_with_its_reason(tmp_path):
+    refused = {**_decided(), "role": None, "role_source": "geometry@1",
+               "role_reason": "most points lie outside a template brain"}
+    analyses = _collection([
+        Analysis(name="DMN", coordinates=[Coordinate(x=0, y=-47, z=29)]),
+        Analysis(name="FA1", coordinates=[Coordinate(x=82, y=99, z=35)],
+                 metadata={"set_role": refused, "held": True}),
+    ])
+    parse, omitted = _parse(tmp_path, TALAIRACH_TABLE, {"tbl1": analyses}, caption=HUMAN_CAPTION)
+    assert [a.name for a in parse.analyses] == ["DMN"]
+    assert [(o.name, o.table_id, o.reason) for o in omitted] == [
+        ("FA1", "tbl1", f"{paper_parse.NOT_BRAIN_REASON} (geometry@1: "
+                        "most points lie outside a template brain)"),
+    ]
+
+
 def test_a_bregma_table_overrides_the_analyses_stage_s_reading(tmp_path):
     parse, _ = _parse(
         tmp_path, BREGMA_TABLE, {"tbl1": _seeds()}, caption=RAT_CAPTION,

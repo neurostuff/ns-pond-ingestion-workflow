@@ -23,7 +23,12 @@ from ingestion_workflow.pipeline.stages.roles import (
 from ingestion_workflow.pipeline.stages.space import SpaceStage
 from ingestion_workflow.pipeline.stages.sync import SyncStage
 from ingestion_workflow.pipeline.stages.upload import UploadStage
-from ingestion_workflow.services.set_roles import COORDINATE_ROLES, Prediction, served_prompt
+from ingestion_workflow.services.set_roles import (
+    COORDINATE_ROLES,
+    Prediction,
+    geometry,
+    served_prompt,
+)
 
 TEXT = "Peaks from earlier work are listed in Table 2. Table 2 quotes Lee et al. (2008)."
 
@@ -61,7 +66,7 @@ def _analysis(name, caption="", **meta):
         "table_footer": "",
         "description": None,
         "metadata": {"table_metadata": {"table_label": "Table 2"}, **meta},
-        "coordinates": [{"x": 1.0, "y": 2.0, "z": 3.0, "space": "MNI"}],
+        "coordinates": [{"x": -42.0, "y": 18.0, "z": 24.0, "space": "MNI"}],
     }
 
 
@@ -171,6 +176,7 @@ def test_every_set_gets_its_role_from_its_origin_s_model():
         "text_sets_without_local": 0,
         "roles": {"result": 1, "reference": 1, "seed": 1},
         "held": 1,
+        "not_brain": 0,
         "sources": {"table": "fake-table@1", "text": "fake-prose@2"},
     }
     assert unassigned(out) == []
@@ -450,3 +456,35 @@ def test_no_role_is_given_by_default(path):
         source,
     )
     assert defaults == [], f"{path} gives a default role: {defaults}"
+
+
+def _voxel_indices():
+    """PMC13593418 table 4: TBSS peaks printed as voxel indices under an "MNI" header."""
+    analysis = _analysis("FA1")
+    analysis["coordinates"] = [{"x": 82.0, "y": 99.0, "z": 35.0, "space": "MNI"}]
+    return analysis
+
+
+def test_a_set_that_cannot_be_brain_coordinates_has_no_role_and_is_not_asked():
+    payload = _tables()
+    payload["t2"]["analyses"].append(_voxel_indices())
+    table = FakeClassifier(TABLE_ANSWERS)
+    out, summary = assign_roles(payload, [], TEXT, {"table": table})
+    refused = out["t2"]["analyses"][2]["metadata"]
+    assert refused["held"] is True
+    assert refused["set_role"]["role"] is None
+    assert refused["set_role"]["role_source"] == geometry.SOURCE
+    assert refused["set_role"]["role_reason"] == geometry.OUTSIDE
+    assert not any("[NAME] FA1" in text for text in table.seen)
+    assert (summary["sets"], summary["not_brain"]) == (3, 1)
+    assert summary["sets_by_origin"] == {"table": 3}
+    assert unassigned(out) == []
+    # The model's sets keep the record they always had.
+    assert "role_reason" not in out["t2"]["analyses"][0]["metadata"]["set_role"]
+
+
+def test_a_table_of_refused_sets_needs_no_model():
+    payload = {"t2": {**_tables()["t2"], "analyses": [_voxel_indices()]}}
+    out, summary = assign_roles(payload, [], TEXT, {})
+    assert out["t2"]["analyses"][0]["metadata"]["set_role"]["role"] is None
+    assert summary["sources"] == {}

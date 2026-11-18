@@ -7,7 +7,8 @@ another publication. `table_context` and `prose_context` build the two inputs
 (they share only `common`'s helpers and `labels`' study_schema role fields);
 `served` asks an origin's role model, a NuExtract3 fine-tune served by vLLM,
 with the prompt in `served_prompt`; `classifier` turns its answer into the
-recorded role, with no default.
+recorded role, with no default. `geometry` refuses, before any model is asked,
+a set whose numbers cannot be template brain coordinates.
 `labeling` and `export` make its training data, and the role-bearing rows for
 the two extractors. The roles stage (`pipeline.stages.roles`) runs it;
 experiments/role_classifier holds the job scripts.

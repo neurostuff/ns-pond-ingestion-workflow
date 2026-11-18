@@ -11,6 +11,7 @@ from ingestion_workflow.services.set_roles import (
     ProseSetContext,
     SetRole,
     decide,
+    geometry,
     prose_context,
     table_context,
 )
@@ -360,3 +361,36 @@ def test_a_model_trained_on_the_previous_prose_context_is_refused_with_the_reaso
         prompt.check("text")
     # The table context is unchanged: its version is not bumped by this.
     assert served_prompt.CONTEXT_VERSIONS == {"table": 2, "text": 4}
+
+
+# Points read from production tables (the roles evaluation set, 2026-11-18).
+@pytest.mark.parametrize(
+    "points, reason",
+    [
+        # PMC13593418 table 4: TBSS peaks printed as voxel indices under an "MNI" header.
+        ([(82, 99, 35), (100, 83, 102), (114, 144, 54)], geometry.OUTSIDE),
+        # pone-0119184 table 1: field plots as latitude, longitude, elevation (m).
+        ([(46.25, 7.92, 990.0), (46.25, 7.92, 1410.0)], geometry.OUTSIDE),
+        # A rat lesion table: mm from bregma.
+        ([(-2.0, 0.3, -1.2), (-2.0, -0.3, -1.2), (-2.0, 0.3, -2.5)], geometry.NEAR_ORIGIN),
+        # A systematic review's study rows: counts read as x, y, z.
+        ([(3, 3, 3), (2, 2, 2)], geometry.SAME_AXES),
+    ],
+)
+def test_numbers_that_cannot_be_template_brain_coordinates_are_refused(points, reason):
+    assert geometry.not_brain([{"x": x, "y": y, "z": z} for x, y, z in points]) == reason
+
+
+@pytest.mark.parametrize(
+    "points",
+    [
+        [(-42, 18, 24), (36, -54, -15), (-24, -87, -30)],
+        # A hypothalamic ROI: every value small, but one is beyond 10.
+        [(-1.8, -0.5, -10.5)],
+        # One stray point outside the box among brain peaks.
+        [(-42, 18, 24), (36, -54, -15), (81, -139, 15)],
+        [],
+    ],
+)
+def test_template_brain_coordinates_and_empty_sets_pass(points):
+    assert geometry.not_brain([{"x": x, "y": y, "z": z} for x, y, z in points]) is None

@@ -75,7 +75,7 @@ def _analysis(name, caption="", **meta):
         "table_footer": "",
         "description": None,
         "metadata": {"table_metadata": {"table_label": "Table 2"}, **meta},
-        "coordinates": [{"x": 1.0, "y": 2.0, "z": 3.0, "space": "MNI"}],
+        "coordinates": [{"x": -42.0, "y": 18.0, "z": 24.0, "space": "MNI"}],
     }
 
 
@@ -624,7 +624,7 @@ def test_the_role_source_recorded_is_the_checkpoint_s(env, stub, tmp_path):
 
 
 TABLE = ("<table><tr><th>Region</th><th>x</th><th>y</th><th>z</th></tr>"
-         "<tr><td>Amygdala</td><td>1</td><td>2</td><td>3</td></tr></table>")
+         "<tr><td>Amygdala</td><td>-42</td><td>18</td><td>24</td></tr></table>")
 
 
 class _Ctx:
@@ -650,7 +650,7 @@ def test_a_table_is_read_from_the_extraction_when_its_metadata_names_no_file(tmp
     found = raw_tables(triage, {"pubget": extraction}, ctx)
     assert found == {"t2": tmp_path / "t2.html"}
     ((*_, module, context),) = set_contexts(_tables("patients"), [], None, found)
-    assert "[ROWS] Amygdala | 1 | 2 | 3" in module.serialize(context)
+    assert "[ROWS] Amygdala | -42 | 18 | 24" in module.serialize(context)
     ((*_, module, context),) = set_contexts(_tables("patients"), [], None)
     assert "[ROWS]" not in table_context.serialize(context)
 
@@ -702,7 +702,7 @@ def test_the_stage_reads_each_table_from_the_extraction_triage_judged(env, stub,
     _, (done,) = _run(RolesStage(settings), settings, catalog, ref)
     assert done.status is Status.OK
     asked = [b["messages"][0]["content"] for b in stub.requests]
-    assert len(asked) == 2 and all("[ROWS] Amygdala | 1 | 2 | 3" in a for a in asked)
+    assert len(asked) == 2 and all("[ROWS] Amygdala | -42 | 18 | 24" in a for a in asked)
 
 
 def test_a_served_prose_model_trained_on_other_prose_contexts_is_refused(env, monkeypatch):
@@ -736,7 +736,7 @@ def test_every_table_read_without_its_header_and_rows_is_recorded_with_why(tmp_p
     unread = {}
     _, summary = assign_roles(payload, [], None, {"table": backend}, raw, unread)
     # A stale path in the metadata does not hide the extraction's file.
-    assert "[ROWS] Amygdala | 1 | 2 | 3" in backend.seen[0]
+    assert "[ROWS] Amygdala | -42 | 18 | 24" in backend.seen[0]
     assert unread == {
         "t3": f"its raw table file is missing ({tmp_path / 'gone.html'})",
         "t4": "no raw table file is recorded for it; the extraction has no table 't4'",
@@ -759,7 +759,7 @@ def test_a_table_file_that_is_not_utf8_is_read_as_nu_v21_read_it(tmp_path):
     ((*_, module, context),) = set_contexts(_tables("patients"), [], None,
                                             {"t2": tmp_path / "t2.html"})
     text = module.serialize(context)
-    assert "[ROWS] Amygdala | 1 | 2 | 3" in text and "�" not in text
+    assert "[ROWS] Amygdala | -42 | 18 | 24" in text and "�" not in text
 
 
 def test_a_server_up_but_failing_on_one_input_fails_that_set_only(stub):
@@ -837,7 +837,7 @@ TEXT_MODEL = "nx-roles-text"
 def _prose_sets(*names):
     return {"p": {"analyses": [
         {"name": n, "description": None, "metadata": {"source": "prose", "passages": [0]},
-         "coordinates": [{"x": 1.0, "y": 2.0, "z": 3.0, "space": "MNI"}]} for n in names]}}
+         "coordinates": [{"x": -42.0, "y": 18.0, "z": 24.0, "space": "MNI"}]} for n in names]}}
 
 
 @pytest.fixture
