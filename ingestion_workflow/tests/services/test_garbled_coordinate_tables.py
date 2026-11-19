@@ -1,0 +1,133 @@
+"""Real tables whose coordinates the extractor stored wrong, from the roles audit's
+geometry-guard holds (2026-11-19).
+
+Each file in `data/garbled_coordinate_tables` is the raw table production read, cut to a
+few rows. The assertions are on what the extractor is sent (`_serialise`) or on how a
+PDF's tables are pieced together (`read_middle_json`): the numbers the model can read
+are the numbers it stores.
+"""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pytest
+from ingestion_workflow.extractors.mineru_convert import MineruTable, continued, read_middle_json
+from ingestion_workflow.extractors.utils import normalize_minus
+from ingestion_workflow.services.create_analyses import CreateAnalysesService
+
+DATA = Path(__file__).parents[1] / "data" / "garbled_coordinate_tables"
+
+
+def _serialised(name: str) -> list[str]:
+    markup = (DATA / name).read_text(encoding="utf-8")
+    return CreateAnalysesService._serialise(markup, "t").split("\n")
+
+
+def test_a_footnote_mark_is_not_read_as_more_digits():
+    """PMC3985019 Table 2 cites each seed's source by a superscript footnote: `46<sup>1</sup>`
+    read `461`, and every z of the table's 53 seeds was stored out of the brain."""
+    lines = _serialised("pmc3985019_t2.xml")
+
+    assert lines[1].endswith("| -23, -66, 46^{1}")
+    assert lines[3].endswith("| -56, -18, 37^{11}")
+    assert not any("461" in line or "3711" in line for line in lines)
+
+
+def test_a_wedge_printed_for_a_minus_is_a_minus():
+    """PMC4116759 Table 4 prints every negative coordinate as `∧40`; all were stored positive."""
+    lines = _serialised("pmc4116759_tbl4.xml")
+
+    assert any(line.startswith("Inferior occipital gyrus | 18 | -40 | -86 | -4 | 8.29 | 2.53")
+               for line in lines)
+    assert any(line.endswith("| 44 | -74 | 0 | 8.48 | 2.59") for line in lines)
+    assert not any("∧" in line for line in lines)
+
+
+@pytest.mark.parametrize("text", ["Faces ∧ Places", "(A>B)∧1", "x∧2"])
+def test_a_wedge_that_is_a_conjunction_stays(text):
+    assert normalize_minus(text) == text
+
+
+def test_a_direction_letter_is_a_sign():
+    """doi:10.1111/j.1530-0277.2001.tb02204.x Table 2 (MinerU) prints Talairach coordinates
+    as `32R | 92P | 4I`; the letters were dropped and left, posterior and inferior foci
+    stored on the other side."""
+    lines = _serialised("mineru_11236838_table-2.html")
+
+    assert any(line.endswith("| 18 | 675 | 32 | -92 | -4 | 1.83") for line in lines)
+    assert any(line.endswith("| - | 2133 | -14 | -11 | 18 | 1.50") for line in lines)
+    assert any(line.endswith("| 10 | 621 | 23 | 62 | 9 | 1.36") for line in lines)
+    # Brodmann's area and volume are not coordinates and keep their own form.
+    assert any(line.startswith("Right inferior occipital gyrus^{a} | 18 | 675 |")
+               for line in lines)
+
+
+def test_a_lone_direction_letter_is_left_alone():
+    from ingestion_workflow.services.create_analyses import _signed_by_direction
+
+    assert _signed_by_direction("Region | 6L | 12 | 3") == "Region | 6L | 12 | 3"
+    assert _signed_by_direction("Region | 6L | 12P | 3") == "Region | 6L | 12P | 3"
+
+
+# -- a table carried over a page break ------------------------------------------------
+
+
+def _middle() -> dict:
+    return json.loads((DATA / "mineru_jnr25176_continued.json").read_text())
+
+
+def test_a_headless_piece_on_the_next_page_gets_its_tables_header():
+    """doi:10.1002/jnr.25176 Supplementary Table 1.b runs onto the next page, which MinerU
+    reads as a table with no caption and no header. Read alone, its cluster size and x
+    were stored as x and y (3366.77, 16.7, -60.7)."""
+    head, piece = read_middle_json(_middle()).tables
+
+    assert piece.caption == head.caption + " (continued)"
+    lines = CreateAnalysesService._serialise(piece.html, "t").split("\n")
+    assert "Cluster Number" in lines[0] and "Coordinate (MNI)" in lines[0]
+    # x, y and z head the same columns as in the head piece, where the piece's numbers sit.
+    assert lines[1].split(" | ")[3:6] == ["x", "y", "z"]
+    assert lines[2:] == [
+        " | 1 | 3366.77 | 16.7 | -60.7 | 27.4 | Parieto-occipital sulcus",
+        " | 2 | 1108.36 | 27.0 | -81.8 | -9.2 | Posterior transverse collateral sulcus",
+    ]
+    # The head keeps its own rows, and the piece only its own.
+    assert "2446.08" in head.html and "3366.77" not in head.html
+    assert "2446.08" not in piece.html
+
+
+def test_the_article_text_is_not_changed_by_the_stitch():
+    text = read_middle_json(_middle()).text
+
+    assert text.count("Cluster Number") == 1
+
+
+def test_a_piece_two_pages_on_is_not_a_continuation():
+    middle = _middle()
+    middle["pages"][1]["page_idx"] = 13
+
+    _, piece = read_middle_json(middle).tables
+    assert piece.caption == ""
+    assert "Cluster Number" not in piece.html
+
+
+@pytest.mark.parametrize("html", [
+    # a header of its own
+    "<table><tr><td>Region</td><td>t</td><td>x</td><td>y</td><td>z</td><td>k</td><td>BA</td></tr>"
+    "<tr><td>A</td><td>4.1</td><td>-2</td><td>3</td><td>4</td><td>12</td><td>6</td></tr></table>",
+    # another width
+    "<table><tr><td></td><td>1</td><td>3366.77</td><td>16.7</td><td>-60.7</td></tr></table>",
+])
+def test_a_piece_with_its_own_header_or_width_is_left_alone(html):
+    head = read_middle_json(_middle()).tables[0]
+
+    assert continued(head, html, "") == ("", html)
+
+
+def test_a_head_without_a_header_gives_nothing():
+    head = MineruTable(caption="", footer="", html="<table><tr><td>1</td><td>2</td></tr></table>")
+    html = "<table><tr><td>3</td><td>4</td></tr></table>"
+
+    assert continued(head, html, "") == ("", html)

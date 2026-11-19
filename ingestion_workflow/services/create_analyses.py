@@ -77,6 +77,62 @@ _ANY_TAG = re.compile(r"<[^>]+>")
 _RUNS = re.compile(r"[ \t]{2,}")
 
 
+#: A superscript is a footnote mark or an exponent, never more digits of the
+#: number before it. Stripped like any inline tag, `46<sup>1</sup>` read as
+#: `461`: a seed table citing its sources by footnote put every z out of the
+#: brain (PMC3985019, Table 2). Written as MinerU writes one, `46^{1}`, the mark
+#: stays and the number stays whole.
+_SUPERSCRIPT = re.compile(r"<((?:[\w-]+:)?sup)\b[^>]*>(.*?)</\1\s*>", re.S | re.I)
+#: A JATS footnote link with no `<sup>` of its own: `46<xref ref-type="table-fn">a</xref>`.
+_FOOTNOTE_LINK = re.compile(
+    r"""<xref\b[^>]*ref-type\s*=\s*["']table-fn["'][^>]*>(.*?)</xref\s*>""", re.S | re.I)
+
+
+def _footnote_marks(markup: str) -> str:
+    """`markup` with each superscript and footnote link written `^{...}`."""
+    markup = _SUPERSCRIPT.sub(lambda m: "^{%s}" % _ANY_TAG.sub("", m.group(2)).strip(), markup)
+
+    def link(m: "re.Match[str]") -> str:
+        inner = m.group(1)
+        if inner.lstrip().startswith("^{"):
+            return inner
+        return "^{%s}" % _ANY_TAG.sub("", inner).strip()
+
+    return _FOOTNOTE_LINK.sub(link, markup)
+
+
+#: A coordinate printed with its direction instead of its sign: `32R | 92P | 4I`
+#: (Talairach, left/right, anterior/posterior, superior/inferior). The extractor
+#: kept the digits and dropped the letter, so every left, posterior and inferior
+#: focus was stored on the other side (PMC-less PDF of doi:10.1111/j.1530-0277.
+#: 2001.tb02204.x, Table 2). Only three cells in a row, in x, y, z order, are
+#: read so: a lone `6L` may be anything.
+_DIRECTED = (
+    re.compile(r"^(\d+(?:\.\d+)?)\s?([RL])$"),
+    re.compile(r"^(\d+(?:\.\d+)?)\s?([AP])$"),
+    re.compile(r"^(\d+(?:\.\d+)?)\s?([SI])$"),
+)
+_NEGATIVE_DIRECTIONS = {"L", "P", "I"}
+
+
+def _signed_by_direction(line: str) -> str:
+    """One serialised row with each `x R | y P | z I` triple written as signed numbers."""
+    if " | " not in line:
+        return line
+    cells = line.split(" | ")
+    i = 0
+    while i + 2 < len(cells):
+        found = [rule.match(cells[i + k].strip()) for k, rule in enumerate(_DIRECTED)]
+        if all(found):
+            for k, m in enumerate(found):
+                sign = "-" if m.group(2) in _NEGATIVE_DIRECTIONS and float(m.group(1)) else ""
+                cells[i + k] = sign + m.group(1)
+            i += 3
+        else:
+            i += 1
+    return " | ".join(cells)
+
+
 def _text_of(markup: str) -> str:
     """The words in a table, with its grid kept and its tags dropped.
 
@@ -732,14 +788,14 @@ Raw Table Content:
         """
         from nspond_tables import serialize
 
-        markup = normalize_minus(markup)
+        markup = _footnote_marks(normalize_minus(markup))
         try:
             out = serialize.serialize(markup)
         except Exception as exc:                       # noqa: BLE001 - any parse failure
             logger.warning("could not serialise table %s (%s); sending text", table_key, exc)
             out = ""
         if out.strip():
-            return out
+            return "\n".join(_signed_by_direction(line) for line in out.split("\n"))
         # Neither form read as a table. Text beats markup, and markup beats
         # nothing at all -- the model can only answer about what it is sent.
         return _text_of(markup) or markup

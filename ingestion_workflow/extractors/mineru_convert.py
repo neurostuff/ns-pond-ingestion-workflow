@@ -10,9 +10,11 @@ the model loads on the first. MinerU is the `mineru` extra (README).
 
 from __future__ import annotations
 
+import copy
 import importlib.util
 import logging
 import os
+import re
 import sys
 from dataclasses import dataclass, field
 from io import StringIO
@@ -94,6 +96,7 @@ def read_middle_json(middle: Mapping[str, Any]) -> MineruDocument:
     paragraphs: List[str] = []
     captions: List[Tuple[str, str]] = []
     tables: List[MineruTable] = []
+    last_table_page: Optional[int] = None
     for page in middle.get("pages") or []:
         for block in page.get("blocks") or []:
             kind = block.get("type")
@@ -111,8 +114,13 @@ def read_middle_json(middle: Mapping[str, Any]) -> MineruDocument:
                 footer = " ".join(_text(c) for k, c in parts if k == "table_footnote").strip()
                 body = next((c for k, c in parts if k == "table_body"), "")
                 html = mark_header_rows(body if isinstance(body, str) else "")
-                tables.append(MineruTable(caption=caption, footer=footer, html=html))
                 paragraphs.extend(p for p in (caption, table_text(html), footer) if p)
+                page_idx = page.get("page_idx")
+                if (not caption and tables and isinstance(page_idx, int)
+                        and isinstance(last_table_page, int) and page_idx == last_table_page + 1):
+                    caption, html = continued(tables[-1], html, caption)
+                tables.append(MineruTable(caption=caption, footer=footer, html=html))
+                last_table_page = page_idx
                 continue
             if kind == "list":
                 items = (_text(item.get("content")) for item in _parts_of(block))
@@ -122,6 +130,68 @@ def read_middle_json(middle: Mapping[str, Any]) -> MineruDocument:
             if text:
                 paragraphs.append(text)
     return MineruDocument(text="\n\n".join(paragraphs), captions=captions, tables=tables)
+
+
+def continued(previous: MineruTable, html: str, caption: str) -> Tuple[str, str]:
+    """(caption, html) for a table that may be `previous` carried over a page break.
+
+    MinerU reads each page on its own, so a table running onto the next page comes out
+    as two: the first with its caption and header, the second with neither. Read alone,
+    the second piece has no column names, and the extractor took its cluster size and
+    statistic for x and y (doi:10.1002/jnr.25176, Table 2's right hemisphere; 71 such
+    pieces read shifted in the production catalog, 2026-11-19). A captionless piece with
+    no header of its own, on the page after a table of the same width, gets that
+    table's header rows and its caption marked continued, as MinerU's own continued
+    pieces read ("Table 1. (continued)"). Each piece keeps its own rows."""
+    if _header_rows(html) or not _header_rows(previous.html):
+        return caption, html
+    if _width(html) != _width(previous.html):
+        return caption, html
+    import lxml.html
+
+    rows = _rows(html)
+    if not rows:
+        return caption, html
+    body = rows[0].getparent()
+    for row in reversed(_header_rows(previous.html)):
+        body.insert(0, copy.deepcopy(row))
+    table = body
+    while table is not None and table.tag != "table":
+        table = table.getparent()
+    if table is None:
+        return caption, html
+    label = previous.caption.removesuffix(" (continued)")
+    return (f"{label} (continued)" if label else ""), lxml.html.tostring(table, encoding="unicode")
+
+
+#: A cell that is nothing but a number: data, never a column name. A digit alone is not
+#: enough -- a header names "Cluster Size (mm^2)".
+_BARE_NUMBER = re.compile(r"^[-+]?\d+(?:[.,]\d+)?$")
+
+
+def _header_rows(html: str) -> List[Any]:
+    """The table's leading rows that name columns: no cell a bare number, and more than
+    one cell filled -- a lone cell labels a group of rows ("Right Hemisphere")."""
+    head = []
+    for row in _rows(html):
+        cells = [" ".join(cell.split()) for cell in _cells(row)]
+        if any(_BARE_NUMBER.match(cell) for cell in cells):
+            break
+        if sum(1 for cell in cells if cell) <= 1:
+            break
+        head.append(row)
+    return head
+
+
+def _width(html: str) -> int:
+    """The table's width in columns: its widest row, spans counted."""
+    def span(cell: Any) -> int:
+        try:
+            return max(1, int(cell.get("colspan") or 1))
+        except ValueError:
+            return 1
+    return max((sum(span(c) for c in row if c.tag in ("td", "th")) for row in _rows(html)),
+               default=0)
 
 
 def _parts_of(block: Mapping[str, Any]) -> List[Mapping[str, Any]]:
