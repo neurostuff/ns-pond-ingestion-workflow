@@ -7,6 +7,13 @@ a borrowed seed is still a seed. The values are study_schema's enums, imported,
 never retyped here. Numbers that are not brain coordinates at all (channel
 numbers, lattice points, a phantom's targets) have no role: `role` is None and
 the set is left out of what is uploaded and of the extractors' targets.
+
+Two more answers stay in ns-pond until study_schema has fields for them: `space`,
+whether the coordinates are human MNI/Talairach millimetres (`template`) or a
+location in another frame (`other`: an animal brain, a head or sensor frame,
+voxel indices), and `coordinate_source`, where the coordinates come from
+(`this_study`, `prior_study`, `atlas_or_database`). `from_prior_study` is
+`coordinate_source == prior_study` (always true for a reference).
 """
 
 from __future__ import annotations
@@ -26,6 +33,11 @@ ANCHOR_KINDS: Tuple[str, ...] = tuple(k.value for k in AnchorKind)
 #: roles payload and in pondie's stage1, marked `held`, and is not uploaded.
 UPLOADED_ROLES: Tuple[str, ...] = (CoordinateRole.result.value, CoordinateRole.anchor.value)
 
+#: Whether a set's coordinates are human template millimetres; only `template` sets are uploaded.
+SPACES: Tuple[str, ...] = ("template", "other")
+#: Where a set's coordinates come from.
+COORDINATE_SOURCES: Tuple[str, ...] = ("this_study", "prior_study", "atlas_or_database")
+
 
 #: The fields every set carries under `metadata.set_role`, once the roles stage has decided it.
 SET_ROLE_FIELDS = (
@@ -33,6 +45,8 @@ SET_ROLE_FIELDS = (
     "anchor_kind",
     "from_prior_study",
     "prior_study_evidence",
+    "space",
+    "coordinate_source",
     "role_confidence",
     "role_source",
     "role_origin",
@@ -68,6 +82,14 @@ def role_error(fields: Mapping[str, Any]) -> Optional[str]:
         return f"from_prior_study {fields.get('from_prior_study')!r} is not a boolean or null"
     if role is None and fields["from_prior_study"]:
         return "from_prior_study on numbers that are not coordinates"
+    for name, values in (("space", SPACES), ("coordinate_source", COORDINATE_SOURCES)):
+        value = fields.get(name)
+        if value is None:
+            continue
+        if role is None:
+            return f"{name} {value!r} on numbers that are not coordinates"
+        if value not in values:
+            return f"{name} {value!r} is not one of {list(values)}"
     return None
 
 
@@ -118,6 +140,18 @@ class RoleDecision:
     origin: str
     #: The sentences showing the coordinates come from another publication.
     prior_study_evidence: Tuple[dict, ...] = field(default=())
+    #: Why a set has no role, when a rule rather than a model refused it (`geometry`).
+    reason: Optional[str] = None
+    #: `template` or `other` (`SPACES`); None for a set with no role.
+    space: Optional[str] = None
+    #: Where the coordinates come from (`COORDINATE_SOURCES`); None for a set with no role.
+    coordinate_source: Optional[str] = None
+
+    def __post_init__(self) -> None:
+        error = role_error({**self.decided.fields(), "space": self.space,
+                            "coordinate_source": self.coordinate_source})
+        if error:
+            raise ValueError(error)
 
     @property
     def role(self) -> Optional[str]:
@@ -133,14 +167,24 @@ class RoleDecision:
 
     @property
     def uploaded(self) -> bool:
-        return self.role in UPLOADED_ROLES
+        """A result or anchor in human template millimetres: what neurostore is given."""
+        return self.role in UPLOADED_ROLES and self.space == "template"
 
     def to_metadata(self) -> dict:
-        """The decision in CoordinateParse's field names, plus who decided and how surely."""
-        return {
+        """The decision in CoordinateParse's field names, plus who decided and how surely.
+
+        `role_reason` is there only for a set a rule refused, so a model's
+        decisions keep the record they always had.
+        """
+        out = {
             **self.decided.fields(),
+            "space": self.space,
+            "coordinate_source": self.coordinate_source,
             "prior_study_evidence": list(self.prior_study_evidence),
             "role_confidence": self.confidence,
             "role_source": self.source,
             "role_origin": self.origin,
         }
+        if self.reason is not None:
+            out["role_reason"] = self.reason
+        return out

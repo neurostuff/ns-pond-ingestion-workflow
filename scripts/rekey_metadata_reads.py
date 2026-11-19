@@ -270,7 +270,7 @@ def rekey(ctx: Context, stages: Sequence[Stage], refs: Sequence[ArticleRef]) -> 
                     else:
                         n["no_upstream"] += 1
     unserved = {stage.name for stage in stages if hasattr(stage, "model_state")
-                and any(stage.model_state(o)[0] is None for o in stage.origins())}
+                and stage.model_state()[0] is None}
     return Rekey(rewrites, counts, plan, unserved)
 
 

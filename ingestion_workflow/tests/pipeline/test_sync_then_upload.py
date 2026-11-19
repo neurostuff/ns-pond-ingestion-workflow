@@ -20,7 +20,7 @@ from pathlib import Path
 
 import pytest
 from ingestion_workflow.catalog import Artifact, Catalog, Outcome, Status
-from ingestion_workflow.config import Settings
+from ingestion_workflow.config import RoleModel, Settings
 from ingestion_workflow.models import DownloadCopy
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
@@ -63,7 +63,7 @@ from ingestion_workflow.tests import neurostore as neurostore_mock
 from ingestion_workflow.pipeline.stage import metadata_digests
 from study_schema.models.paper_parse import CopyAccess, CopyRoute, CopyVersion
 from test_prose_stages import ARTICLE, _read_prose, _Reader, _record_upstream
-from test_roles_stage import PROSE_MODEL, TABLE_MODEL, served  # noqa: F401 - a fixture
+from test_roles_stage import model_dir  # noqa: F401 - a fixture
 
 CASSETTES = Path(__file__).parents[1] / "cassettes" / "sync_then_upload"
 
@@ -100,7 +100,8 @@ class _ByName:
         out = []
         for text in texts:
             role = "other" if any(f"[NAME] {o}" in text for o in self.others) else "result"
-            out.append(Prediction(role, None, {r: float(r == role) for r in COORDINATE_ROLES}))
+            out.append(Prediction(role, None, {r: float(r == role) for r in COORDINATE_ROLES},
+                                  "template", "this_study", 1.0))
         return out
 
 
@@ -114,7 +115,7 @@ def _run(stage, ctx, catalog, ref):
 
 def _roles(settings, monkeypatch, classifier):
     stage = RolesStage(settings)
-    monkeypatch.setattr(stage, "classifier", lambda origin: classifier)
+    monkeypatch.setattr(stage, "classifier", lambda: classifier)
     return stage
 
 
@@ -125,7 +126,7 @@ def client(monkeypatch):
 
 
 @pytest.fixture()
-def env(tmp_path, served, client, request, monkeypatch):  # noqa: F811 - the imported fixture
+def env(tmp_path, model_dir, client, request, monkeypatch):  # noqa: F811 - the imported fixture
     """A test that sends asks for `neurostore`; any other takes no request at all."""
     sends = "neurostore" in request.fixturenames
     server = (request.getfixturevalue("neurostore") if sends
@@ -134,7 +135,7 @@ def env(tmp_path, served, client, request, monkeypatch):  # noqa: F811 - the imp
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", ns_pond_root=tmp_path / "pond",
                         prose_model="nu-prose-v2", llm_api_key="x",
-                        role_model_table=TABLE_MODEL, role_model_prose=PROSE_MODEL,
+                        role_model=RoleModel(path=str(model_dir)),
                         neurostore_api_url=server.url,
                         neurostore_auth0_url=neurostore_mock.AUTH0_URL,
                         neurostore_auth0_audience=neurostore_mock.AUDIENCE)
@@ -1079,7 +1080,8 @@ def _icafz5(tmp_path, monkeypatch, catalog, evidence, *, analyses_fresh=False, u
             uploaded=True):
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
                         catalog_root=tmp_path / "k", ns_pond_root=tmp_path / "pond",
-                        role_model_table=TABLE_MODEL, neurostore_api_url=neurostore_mock.URL,
+                        role_model=RoleModel(path=str(tmp_path / "model")),
+                        neurostore_api_url=neurostore_mock.URL,
                         neurostore_auth0_url=neurostore_mock.AUTH0_URL,
                         neurostore_auth0_audience=neurostore_mock.AUDIENCE)
     ref = catalog.register(Identifier(pmid="16139528", neurostore="NTKEuAF4Autf"), evidence)
@@ -1135,8 +1137,9 @@ def _handed_to_the_client(done, settings):
 
 
 @pytest.fixture()
-def icafz5_env(served, client):  # noqa: F811 - the imported fixture
-    """The role server's model card and the client, which `_icafz5`'s settings need."""
+def icafz5_env(model_dir, client):  # noqa: F811 - the imported fixture
+    """The role model's directory (`tmp_path / "model"`) and the client, which `_icafz5`'s
+    settings need."""
 
 
 @pytest.mark.vcr

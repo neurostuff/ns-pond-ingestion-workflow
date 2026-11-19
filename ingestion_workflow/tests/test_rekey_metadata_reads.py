@@ -90,7 +90,8 @@ class _Results:
     def predict(self, texts):
         from ingestion_workflow.services.set_roles import COORDINATE_ROLES, Prediction
 
-        return [Prediction("result", None, {r: float(r == "result") for r in COORDINATE_ROLES})
+        return [Prediction("result", None, {r: float(r == "result") for r in COORDINATE_ROLES},
+                           "template", "this_study", 1.0)
                 for _ in texts]
 
 
@@ -114,8 +115,8 @@ def env(tmp_path, monkeypatch):
     prose = ProseStage(settings)
     prose.client = lambda: reader
     roles = RolesStage(settings)
-    monkeypatch.setattr(roles, "classifier", lambda origin: _Results())
-    monkeypatch.setattr(roles, "model_state", lambda origin: (f"fake-{origin}@1", None))
+    monkeypatch.setattr(roles, "classifier", lambda: _Results())
+    monkeypatch.setattr(roles, "model_state", lambda: ("fake@1", None))
     stages = [TriageStage(settings), AnalysesStage(settings), PassagesStage(settings), prose,
               ResolveStage(settings), roles, SpaceStage(settings)]
     with Catalog.open(settings.catalog_root) as catalog:
@@ -378,9 +379,9 @@ def _state(settings):
 def served(monkeypatch):
     """The role models served to every RolesStage `run` builds, while `up` holds."""
     up = {"served": True}
-    monkeypatch.setattr(RolesStage, "classifier", lambda self, origin: _Results())
-    monkeypatch.setattr(RolesStage, "model_state", lambda self, origin: (
-        (f"fake-{origin}@1", None) if up["served"] else (None, "the role model is not served")))
+    monkeypatch.setattr(RolesStage, "classifier", lambda self: _Results())
+    monkeypatch.setattr(RolesStage, "model_state", lambda self: (
+        ("fake@1", None) if up["served"] else (None, "the role model is not served")))
     return up
 
 
