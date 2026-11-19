@@ -724,6 +724,13 @@ class Settings(BaseSettings):
         gt=0,
         description="Supplementary files larger than this (MB) are listed and not fetched",
     )
+    supplement_max_text_chars: int = Field(
+        # The 27B record model reads the whole text in a 65,536-token prompt; a 40-page
+        # supplement alone would push a paper past it and the paper would be skipped.
+        default=100_000,
+        gt=0,
+        description="Most characters of supplement text appended to an article; tables are kept whole",
+    )
     pdf_engines: List[Literal["mineru", "docling"]] = Field(
         # MinerU reads each page from its image, so a text layer that maps the minus to
         # 2 does not reach its tables; Docling reads that layer. On PDFs set aside for

@@ -533,3 +533,18 @@ def test_a_pdf_text_is_normalised_again_and_its_captions_move_with_it(tmp_path, 
         assert new[slice(*moved["span"])] == "Figure 1. Activation for CS- trials."
         assert extraction.summary["text_sha256"] == R.sha256(new)
         assert extraction.summary["captions_sha256"] == captions_digest([moved])
+
+
+def test_an_extraction_with_supplements_appended_is_not_rebuilt(tmp_path):
+    """Its text is the extractor's with the supplements after it: a rebuild from the
+    download alone would drop them."""
+    from ingestion_workflow.catalog import Catalog, Outcome, Status
+
+    with Catalog.open(tmp_path / "k") as catalog:
+        for article_id, payload in (("plain", {"full_text_path": str(tmp_path / "a.txt")}),
+                                    ("joined", {"full_text_path": str(tmp_path / "b+supplements.txt"),
+                                                "supplements": [{"index": 1, "span": [10, 20]}]})):
+            catalog._conn.execute("INSERT INTO articles(id, created_at) VALUES(?, '2026-01-01')", (article_id,))
+            catalog.record([Outcome(article_id, "extract", "pubget", Status.OK, "fp", payload=payload)])
+
+        assert [job.article_id for job in R.jobs(catalog, ["pubget"])] == ["plain"]

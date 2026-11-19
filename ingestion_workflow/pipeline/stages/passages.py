@@ -45,7 +45,7 @@ def find_passages(job: dict) -> Tuple[str, list, Optional[str], str]:
     """How the article's prose was read, its passages, the space it states, and its text.
 
     `job` names the extraction text (`text_path`), its `figure_captions` and the spans
-    of the supplementary material appended to it, which are read whole. The
+    of the supplementary material appended to it, each read as the body is. The
     space is read from the same Methods and Results by `space`'s rules.
 
     Figure legends are read: about half the coordinates in them are the study's
@@ -68,7 +68,10 @@ def find_passages(job: dict) -> Tuple[str, list, Optional[str], str]:
         # the legends, then the appended supplements, close the text: the body ends at the first
         body = text[: min([_legends_start(text, legends)] + [a for a, _ in supplements[:1]])]
         spans, how = kept_spans(body)
-        spans += legends + supplements
+        # each supplement as the body is read: its Methods and Results, else all of it
+        for a, b in supplements:
+            spans += [(a + x, a + y) for x, y in kept_spans(text[a:b])[0]]
+        spans += legends
         found = [p for a, b in spans for p in _shifted(text, a, b)]
         for p in found:
             p.from_legend = bool(p.hits) and all(

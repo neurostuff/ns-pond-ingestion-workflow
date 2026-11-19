@@ -110,7 +110,7 @@ def written(tmp_path):
     return _written(tmp_path)
 
 
-def _written(tmp_path, identifier=None, text_copy=COPY, dois=None, **metadata):
+def _written(tmp_path, identifier=None, text_copy=COPY, dois=None, supplemented=False, **metadata):
     identifier = identifier or Identifier(
         pmid="22848644", pmcid="PMC3407125", doi="10.1371/journal.pone.0041873"
     )
@@ -134,6 +134,8 @@ def _written(tmp_path, identifier=None, text_copy=COPY, dois=None, **metadata):
         tables=tables,
         full_text_path=text,
     )
+    if supplemented:
+        content = _supplemented(tmp_path, content)
     metadata = ArticleMetadata(**{
         "title": "Faces and houses",
         "authors": [Author(name="Jones, S")],
@@ -235,6 +237,36 @@ def _written(tmp_path, identifier=None, text_copy=COPY, dois=None, **metadata):
     paper = _compact(json.loads((target / "parse" / "parsed_paper.json").read_text()))
     parse = _compact(json.loads((target / "parse" / "coordinate_parse.json").read_text()))
     return paper, parse, {**summary, "dir": target / "parse"}
+
+
+def _supplemented(tmp_path, content):
+    """`content` with one Word supplement appended: its text and a "Table S1"."""
+    from ingestion_workflow.services import supplements as sp
+
+    out = tmp_path / "supp"
+    out.mkdir()
+    (out / "text.txt").write_text("Table S1. Peaks of the conjunction.\nL insula -34 16 -6\n")
+    (out / "table-s1.csv").write_text("Region,x,y,z\nL insula,-34,16,-6\n")
+    item = sp.Supplement("pmc", "https://pmc/mmc1.docx", "mmc1.docx", label="Data 1", path=str(out / "mmc1.docx"),
+                         text_path=str(out / "text.txt"), read_by="docling", tables=[
+                             ExtractedTable(table_id="table-s1", raw_content_path=out / "table-s1.csv",
+                                            caption="Table S1. Peaks of the conjunction.").to_dict()])
+    return sp.append(content, [item], tmp_path / "joined")
+
+
+def test_a_supplement_is_listed_its_tables_labelled_and_its_text_a_supplement_section(tmp_path):
+    paper, _, _ = _written(tmp_path, supplemented=True)
+
+    assert paper["supplements"] == [{"label": "Data 1", "url": "https://pmc/mmc1.docx", "fetched": True}]
+    labels = {t["table_id"]: t.get("label") for t in paper["tables"]}
+    assert labels["s1-table-s1"] == "Table S1" and labels["tbl1"] is None
+    assert paper["sections"][-1]["kind"] == "supplement"
+
+
+def test_a_paper_without_supplements_lists_none(written):
+    paper, _, _ = written
+    assert "supplements" not in paper
+    assert all("label" not in t for t in paper["tables"])
 
 
 def _compact(value):
