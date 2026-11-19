@@ -142,10 +142,21 @@ def continued(previous: MineruTable, html: str, caption: str) -> Tuple[str, str]
     pieces read shifted in the production catalog, 2026-11-19). A captionless piece with
     no header of its own, on the page after a table of the same width, gets that
     table's header rows and its caption marked continued, as MinerU's own continued
-    pieces read ("Table 1. (continued)"). Each piece keeps its own rows."""
-    if _header_rows(html) or not _header_rows(previous.html):
+    pieces read ("Table 1. (continued)"). Each piece keeps its own rows.
+
+    Equal width is not enough: a table with an empty leading column has the width of
+    one shifted by a column, and its header over the other would name the wrong numbers.
+    Where the previous table has rows of its own, each column must hold the same kind of
+    cell, number or text, in both. A previous table that is only a header -- MinerU often
+    leaves the header at the foot of one page and every row on the next -- has nothing
+    to compare, and width decides."""
+    if _header_rows(html, after_titles=True) or not _header_rows(previous.html):
         return caption, html
-    if _width(html) != _width(previous.html):
+    width = _width(html)
+    if width != _width(previous.html):
+        return caption, html
+    head_kinds = _column_kinds(_rows(previous.html)[len(_header_rows(previous.html)):], width)
+    if any(head_kinds) and not _same_columns(head_kinds, _column_kinds(_rows(html), width)):
         return caption, html
     import lxml.html
 
@@ -169,18 +180,55 @@ def continued(previous: MineruTable, html: str, caption: str) -> Tuple[str, str]
 _BARE_NUMBER = re.compile(r"^[-+]?\d+(?:[.,]\d+)?$")
 
 
-def _header_rows(html: str) -> List[Any]:
+def _header_rows(html: str, after_titles: bool = False) -> List[Any]:
     """The table's leading rows that name columns: no cell a bare number, and more than
-    one cell filled -- a lone cell labels a group of rows ("Right Hemisphere")."""
+    one cell filled -- a lone cell labels a group of rows ("Right Hemisphere").
+
+    With `after_titles`, lone-cell rows at the top are passed over first: a piece that
+    opens "Table 1. (Continued)" and then names its columns has a header of its own."""
+    rows = _rows(html)
+    if after_titles:
+        while rows and not _numbered(rows[0]) and _filled(rows[0]) <= 1:
+            rows = rows[1:]
     head = []
-    for row in _rows(html):
-        cells = [" ".join(cell.split()) for cell in _cells(row)]
-        if any(_BARE_NUMBER.match(cell) for cell in cells):
-            break
-        if sum(1 for cell in cells if cell) <= 1:
+    for row in rows:
+        if _numbered(row) or _filled(row) <= 1:
             break
         head.append(row)
     return head
+
+
+def _numbered(row: Any) -> bool:
+    return any(_BARE_NUMBER.match(" ".join(cell.split())) for cell in _cells(row))
+
+
+def _filled(row: Any) -> int:
+    return sum(1 for cell in _cells(row) if cell.strip())
+
+
+#: A cell that reads as a value: a number, signed, bounded or approximate (`< 0.001`).
+_NUMERIC = re.compile(r"^[-+<>=~±]?\s*\.?\d")
+
+
+def _column_kinds(rows: List[Any], width: int) -> List[Optional[str]]:
+    """Per column, "number" or "text" by what most of its filled cells hold, or None when
+    none is filled. Only rows with one cell per column are read: a span moves the rest."""
+    kinds: List[List[bool]] = [[] for _ in range(width)]
+    for row in rows:
+        cells = [" ".join(cell.split()) for cell in _cells(row)]
+        if len(cells) != width:
+            continue
+        for i, cell in enumerate(cells):
+            if cell:
+                kinds[i].append(bool(_NUMERIC.match(cell)))
+    return [None if not k else ("number" if 2 * sum(k) >= len(k) else "text") for k in kinds]
+
+
+def _same_columns(head: List[Optional[str]], piece: List[Optional[str]]) -> bool:
+    """Whether every column both bodies fill holds the same kind in each, and at least two
+    can be compared."""
+    both = [(a, b) for a, b in zip(head, piece) if a and b]
+    return len(both) >= 2 and all(a == b for a, b in both)
 
 
 def _width(html: str) -> int:

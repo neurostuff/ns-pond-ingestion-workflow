@@ -30,9 +30,31 @@ def test_a_footnote_mark_is_not_read_as_more_digits():
     read `461`, and every z of the table's 53 seeds was stored out of the brain."""
     lines = _serialised("pmc3985019_t2.xml")
 
-    assert lines[1].endswith("| -23, -66, 46^{1}")
-    assert lines[3].endswith("| -56, -18, 37^{11}")
+    assert lines[1].endswith("| -23, -66, 46")
+    assert lines[3].endswith("| -56, -18, 37")
     assert not any("461" in line or "3711" in line for line in lines)
+
+
+def test_a_minus_set_as_a_superscript_still_reads_as_a_minus():
+    """Elsevier's PMC2602949 Table 2 sets one minus as `<sup>—</sup> 36`. Only numeric
+    footnote marks are touched, so it reads `-36` as it did before."""
+    lines = _serialised("elsevier_pmc2602949_tbl2.xml")
+
+    assert "L intraparietal sulcus | 7, 39 | -36 | -50 | 40 | 4.06 | 0.00005" in lines
+
+
+@pytest.mark.parametrize("markup, text", [
+    # a power of ten keeps its exponent, glued as the serialiser always wrote it
+    ("<table><tr><td>p</td><td>2.1 × 10<sup>5</sup></td></tr></table>", "2.1 × 105"),
+    # a unit's power and a letter mark are not numeric footnotes after a number
+    ("<table><tr><td>k</td><td>120 mm<sup>3</sup></td></tr></table>", "120 mm3"),
+    ("<table><tr><td>t</td><td>4.21<sup>a</sup></td></tr></table>", "4.21a"),
+    # a footnote link holding the number itself
+    ('<table><tr><td>z</td><td>46<xref ref-type="table-fn" rid="t1">2</xref></td></tr></table>',
+     "46"),
+])
+def test_only_a_numeric_mark_after_a_number_is_dropped(markup, text):
+    assert CreateAnalysesService._serialise(markup, "t").split(" | ")[-1] == text
 
 
 def test_a_wedge_printed_for_a_minus_is_a_minus():
@@ -131,3 +153,38 @@ def test_a_head_without_a_header_gives_nothing():
     html = "<table><tr><td>3</td><td>4</td></tr></table>"
 
     assert continued(head, html, "") == ("", html)
+
+
+def _mineru(name: str, caption: str = "") -> MineruTable:
+    return MineruTable(caption=caption, footer="", html=(DATA / name).read_text(encoding="utf-8"))
+
+
+def test_a_piece_whose_columns_hold_other_kinds_is_left_alone():
+    """doi:10.1148/radiol.2016151809: Table 4 opens with an empty column the next table
+    lacks, so at equal width its header would put x over the next table's y. The
+    extractor read that table right without it."""
+    head = _mineru("mineru_27002420_table-4.html", "Table 4. Cluster table")
+    piece = (DATA / "mineru_27002420_table-005.html").read_text(encoding="utf-8")
+
+    assert continued(head, piece, "") == ("", piece)
+
+
+def test_a_piece_with_a_title_row_and_its_own_header_is_left_alone():
+    """doi:10.1111/pcn.12502: the piece opens "Table 1. (Continued)" and names its columns."""
+    head = _mineru("mineru_28032396_table-1-2.html", "Table 1. (Continued)")
+    piece = (DATA / "mineru_28032396_table-003.html").read_text(encoding="utf-8")
+
+    assert continued(head, piece, "") == ("", piece)
+
+
+def test_a_header_left_alone_on_its_page_heads_the_rows_on_the_next():
+    """doi:10.1111/joor.12657: MinerU read the conjunction table's header as a table of its
+    own and its one row as another, whose cluster size and x were stored as x and y."""
+    head = _mineru("mineru_29782041_table-005.html", "Conjunction analysis")
+    piece = (DATA / "mineru_29782041_table-006.html").read_text(encoding="utf-8")
+
+    caption, html = continued(head, piece, "")
+    assert caption == "Conjunction analysis (continued)"
+    lines = CreateAnalysesService._serialise(html, "t").split("\n")
+    assert lines[0].split(" | ")[1:4] == ["x", "y", "z"]
+    assert lines[1] == "48 | 60 | -6 | 32 | 0.008 | R | Primary somatosensory cortex"

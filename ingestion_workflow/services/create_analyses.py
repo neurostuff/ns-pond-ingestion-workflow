@@ -77,28 +77,30 @@ _ANY_TAG = re.compile(r"<[^>]+>")
 _RUNS = re.compile(r"[ \t]{2,}")
 
 
-#: A superscript is a footnote mark or an exponent, never more digits of the
-#: number before it. Stripped like any inline tag, `46<sup>1</sup>` read as
-#: `461`: a seed table citing its sources by footnote put every z out of the
-#: brain (PMC3985019, Table 2). Written as MinerU writes one, `46^{1}`, the mark
-#: stays and the number stays whole.
-_SUPERSCRIPT = re.compile(r"<((?:[\w-]+:)?sup)\b[^>]*>(.*?)</\1\s*>", re.S | re.I)
-#: A JATS footnote link with no `<sup>` of its own: `46<xref ref-type="table-fn">a</xref>`.
-_FOOTNOTE_LINK = re.compile(
-    r"""<xref\b[^>]*ref-type\s*=\s*["']table-fn["'][^>]*>(.*?)</xref\s*>""", re.S | re.I)
+#: A numeric footnote mark straight after a number is never more digits of it.
+#: Stripped like any inline tag, `46<sup>1</sup>` read as `461`: a seed table
+#: citing its sources by footnote put every z out of the brain (PMC3985019,
+#: Table 2). Such a mark is dropped. Every other superscript is left to the
+#: serialiser as before -- a letter mark, a unit's power (`mm<sup>3</sup>`), a
+#: minus set as a superscript -- so the extractor's input changes only where a
+#: number was wrong; the fine-tune never saw any other rendering of them.
+#: `10<sup>5</sup>` is a power of ten, not a footnote, and is not touched.
+_MARK = r"\s*\d{1,3}(?:\s*[,–-]\s*\d{1,3})*\s*"
+_LINK = r"(?:xref|(?:ce:)?cross-ref)"
+_FOOTNOTE_AFTER_NUMBER = (
+    # `<sup>1</sup>`, bare or inside a footnote link
+    re.compile(rf"(?<=\d)(?<!10)\s*(<{_LINK}\b[^>]*>\s*)?<((?:[\w-]+:)?sup)\b[^>]*>{_MARK}"
+               rf"</\2\s*>(?(1)\s*</{_LINK}\s*>)", re.I),
+    # a footnote link holding the number itself, `<xref ref-type="table-fn">1</xref>`
+    re.compile(rf"(?<=\d)(?<!10)\s*<({_LINK})\b[^>]*>{_MARK}</\1\s*>", re.I),
+)
 
 
 def _footnote_marks(markup: str) -> str:
-    """`markup` with each superscript and footnote link written `^{...}`."""
-    markup = _SUPERSCRIPT.sub(lambda m: "^{%s}" % _ANY_TAG.sub("", m.group(2)).strip(), markup)
-
-    def link(m: "re.Match[str]") -> str:
-        inner = m.group(1)
-        if inner.lstrip().startswith("^{"):
-            return inner
-        return "^{%s}" % _ANY_TAG.sub("", inner).strip()
-
-    return _FOOTNOTE_LINK.sub(link, markup)
+    """`markup` without the numeric footnote marks that follow a number."""
+    for rule in _FOOTNOTE_AFTER_NUMBER:
+        markup = rule.sub("", markup)
+    return markup
 
 
 #: A coordinate printed with its direction instead of its sign: `32R | 92P | 4I`
