@@ -171,10 +171,10 @@ def test_a_role_outside_study_schema_is_refused():
         raise AssertionError(f"{bad} accepted")
 
 
-def _prediction(role, p, kind=None):
+def _prediction(role, p, kind=None, space="template", source="this_study"):
     rest = (1 - p) / (len(COORDINATE_ROLES) - 1)
     probabilities = {name: (p if name == role else rest) for name in COORDINATE_ROLES}
-    return Prediction(role, kind, probabilities)
+    return Prediction(role, kind, probabilities, space, source, 1.0)
 
 
 def test_the_role_is_the_model_s_answer_however_sure_it_is():
@@ -190,7 +190,7 @@ def test_a_decision_without_a_prediction_is_refused():
 
 def test_the_decision_records_its_model_origin_and_confidence():
     decision = decide(
-        _prediction("reference", 0.9),
+        _prediction("reference", 0.9, source="prior_study"),
         source="enc@1",
         origin="text",
         evidence=["As reported by Lee et al. (2008)."],
@@ -199,6 +199,8 @@ def test_the_decision_records_its_model_origin_and_confidence():
         "role": "reference",
         "anchor_kind": None,
         "from_prior_study": True,
+        "space": "template",
+        "coordinate_source": "prior_study",
         "prior_study_evidence": [{"text": "As reported by Lee et al. (2008)."}],
         "role_confidence": 0.9,
         "role_source": "enc@1",
@@ -210,10 +212,10 @@ def test_a_set_role_is_from_a_prior_study_only_when_told_so():
     assert SetRole("result").from_prior_study is None
 
 
-def test_only_a_quoted_peak_is_from_a_prior_study():
-    """The role models give no prior-study answer: a borrowed seed is a seed of this study."""
+def test_a_borrowed_seed_is_a_seed_from_a_prior_study():
+    """The source is independent of the role: a seed taken from another paper is still a seed."""
     decision = decide(
-        _prediction("anchor", 0.95, kind="seed"),
+        _prediction("anchor", 0.95, kind="seed", source="prior_study"),
         source="enc@1",
         origin="text",
         evidence=["The seed came from Smith et al. (2010)."],
@@ -221,10 +223,42 @@ def test_only_a_quoted_peak_is_from_a_prior_study():
     assert (decision.role, decision.anchor_kind, decision.from_prior_study, decision.uploaded) == (
         "anchor",
         "seed",
-        None,
+        True,
         True,
     )
+    assert decision.prior_study_evidence == ({"text": "The seed came from Smith et al. (2010)."},)
+
+
+def test_an_atlas_node_is_not_from_a_prior_study_but_says_where_it_came_from():
+    decision = decide(_prediction("anchor", 0.9, kind="node", source="atlas_or_database"),
+                      source="enc@1", origin="table", evidence=["(Power et al., 2011)"])
+    assert (decision.from_prior_study, decision.coordinate_source) == (False, "atlas_or_database")
     assert decision.prior_study_evidence == ()
+
+
+def test_a_result_in_another_frame_is_held():
+    decision = decide(_prediction("result", 0.9, space="other"), source="enc@1", origin="table")
+    assert (decision.role, decision.space, decision.uploaded) == ("result", "other", False)
+
+
+def test_numbers_that_are_not_coordinates_have_no_role_space_or_source():
+    prediction = Prediction(None, None, {r: 0.2 for r in COORDINATE_ROLES}, None, None, 0.1)
+    decision = decide(prediction, source="enc@1", origin="table")
+    assert (decision.role, decision.space, decision.coordinate_source) == (None, None, None)
+    assert decision.confidence == pytest.approx(0.9) and not decision.uploaded
+
+
+@pytest.mark.parametrize("fields, error", [
+    ({"space": "MNI"}, "space 'MNI' is not one of ['template', 'other']"),
+    ({"coordinate_source": "literature"}, "coordinate_source 'literature' is not one of"),
+    ({"role": None, "anchor_kind": None, "from_prior_study": None, "space": "template"},
+     "space 'template' on numbers that are not coordinates"),
+])
+def test_a_space_or_source_outside_the_vocabulary_is_refused(fields, error):
+    from ingestion_workflow.services.set_roles.labels import role_error
+
+    base = {"role": "result", "anchor_kind": None, "from_prior_study": False}
+    assert error in role_error({**base, **fields})
 
 
 def test_no_evidence_is_recorded_for_the_study_s_own_set():
@@ -352,15 +386,12 @@ def test_local_is_in_the_serialised_input_before_the_passage():
     assert "[LOCAL]" not in prose_context.serialize(prose_context.ProseSetContext())
 
 
-def test_a_model_trained_on_the_previous_prose_context_is_refused_with_the_reason():
-    from ingestion_workflow.services.set_roles import served_prompt
+def test_the_context_versions_a_model_is_checked_against_are_this_code_s():
+    from ingestion_workflow.services.set_roles.decision import CONTEXT_VERSIONS
 
-    previous = {"table": 2, "text": prose_context.PROSE_CONTEXT_VERSION - 1}
-    prompt = served_prompt.RolePrompt("v5", "x", context_versions=previous)
-    with pytest.raises(ValueError, match=r"text context version 3; this code builds 4; retrain"):
-        prompt.check("text")
-    # The table context is unchanged: its version is not bumped by this.
-    assert served_prompt.CONTEXT_VERSIONS == {"table": 2, "text": 4}
+    # The table context is unchanged by the prose context's LOCAL field: its version is not bumped.
+    assert CONTEXT_VERSIONS == {"table": 2, "text": prose_context.PROSE_CONTEXT_VERSION} == {
+        "table": 2, "text": 4}
 
 
 # Points read from production tables (the roles evaluation set, 2026-11-18).

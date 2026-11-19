@@ -469,14 +469,15 @@ class _Results:
     def predict(self, texts):
         from ingestion_workflow.services.set_roles import COORDINATE_ROLES, Prediction
 
-        return [Prediction("result", None, {r: float(r == "result") for r in COORDINATE_ROLES})
+        return [Prediction("result", None, {r: float(r == "result") for r in COORDINATE_ROLES},
+                           "template", "this_study", 1.0)
                 for _ in texts]
 
 
 def _roles(settings, monkeypatch):
     stage = RolesStage(settings)
-    monkeypatch.setattr(stage, "classifier", lambda origin: _Results())
-    monkeypatch.setattr(stage, "model_state", lambda origin: (f"fake-{origin}@1", None))
+    monkeypatch.setattr(stage, "classifier", lambda: _Results())
+    monkeypatch.setattr(stage, "model_state", lambda: ("fake@1", None))
     return stage
 
 

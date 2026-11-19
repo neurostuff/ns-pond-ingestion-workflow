@@ -6,39 +6,41 @@ it has not passed. This page is the shape it writes, for anything that reads a s
 
 ## Where a set's role comes from
 
-Every set's role is the answer of its origin's role model, and of nothing else. There is no
-proposal from an extractor and no default role. The role models are NuExtract3 fine-tunes, one
-per origin, served by vLLM.
+Every set's role is the answer of the decision model, and of nothing else. There is no proposal
+from an extractor and no default role. The model is one encoder (RoBERTa-large, fine-tuned from
+`lytang/MiniCheck-RoBERTa-Large`) with five heads, for table and prose sets alike, loaded in the
+roles stage's own process (`services/set_roles/decision.py`). Each set is read through its
+origin's context builder, whose `[ORIGIN]` line tells the model which it is:
 
-| Origin | Which sets | Setting | Input |
-|---|---|---|---|
-| `table` | sets nu-v21 read from a table (`analyses`) | `role_model_table` | `services/set_roles/table_context.py` |
-| `text` | sets nu-prose read from the text (`resolve`'s `prose` collection, `metadata.source == "prose"`) | `role_model_prose` | `services/set_roles/prose_context.py` |
+| Origin | Which sets | Input |
+|---|---|---|
+| `table` | sets nu-v21 read from a table (`analyses`) | `services/set_roles/table_context.py` |
+| `text` | sets nu-prose read from the text (`resolve`'s `prose` collection, `metadata.source == "prose"`) | `services/set_roles/prose_context.py` |
 
-Each is configured by its server and served model name:
+It is configured by its directory, as `experiments/role_classifier/export_decision.py` writes it:
 
 ```yaml
-role_model_table:
-  endpoint: http://localhost:8372/v1   # OpenAI-compatible server, up to /v1
-  model: role-table                    # its served model name
-  path: /data/james/agents/x1-drift/merged-table   # optional: the checkpoint it serves
+role_model:
+  path: /data2/models/role-decision/v1/weights   # decision.json, encoder/, heads.safetensors, tokenizer/
+  device: auto                                   # or cuda, cuda:1, cpu
+  batch_size: 32                                 # sets per forward pass, shared by the articles under way
 ```
 
-The fingerprint names the checkpoint the server loads (its model card's `root`, with the
-weights' digest when that path is readable). With `path`, the same identity is known while the
-server is down: the articles it labelled stay fresh, so `upload` (which checks roles is fresh)
-needs no GPU, and an article not yet labelled waits for the server.
+torch, transformers and safetensors are the `roles` extra (`pip install -e ".[roles]"`).
 
-Each set is one request, built as the models were trained and evaluated
-(`services/set_roles/served_prompt.py`: the instruction, template and JSON schema, and the context
-versions the training rows were built with). The answer is decoded under that JSON schema, so its
-role is always one of study_schema's `CoordinateRole` values. The role is the model's answer, and
-its probability is read from the logprobs of the answer's first role token, renormalised over the
-tokens that begin exactly one role. The models give no "not coordinates" answer and no
-prior-study flag: every set gets a role, `from_prior_study` is true for a `reference`, and it is null (unknown) for every other role. Nothing decides that another role's set is not from a prior study, so it is never false.
+The heads answer, for each set: whether the numbers locate something in a brain or on a head;
+whether they are human MNI/Talairach millimetres (`template`) or another frame (`other`: an
+animal brain, a head or sensor frame, voxel indices, a surgical frame); the role
+(`CoordinateRole`); an anchor's kind (`AnchorKind`); and where the coordinates come from
+(`this_study`, `prior_study`, `atlas_or_database`). Each answer is its head's most probable
+value, and the two binary heads decide at p >= 0.5, as the model was scored. `decision.json`
+records the label orders and the context versions the training rows were built with; the stage
+refuses a model whose labels are not study_schema's or whose context versions are not the ones
+this code builds.
 
-The stage refuses the prompt when its context versions are not the ones this code builds, and a
-server that does not list the model.
+The source a set is recorded with is `<name>@<version>+<digest>`, the digest of the model
+directory (its card, heads and encoder config by content, its weights by name, size and
+modification time), so a model retrained into the same directory is a new source.
 
 Before any model is asked, each set's points are checked (`services/set_roles/geometry.py`). A set
 whose numbers cannot be template brain coordinates gets no role: most of its points outside the
@@ -60,75 +62,62 @@ collection is an `AnalysisCollection` dict (`slug`, `identifier`, `coordinate_sp
 
    | Field | Type | Meaning |
    |---|---|---|
-   | `role` | `CoordinateRole` value or null | `result`, `anchor`, `localization`, `reference`, `other`; null when the numbers are not template brain coordinates |
-   | `anchor_kind` | `AnchorKind` value or null | for an `anchor` only: `roi`, `seed`, `stimulation_target`, `node`; null when the model gave no kind |
-   | `from_prior_study` | bool or null | the coordinates come from another publication: true for `reference`, null (unknown) for the other roles |
+   | `role` | `CoordinateRole` value or null | `result`, `anchor`, `localization`, `reference`, `other`; null when the numbers are not brain coordinates (the model's answer, or the geometry check) |
+   | `anchor_kind` | `AnchorKind` value or null | for an `anchor` only: `roi`, `seed`, `stimulation_target`, `node` |
+   | `from_prior_study` | bool or null | the coordinates come from another publication: `coordinate_source == prior_study`, and always true for `reference`; null with a null role |
+   | `space` | `template`, `other` or null | whether the coordinates are human MNI/Talairach millimetres; null with a null role |
+   | `coordinate_source` | `this_study`, `prior_study`, `atlas_or_database` or null | where the coordinates come from; null with a null role |
    | `prior_study_evidence` | list of TextSpan | the citing sentences, `{start_char, end_char, text}` into the article text, or `{text}` when the sentence was not found there; empty unless `from_prior_study` |
-   | `role_confidence` | float | the model's probability for the role it answered, at the role's first token: p(result) for a result |
-   | `role_source` | string | `geometry@<version>` for a set the geometry check refused; otherwise the model that decided, `<served model name>@<prompt version>+<checkpoint digest>`: the digest of the path `/v1/models` gives as the model's `root` (and, when that path is readable, its config, weights index and weight files) |
-   | `role_origin` | `table` or `text` | which of the two models read the set |
+   | `role_confidence` | float | the model's probability for what it decided: the role's (p(result) for a result), or, with a null role, that the numbers are not coordinates |
+   | `role_source` | string | `geometry@<version>` for a set the geometry check refused; otherwise the model that decided, `<name>@<version>+<digest>` |
+   | `role_origin` | `table` or `text` | which context builder read the set |
    | `role_reason` | string, only on a null role | the geometry rule that refused the set; absent on a model's decision |
 
    The values of `role` and `anchor_kind` are study_schema's enums
    (`study_schema.models.paper_parse`), and the field names are `CoordinateParse`'s.
 
-2. Every analysis gains `metadata.held`: true for a set whose role is not `result` or `anchor`.
+2. Every analysis gains `metadata.held`: true for a set whose role is not `result` or `anchor`,
+   or whose `space` is not `template`.
    A held set stays in the collection's `analyses`, in its place, so a set's position -- pondie's
    `table_id#ordinal` key -- never moves. `space` and stage1 keep held sets. The coordinate
    parse writes every set with a role, held or not, and neurostore stores each with its role;
-   studyset releases export results only. A set with a null role is left out of the parse
-   (`paper_parse.NOT_BRAIN_REASON`, with its `role_source` and `role_reason`).
+   studyset releases export results only. A set whose `space` is `other` is written with
+   `coordinate_space` `OTHER` (its key stays what was extracted). A set with a null role is left
+   out of the parse (`paper_parse.NOT_BRAIN_REASON`, with its `role_source` and `role_reason`).
 
-The summary is `{tables, sets, sets_by_origin, text_sets_without_local, tables_without_text, roles, held, not_brain, sources, role_values, input}`:
+The summary is `{tables, sets, sets_by_origin, text_sets_without_local, tables_without_text, roles, held, not_brain, other_space, model, role_values, role_records, input}`:
 `tables` counts collections that have an analysis (the selection gate reads it),
 `text_sets_without_local` counts prose sets whose points the classifier could not find in their
 passage, `tables_without_text` names each table whose sets were read without its header and rows
 (no raw table file recorded, the file missing or unreadable), with the reason, `roles` counts
 sets by role (an anchor by its kind; a null role is not counted), `not_brain` counts the sets the
-geometry check refused, `sources` names each
-origin's model, `role_values` is a digest of every set's decided `role`, `anchor_kind`,
-`from_prior_study` and `held` (no confidence, no model), and `input` is a digest of what the
-stage read.
+geometry check refused, `other_space` the sets the model put in another frame, `model` names
+the model that decided (null when the geometry check refused every set), `role_values` is a
+digest of every set's decided `role`, `anchor_kind`, `from_prior_study`, `space`,
+`coordinate_source` and
+`held` (no confidence, no model), and `input` is a digest of what the stage read.
 
-**Blocked, not failed.** When a set's origin has no usable model (not configured, its server
-not listing it or not reachable when the stage is planned with no `path`, or its prompt built on another context version), the articles with sets of that
-origin are not attempted: the plan counts them as blocked, with the reason (for example
-`no prose role model is configured (role_model_prose)`), and logs the reason once. Nothing is
+**Blocked, not failed.** When the model cannot be used (not configured, its directory without a
+`decision.json`, its labels or context versions not this code's, or torch not installed), the
+articles with sets are not attempted: the plan counts them as blocked, with the reason (for
+example `no role model is configured (role_model)`), and logs the reason once. Nothing is
 recorded for them, so no retry is used up, and they are planned on the first run with the model
 configured, with no `--refresh`. Everything downstream of them stays blocked. A missing role
 only ever blocks: it never takes anything back from neurostore or ns-pond. The fingerprint
-includes each origin's model, so configuring or retraining one makes the articles it reads stale.
+includes the model, so configuring or retraining it makes the articles it reads stale.
 
-**Stopped, not failed.** The stage stops, logging the reason, when a model's server is down or
-is configured so it cannot answer the stage's requests:
+**Stopped, not failed.** The stage stops, logging the reason, when the model cannot be loaded
+(`the role model at ... cannot be loaded: ...`) or fails while running (`the role model at ...
+failed: ...`, a CUDA error for instance), and on an interrupt. Nothing is recorded for the
+articles under way or for the rest of the batch, no later batch of the stage is run, and the
+report line reads `STOPPED: <reason>; N article(s) left pending`. The articles it answered
+before the stop keep their roles. No retry is used up; the next run plans the rest again. A
+model that cannot be used when the stage is planned is not a stop: the articles are blocked
+with the reason, as above.
 
-- it still times out, answers 5xx or answers 429 after 3 tries, and no longer lists this model;
-- it refuses a request (any HTTP 4xx except 429), for example a context longer than its
-  `max_model_len` (`configuration error: ... answered HTTP 400 ...`);
-- an answer is not the JSON schema's (a role, or an anchor's kind, off its lists), because the server did not apply `structured_outputs`
-  or cut the answer short (`configuration error: the answer ... is not the role schema's ...`);
-- an answer has no role-token logprobs.
-
-Nothing is recorded for the article it was reading or for the rest of its batch, no later batch
-of the stage is asked, and the report line reads `STOPPED: <reason>; N article(s) left
-pending`. The articles it answered before the stop keep their roles. No retry is used up; the
-next run plans the rest again. Prose stops the same way, under the same rule (one
-`ModelUnavailable`, handled by the scheduler). A model that is missing or unreachable when the
-stage is planned is not a stop: the articles are blocked with the reason, as above. A set's context is
-at most 2,400 characters (`MAX_CHARS`), so a request with its answer is at most 10,007 tokens
-(9,943 for the prompt, measured with the NuExtract3 tokenizer on 2,400 four-byte characters,
-and the 64-token answer): serve the models with a `max_model_len` of at least 10,240.
-
-**Failed.** One case fails the set's article, with its summary's `unanswered` naming each such
-set (`table_id#index`) with its reason, and the stage goes on:
-
-- the server, still listing this model, times out, answers 5xx or answers 429 (rate limited) for
-  that input on every try (`server error on this input after 3 tries: ...`). A 429 is asked again
-  like a 5xx. If the server then no longer lists this model (any other model does not count), the
-  stage stops instead.
-
-An `anchor` answered with a null `anchor_kind` is not a failure: it is recorded as an anchor with
-no kind (not a result, which is the distinction that matters).
+Up to 64 articles are read at once. Their sets share the model's batches (`batch_size`), so a
+batch fills even when each article has one set. Each input is cut to the model's `max_length`
+(512 tokens) as in training.
 
 ## Downstream
 
