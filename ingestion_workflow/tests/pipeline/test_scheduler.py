@@ -32,11 +32,11 @@ class CountingStage:
         for ref in refs:
             existing = artifacts.get(ref.id, {}).get("test")
             if ctx.is_fresh(existing, self.fingerprint_for()):
-                plan.fresh += 1
+                plan.add_fresh(ref)
                 continue
             count, last = attempts.get(ref.id, (0, None))
             if not ctx.should_attempt(existing, count, last, self.name):
-                plan.permanent += 1
+                plan.add_permanent(ref)
                 continue
             plan.pending.append(Work(ref=ref, source="test", fingerprint=self.fingerprint_for()))
         return plan
@@ -196,7 +196,7 @@ def test_a_dry_run_sums_each_stage_s_block_reasons_over_its_batches(tmp_path, ev
         def plan(self, ctx, refs, artifacts, upstream) -> StagePlan:
             plan = StagePlan(stage=self.name)
             for ref in refs:
-                plan.block("waits" if int(ref.identifier.pmid) % 2 else "waits too")
+                plan.block(ref, "waits" if int(ref.identifier.pmid) % 2 else "waits too")
             return plan
 
     settings = Settings(data_root=tmp_path / "data", cache_root=tmp_path / "c",

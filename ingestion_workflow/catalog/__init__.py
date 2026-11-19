@@ -15,7 +15,7 @@ from .models import (
     Status,
     utcnow,
 )
-from .store import Catalog, IdentityError, is_retryable
+from .store import Catalog, IdentityError
 
 __all__ = [
     "ALIAS_KINDS",
@@ -32,6 +32,5 @@ __all__ = [
     "Status",
     "WHOLE_ARTICLE",
     "fingerprint",
-    "is_retryable",
     "utcnow",
 ]

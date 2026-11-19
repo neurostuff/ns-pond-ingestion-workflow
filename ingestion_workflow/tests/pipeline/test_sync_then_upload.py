@@ -17,6 +17,7 @@ import hashlib
 import json
 import logging
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from ingestion_workflow.catalog import Artifact, Catalog, Outcome, Status
@@ -1255,10 +1256,18 @@ def test_a_failed_table_reading_holds_back_a_parse_with_only_the_prose(env, monk
         "before")
 
 
+def _given(verdict: str, *reason: str) -> StagePlan:
+    """A plan of one article, "a", given `verdict` (fresh, skipped, block, permanent)."""
+    plan = StagePlan("x")
+    getattr(plan, verdict if verdict == "block" else f"add_{verdict}")(
+        SimpleNamespace(id="a"), *reason)
+    return plan
+
+
 @pytest.mark.parametrize("plan, existing, expected", [
-    (StagePlan("x", fresh=1), None, None),
-    (StagePlan("x", skipped=1), None, None),
-    (StagePlan("x", blocked=1, reasons={"its resolve was made from other prose": 1}),
+    (_given("fresh"), None, None),
+    (_given("skipped"), None, None),
+    (_given("block", "its resolve was made from other prose"),
      Artifact("a", "roles", status=Status.OK), "blocked (its resolve was made from other prose)"),
     (StagePlan("x", pending=[Work(ref=None, source="", fingerprint="f")]),
      Artifact("a", "x", status=Status.FAILED, error="ReadTimeout"), "failed: ReadTimeout"),
@@ -1270,8 +1279,8 @@ def test_a_failed_table_reading_holds_back_a_parse_with_only_the_prose(env, monk
     (StagePlan("x", pending=[Work(ref=None, source="", fingerprint="f")]), None, "not run"),
     (StagePlan("x", pending=[Work(ref=None, source="", fingerprint=NO_TEXT)]),
      Artifact("a", "x", status=Status.OK), "taken back"),
-    (StagePlan("x", permanent=1), Artifact("a", "x", status=Status.SKIPPED), None),
-    (StagePlan("x", permanent=1), Artifact("a", "x", status=Status.PERMANENT, error="refused"),
+    (_given("permanent"), Artifact("a", "x", status=Status.SKIPPED), None),
+    (_given("permanent"), Artifact("a", "x", status=Status.PERMANENT, error="refused"),
      "failed, not retried: refused"),
 ])
 def test_what_each_plan_says_of_a_stage_s_reading(plan, existing, expected):
