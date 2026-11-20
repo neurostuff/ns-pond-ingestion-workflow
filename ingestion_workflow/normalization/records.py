@@ -16,6 +16,7 @@ import re
 from collections import Counter
 from pathlib import Path
 
+from .structure import fold, read_cells, terms_of, text, v
 from .taskcat.conditions import normalize_condition, normalize_condition_ctx
 from .taskcat.decompose import STEM_OF
 from .taskcat.gate import gate
@@ -24,19 +25,6 @@ INVENTORY = Path(__file__).resolve().parent / "data" / "task_inventory_v3.json"
 BASELINE = {"control_state", "rest", "fixation"}
 GATED = {"not_a_task", "questionnaire_or_scale", "intervention_or_training", "neuropsychological_test"}
 REST = re.compile(r"\brest(ing)?[- ]?(state)?\b", re.I)
-
-
-def v(x):
-    return x.get("value") if isinstance(x, dict) else x
-
-
-def text(x):
-    x = v(x)
-    return "; ".join(map(str, x)) if isinstance(x, list) else (x or "")
-
-
-def fold(s):
-    return re.sub(r"[^a-z0-9]+", " ", str(s).lower()).strip() if s is not None else ""
 
 
 STIM_AXES = ("stimulus", "emotion", "valence", "outcome", "modality", "magnitude", "social")
@@ -135,7 +123,7 @@ def read(r, study, CB, SCH, final=None, abbreviations=None):
     final = final or {}
     T, Cn, K, A = ([] for _ in range(4))
     st = Counter()
-    terms = {t.get("local_id"): t for m in r.get("model_estimations") or [] for t in m.get("terms") or []}
+    terms = terms_of(r)
     tasks = r.get("tasks") or []
     cond_task, cond, label = {}, {}, {}
     for t in tasks:
@@ -182,18 +170,7 @@ def read(r, study, CB, SCH, final=None, abbreviations=None):
     groups = {g.get("local_id"): g for g in r.get("groups") or []}
     for a in (x for x in r.get("analyses") or [] if isinstance(x, dict)):        # a 27B record carries a stray string
         eff = a.get("effect") or {}
-        cells = []
-        for cell in eff.get("cells") or []:
-            term = terms.get(cell.get("term")) or {}
-            lvl = v(cell.get("level")); d = v(cell.get("direction"))
-            fl = next((L for L in term.get("levels") or [] if fold(v(L.get("level"))) == fold(lvl)), None) if lvl else None
-            carries = {k: list(fl.get(k) or []) for k in ("conditions", "groups", "arms", "timepoints", "regions")} if fl else {}
-            carries = {k: x for k, x in carries.items() if x}
-            cells.append({"term": cell.get("term"), "term_name": text(term.get("name")), "term_type": v(term.get("type")),
-                          "variation_level": v(term.get("variation_level")), "level": lvl, "direction": d,
-                          "label": v(cell.get("label")), "carries": carries,
-                          "assessment": term.get("assessment"), "region": term.get("region"),
-                          "interaction_with": term.get("interaction_with") or []})
+        cells = read_cells(a, terms)
         directed = [c for c in cells if c["direction"] in ("positive", "negative")]
         # what the effect is tested ACROSS: every entity type a cell's level carries, besides conditions, whatever
         # its direction -- a two-sided or null group comparison names its groups with no direction to state
