@@ -1,0 +1,1258 @@
+{
+ "name": "ns-pond condition vocabulary",
+ "version": "3.0.0",
+ "status": "draft: awaiting James's review",
+ "source": "guide c2 vocabulary v3 plus the review of 994 Claude-labelled tasks (2026-11-20)",
+ "rules": [
+  "Rest and fixation are a condition's `kind`, never an atom.",
+  "Task identity is the task's `task` field, never an atom.",
+  "Groups, scores, drugs and sessions are record structure, never condition atoms.",
+  "A condition that differs from its siblings only on a factor differs only on that factor's axis.",
+  "Use a vocabulary axis when one fits. Otherwise a local axis is allowed: a snake_case name for the dimension, not a synonym of a vocabulary axis, with snake_case values. A local axis is any axis missing from this file; it counts toward contrast identity, and the vocabulary review clusters local axes into proposals.",
+  "No `level` axis: a graded factor names its dimension.",
+  "The absence of something is a value only on axes that list `absent` or `none`; otherwise it is the condition's kind (control_state or implicit_baseline)."
+ ],
+ "formats": {
+  "case": "lower snake_case; no spaces, hyphens or symbols",
+  "numeric": "`<number>_<unit>`, number first; a decimal point as `_` (`0_5_hz`); a negative as `minus_`",
+  "units": [
+   "ms",
+   "s",
+   "hz",
+   "deg",
+   "pct",
+   "ma",
+   "mmhg",
+   "db",
+   "items"
+  ],
+  "ordinal": "digits (`1`, `2`) or `block_<n>`",
+  "graded": "low, medium, high on graded axes",
+  "one_value": "one value per axis per condition, never a list; only `stimulus` may repeat on a condition"
+ },
+ "structural": {
+  "task": "the task's own `task` field (inventory id)",
+  "group": "between-subject groups, from the record's group cells (structure.py)",
+  "score": "the covariate of a correlation or parametric contrast, from the record (structure.py)",
+  "drug": "drug vs placebo, from the record's arms and timepoints (structure.py)",
+  "session": "separate scan sessions or visits, from the record's timepoints (structure.py)"
+ },
+ "axes": {
+  "accuracy": {
+   "values": [
+    "error",
+    "correct",
+    "miss",
+    "false_alarm"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "agent": {
+   "values": [
+    "human",
+    "computer",
+    "robot"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "agreement": {
+   "values": [
+    "agree",
+    "disagree"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "agreement with a statement or opinion"
+  },
+  "animacy": {
+   "values": [
+    "animate",
+    "inanimate"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "whether a stimulus is a living thing"
+  },
+  "approach": {
+   "values": [
+    "approach",
+    "avoid"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "an approach or avoidance response"
+  },
+  "arousal": {
+   "values": [
+    "high",
+    "low",
+    "medium"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "articulation": {
+   "values": [
+    "overt",
+    "covert"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "spoken aloud vs silently"
+  },
+  "attention": {
+   "values": [
+    "attended",
+    "unattended",
+    "divided",
+    "focused"
+   ],
+   "open": false,
+   "since": "v3"
+  },
+  "awareness": {
+   "values": [
+    "aware",
+    "unaware",
+    "masked",
+    "visible"
+   ],
+   "open": false,
+   "since": "v3"
+  },
+  "body_site": {
+   "values": [],
+   "open": true,
+   "since": "v3",
+   "definition": "open: the body part stimulated"
+  },
+  "choice": {
+   "values": [
+    "chosen",
+    "unchosen",
+    "free",
+    "forced"
+   ],
+   "open": false,
+   "since": "v3"
+  },
+  "concreteness": {
+   "values": [
+    "concrete",
+    "abstract"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "confidence": {
+   "values": [
+    "low",
+    "medium",
+    "high"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "a confidence or judgment-of-learning level reported by the participant"
+  },
+  "congruency": {
+   "values": [
+    "incongruent",
+    "congruent",
+    "neutral"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "content": {
+   "values": [],
+   "open": true,
+   "since": "v3",
+   "definition": "open: what a stimulus depicts beyond its stimulus class (`threat`, `erotic`, `tools`, `animals`), including semantic categories"
+  },
+  "cooperation": {
+   "values": [
+    "cooperate",
+    "defect"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "a cooperative or defecting move in an economic game; `referent` says whose"
+  },
+  "cs": {
+   "values": [
+    "cs_plus",
+    "cs_minus",
+    "us"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "cue_validity": {
+   "values": [
+    "invalid",
+    "valid",
+    "neutral"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "decision": {
+   "values": [
+    "accept",
+    "reject"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "the participant's response to an offer"
+  },
+  "delay": {
+   "values": [
+    "immediate",
+    "delayed"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "difficulty": {
+   "values": [
+    "easy",
+    "medium",
+    "hard"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "task difficulty when the paper manipulates it as such"
+  },
+  "direction": {
+   "values": [
+    "forward",
+    "backward",
+    "clockwise",
+    "counterclockwise",
+    "increase",
+    "decrease",
+    "up",
+    "down"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "the direction of motion, rotation, playback or change"
+  },
+  "distance": {
+   "values": [
+    "near",
+    "far"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "spatial or social distance"
+  },
+  "distractor": {
+   "values": [
+    "present",
+    "absent",
+    "high",
+    "low",
+    "medium"
+   ],
+   "open": false,
+   "since": "v3"
+  },
+  "effector": {
+   "values": [
+    "hand",
+    "finger",
+    "foot",
+    "leg",
+    "arm",
+    "mouth",
+    "tongue",
+    "eye",
+    "bimanual",
+    "face"
+   ],
+   "open": false,
+   "since": "v3"
+  },
+  "emotion": {
+   "values": [
+    "fear",
+    "anger",
+    "happy",
+    "sad",
+    "disgust",
+    "surprise",
+    "pain",
+    "neutral",
+    "guilt",
+    "shame"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "engagement": {
+   "values": [
+    "active",
+    "passive"
+   ],
+   "open": false,
+   "since": "v1",
+   "definition": "active task performance vs passive exposure to the same stimuli"
+  },
+  "expectancy": {
+   "values": [
+    "unexpected",
+    "expected"
+   ],
+   "open": false,
+   "since": "v1",
+   "definition": "whether an event was expected, by trial or by block (predictable vs unpredictable)"
+  },
+  "fairness": {
+   "values": [
+    "unfair",
+    "fair"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "familiarity": {
+   "values": [
+    "familiar",
+    "unfamiliar",
+    "famous",
+    "personal"
+   ],
+   "open": false,
+   "since": "v3"
+  },
+  "feedback": {
+   "values": [
+    "present",
+    "absent",
+    "valid",
+    "invalid"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "whether performance feedback is shown, or is veridical"
+  },
+  "fluency_type": {
+   "values": [
+    "phonemic",
+    "semantic"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "frequency": {
+   "values": [],
+   "open": true,
+   "since": "v3",
+   "definition": "numeric: a stimulus frequency as `<n>_hz`",
+   "numeric": true
+  },
+  "gaze": {
+   "values": [
+    "direct",
+    "averted"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "where a face's eyes look"
+  },
+  "grammaticality": {
+   "values": [
+    "grammatical",
+    "ungrammatical"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "a sentence's grammaticality"
+  },
+  "incentive": {
+   "values": [
+    "gain",
+    "loss",
+    "neutral"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "what is at stake at a cue; `outcome` is what was received"
+  },
+  "intelligibility": {
+   "values": [
+    "intelligible",
+    "unintelligible"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "whether speech can be understood"
+  },
+  "intensity": {
+   "values": [
+    "high",
+    "low",
+    "medium"
+   ],
+   "open": false,
+   "since": "v1",
+   "numeric": true
+  },
+  "judgment": {
+   "values": [
+    "gender",
+    "emotion",
+    "semantic",
+    "phonological",
+    "valence",
+    "familiarity",
+    "identity",
+    "location",
+    "color",
+    "orientation",
+    "same_different",
+    "jol"
+   ],
+   "open": true,
+   "since": "v2",
+   "definition": "the judgment performed on the same stimuli; extend with the judgment's name"
+  },
+  "language": {
+   "values": [
+    "native",
+    "foreign",
+    "l1",
+    "l2",
+    "sign"
+   ],
+   "open": false,
+   "since": "v3"
+  },
+  "language_process": {
+   "values": [
+    "semantic",
+    "phonological",
+    "orthographic",
+    "reading",
+    "naming"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "load": {
+   "values": [
+    "0",
+    "1",
+    "2",
+    "3",
+    "high",
+    "low",
+    "4",
+    "5",
+    "6",
+    "7",
+    "medium"
+   ],
+   "open": false,
+   "since": "v1",
+   "numeric": true
+  },
+  "magnitude": {
+   "values": [
+    "high",
+    "low",
+    "medium"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "match": {
+   "values": [
+    "match",
+    "mismatch"
+   ],
+   "open": false,
+   "since": "v3"
+  },
+  "membership": {
+   "values": [
+    "in_group",
+    "out_group"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "a depicted person's group relative to the participant"
+  },
+  "memory_instruction": {
+   "values": [
+    "remember",
+    "forget",
+    "think",
+    "no_think"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "an instruction to remember, forget or suppress an item (directed forgetting, think/no-think)"
+  },
+  "memory_outcome": {
+   "values": [
+    "remembered",
+    "forgotten",
+    "false_memory"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "memory_response": {
+   "values": [
+    "remember",
+    "know",
+    "guess",
+    "new",
+    "tip_of_tongue",
+    "feeling_of_knowing",
+    "dont_know"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "the participant's subjective memory report; `memory_outcome` is the objective result"
+  },
+  "mentalizing": {
+   "values": [
+    "mental",
+    "physical"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "modality": {
+   "values": [
+    "visual",
+    "auditory",
+    "tactile",
+    "olfactory",
+    "gustatory",
+    "interoceptive",
+    "vestibular",
+    "audiovisual",
+    "visuotactile",
+    "audiotactile"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "morph": {
+   "values": [],
+   "open": true,
+   "since": "v3",
+   "definition": "numeric: a morph level as `<n>_pct`",
+   "numeric": true
+  },
+  "motion": {
+   "values": [
+    "moving",
+    "static"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "motor_mode": {
+   "values": [
+    "imagery",
+    "observation",
+    "execution"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "novelty": {
+   "values": [
+    "new",
+    "old"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "operation": {
+   "values": [],
+   "open": true,
+   "since": "v3",
+   "definition": "open: the mental operation a component of the task requires when the task's conditions differ in what the participant does (`arithmetic`, `counting`, `rehearsal`, `navigation`); the judgment made about the same stimuli is `judgment`"
+  },
+  "orientation": {
+   "values": [],
+   "open": true,
+   "since": "v3",
+   "definition": "numeric: an angle as `<n>_deg` (`17_deg`, `90_deg`)",
+   "numeric": true
+  },
+  "outcome": {
+   "values": [
+    "gain",
+    "loss",
+    "no_outcome"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "pacing": {
+   "values": [
+    "external",
+    "self"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "externally paced (cued) vs self-paced or self-initiated responses"
+  },
+  "period": {
+   "values": [
+    "pre",
+    "during",
+    "post"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "a period within one scan or session relative to a manipulation (stimulation, stress, sharing); separate sessions are structure"
+  },
+  "perspective": {
+   "values": [
+    "first_person",
+    "third_person",
+    "second_person"
+   ],
+   "open": false,
+   "since": "v3"
+  },
+  "phase": {
+   "values": [
+    "anticipation",
+    "cue",
+    "outcome",
+    "encoding",
+    "retrieval",
+    "delay",
+    "decision",
+    "response",
+    "rating",
+    "presentation",
+    "acquisition",
+    "extinction",
+    "habituation",
+    "reversal",
+    "transfer",
+    "test"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "priming": {
+   "values": [
+    "related",
+    "unrelated",
+    "primed",
+    "unprimed"
+   ],
+   "open": false,
+   "since": "v3"
+  },
+  "probability": {
+   "values": [
+    "high",
+    "low",
+    "medium"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "race": {
+   "values": [
+    "own",
+    "other",
+    "black",
+    "white",
+    "asian"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "a depicted person's race, or own- vs other-race"
+  },
+  "rate": {
+   "values": [],
+   "open": true,
+   "since": "v3",
+   "definition": "numeric: a presentation or stimulation rate as `<n>_hz` (`0_5_hz`)",
+   "numeric": true
+  },
+  "referent": {
+   "values": [
+    "self",
+    "other"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "regulation": {
+   "values": [
+    "reappraise",
+    "suppress",
+    "increase",
+    "look",
+    "decrease",
+    "maintain"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "repetition": {
+   "values": [
+    "repeated",
+    "first"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "a repeated presentation; `novelty` is the old/new memory status"
+  },
+  "response_demand": {
+   "values": [
+    "nogo",
+    "go",
+    "stop"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "risk": {
+   "values": [
+    "risky",
+    "safe",
+    "medium"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "saccade": {
+   "values": [
+    "pro",
+    "anti"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "prosaccade or antisaccade"
+  },
+  "sequence": {
+   "values": [
+    "learned",
+    "random",
+    "novel"
+   ],
+   "open": false,
+   "since": "v3"
+  },
+  "serial_position": {
+   "values": [
+    "first",
+    "middle",
+    "last"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "an item's position in a list or sequence; ordinal as digits"
+  },
+  "side": {
+   "values": [
+    "left",
+    "right",
+    "center",
+    "bilateral"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "similarity": {
+   "values": [
+    "high",
+    "low",
+    "medium"
+   ],
+   "open": false,
+   "since": "v3"
+  },
+  "size": {
+   "values": [
+    "small",
+    "large"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "physical or depicted size"
+  },
+  "sleep_stage": {
+   "values": [
+    "wake",
+    "n1",
+    "n2",
+    "n3",
+    "rem"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "the sleep stage during which the data were taken"
+  },
+  "social": {
+   "values": [
+    "social",
+    "exclusion",
+    "inclusion",
+    "nonsocial"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "speed": {
+   "values": [
+    "fast",
+    "slow",
+    "low",
+    "medium",
+    "high"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "stage": {
+   "values": [
+    "early",
+    "middle",
+    "late"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "time within the task (block half, epoch, learning stage); ordinal blocks as `block_<n>`"
+  },
+  "stimulation": {
+   "values": [
+    "sham",
+    "active",
+    "off"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "stimulus": {
+   "values": [
+    "faces",
+    "houses_scenes",
+    "words",
+    "pseudowords",
+    "objects",
+    "bodies",
+    "food",
+    "drug_cue",
+    "speech",
+    "tones",
+    "scrambled",
+    "nonfood",
+    "letters",
+    "money",
+    "numbers",
+    "arrows",
+    "animals",
+    "music",
+    "shapes",
+    "gratings",
+    "characters",
+    "symbols",
+    "cards",
+    "pictures",
+    "noise",
+    "checkerboard",
+    "environmental_sounds",
+    "voices",
+    "odors",
+    "tastants"
+   ],
+   "open": false,
+   "since": "v1",
+   "definition": "the stimulus class; a condition showing two classes has two stimulus atoms"
+  },
+  "stop_outcome": {
+   "values": [
+    "success",
+    "failure"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "switch": {
+   "values": [
+    "switch",
+    "repeat"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "synchrony": {
+   "values": [
+    "synchronous",
+    "asynchronous"
+   ],
+   "open": false,
+   "since": "v3"
+  },
+  "target": {
+   "values": [
+    "present",
+    "absent"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "whether the searched-for target is present"
+  },
+  "threat": {
+   "values": [
+    "threat",
+    "safe"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "threat of shock or another aversive event vs a safe period"
+  },
+  "timing": {
+   "values": [],
+   "open": true,
+   "since": "v3",
+   "definition": "numeric: an ISI, SOA or duration as `<n>_ms` or `<n>_s` (`minus_300_ms` for a negative SOA)",
+   "numeric": true
+  },
+  "training": {
+   "values": [
+    "trained",
+    "untrained"
+   ],
+   "open": false,
+   "since": "v3"
+  },
+  "trial_type": {
+   "values": [
+    "catch",
+    "null",
+    "deviant",
+    "standard",
+    "lure",
+    "pm_cue",
+    "target",
+    "filler",
+    "probe"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "truth": {
+   "values": [
+    "true",
+    "false"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "the truth value of a statement the participant reads or judges"
+  },
+  "uncertainty": {
+   "values": [
+    "certain",
+    "risk",
+    "ambiguity"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "known probabilities (risk) vs unknown (ambiguity)"
+  },
+  "valence": {
+   "values": [
+    "negative",
+    "positive",
+    "neutral"
+   ],
+   "open": false,
+   "since": "v1"
+  },
+  "veracity": {
+   "values": [
+    "truth",
+    "lie"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "whether the participant tells the truth or lies"
+  },
+  "visual_field": {
+   "values": [
+    "upper",
+    "lower",
+    "center",
+    "horizontal_meridian",
+    "vertical_meridian"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "vertical position in the visual field; left and right are `side`"
+  },
+  "word_class": {
+   "values": [
+    "noun",
+    "verb",
+    "adjective"
+   ],
+   "open": false,
+   "since": "v3",
+   "definition": "a word's part of speech"
+  },
+  "word_frequency": {
+   "values": [
+    "high",
+    "low",
+    "medium"
+   ],
+   "open": false,
+   "since": "v1"
+  }
+ },
+ "aliases": {
+  "axes": {
+   "action": "cooperation",
+   "actor_race": "race",
+   "block_half": "stage",
+   "block_order": "stage",
+   "co2_level": "intensity",
+   "complexity": "difficulty",
+   "cue_side": "side",
+   "deception": "veracity",
+   "endorsement": "agreement",
+   "epoch": "stage",
+   "ingroup": "membership",
+   "jol": "confidence",
+   "memory_control": "memory_instruction",
+   "metamemory": "memory_response",
+   "playback": "direction",
+   "position": "serial_position",
+   "predictability": "expectancy",
+   "process": "operation",
+   "recollection": "memory_response",
+   "rotation": "orientation",
+   "saccade_type": "saccade",
+   "subtask": "operation",
+   "target_presence": "target",
+   "target_side": "side",
+   "truth_judgment": "truth",
+   "truth_value": "truth",
+   "visual_feedback": "feedback",
+   "vocalization": "articulation"
+  },
+  "values": {
+   "difficulty:complex": [
+    "difficulty:hard"
+   ],
+   "difficulty:high": [
+    "difficulty:hard"
+   ],
+   "difficulty:low": [
+    "difficulty:easy"
+   ],
+   "difficulty:simple": [
+    "difficulty:easy"
+   ],
+   "distance:close": [
+    "distance:near"
+   ],
+   "effector:brow": [
+    "effector:face"
+   ],
+   "expectancy:predictable": [
+    "expectancy:expected"
+   ],
+   "expectancy:unpredictable": [
+    "expectancy:unexpected"
+   ],
+   "instruction:forget": [
+    "memory_instruction:forget"
+   ],
+   "instruction:no_think": [
+    "memory_instruction:no_think"
+   ],
+   "instruction:remember": [
+    "memory_instruction:remember"
+   ],
+   "instruction:think": [
+    "memory_instruction:think"
+   ],
+   "membership:member": [
+    "membership:in_group"
+   ],
+   "membership:nonmember": [
+    "membership:out_group"
+   ],
+   "memory_outcome:guess": [
+    "memory_response:guess"
+   ],
+   "memory_outcome:true_memory": [
+    "memory_outcome:remembered"
+   ],
+   "memory_response:familiarity": [
+    "memory_response:know"
+   ],
+   "memory_response:forget": [
+    "memory_response:new"
+   ],
+   "memory_response:old": [
+    "memory_response:know"
+   ],
+   "memory_response:recollection": [
+    "memory_response:remember"
+   ],
+   "novelty:lure": [
+    "trial_type:lure"
+   ],
+   "odor:odorant": [
+    "stimulus:odors"
+   ],
+   "odor:pleasant": [
+    "stimulus:odors",
+    "valence:positive"
+   ],
+   "odor:unpleasant": [
+    "stimulus:odors",
+    "valence:negative"
+   ],
+   "orientation:clockwise": [
+    "direction:clockwise"
+   ],
+   "orientation:counterclockwise": [
+    "direction:counterclockwise"
+   ],
+   "outcome:shock": [
+    "cs:us"
+   ],
+   "own_action:cooperate": [
+    "cooperation:cooperate",
+    "referent:self"
+   ],
+   "own_action:defect": [
+    "cooperation:defect",
+    "referent:self"
+   ],
+   "pacing:paced": [
+    "pacing:external"
+   ],
+   "pacing:self_initiated": [
+    "pacing:self"
+   ],
+   "pacing:unpaced": [
+    "pacing:self"
+   ],
+   "pacing:visually_cued": [
+    "pacing:external"
+   ],
+   "partner_action:cooperate": [
+    "cooperation:cooperate",
+    "referent:other"
+   ],
+   "partner_action:defect": [
+    "cooperation:defect",
+    "referent:other"
+   ],
+   "phase:reading": [
+    "phase:presentation"
+   ],
+   "phase:viewing": [
+    "phase:presentation"
+   ],
+   "race:african_american": [
+    "race:black"
+   ],
+   "race:caucasian": [
+    "race:white"
+   ],
+   "regulation:none": [
+    "regulation:look"
+   ],
+   "saccade:first": [
+    "serial_position:first"
+   ],
+   "saccade:second": [
+    "serial_position:2"
+   ],
+   "session:acquisition": [
+    "phase:acquisition"
+   ],
+   "session:baseline": [
+    "period:pre"
+   ],
+   "session:conditioning": [
+    "phase:acquisition"
+   ],
+   "session:during": [
+    "period:during"
+   ],
+   "session:extinction": [
+    "phase:extinction"
+   ],
+   "session:fear_acquisition": [
+    "phase:acquisition"
+   ],
+   "session:first_half": [
+    "stage:early"
+   ],
+   "session:habituation": [
+    "phase:habituation"
+   ],
+   "session:learning": [
+    "phase:acquisition"
+   ],
+   "session:post": [
+    "period:post"
+   ],
+   "session:pre": [
+    "period:pre"
+   ],
+   "session:pretraining": [
+    "phase:habituation"
+   ],
+   "session:reversal": [
+    "phase:reversal"
+   ],
+   "session:second_half": [
+    "stage:late"
+   ],
+   "session:transfer": [
+    "phase:transfer"
+   ],
+   "sleep_stage:sws": [
+    "sleep_stage:n3"
+   ],
+   "stage:first": [
+    "stage:early"
+   ],
+   "stage:second": [
+    "stage:late"
+   ],
+   "stimulation:none": [
+    "stimulation:off"
+   ],
+   "stimulus:abstract_images": [
+    "stimulus:pictures"
+   ],
+   "stimulus:cartoons": [
+    "stimulus:pictures"
+   ],
+   "taste:sour": [
+    "stimulus:tastants",
+    "content:sour"
+   ],
+   "trial_type:us": [
+    "cs:us"
+   ]
+  }
+ }
+}
