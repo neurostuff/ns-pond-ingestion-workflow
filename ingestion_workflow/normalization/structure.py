@@ -1,7 +1,8 @@
 """The structure of each analysis in an extraction record, read from the record alone.
 
-Per analysis: its `kind`, its two sides as the record's cells state them, the groups on each side, the baseline
-type, the conditions held fixed, the covariates and a correlation's sign. Nothing is inferred from wording, and the
+Per analysis: its `kind`, its `measure` (activation, or connectivity with its method and seeds), its two sides as
+the record's cells state them, the groups on each side, the baseline type, the conditions held fixed, the
+covariates and a correlation's sign. Nothing is inferred from wording, and the
 sides are never turned round: the extraction already orders them by the sign of the reported statistics.
 `statistics` reports that sign (the parse's t/z values) for consumers that check it.
 
@@ -11,9 +12,9 @@ Cells are resolved cell -> ModelTerm -> FactorLevel (by level label) -> the enti
 """
 import re
 
-KINDS = ("conjunction", "connectivity", "correlation", "parametric", "main_effect", "group_by_condition",
-         "condition_interaction", "group_difference", "condition_vs_baseline", "condition_vs_condition",
-         "no_contrast")
+KINDS = ("conjunction", "correlation", "parametric", "main_effect", "group_by_condition", "condition_interaction",
+         "group_difference", "condition_vs_baseline", "condition_vs_condition", "no_contrast")
+MEASURES = ("activation", "connectivity")
 CARRIED = ("conditions", "groups", "arms", "timepoints", "regions")
 SIDE_ENTITIES = ("conditions", "arms", "timepoints")
 BASELINE_TYPE = {"rest": "rest", "fixation": "fixation", "control_state": "low_level_control",
@@ -102,24 +103,23 @@ def group_cells(cells):
 
 
 def _kind(effect_kind, details_type, cells, conditions):
+    """The comparison, whatever is measured: a connectivity contrast takes the kind its cells give."""
     directed = [c for c in cells if c["direction"] in ("positive", "negative")]
     group = [c for c in group_cells(cells)[0] if c["direction"] in ("positive", "negative")]
     within = [c for c in directed if any(c["carries"].get(k) for k in SIDE_ENTITIES)]
     continuous = [c for c in cells if c["term_type"] == "continuous"]
     if "conjunction" in details_type:
         return "conjunction"
-    if "connectivity" in details_type:
-        return "connectivity"
     if effect_kind == "parametric_modulation":
         return "parametric"
     if effect_kind == "cross_subject_regression" or continuous:
         return "correlation"
     if effect_kind == "omnibus":
         return "main_effect"
-    if group and within:
-        return "group_by_condition"
+    if group and within and {c["direction"] for c in within} == {"positive", "negative"}:
+        return "group_by_condition"     # (g1 > g2) x (a > b)
     if group:
-        return "group_difference"
+        return "group_difference"       # g1 > g2 | a: the condition, if any, is held
     if effect_kind == "interaction" and len({c["term"] for c in within}) >= 2:
         return "condition_interaction"
     if not within:
@@ -154,7 +154,17 @@ def _baseline_type(kind, baseline, conditions):
     return "active_condition"
 
 
-def analysis_structure(analysis, terms, conditions, groups, parse=None):
+def connectivity_of(details, regions):
+    """Method, seeds and modulatory input of a ConnectivityDetails, else None."""
+    if "connectivity" not in str(v(details.get("details_type")) or "").lower():
+        return None
+    seeds = [s for s in (details.get("seed_regions") or []) if isinstance(s, str)]
+    return {"method": v(details.get("connectivity_method")),
+            "seeds": [{"id": s, "name": text((regions.get(s) or {}).get("name")) or None} for s in seeds],
+            "modulatory_input": v(details.get("modulatory_input"))}
+
+
+def analysis_structure(analysis, terms, conditions, groups, parse=None, regions=None):
     cells = read_cells(analysis, terms)
     eff = analysis.get("effect") or {}
     effect_kind = v(eff.get("kind"))
@@ -162,6 +172,10 @@ def analysis_structure(analysis, terms, conditions, groups, parse=None):
     details_type = str(v(details.get("details_type")) or "").lower()
     kind = _kind(effect_kind, details_type, cells, conditions)
     target, baseline = _side(cells, "positive"), _side(cells, "negative")
+    one_sided = []
+    if kind == "group_difference":   # a condition on one side only is the condition the groups are compared on
+        one_sided = target["conditions"] + baseline["conditions"]
+        target, baseline = _side([], "positive"), _side([], "negative")
     compared, restricting = group_cells(cells)
 
     def facts(direction):
@@ -169,13 +183,15 @@ def analysis_structure(analysis, terms, conditions, groups, parse=None):
                 for g in c["carries"]["groups"] if g in groups]
     gt, gb = group_names(facts("positive"), facts("negative"))
     held = sorted({i for c in cells if c["direction"] not in ("positive", "negative")
-                   for i in c["carries"].get("conditions", [])})
+                   for i in c["carries"].get("conditions", [])} | set(one_sided))
     restricted = sorted({g for c in restricting for g in c["carries"]["groups"]})
     continuous = [c for c in cells if c["term_type"] == "continuous"]
     sign = None
     if kind == "correlation" and continuous and continuous[0]["direction"] in ("positive", "negative"):
         sign = continuous[0]["direction"]
+    connectivity = connectivity_of(details, regions or {})
     return {"analysis": analysis.get("local_id"), "kind": kind, "effect_kind": effect_kind,
+            "measure": "connectivity" if connectivity else "activation", "connectivity": connectivity,
             "target": target, "baseline": baseline, "groups": {"target": gt, "baseline": gb},
             "held": held, "restricted_to": restricted,
             "baseline_type": _baseline_type(kind, baseline, conditions),
@@ -189,5 +205,6 @@ def assemble(record, parse=None):
     conditions = {c.get("local_id"): c for t in record.get("tasks") or [] for c in t.get("conditions") or []
                   if isinstance(c, dict)}
     groups = {g.get("local_id"): g for g in record.get("groups") or [] if isinstance(g, dict)}
-    return [analysis_structure(a, terms, conditions, groups, parse)
+    regions = {r.get("local_id"): r for r in record.get("regions") or [] if isinstance(r, dict)}
+    return [analysis_structure(a, terms, conditions, groups, parse, regions)
             for a in record.get("analyses") or [] if isinstance(a, dict)]

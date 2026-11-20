@@ -79,6 +79,16 @@ def test_a_group_difference_on_a_condition_contrast_is_group_by_condition():
     assert s["groups"] == {"target": ["controls"], "baseline": ["ma_abusers"]}
 
 
+def test_a_group_difference_on_one_condition_holds_the_condition():
+    # young > older on one condition side only (no lower condition): g1 > g2 | a
+    s = one("group_difference_one_condition")
+    assert s["kind"] == "group_difference"
+    assert s["groups"] == {"target": ["young_adults"], "baseline": ["older_adults"]}
+    assert s["held"] == ["cond_8", "cond_minus2", "cond_minus6"]
+    assert s["target"]["conditions"] == s["baseline"]["conditions"] == []
+    assert s["baseline_type"] == "none"
+
+
 def test_correlation_sign_is_the_covariate_cells():
     # a negative association with perceived social threat, reported with positive t values
     s = one("correlation_negative")
@@ -86,11 +96,36 @@ def test_correlation_sign_is_the_covariate_cells():
     assert s["covariates"]
 
 
-@pytest.mark.parametrize(
-    "case", ["connectivity", "conjunction", "parametric", "condition_interaction"]
-)
+@pytest.mark.parametrize("case", ["conjunction", "parametric", "condition_interaction"])
 def test_kind_from_details_and_effect(case):
     assert one(case)["kind"] == case
+
+
+def test_connectivity_is_a_measure_and_keeps_its_comparison():
+    # a PPI from left DLPFC: genotype x oral contraceptive x WM load (2-back > 1-back)
+    s = one("connectivity")
+    assert (s["measure"], s["kind"]) == ("connectivity", "group_by_condition")
+    assert s["connectivity"] == {
+        "method": "ppi",
+        "seeds": [{"id": "reg_dlpfc", "name": "left DLPFC"}],
+        "modulatory_input": "WM load",
+    }
+    assert s["target"]["conditions"] == ["cond_2back"]
+    assert s["baseline"]["conditions"] == ["cond_1back"]
+
+
+def test_a_connectivity_correlation_is_a_correlation():
+    # gPPI from the left amygdala (cocaine > neutral cues) against CTQ, within cocaine users
+    s = one("connectivity_correlation")
+    assert (s["measure"], s["kind"], s["sign"]) == ("connectivity", "correlation", "positive")
+    assert s["connectivity"]["method"] == "gppi"
+    assert s["connectivity"]["seeds"] == [{"id": "reg_amygdala_l", "name": "left amygdala"}]
+    assert s["restricted_to"] == ["grp_cu"]
+
+
+def test_activation_has_no_connectivity():
+    s = one("condition_vs_condition")
+    assert (s["measure"], s["connectivity"]) == ("activation", None)
 
 
 def test_one_group_level_restricts_rather_than_compares():
@@ -105,3 +140,4 @@ def test_every_kind_is_declared():
     for f in CASES.values():
         for s in S.assemble(f["record"], f["parse"]):
             assert s["kind"] in S.KINDS
+            assert s["measure"] in S.MEASURES

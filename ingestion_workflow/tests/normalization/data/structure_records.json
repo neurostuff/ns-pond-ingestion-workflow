@@ -156,7 +156,8 @@
      ]
     }
    ],
-   "groups": []
+   "groups": [],
+   "regions": []
   },
   "parse": {
    "analyses": [
@@ -347,7 +348,8 @@
      ]
     }
    ],
-   "groups": []
+   "groups": [],
+   "regions": []
   },
   "parse": {
    "analyses": [
@@ -640,7 +642,8 @@
      ]
     }
    ],
-   "groups": []
+   "groups": [],
+   "regions": []
   },
   "parse": {
    "analyses": [
@@ -1055,7 +1058,8 @@
       "normalized": []
      }
     }
-   ]
+   ],
+   "regions": []
   },
   "parse": {
    "analyses": [
@@ -1331,7 +1335,8 @@
       "normalized": []
      }
     }
-   ]
+   ],
+   "regions": []
   },
   "parse": {
    "analyses": [
@@ -1364,6 +1369,349 @@
       },
       {
        "values": []
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "case": "group_difference_one_condition",
+  "study": "svdzche462tc",
+  "claude": {
+   "kind": "group_difference",
+   "record_direction": "same",
+   "groups": {
+    "target": "young_adults",
+    "baseline": "older_adults"
+   },
+   "baseline": "none",
+   "sign": null
+  },
+  "evidence_vs_record": "same",
+  "record": {
+   "analyses": [
+    {
+     "local_id": "a_analysis_a75bce95d0924169",
+     "name": {
+      "value": "Young>older"
+     },
+     "definition": {
+      "value": "Young adults showed higher activity than older adults in the right inferior parietal lobule at matched accuracy."
+     },
+     "effect": {
+      "cells": [
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {},
+        "level": {
+         "value": "young"
+        },
+        "term": "trm_group_matched"
+       },
+       {
+        "direction": {
+         "value": "negative"
+        },
+        "label": {},
+        "level": {
+         "value": "older"
+        },
+        "term": "trm_group_matched"
+       },
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {
+         "value": "−6 dB in young adults"
+        },
+        "level": {
+         "value": "−6 dB"
+        },
+        "term": "trm_snr"
+       },
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {
+         "value": "−2 dB in both groups"
+        },
+        "level": {
+         "value": "−2 dB"
+        },
+        "term": "trm_snr"
+       },
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {
+         "value": "8 dB in older adults"
+        },
+        "level": {
+         "value": "8 dB"
+        },
+        "term": "trm_snr"
+       }
+      ],
+      "kind": {
+       "value": "contrast"
+      },
+      "statistic": {
+       "degrees_of_freedom_denominator": {},
+       "degrees_of_freedom_numerator": {},
+       "family": {
+        "value": "t"
+       }
+      }
+     },
+     "details": {
+      "details_type": "MassUnivariateDetails"
+     },
+     "source_table_analysis": {
+      "value": "analysis#a75bce95d0924169"
+     }
+    }
+   ],
+   "model_estimations": [
+    {
+     "terms": [
+      {
+       "functional_form": {},
+       "levels": [
+        {
+         "conditions": [
+          "cond_noiseless"
+         ],
+         "level": {
+          "value": "NoNoise"
+         },
+         "order": {
+          "value": 6
+         }
+        },
+        {
+         "conditions": [
+          "cond_8"
+         ],
+         "level": {
+          "value": "8 dB"
+         },
+         "order": {
+          "value": 5
+         }
+        },
+        {
+         "conditions": [
+          "cond_minus2"
+         ],
+         "level": {
+          "value": "−2 dB"
+         },
+         "order": {
+          "value": 4
+         }
+        },
+        {
+         "conditions": [
+          "cond_minus6"
+         ],
+         "level": {
+          "value": "−6 dB"
+         },
+         "order": {
+          "value": 3
+         }
+        },
+        {
+         "conditions": [
+          "cond_minus9"
+         ],
+         "level": {
+          "value": "−9 dB"
+         },
+         "order": {
+          "value": 2
+         }
+        },
+        {
+         "conditions": [
+          "cond_minus12"
+         ],
+         "level": {
+          "value": "−12 dB"
+         },
+         "order": {
+          "value": 1
+         }
+        }
+       ],
+       "local_id": "trm_snr",
+       "name": {
+        "value": "SNR"
+       },
+       "source_definition": {
+        "value": "Five noise levels and NoNoise; syllables grouped within each noise level for the baseline contrast."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {
+        "value": "dB"
+       },
+       "variation_level": {
+        "value": "within_subject"
+       }
+      },
+      {
+       "functional_form": {},
+       "levels": [
+        {
+         "groups": [
+          "grp_young"
+         ],
+         "level": {
+          "value": "young"
+         },
+         "order": {}
+        },
+        {
+         "groups": [
+          "grp_older"
+         ],
+         "level": {
+          "value": "older"
+         },
+         "order": {}
+        }
+       ],
+       "local_id": "trm_group_matched",
+       "name": {
+        "value": "group"
+       },
+       "source_definition": {
+        "value": "Young adults aged 21–34 years versus older adults aged 65–75 years."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {},
+       "variation_level": {
+        "value": "between_subject"
+       }
+      }
+     ]
+    }
+   ],
+   "tasks": [
+    {
+     "local_id": "tsk_syllable",
+     "name": {
+      "value": "syllable identification"
+     },
+     "conditions": [
+      {
+       "local_id": "cond_noiseless",
+       "name": {
+        "value": "NoNoise"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_minus12",
+       "name": {
+        "value": "−12 dB"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_minus9",
+       "name": {
+        "value": "−9 dB"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_minus6",
+       "name": {
+        "value": "−6 dB"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_minus2",
+       "name": {
+        "value": "−2 dB"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_8",
+       "name": {
+        "value": "8 dB"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      }
+     ]
+    }
+   ],
+   "groups": [
+    {
+     "local_id": "grp_young",
+     "name": {
+      "value": "young adults"
+     },
+     "is_healthy": null,
+     "medical_condition": {
+      "normalized": []
+     }
+    },
+    {
+     "local_id": "grp_older",
+     "name": {
+      "value": "older adults"
+     },
+     "is_healthy": {
+      "value": false
+     },
+     "medical_condition": {
+      "normalized": []
+     }
+    }
+   ],
+   "regions": []
+  },
+  "parse": {
+   "analyses": [
+    {
+     "key": "analysis#a75bce95d0924169",
+     "points": [
+      {
+       "values": [
+        {
+         "kind": "t",
+         "kind_as_printed": null,
+         "value": 5.2,
+         "level": null,
+         "correction": null
+        }
+       ]
       }
      ]
     }
@@ -1607,7 +1955,8 @@
      ]
     }
    ],
-   "groups": []
+   "groups": [],
+   "regions": []
   },
   "parse": {
    "analyses": [
@@ -1963,6 +2312,14 @@
       "normalized": []
      }
     }
+   ],
+   "regions": [
+    {
+     "local_id": "reg_dlpfc",
+     "name": {
+      "value": "left DLPFC"
+     }
+    }
    ]
   },
   "parse": {
@@ -1980,6 +2337,300 @@
          "correction": null
         }
        ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "case": "connectivity_correlation",
+  "study": "d6yozzdnefrg",
+  "claude": {
+   "kind": "correlation",
+   "record_direction": "same",
+   "groups": {
+    "target": null,
+    "baseline": null
+   },
+   "baseline": "none",
+   "sign": "positive"
+  },
+  "evidence_vs_record": "same",
+  "record": {
+   "analyses": [
+    {
+     "local_id": "a_analysis_bf45c6f7a7988d48_2",
+     "name": {
+      "value": "Group × CTQ (Cocaine users—negative correlation)"
+     },
+     "definition": {
+      "value": "Table 4 labels the cocaine-user association negative, but the Results and Discussion describe a positive correlation between childhood trauma and left amygdala connectivity with left middle and inferior frontal cortex, right putamen and caudate."
+     },
+     "effect": {
+      "cells": [
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {},
+        "level": {},
+        "term": "trm_ctq_la"
+       },
+       {
+        "direction": {
+         "value": "held"
+        },
+        "label": {},
+        "level": {
+         "value": "Cocaine users"
+        },
+        "term": "trm_group_la"
+       },
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {},
+        "level": {
+         "value": "cocaine cues"
+        },
+        "term": "trm_stimulus_la"
+       },
+       {
+        "direction": {
+         "value": "negative"
+        },
+        "label": {
+         "value": "neutral"
+        },
+        "level": {
+         "value": "control cues"
+        },
+        "term": "trm_stimulus_la"
+       }
+      ],
+      "kind": {
+       "value": "cross_subject_regression"
+      },
+      "statistic": {
+       "degrees_of_freedom_denominator": {},
+       "degrees_of_freedom_numerator": {},
+       "family": {
+        "value": "z"
+       }
+      }
+     },
+     "details": {
+      "connectivity_method": {
+       "value": "gppi"
+      },
+      "details_type": "ConnectivityDetails",
+      "inference_target": {
+       "value": "connectivity_parameter"
+      },
+      "modulatory_input": {
+       "value": "Cocaine versus neutral cues"
+      },
+      "seed_regions": [
+       "reg_amygdala_l"
+      ]
+     },
+     "source_table_analysis": {
+      "value": "analysis#bf45c6f7a7988d48"
+     }
+    }
+   ],
+   "model_estimations": [
+    {
+     "terms": [
+      {
+       "functional_form": {},
+       "levels": [
+        {
+         "conditions": [
+          "cond_cocaine"
+         ],
+         "level": {
+          "value": "cocaine cues"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_control"
+         ],
+         "level": {
+          "value": "control cues"
+         },
+         "order": {}
+        }
+       ],
+       "local_id": "trm_stimulus_la",
+       "name": {
+        "value": "stimulus type"
+       },
+       "source_definition": {
+        "value": "Presentation of either a cocaine-related or neutral stimulus."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {},
+       "variation_level": {
+        "value": "within_subject"
+       }
+      },
+      {
+       "functional_form": {},
+       "levels": [
+        {
+         "groups": [
+          "grp_cu"
+         ],
+         "level": {
+          "value": "Cocaine users"
+         },
+         "order": {}
+        },
+        {
+         "groups": [
+          "grp_hc"
+         ],
+         "level": {
+          "value": "Controls"
+         },
+         "order": {}
+        }
+       ],
+       "local_id": "trm_group_la",
+       "name": {
+        "value": "group"
+       },
+       "source_definition": {
+        "value": "Non-treatment seeking male regular cocaine users versus non-drug using controls."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {},
+       "variation_level": {
+        "value": "between_subject"
+       }
+      },
+      {
+       "assessment": "asm_ctq",
+       "functional_form": {
+        "value": "linear"
+       },
+       "local_id": "trm_ctq_la",
+       "name": {
+        "value": "total CTQ scores"
+       },
+       "source_definition": {
+        "value": "Total score of the Dutch version of the Brief Childhood Trauma Questionnaire, comprising five subscales."
+       },
+       "type": {
+        "value": "continuous"
+       },
+       "unit": {
+        "value": "CTQ total score"
+       },
+       "variation_level": {
+        "value": "between_subject"
+       }
+      }
+     ]
+    }
+   ],
+   "tasks": [
+    {
+     "local_id": "tsk_cue",
+     "name": {
+      "value": "cue reactivity paradigm"
+     },
+     "conditions": [
+      {
+       "local_id": "cond_cocaine",
+       "name": {
+        "value": "cocaine cues"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_control",
+       "name": {
+        "value": "control cues"
+       },
+       "condition_kind": {
+        "value": "control_state"
+       }
+      }
+     ]
+    }
+   ],
+   "groups": [
+    {
+     "local_id": "grp_cu",
+     "name": {
+      "value": "Cocaine users"
+     },
+     "is_healthy": {
+      "value": false
+     },
+     "medical_condition": {
+      "normalized": []
+     }
+    },
+    {
+     "local_id": "grp_hc",
+     "name": {
+      "value": "Controls"
+     },
+     "is_healthy": {
+      "value": false
+     },
+     "medical_condition": {
+      "normalized": []
+     }
+    }
+   ],
+   "regions": [
+    {
+     "local_id": "reg_amygdala_l",
+     "name": {
+      "value": "left amygdala"
+     }
+    }
+   ]
+  },
+  "parse": {
+   "analyses": [
+    {
+     "key": "analysis#bf45c6f7a7988d48",
+     "points": [
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
       }
      ]
     }
@@ -2149,7 +2800,8 @@
      ]
     }
    ],
-   "groups": []
+   "groups": [],
+   "regions": []
   },
   "parse": {
    "analyses": [
@@ -2377,7 +3029,8 @@
      ]
     }
    ],
-   "groups": []
+   "groups": [],
+   "regions": []
   },
   "parse": {
    "analyses": [
@@ -2610,7 +3263,8 @@
      ]
     }
    ],
-   "groups": []
+   "groups": [],
+   "regions": []
   },
   "parse": {
    "analyses": [
@@ -2767,7 +3421,8 @@
       "normalized": []
      }
     }
-   ]
+   ],
+   "regions": []
   },
   "parse": {
    "analyses": [
@@ -2952,7 +3607,8 @@
      ]
     }
    ],
-   "groups": []
+   "groups": [],
+   "regions": []
   },
   "parse": {
    "analyses": [
