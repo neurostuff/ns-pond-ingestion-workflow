@@ -28,7 +28,6 @@ def test_condition_vs_condition_keeps_the_record_sides():
     assert s["target"]["conditions"] == ["cond_a1_invalid", "cond_a2_invalid"]
     assert s["baseline"]["conditions"] == ["cond_a1_valid", "cond_a2_valid"]
     assert s["baseline_type"] == "active_condition"
-    assert not s["reversed_by_statistics"]
 
 
 def test_fixation_baseline():
@@ -45,21 +44,21 @@ def test_a_record_records_read_would_swap_keeps_its_direction():
     assert s["baseline"]["conditions"] == ["cond_manipulation"]
 
 
-def test_all_negative_statistics_reverse_a_contrast():
+def test_negative_statistics_never_turn_the_record_round():
+    # the 27B extraction already orders the sides by the reported sign
     f = CASES["condition_vs_condition"]
     parse = copy.deepcopy(f["parse"])
     for pt in parse["analyses"][0]["points"]:
         for x in pt["values"]:
             x["value"] = -abs(x["value"])
     s = S.assemble(f["record"], parse)[0]
-    assert (s["statistics"], s["reversed_by_statistics"]) == ("negative", True)
-    assert s["target"]["conditions"] == ["cond_a1_valid", "cond_a2_valid"]
-
-
-def test_negative_statistics_under_a_negative_name_are_not_a_reversal():
-    s = one("negative_name_not_reversed")  # "Negative activations", every t below zero
     assert s["statistics"] == "negative"
-    assert not s["reversed_by_statistics"]
+    assert s["target"]["conditions"] == ["cond_a1_invalid", "cond_a2_invalid"]
+
+
+def test_statistics_sign_is_reported():
+    s = one("negative_statistics")  # "Negative activations", every t below zero
+    assert s["statistics"] == "negative"
     assert s["target"]["conditions"] == ["cond_storage"]
 
 
@@ -84,7 +83,6 @@ def test_correlation_sign_is_the_covariate_cells():
     # a negative association with perceived social threat, reported with positive t values
     s = one("correlation_negative")
     assert (s["kind"], s["sign"], s["statistics"]) == ("correlation", "negative", "positive")
-    assert not s["reversed_by_statistics"]
     assert s["covariates"]
 
 

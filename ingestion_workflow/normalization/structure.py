@@ -1,9 +1,9 @@
 """The structure of each analysis in an extraction record, read from the record alone.
 
 Per analysis: its `kind`, its two sides as the record's cells state them, the groups on each side, the baseline
-type, the conditions held fixed, the covariates and a correlation's sign. Nothing is inferred from wording except
-one rule: a contrast whose parse t/z values are all negative, under a name and definition that do not say the
-effect is negative, is reversed (the record's baseline is the side that is higher).
+type, the conditions held fixed, the covariates and a correlation's sign. Nothing is inferred from wording, and the
+sides are never turned round: the extraction already orders them by the sign of the reported statistics.
+`statistics` reports that sign (the parse's t/z values) for consumers that check it.
 
     assemble(record, parse=None) -> [structure, ...], one per analysis
 
@@ -18,11 +18,6 @@ CARRIED = ("conditions", "groups", "arms", "timepoints", "regions")
 SIDE_ENTITIES = ("conditions", "arms", "timepoints")
 BASELINE_TYPE = {"rest": "rest", "fixation": "fixation", "control_state": "low_level_control",
                  "implicit_baseline": "implicit"}
-#: a name that already says the effect is negative, so all-negative statistics are not a reversed record
-NEGATIVE_WORDS = re.compile(r"[a-z)]\s*<\s*[a-z(]|\bnegative|deactivat|decrease|inverse|\bless\b|\blower\b|below|reduc",
-                            re.I)
-#: kinds whose statistics' sign is the effect, not the order of two sides
-UNSIDED = ("correlation", "parametric", "main_effect", "connectivity", "conjunction", "no_contrast")
 
 
 def v(x):
@@ -166,17 +161,13 @@ def analysis_structure(analysis, terms, conditions, groups, parse=None):
     details = analysis.get("details") if isinstance(analysis.get("details"), dict) else {}
     details_type = str(v(details.get("details_type")) or "").lower()
     kind = _kind(effect_kind, details_type, cells, conditions)
-    statistics = statistics_sign(parse, v(analysis.get("source_table_analysis")))
-    said = text(analysis.get("name")) + " " + text(analysis.get("definition"))
-    reversed_ = statistics == "negative" and kind not in UNSIDED and not NEGATIVE_WORDS.search(said)
-    hi, lo = ("negative", "positive") if reversed_ else ("positive", "negative")
-    target, baseline = _side(cells, hi), _side(cells, lo)
+    target, baseline = _side(cells, "positive"), _side(cells, "negative")
     compared, restricting = group_cells(cells)
 
     def facts(direction):
         return [group_facts(groups[g]) for c in compared if c["direction"] == direction
                 for g in c["carries"]["groups"] if g in groups]
-    gt, gb = group_names(facts(hi), facts(lo))
+    gt, gb = group_names(facts("positive"), facts("negative"))
     held = sorted({i for c in cells if c["direction"] not in ("positive", "negative")
                    for i in c["carries"].get("conditions", [])})
     restricted = sorted({g for c in restricting for g in c["carries"]["groups"]})
@@ -189,7 +180,7 @@ def analysis_structure(analysis, terms, conditions, groups, parse=None):
             "held": held, "restricted_to": restricted,
             "baseline_type": _baseline_type(kind, baseline, conditions),
             "covariates": sorted({c["assessment"] or c["term_name"] for c in continuous}), "sign": sign,
-            "statistics": statistics, "reversed_by_statistics": reversed_}
+            "statistics": statistics_sign(parse, v(analysis.get("source_table_analysis")))}
 
 
 def assemble(record, parse=None):
