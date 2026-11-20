@@ -4,10 +4,10 @@
   "definition": "Stimulation with filamentous needles to elicit cognitive, behavioral, and/or physiological responses.",
   "first": "Han & Terenius, 1982",
   "most": "Hui, et al. 2000",
-  "match_type": "narrower",
-  "inventory_id": "tct_sensory_stimulation",
+  "match_type": "exact",
+  "inventory_id": "tct_acupuncture_stimulation",
   "proposed_extension": null,
-  "note": "Needle stimulation; tct_sensory_stimulation already lists acupuncture."
+  "note": "tct_sensory_stimulation was split by sense (2026-11-19)."
  },
  {
   "brainmap_class": "Affective Pictures",
@@ -719,9 +719,9 @@
   "first": "Adrian, 1950",
   "most": "Wicker, et al. 2003",
   "match_type": "close",
-  "inventory_id": "tct_sensory_stimulation",
+  "inventory_id": "tct_olfactory_stimulation",
   "proposed_extension": null,
-  "note": "Passive odor delivery; odor discrimination tests map to tct_odor_test."
+  "note": "tct_sensory_stimulation was split by sense (2026-11-19)."
  },
  {
   "brainmap_class": "Orthographic Discrimination",
@@ -783,7 +783,7 @@
   "proposed_extension": {
    "id": "tct_bm_passive_viewing",
    "name": "Passive Visual Viewing",
-   "family": "perceptual_judgment",
+   "family": "visual_perception",
    "patterns": [
     "passive(ly)? (view|viewing|watch|watching|observ\\w*)",
     "passive (visual|picture|image|object) (stimulation|presentation|task)"
@@ -1062,10 +1062,10 @@
   "definition": "Discriminate/rate flavor intensity, pleasantness, solution content (i.e., fat content) of an item, food, or solution with or without swallowing the item. Participants may be asked to evaluate the affective significance of other stimuli (i.e., pictures, words, objects) when paired with food.",
   "first": "Gowers, 1882",
   "most": "Hare, Camerer & Rangel, 2009",
-  "match_type": "broader",
-  "inventory_id": "tct_sensory_stimulation",
+  "match_type": "close",
+  "inventory_id": "tct_gustatory_stimulation",
   "proposed_extension": null,
-  "note": "Gustatory delivery/rating; Hare 2009 exemplar is food choice."
+  "note": "tct_sensory_stimulation was split by sense (2026-11-19)."
  },
  {
   "brainmap_class": "Theory of Mind",
@@ -1153,12 +1153,12 @@
   "definition": "Vestibular (labyrinthine) excitability under caloric, mechanic, or turning stimulation. Galvanic Vestibular Stimulation: uses direct current electricity stimulation to stimulate vestibular system. Also includes Caloric Vestibular Stimulation, a task in which cold and warm water to stimulate the vestibular system.",
   "first": "Atkinson, 1939",
   "most": "Bottini, et al. 1994",
-  "match_type": "narrower",
-  "inventory_id": "tct_sensory_stimulation",
+  "match_type": "exact",
+  "inventory_id": "tct_bm_vestibular_stimulation",
   "proposed_extension": {
    "id": "tct_bm_vestibular_stimulation",
    "name": "Vestibular Stimulation (caloric/galvanic)",
-   "family": "perceptual_judgment",
+   "family": "bodily_sensation",
    "patterns": [
     "vestibular stimulation",
     "caloric (irrigation|stimulation|vestibular)",
@@ -1166,7 +1166,7 @@
     "\\bgvs\\b"
    ]
   },
-  "note": "Vestibular modality not covered by somatosensory/chemosensory patterns."
+  "note": "Its own extension, tct_bm_vestibular_stimulation; tct_sensory_stimulation no longer covers it."
  },
  {
   "brainmap_class": "Vibrotactile Monitor/Discrimination",
@@ -1174,9 +1174,9 @@
   "first": "Verrillo, 1963",
   "most": "Coghill, et al. 1994",
   "match_type": "narrower",
-  "inventory_id": "tct_sensory_stimulation",
+  "inventory_id": "tct_touch_stimulation",
   "proposed_extension": null,
-  "note": "Vibrotactile subset; tct_sensory_stimulation lists vibrotactile."
+  "note": "tct_sensory_stimulation was split by sense (2026-11-19)."
  },
  {
   "brainmap_class": "Video Games",
