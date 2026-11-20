@@ -9,12 +9,16 @@
               that family
     taskcat   the pipeline identity (A description / B procedure)
 
+A label of tct_sensory_stimulation from any route becomes the stimulation of the sense the task names (taskcat.lexicon
+`split_sensory`): route B and the citation index still know only the task before its split by sense.
+
 The contrast classifier is the one fitted part. The Astra build refit it on every run and never saved it; here
 `fit_contrast_classifier` makes it once per fit and `decide` only applies it.
 """
 import json
 
 from .records import INVENTORY
+from .taskcat.lexicon import split_sensory
 
 GATED = {"not_a_task", "questionnaire_or_scale", "intervention_or_training", "neuropsychological_test"}
 CITE_CONF = 0.7
@@ -41,14 +45,16 @@ def fit_contrast_classifier(tasks):
 def decide(t, route_c, lexicon, classifier):
     """One pass-one task row -> its final label row. `route_c` the task's citation vote ({} when none)."""
     vec, clf = classifier
-    nm = lexicon.match(t["name"]); nm = nm[0] if nm else None
-    c = route_c or {}
-    cl = c.get("label") if c.get("conf", 0) >= CITE_CONF else None
     d = t["evidence"]
+    # a route that names tct_sensory_stimulation (route B's fixed fit, a citation) gets the sense the task names
+    sense = lambda k: split_sensory(k, t["name"], d)
+    nm = lexicon.match(t["name"]); nm = sense(nm[0]) if nm else None
+    c = route_c or {}
+    cl = sense(c.get("label")) if c.get("conf", 0) >= CITE_CONF else None
     cf, cp = (None, 0.0)
     if len(d.strip()) > 3:
         pr = clf.predict_proba(vec.transform([d]))[0]; i = pr.argmax(); cf, cp = clf.classes_[i], float(pr[i])
-    tc_lab = None if t["route"] == "gate" else t["canonical"]
+    tc_lab = None if t["route"] == "gate" else sense(t["canonical"])
     if t["entity_kind"] in GATED:
         can, fam, by = None, None, "gate"
     elif t["entity_kind"] == "resting_state":

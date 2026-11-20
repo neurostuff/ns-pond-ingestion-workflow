@@ -147,8 +147,11 @@ _REWARD_FAMILY = {"reward_and_value_choice"}; _CONFLICT_FAMILY = {"conflict_and_
 _EXCLUSIVE = {"valence", "congruency", "cue_validity", "novelty", "switch", "load", "stimulus_pw", "fairness", "agent", "risk",
               "motion", "stimulation", "expectancy", "engagement", "level"}
 #: a generic high / low means the manipulated quantity of the family: load in working memory, magnitude in reward,
-#: intensity in pain and perception; elsewhere it stays `level`
-_LEVEL_AXIS = {"working_memory_span": "load", "reward_and_value_choice": "magnitude", "perceptual_judgment": "intensity"}
+#: intensity in pain and perception (the four families of one sense split from perceptual_judgment keep it); elsewhere it
+#: stays `level`
+_LEVEL_AXIS = {"working_memory_span": "load", "reward_and_value_choice": "magnitude",
+               **dict.fromkeys(("perceptual_judgment", "visual_perception", "auditory_perception", "bodily_sensation",
+                                "chemosensation"), "intensity")}
 
 
 def normalize_condition_ctx(name, task=None, family=None):
