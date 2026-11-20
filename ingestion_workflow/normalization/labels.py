@@ -23,6 +23,16 @@ from .taskcat.lexicon import split_sensory
 GATED = {"not_a_task", "questionnaire_or_scale", "intervention_or_training", "neuropsychological_test"}
 CITE_CONF = 0.7
 FAM = {t["id"]: t["family"] for t in json.load(open(INVENTORY))["tasks"]}
+#: The contrast classifier's classes are the families before the sense split: the four sense families are one class.
+#: The evidence it reads names stimuli (faces, tones, pictures, food), which say which sense a task uses, not its family,
+#: so trained on the sense families it pulled emotion, language and memory tasks into them. A task's own inventory
+#: family decides between the senses.
+CLASSIFIER_CLASS = {f: "perceptual_judgment" for f in
+                    ("visual_perception", "auditory_perception", "bodily_sensation", "chemosensation")}
+
+
+def classifier_class(family):
+    return CLASSIFIER_CLASS.get(family, family)
 
 
 def fit_contrast_classifier(tasks):
@@ -36,7 +46,7 @@ def fit_contrast_classifier(tasks):
         if t["route"] == "A:name" and t["family"] not in (None, "pseudo_tasks"):
             d = t["evidence"]
             if len(d.strip()) > 3:
-                X.append(d); y.append(t["family"])
+                X.append(d); y.append(classifier_class(t["family"]))
     vec = TfidfVectorizer(ngram_range=(1, 2), min_df=2, sublinear_tf=True)
     clf = LogisticRegression(max_iter=3000, C=4.0, class_weight="balanced").fit(vec.fit_transform(X), y)
     return vec, clf
@@ -55,6 +65,7 @@ def decide(t, route_c, lexicon, classifier):
     if len(d.strip()) > 3:
         pr = clf.predict_proba(vec.transform([d]))[0]; i = pr.argmax(); cf, cp = clf.classes_[i], float(pr[i])
     tc_lab = None if t["route"] == "gate" else sense(t["canonical"])
+    in_cf = lambda k: bool(k) and classifier_class(FAM.get(k)) == cf
     if t["entity_kind"] in GATED:
         can, fam, by = None, None, "gate"
     elif t["entity_kind"] == "resting_state":
@@ -68,9 +79,8 @@ def decide(t, route_c, lexicon, classifier):
         # sense's stimulation is in the family. The name only: evidence names a sense in passing ("odorless control",
         # "hand on the response box") far more often than a name does.
         named = split_sensory("tct_sensory_stimulation", t["name"])
-        can = tc_lab if FAM.get(tc_lab) == cf else named if named != "tct_sensory_stimulation" and FAM.get(named) == cf \
-            else None
-        fam, by = cf, "contrast"
+        can = tc_lab if in_cf(tc_lab) else named if named != "tct_sensory_stimulation" and in_cf(named) else None
+        fam, by = (FAM[can] if can else cf), "contrast"
     else:
         can, fam, by = tc_lab, FAM.get(tc_lab), "taskcat" if tc_lab else None
     return {

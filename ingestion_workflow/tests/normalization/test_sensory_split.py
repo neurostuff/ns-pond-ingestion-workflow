@@ -109,50 +109,6 @@ def test_other_labels_pass_through():
     assert split_sensory(None, "odor") is None
 
 
-def test_route_b_sensory_label_keeps_its_canonical_under_the_contrast_route():
-    # the contrast route keeps taskcat's canonical only when it is in the classifier's family: without the split,
-    # tct_sensory_stimulation (perceptual_judgment) never agrees with a chemosensation call and the label is lost
-    smell = "odorant odor smell olfactory sniffing"
-    touch = "tactile brushing vibration touch forearm"
-    named = [{"route": "A:name", "family": f, "evidence": e} for f, e in
-             [("chemosensation", smell)] * 3 + [("bodily_sensation", touch)] * 3]
-    classifier = labels.fit_contrast_classifier(named)
-    t = {"study": "s", "task": "t1", "name": "stimulation runs", "entity_kind": "task", "route": "B",
-         "canonical": "tct_sensory_stimulation", "evidence": "pleasant odorant vs odorless air, sniffing"}
-    got = labels.decide(t, {}, Lexicon(), classifier)
-    assert (got["canonical"], got["family"], got["decided_by"]) == (
-        "tct_olfactory_stimulation", "chemosensation", "contrast")
-
-
-def _touch_smell_classifier():
-    smell = "odorant odor smell olfactory sniffing"
-    touch = "tactile brushing vibration touch forearm"
-    named = [{"route": "A:name", "family": f, "evidence": e} for f, e in
-             [("chemosensation", smell)] * 3 + [("bodily_sensation", touch)] * 3]
-    return labels.fit_contrast_classifier(named)
-
-
-def _unrouted(name, evidence):
-    """A task no name, citation or taskcat route labels."""
-    return {"study": "s", "task": "t1", "name": name, "entity_kind": "task", "route": "B-low",
-            "canonical": None, "evidence": evidence}
-
-
-@pytest.mark.parametrize(
-    "name, evidence, task",
-    [
-        ("Touch", "touch runs: an experimenter stroked the forearm with a brush", TOUCH),
-        ("Von Frey filament stimulation", "tactile stimulation of the sole, vibration", TOUCH),
-        # a sense in the evidence alone is not enough: the family alone, as before
-        ("sensory task", "pneumatic tactile stimulation of each hand, vibration", None),
-    ],
-)
-def test_the_contrast_route_takes_the_sense_its_name_names_in_its_family(name, evidence, task):
-    got = labels.decide(_unrouted(name, evidence), {}, Lexicon(), _touch_smell_classifier())
-    assert (got["canonical"], got["family"], got["decided_by"]) == (
-        task, "bodily_sensation", "contrast")
-
-
 class _Says:
     """A contrast classifier that calls every text `family`."""
 
@@ -166,13 +122,67 @@ class _Says:
         return np.ones((len(X), 1))
 
 
-def test_a_sense_outside_the_classifiers_family_gives_no_task():
-    # odorants called bodily_sensation (trigeminal): the family stands, the smell task does not
-    t = _unrouted("Chemosensory stimulation", "odorants given monorhinally to the nostril")
-    says = _Says("bodily_sensation")
-    got = labels.decide(t, {}, Lexicon(), (says, says))
+def _says(family):
+    says = _Says(family)
+    return (says, says)
+
+
+def _task(name, evidence, canonical=None, route="B-low"):
+    """A pass-one task row; `canonical` is taskcat's label."""
+    return {"study": "s", "task": "t1", "name": name, "entity_kind": "task", "route": route,
+            "canonical": canonical, "evidence": evidence}
+
+
+def test_the_contrast_classifier_learns_the_families_before_the_sense_split():
+    rows = [{"route": "A:name", "family": f, "evidence": e} for f, e in
+            [("visual_perception", "faces houses checkerboard flicker")] * 3
+            + [("auditory_perception", "tones noise bursts listening")] * 3
+            + [("language", "sentences words reading semantic")] * 3]
+    _vec, clf = labels.fit_contrast_classifier(rows)
+    assert set(clf.classes_) == {"perceptual_judgment", "language"}
+
+
+def test_route_b_sensory_label_keeps_its_canonical_under_the_contrast_route():
+    # taskcat's tct_sensory_stimulation, split by the smell its evidence names, agrees with a
+    # perceptual call
+    t = _task("stimulation runs", "pleasant odorant vs odorless air, sniffing", UNNAMED, "B")
+    got = labels.decide(t, {}, Lexicon(), _says("perceptual_judgment"))
     assert (got["canonical"], got["family"], got["decided_by"]) == (
-        None, "bodily_sensation", "contrast")
+        "tct_olfactory_stimulation", "chemosensation", "contrast")
+
+
+@pytest.mark.parametrize("canonical, family", [
+    ("hedtsk_random_dot_kinematogram", "visual_perception"),
+    ("tct_perceptual_decision", "perceptual_judgment"),
+    ("tct_dichotic_listening", "auditory_perception"),
+])
+def test_a_perceptual_call_keeps_taskcats_task_of_any_sense_family(canonical, family):
+    # one classifier class for every sense: a perceptual task keeps its own task and family
+    t = _task("Experiment 2", "block design with two conditions", canonical)
+    got = labels.decide(t, {}, Lexicon(), _says("perceptual_judgment"))
+    assert (got["canonical"], got["family"], got["decided_by"]) == (canonical, family, "contrast")
+
+
+@pytest.mark.parametrize(
+    "name, task, family",
+    [
+        ("Touch", TOUCH, "bodily_sensation"),
+        ("Von Frey filament stimulation", TOUCH, "bodily_sensation"),
+        # a sense in the evidence alone is not enough: the classifier's class alone, as before
+        ("sensory task", None, "perceptual_judgment"),
+    ],
+)
+def test_the_contrast_route_takes_the_sense_its_name_names(name, task, family):
+    t = _task(name, "pneumatic tactile stimulation of each hand, vibration")
+    got = labels.decide(t, {}, Lexicon(), _says("perceptual_judgment"))
+    assert (got["canonical"], got["family"], got["decided_by"]) == (task, family, "contrast")
+
+
+def test_a_sense_outside_the_classifiers_family_gives_no_task():
+    # a name that names smell, read as emotion: the family stands, the smell task does not
+    t = _task("Chemosensory stimulation", "odorants given monorhinally to the nostril")
+    got = labels.decide(t, {}, Lexicon(), _says("emotion"))
+    assert (got["canonical"], got["family"], got["decided_by"]) == (None, "emotion", "contrast")
 
 
 def test_inventory_and_lexicon_agree_on_every_family(lexicon):

@@ -273,3 +273,28 @@ def test_pondie_s_fixes_run_on_the_record_but_the_two_that_change_what_it_says()
     assert "derived_ids" in fired
     assert not set(fired) & normalize_assign.SKIPPED_REPAIRS
     assert "dev_unused" in {d.get("local_id") for d in record["devices"]}
+
+
+def test_a_fit_knows_each_corpus_paper_by_its_own_pmid_and_doi(ctx, monkeypatch):
+    # The citation index lends a cited corpus paper's task labels through `identifiers`; without
+    # them a citation resolves only to the fixed manifest's Neurostore ids, which never match the
+    # fit's article ids.
+    _recorded(ctx)
+    ctx.catalog._conn.executemany(
+        "INSERT INTO aliases(kind, value, article_id) VALUES(?, ?, ?)",
+        [("pmid", "31234567", ARTICLE), ("doi", "10.1000/xyz.1", ARTICLE)])
+    seen = {}
+
+    def fit(records, texts, bibliographies, out_dir, **kw):
+        seen.update(kw, articles=list(records))
+        return "fit-000000000000"
+
+    from ingestion_workflow import normalization
+    monkeypatch.setattr(normalization, "fit", fit)
+    read = ctx.catalog.artifact(ARTICLE, "evidence", "ns-27b")
+    got = normalize_assign.fit_corpus(ctx.catalog, {ARTICLE: read},
+                                      ctx.settings.data_root / "fits", fixed_dir=None)
+    assert got == "fit-000000000000"
+    assert seen["articles"] == [ARTICLE]
+    assert seen["identifiers"] == {
+        ARTICLE: {"pmid": "31234567", "doi": "10.1000/xyz.1"}}
