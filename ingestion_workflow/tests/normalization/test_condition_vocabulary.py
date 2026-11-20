@@ -1,8 +1,8 @@
-"""Condition vocabulary v3: the file is consistent, and labellers' atoms from the 2026-11-20 pilot normalize onto it."""
+"""Condition vocabulary v3: the file is consistent, and labellers' atoms from the 2026-11-20
+pilot normalize onto it."""
 import re
 
 import pytest
-
 from ingestion_workflow.normalization import vocabulary as V
 
 VOCAB = V.load()
@@ -34,7 +34,8 @@ def test_structural_axes_are_not_condition_axes():
 @pytest.mark.parametrize(
     "axis, value, expected",
     [
-        # pilot labels: an economic game's partner move, a mental-rotation angle, a pre/post period, block order
+        # pilot labels: an economic game's partner move, a mental-rotation angle,
+        # a pre/post period, block order
         ("partner_action", "cooperate", [("cooperation", "cooperate"), ("referent", "other")]),
         ("orientation", "deg_17", [("orientation", "17_deg")]),
         ("rate", "hz_0_5", [("rate", "0_5_hz")]),
