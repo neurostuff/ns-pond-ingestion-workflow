@@ -46,6 +46,13 @@ def test_structural_axes_are_not_condition_axes():
         ("Saccade Type", "anti", [("saccade", "anti")]),
         ("stimulus", ["numbers", "letters"], [("stimulus", "numbers"), ("stimulus", "letters")]),
         ("group", "patients_mondo_0005090", []),
+        # an axis alias needs a value the target axis takes: spatial `position` and an
+        # observed `action` keep their own axes; serial positions and game moves are renamed
+        ("position", "above", [("position", "above")]),
+        ("position", "first", [("serial_position", "first")]),
+        ("action", "grasp", [("action", "grasp")]),
+        ("action", "cooperate", [("cooperation", "cooperate")]),
+        ("complexity", "simple", [("difficulty", "easy")]),
         ("score", "bdi_ii", []),
     ],
 )

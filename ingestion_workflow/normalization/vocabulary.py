@@ -2,7 +2,9 @@
 
 The vocabulary is `data/condition_vocabulary_v3.json`. An atom is `(axis, value)`. Normalizing one:
 lower snake_case, numeric values unit last (`deg_17` -> `17_deg`), aliases mapped onto vocabulary atoms, and
-structural axes (task, group, score, drug, session) dropped, since those come from the record. An axis missing
+structural axes (task, group, score, drug, session) dropped, since those come from the record. An axis alias
+applies only when the value is valid on the target axis; the cleanup has no task context, so a value the target
+axis does not take keeps its own (local) axis. An axis missing
 from the vocabulary is a local axis: kept, and reported by `status`.
 """
 from __future__ import annotations
@@ -53,6 +55,10 @@ def normalize_atom(axis: str, value: str | list[str], vocab: dict | None = None)
             continue
         if a == "stage" and v.isdigit():
             v = f"block_{v}"
+        if a != ax and status(a, v, vocab) not in ("in", "open_value"):
+            # an axis alias holds only where the value means what the target axis means: `position: above` is
+            # spatial, not a serial position, so it stays a local axis
+            a, v = ax, _format(raw)
         out.append((a, v))
     return [(a, v) for a, v in dict.fromkeys(out) if a not in structural]
 
