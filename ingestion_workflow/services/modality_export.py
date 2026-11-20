@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Dict, List
 
 COLUMNS = ("base_study_id", "modalities", "source", "papers")
-#: Best first.
+#: Best first. Neurostore's loader (neurostore#1962) refuses a TSV with any other source.
 SOURCES = ("record", "methods", "full_text", "none")
 CHUNK = 900
 
