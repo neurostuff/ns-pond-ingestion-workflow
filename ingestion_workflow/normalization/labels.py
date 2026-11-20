@@ -64,7 +64,13 @@ def decide(t, route_c, lexicon, classifier):
     elif cl:
         can, fam, by = cl, FAM.get(cl), "citation"
     elif cf:
-        can, fam, by = (tc_lab if FAM.get(tc_lab) == cf else None), cf, "contrast"
+        # taskcat's canonical when it is in the classifier's family, else the sense the task's name names, when that
+        # sense's stimulation is in the family. The name only: evidence names a sense in passing ("odorless control",
+        # "hand on the response box") far more often than a name does.
+        named = split_sensory("tct_sensory_stimulation", t["name"])
+        can = tc_lab if FAM.get(tc_lab) == cf else named if named != "tct_sensory_stimulation" and FAM.get(named) == cf \
+            else None
+        fam, by = cf, "contrast"
     else:
         can, fam, by = tc_lab, FAM.get(tc_lab), "taskcat" if tc_lab else None
     return {

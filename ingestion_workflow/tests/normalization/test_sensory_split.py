@@ -6,6 +6,7 @@ sense. The expected labels below are the split's specification, not read off the
 """
 import json
 
+import numpy as np
 import pytest
 from ingestion_workflow.normalization import labels
 from ingestion_workflow.normalization.records import INVENTORY
@@ -66,6 +67,43 @@ def test_a_sensory_label_takes_the_sense_its_evidence_names(evidence, task):
     assert split_sensory("tct_sensory_stimulation", "stimulation", evidence) == task
 
 
+# Task names and descriptions from ns-pond records that the first split (fit-4d612236d8f6,
+# 2026-11-19) left as tct_sensory_stimulation, so the contrast route's bodily_sensation call
+# dropped their task.
+TOUCH = "tct_touch_stimulation"
+UNNAMED = "tct_sensory_stimulation"
+
+
+@pytest.mark.parametrize(
+    "name, evidence, task",
+    [
+        ("median-nerve electrical stimulation",
+         "Right median nerve stimulation at the wrist at 3 and 10 Hz", TOUCH),
+        ("Right (injured) hindpaw stimulation task",
+         "Electrical stimulation of the right injured hindpaw during fMRI", TOUCH),
+        ("Electrical stimulation of the forepaw",
+         "Left forepaw electrical stimulation in a block design", TOUCH),
+        ("Left-Side (Unaffected Leg) Stimulation",
+         "Electrical stimulation of the unaffected hind leg", TOUCH),
+        ("fMRI electrical finger stimulation", "D1 and D5 of both hands were stimulated", TOUCH),
+        ("Mechanical stimulation",
+         "punctate stimulation of the shaved right whisker pad with a nylon filament", TOUCH),
+        ("Mechanical stimulation",
+         "mechanical hindpaw stimulation at the von Frey withdrawal threshold", TOUCH),
+        # a painful stimulation is pain stimulation, not touch, whatever else it names
+        ("stimulation", "painful heat and pressure on the forearm", "tct_pain_stimulation"),
+        # stimulation of the brain or a cranial nerve names no sense
+        ("Ventral versus dorsal STN-DBS",
+         "deep brain stimulation of the subthalamic nucleus", UNNAMED),
+        ("acute VNS", "vagus nerve stimulation in an off-on-off-on sequence", UNNAMED),
+        ("iTBS", "intermittent theta burst stimulation, active and sham", UNNAMED),
+        ("electrical stimulation", "electrical stimulation blocks alternating with rest", UNNAMED),
+    ],
+)
+def test_somatosensory_stimulation_wording_reaches_touch(name, evidence, task):
+    assert split_sensory(UNNAMED, name, evidence) == task
+
+
 def test_other_labels_pass_through():
     assert split_sensory("hedtsk_n_back", "odor needle taste") == "hedtsk_n_back"
     assert split_sensory(None, "odor") is None
@@ -84,6 +122,57 @@ def test_route_b_sensory_label_keeps_its_canonical_under_the_contrast_route():
     got = labels.decide(t, {}, Lexicon(), classifier)
     assert (got["canonical"], got["family"], got["decided_by"]) == (
         "tct_olfactory_stimulation", "chemosensation", "contrast")
+
+
+def _touch_smell_classifier():
+    smell = "odorant odor smell olfactory sniffing"
+    touch = "tactile brushing vibration touch forearm"
+    named = [{"route": "A:name", "family": f, "evidence": e} for f, e in
+             [("chemosensation", smell)] * 3 + [("bodily_sensation", touch)] * 3]
+    return labels.fit_contrast_classifier(named)
+
+
+def _unrouted(name, evidence):
+    """A task no name, citation or taskcat route labels."""
+    return {"study": "s", "task": "t1", "name": name, "entity_kind": "task", "route": "B-low",
+            "canonical": None, "evidence": evidence}
+
+
+@pytest.mark.parametrize(
+    "name, evidence, task",
+    [
+        ("Touch", "touch runs: an experimenter stroked the forearm with a brush", TOUCH),
+        ("Von Frey filament stimulation", "tactile stimulation of the sole, vibration", TOUCH),
+        # a sense in the evidence alone is not enough: the family alone, as before
+        ("sensory task", "pneumatic tactile stimulation of each hand, vibration", None),
+    ],
+)
+def test_the_contrast_route_takes_the_sense_its_name_names_in_its_family(name, evidence, task):
+    got = labels.decide(_unrouted(name, evidence), {}, Lexicon(), _touch_smell_classifier())
+    assert (got["canonical"], got["family"], got["decided_by"]) == (
+        task, "bodily_sensation", "contrast")
+
+
+class _Says:
+    """A contrast classifier that calls every text `family`."""
+
+    def __init__(self, family):
+        self.classes_ = [family]
+
+    def transform(self, texts):
+        return texts
+
+    def predict_proba(self, X):
+        return np.ones((len(X), 1))
+
+
+def test_a_sense_outside_the_classifiers_family_gives_no_task():
+    # odorants called bodily_sensation (trigeminal): the family stands, the smell task does not
+    t = _unrouted("Chemosensory stimulation", "odorants given monorhinally to the nostril")
+    says = _Says("bodily_sensation")
+    got = labels.decide(t, {}, Lexicon(), (says, says))
+    assert (got["canonical"], got["family"], got["decided_by"]) == (
+        None, "bodily_sensation", "contrast")
 
 
 def test_inventory_and_lexicon_agree_on_every_family(lexicon):
