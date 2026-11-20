@@ -15,7 +15,7 @@ pulse, respiration, movement) under `other`, and `mrs` under `mri`.
 """
 import re
 from dataclasses import dataclass
-from typing import Dict, Iterable, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
 VOCABULARY = "acquisition_modality"
 
@@ -188,3 +188,13 @@ def read(record: dict) -> Dict[str, Reading]:
         value, method = refine_mri(types)
         out[aid] = Reading("mapped", value, method)
     return out
+
+
+def paper_modalities(document: dict) -> List[str]:
+    """The mapped values `read` gives a record's acquisitions, sorted: the paper's modalities.
+    `document` is the record, or a document wrapping it as {"study": record}."""
+    inner = document.get("study") if isinstance(document, dict) else None
+    record = inner if isinstance(inner, dict) and "tasks" not in document else document
+    if not isinstance(record, dict):
+        return []
+    return sorted({r.value for r in read(record).values() if r.status == "mapped" and r.value})
