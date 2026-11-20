@@ -6,7 +6,9 @@ without a current record of the source (a skipped record makes skipped evidence)
 request is built as the model was trained and run (pondie_astra): the record request from
 the paper's own parse (`prompt`), the evidence request from its text in units and its
 current record (`evidence`), whose full record the bundle keeps in records/ for pull to
-merge into. The text is the parse's own text file, read with universal newlines; an
+merge into. The text is the parse's own text file, read with universal newlines (a record
+request of a spec whose `record_text` is `trimmed-1` carries it less its copied tables and
+reference lists: `record_text`); an
 article whose text no longer hashes to the parse's `text_sha256` is left out, since import
 would refuse it. Requests longer
 than the spec's `max_input_tokens` go to skipped.jsonl. The rest are sharded as
@@ -35,6 +37,7 @@ from ingestion_workflow.pipeline.stages.offloaded import (
 )
 
 from .contract import Bundle, BundleDir, InputRow, RunSpec, Shard, write_rows
+from .record_text import RECORD_TEXT, record_text
 
 #: Why an article is left out of a bundle; counted, never written.
 NO_SYNC = "no sync"
@@ -99,7 +102,7 @@ def _text(root: Path):
 
 def _row(job, text_sha256, parse_keys, n_in, content, kwargs, record_digest=None,
          response_schema=None) -> dict:
-    article_id, _, base_study_id, _, serve, _ = job
+    article_id, _, base_study_id, _, serve = job[:5]
     room = serve["max_len"] - n_in - serve["reserve"]
     return InputRow(article_id=article_id, base_study_id=base_study_id, text_sha256=text_sha256,
                     parse_keys=parse_keys, record_digest=record_digest, n_input_tokens=n_in,
@@ -119,6 +122,8 @@ def build_record(job) -> Tuple[Optional[dict], str]:
     entries = [e for e in parse.get("analyses") or [] if e.get("key")]
     if not entries:
         return None, NO_ANALYSES
+    if len(job) > 6 and job[6] == RECORD_TEXT:
+        text, _ = record_text(text)
     caps = prompt.captions(parsed.get("tables"), entries)
     listed = {e["key"]: dict(e, **caps.get(e["key"], {})) for e in entries}
     paper_prompt = prompt.prompt_of(text, listed)
@@ -227,7 +232,7 @@ def export(ctx: Context, spec: RunSpec, machine: str, *, articles: Optional[Iter
             continue
         jobs.append((article_id, str(recorded_path(catalog.root, sync.summary["path"])),
                      sync.summary.get("base_study_id"), spec.family, spec.serve.model_dump(),
-                     due[article_id]))
+                     due[article_id], spec.record_text))
     built: List[dict] = []
     for row, why in _map(BUILDERS[spec.stage], jobs, workers):
         if row is None:
