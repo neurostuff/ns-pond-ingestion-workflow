@@ -77,6 +77,64 @@ _ANY_TAG = re.compile(r"<[^>]+>")
 _RUNS = re.compile(r"[ \t]{2,}")
 
 
+#: A numeric footnote mark straight after a number is never more digits of it.
+#: Stripped like any inline tag, `46<sup>1</sup>` read as `461`: a seed table
+#: citing its sources by footnote put every z out of the brain (PMC3985019,
+#: Table 2). Such a mark is dropped. Every other superscript is left to the
+#: serialiser as before -- a letter mark, a unit's power (`mm<sup>3</sup>`), a
+#: minus set as a superscript -- so the extractor's input changes only where a
+#: number was wrong; the fine-tune never saw any other rendering of them.
+#: `10<sup>5</sup>` is a power of ten, not a footnote, and is not touched.
+_MARK = r"\s*\d{1,3}(?:\s*[,–-]\s*\d{1,3})*\s*"
+_LINK = r"(?:xref|(?:ce:)?cross-ref)"
+_FOOTNOTE_AFTER_NUMBER = (
+    # `<sup>1</sup>`, bare or inside a footnote link
+    re.compile(rf"(?<=\d)(?<!10)\s*(<{_LINK}\b[^>]*>\s*)?<((?:[\w-]+:)?sup)\b[^>]*>{_MARK}"
+               rf"</\2\s*>(?(1)\s*</{_LINK}\s*>)", re.I),
+    # a footnote link holding the number itself, `<xref ref-type="table-fn">1</xref>`
+    re.compile(rf"(?<=\d)(?<!10)\s*<({_LINK})\b[^>]*>{_MARK}</\1\s*>", re.I),
+)
+
+
+def _footnote_marks(markup: str) -> str:
+    """`markup` without the numeric footnote marks that follow a number."""
+    for rule in _FOOTNOTE_AFTER_NUMBER:
+        markup = rule.sub("", markup)
+    return markup
+
+
+#: A coordinate printed with its direction instead of its sign: `32R | 92P | 4I`
+#: (Talairach, left/right, anterior/posterior, superior/inferior). The extractor
+#: kept the digits and dropped the letter, so every left, posterior and inferior
+#: focus was stored on the other side (PMC-less PDF of doi:10.1111/j.1530-0277.
+#: 2001.tb02204.x, Table 2). Only three cells in a row, in x, y, z order, are
+#: read so: a lone `6L` may be anything.
+_DIRECTED = (
+    re.compile(r"^(\d+(?:\.\d+)?)\s?([RL])$"),
+    re.compile(r"^(\d+(?:\.\d+)?)\s?([AP])$"),
+    re.compile(r"^(\d+(?:\.\d+)?)\s?([SI])$"),
+)
+_NEGATIVE_DIRECTIONS = {"L", "P", "I"}
+
+
+def _signed_by_direction(line: str) -> str:
+    """One serialised row with each `x R | y P | z I` triple written as signed numbers."""
+    if " | " not in line:
+        return line
+    cells = line.split(" | ")
+    i = 0
+    while i + 2 < len(cells):
+        found = [rule.match(cells[i + k].strip()) for k, rule in enumerate(_DIRECTED)]
+        if all(found):
+            for k, m in enumerate(found):
+                sign = "-" if m.group(2) in _NEGATIVE_DIRECTIONS and float(m.group(1)) else ""
+                cells[i + k] = sign + m.group(1)
+            i += 3
+        else:
+            i += 1
+    return " | ".join(cells)
+
+
 def _text_of(markup: str) -> str:
     """The words in a table, with its grid kept and its tags dropped.
 
@@ -732,14 +790,14 @@ Raw Table Content:
         """
         from nspond_tables import serialize
 
-        markup = normalize_minus(markup)
+        markup = _footnote_marks(normalize_minus(markup))
         try:
             out = serialize.serialize(markup)
         except Exception as exc:                       # noqa: BLE001 - any parse failure
             logger.warning("could not serialise table %s (%s); sending text", table_key, exc)
             out = ""
         if out.strip():
-            return out
+            return "\n".join(_signed_by_direction(line) for line in out.split("\n"))
         # Neither form read as a table. Text beats markup, and markup beats
         # nothing at all -- the model can only answer about what it is sent.
         return _text_of(markup) or markup
