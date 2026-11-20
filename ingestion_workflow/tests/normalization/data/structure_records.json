@@ -1,0 +1,3033 @@
+[
+ {
+  "case": "condition_vs_condition",
+  "study": "ge2pouih6cfo",
+  "claude": {
+   "kind": "condition_vs_condition",
+   "record_direction": "same",
+   "groups": {
+    "target": null,
+    "baseline": null
+   },
+   "baseline": "active_condition",
+   "sign": null
+  },
+  "evidence_vs_record": "same",
+  "record": {
+   "analyses": [
+    {
+     "local_id": "a_analysis_689fe72343fd3345",
+     "name": {
+      "value": "BOLD effects of invalid suffixes>valid suffixes"
+     },
+     "definition": {
+      "value": "Invalid > valid suffix contrast, collapsing Accent 1 and Accent 2 and singular and plural suffix forms, at uncorrected p < 0.001."
+     },
+     "effect": {
+      "cells": [
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {},
+        "level": {
+         "value": "invalid"
+        },
+        "term": "trm_validity"
+       },
+       {
+        "direction": {
+         "value": "negative"
+        },
+        "label": {},
+        "level": {
+         "value": "valid"
+        },
+        "term": "trm_validity"
+       }
+      ],
+      "kind": {
+       "value": "contrast"
+      },
+      "statistic": {
+       "degrees_of_freedom_denominator": {},
+       "degrees_of_freedom_numerator": {},
+       "family": {
+        "value": "t"
+       }
+      }
+     },
+     "details": {
+      "details_type": "MassUnivariateDetails"
+     },
+     "source_table_analysis": {
+      "value": "analysis#689fe72343fd3345"
+     }
+    }
+   ],
+   "model_estimations": [
+    {
+     "terms": [
+      {
+       "functional_form": {},
+       "levels": [
+        {
+         "conditions": [
+          "cond_a1_valid",
+          "cond_a2_valid"
+         ],
+         "level": {
+          "value": "valid"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_a1_invalid",
+          "cond_a2_invalid"
+         ],
+         "level": {
+          "value": "invalid"
+         },
+         "order": {}
+        }
+       ],
+       "local_id": "trm_validity",
+       "name": {
+        "value": "validity"
+       },
+       "source_definition": {
+        "value": "Validity (valid, invalid), with beta values timed to suffix onset for suffix effects."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {},
+       "variation_level": {
+        "value": "within_subject"
+       }
+      }
+     ]
+    }
+   ],
+   "tasks": [
+    {
+     "local_id": "tsk_word_accent",
+     "name": {
+      "value": "Word accent and suffix processing"
+     },
+     "conditions": [
+      {
+       "local_id": "cond_a1_valid",
+       "name": {
+        "value": "Accent 1, valid"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_a1_invalid",
+       "name": {
+        "value": "Accent 1, invalid"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_a2_valid",
+       "name": {
+        "value": "Accent 2, valid"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_a2_invalid",
+       "name": {
+        "value": "Accent 2, invalid"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      }
+     ]
+    }
+   ],
+   "groups": []
+  },
+  "parse": {
+   "analyses": [
+    {
+     "key": "analysis#689fe72343fd3345",
+     "points": [
+      {
+       "values": [
+        {
+         "kind": "t",
+         "kind_as_printed": null,
+         "value": 3.48,
+         "level": null,
+         "correction": null
+        }
+       ]
+      },
+      {
+       "values": [
+        {
+         "kind": "t",
+         "kind_as_printed": null,
+         "value": 3.37,
+         "level": null,
+         "correction": null
+        }
+       ]
+      },
+      {
+       "values": [
+        {
+         "kind": "t",
+         "kind_as_printed": null,
+         "value": 4.04,
+         "level": null,
+         "correction": null
+        }
+       ]
+      },
+      {
+       "values": [
+        {
+         "kind": "t",
+         "kind_as_printed": null,
+         "value": 4.02,
+         "level": null,
+         "correction": null
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "case": "condition_vs_fixation",
+  "study": "dgxkazzgstph",
+  "claude": {
+   "kind": "condition_vs_baseline",
+   "record_direction": "same",
+   "groups": {
+    "target": null,
+    "baseline": null
+   },
+   "baseline": "fixation",
+   "sign": null
+  },
+  "evidence_vs_record": "same",
+  "record": {
+   "analyses": [
+    {
+     "local_id": "a_analysis_2c27f2c6994ec7f3",
+     "name": {
+      "value": "Regions activated during visual perception of faces"
+     },
+     "definition": {
+      "value": "The main effect of faces (activation evoked by faces versus activation evoked by the fixation cross)."
+     },
+     "effect": {
+      "cells": [
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {},
+        "level": {
+         "value": "faces"
+        },
+        "term": "trm_faces"
+       },
+       {
+        "direction": {
+         "value": "negative"
+        },
+        "label": {},
+        "level": {
+         "value": "fixation cross"
+        },
+        "term": "trm_faces"
+       }
+      ],
+      "kind": {
+       "value": "contrast"
+      },
+      "statistic": {
+       "degrees_of_freedom_denominator": {},
+       "degrees_of_freedom_numerator": {},
+       "family": {}
+      }
+     },
+     "details": {
+      "details_type": "MassUnivariateDetails"
+     },
+     "source_table_analysis": {
+      "value": "analysis#2c27f2c6994ec7f3"
+     }
+    }
+   ],
+   "model_estimations": [
+    {
+     "terms": [
+      {
+       "functional_form": {},
+       "levels": [
+        {
+         "conditions": [
+          "cond_faces"
+         ],
+         "level": {
+          "value": "faces"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_fixation"
+         ],
+         "level": {
+          "value": "fixation cross"
+         },
+         "order": {}
+        }
+       ],
+       "local_id": "trm_faces",
+       "name": {
+        "value": "faces versus fixation"
+       },
+       "source_definition": {
+        "value": "Activation evoked by faces versus activation evoked by the fixation cross."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {},
+       "variation_level": {
+        "value": "within_subject"
+       }
+      }
+     ]
+    }
+   ],
+   "tasks": [
+    {
+     "local_id": "tsk_retrieval",
+     "name": {
+      "value": "memory retrieval task"
+     },
+     "conditions": [
+      {
+       "local_id": "cond_faces",
+       "name": {
+        "value": "faces"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_fixation",
+       "name": {
+        "value": "fixation cross"
+       },
+       "condition_kind": {
+        "value": "fixation"
+       }
+      }
+     ]
+    }
+   ],
+   "groups": []
+  },
+  "parse": {
+   "analyses": [
+    {
+     "key": "analysis#2c27f2c6994ec7f3",
+     "points": [
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "case": "negative_name_not_reversed",
+  "study": "3upmtrceduej",
+  "claude": {
+   "kind": "condition_interaction",
+   "record_direction": "same",
+   "groups": {
+    "target": null,
+    "baseline": null
+   },
+   "baseline": "active_condition",
+   "sign": null
+  },
+  "evidence_vs_record": "same",
+  "record": {
+   "analyses": [
+    {
+     "local_id": "a_analysis_ba3e7a419f6a240f",
+     "name": {
+      "value": "Negative activations"
+     },
+     "definition": {
+      "value": "Storage (2-target minus 1-target) greater than manipulation (2-target minus 1-target) during the delay phase."
+     },
+     "effect": {
+      "cells": [
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {},
+        "level": {
+         "value": "storage"
+        },
+        "term": "trm_condition"
+       },
+       {
+        "direction": {
+         "value": "negative"
+        },
+        "label": {},
+        "level": {
+         "value": "manipulation"
+        },
+        "term": "trm_condition"
+       },
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {},
+        "level": {
+         "value": "2 targets"
+        },
+        "term": "trm_load"
+       },
+       {
+        "direction": {
+         "value": "negative"
+        },
+        "label": {},
+        "level": {
+         "value": "1 target"
+        },
+        "term": "trm_load"
+       },
+       {
+        "direction": {
+         "value": "held"
+        },
+        "label": {},
+        "level": {
+         "value": "delay"
+        },
+        "term": "trm_phase"
+       }
+      ],
+      "kind": {
+       "value": "interaction"
+      },
+      "statistic": {
+       "degrees_of_freedom_denominator": {},
+       "degrees_of_freedom_numerator": {},
+       "family": {
+        "value": "z"
+       }
+      }
+     },
+     "details": {
+      "details_type": "MassUnivariateDetails"
+     },
+     "source_table_analysis": {
+      "value": "analysis#ba3e7a419f6a240f"
+     }
+    }
+   ],
+   "model_estimations": [
+    {
+     "terms": [
+      {
+       "functional_form": {},
+       "levels": [
+        {
+         "conditions": [
+          "cond_storage"
+         ],
+         "level": {
+          "value": "storage"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_manipulation"
+         ],
+         "level": {
+          "value": "manipulation"
+         },
+         "order": {}
+        }
+       ],
+       "local_id": "trm_condition",
+       "name": {
+        "value": "working memory condition"
+       },
+       "source_definition": {
+        "value": "Storage and manipulation conditions were performed during two separate EPI-sequence runs."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {},
+       "variation_level": {
+        "value": "within_subject"
+       }
+      },
+      {
+       "functional_form": {},
+       "levels": [
+        {
+         "level": {
+          "value": "1 target"
+         },
+         "order": {
+          "value": 1
+         }
+        },
+        {
+         "level": {
+          "value": "2 targets"
+         },
+         "order": {
+          "value": 2
+         }
+        }
+       ],
+       "local_id": "trm_load",
+       "name": {
+        "value": "target load"
+       },
+       "source_definition": {
+        "value": "One or two target letters presented for study."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {},
+       "variation_level": {
+        "value": "within_subject"
+       }
+      },
+      {
+       "functional_form": {},
+       "levels": [
+        {
+         "level": {
+          "value": "encoding"
+         },
+         "order": {
+          "value": 1
+         }
+        },
+        {
+         "level": {
+          "value": "delay"
+         },
+         "order": {
+          "value": 2
+         }
+        },
+        {
+         "level": {
+          "value": "retrieval"
+         },
+         "order": {
+          "value": 3
+         }
+        }
+       ],
+       "local_id": "trm_phase",
+       "name": {
+        "value": "task phase"
+       },
+       "source_definition": {
+        "value": "Encoding, delay, and retrieval reference waveforms were convolved with individualized HRFs."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {},
+       "variation_level": {
+        "value": "within_subject"
+       }
+      }
+     ]
+    }
+   ],
+   "tasks": [
+    {
+     "local_id": "tsk_sternberg",
+     "name": {
+      "value": "Sternberg working memory task"
+     },
+     "conditions": [
+      {
+       "local_id": "cond_storage",
+       "name": {
+        "value": "storage"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_manipulation",
+       "name": {
+        "value": "manipulation"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      }
+     ]
+    }
+   ],
+   "groups": []
+  },
+  "parse": {
+   "analyses": [
+    {
+     "key": "analysis#ba3e7a419f6a240f",
+     "points": [
+      {
+       "values": [
+        {
+         "kind": "z",
+         "kind_as_printed": null,
+         "value": -3.6,
+         "level": null,
+         "correction": null
+        }
+       ]
+      },
+      {
+       "values": [
+        {
+         "kind": "z",
+         "kind_as_printed": null,
+         "value": -3.7,
+         "level": null,
+         "correction": null
+        }
+       ]
+      },
+      {
+       "values": [
+        {
+         "kind": "z",
+         "kind_as_printed": null,
+         "value": -3.6,
+         "level": null,
+         "correction": null
+        }
+       ]
+      },
+      {
+       "values": [
+        {
+         "kind": "z",
+         "kind_as_printed": null,
+         "value": -3.7,
+         "level": null,
+         "correction": null
+        }
+       ]
+      },
+      {
+       "values": [
+        {
+         "kind": "z",
+         "kind_as_printed": null,
+         "value": -3.7,
+         "level": null,
+         "correction": null
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "case": "group_by_condition",
+  "study": "girnsayhdmju",
+  "claude": {
+   "kind": "group_by_condition",
+   "record_direction": "same",
+   "groups": {
+    "target": "patients_parkinsons",
+    "baseline": "healthy_controls"
+   },
+   "baseline": "none",
+   "sign": null
+  },
+  "evidence_vs_record": "same",
+  "record": {
+   "analyses": [
+    {
+     "local_id": "a_analysis_6ad3e17340bd325a",
+     "name": {
+      "value": "Medial prefrontal cortex/anterior cingulate, BA 9"
+     },
+     "definition": {
+      "value": "Higher activations for patients relative to healthy elderly subjects during reward outcome (positive reward versus neutral outcome)."
+     },
+     "effect": {
+      "cells": [
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {},
+        "level": {
+         "value": "Patients"
+        },
+        "term": "trm_group"
+       },
+       {
+        "direction": {
+         "value": "negative"
+        },
+        "label": {},
+        "level": {
+         "value": "Elderly"
+        },
+        "term": "trm_group"
+       },
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {},
+        "level": {
+         "value": "positive reward feedback"
+        },
+        "term": "trm_condition"
+       },
+       {
+        "direction": {
+         "value": "negative"
+        },
+        "label": {},
+        "level": {
+         "value": "neutral feedback"
+        },
+        "term": "trm_condition"
+       }
+      ],
+      "kind": {
+       "value": "interaction"
+      },
+      "statistic": {
+       "degrees_of_freedom_denominator": {},
+       "degrees_of_freedom_numerator": {},
+       "family": {
+        "value": "t"
+       }
+      }
+     },
+     "details": {
+      "details_type": "MassUnivariateDetails"
+     },
+     "source_table_analysis": {
+      "value": "analysis#6ad3e17340bd325a"
+     }
+    }
+   ],
+   "model_estimations": [
+    {
+     "terms": [
+      {
+       "functional_form": {},
+       "levels": [
+        {
+         "conditions": [
+          "cond_reward_cue"
+         ],
+         "level": {
+          "value": "reward-predicting cues"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_neutral_cue"
+         ],
+         "level": {
+          "value": "neutral cues"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_positive_reward"
+         ],
+         "level": {
+          "value": "positive reward feedback"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_neutral_feedback"
+         ],
+         "level": {
+          "value": "neutral feedback"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_reward_correct"
+         ],
+         "level": {
+          "value": "feedback to correct responses to reward-predicting cues"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_reward_false"
+         ],
+         "level": {
+          "value": "feedback to false responses to reward-predicting cues"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_neutral_correct"
+         ],
+         "level": {
+          "value": "feedback to correct responses to neutral cues"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_neutral_false"
+         ],
+         "level": {
+          "value": "feedback to false responses to neutral cues"
+         },
+         "order": {}
+        }
+       ],
+       "local_id": "trm_condition",
+       "name": {
+        "value": "condition"
+       },
+       "source_definition": {
+        "value": "Separate covariates for reward-predicting cues, neutral cues, and feedback to correct and false responses to reward-predicting and neutral cues."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {},
+       "variation_level": {
+        "value": "within_subject"
+       }
+      },
+      {
+       "functional_form": {},
+       "levels": [
+        {
+         "groups": [
+          "grp_young"
+         ],
+         "level": {
+          "value": "Young"
+         },
+         "order": {}
+        },
+        {
+         "groups": [
+          "grp_elderly"
+         ],
+         "level": {
+          "value": "Elderly"
+         },
+         "order": {}
+        },
+        {
+         "groups": [
+          "grp_pd"
+         ],
+         "level": {
+          "value": "Patients"
+         },
+         "order": {}
+        }
+       ],
+       "local_id": "trm_group",
+       "name": {
+        "value": "subject group"
+       },
+       "source_definition": {
+        "value": "Young healthy adults, healthy elderly adults and unmedicated patients with early-stage idiopathic Parkinson's disease."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {},
+       "variation_level": {
+        "value": "between_subject"
+       }
+      }
+     ]
+    }
+   ],
+   "tasks": [
+    {
+     "local_id": "tsk_reward",
+     "name": {
+      "value": "delayed monetary incentive task"
+     },
+     "conditions": [
+      {
+       "local_id": "cond_reward_cue",
+       "name": {
+        "value": "reward-predicting cues"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_neutral_cue",
+       "name": {
+        "value": "neutral cues"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_positive_reward",
+       "name": {
+        "value": "positive reward feedback"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_neutral_feedback",
+       "name": {
+        "value": "neutral feedback"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_reward_correct",
+       "name": {
+        "value": "feedback to correct responses to reward-predicting cues"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_reward_false",
+       "name": {
+        "value": "feedback to false responses to reward-predicting cues"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_neutral_correct",
+       "name": {
+        "value": "feedback to correct responses to neutral cues"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_neutral_false",
+       "name": {
+        "value": "feedback to false responses to neutral cues"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      }
+     ]
+    }
+   ],
+   "groups": [
+    {
+     "local_id": "grp_young",
+     "name": {
+      "value": "Young"
+     },
+     "is_healthy": {
+      "value": true
+     },
+     "medical_condition": {
+      "normalized": []
+     }
+    },
+    {
+     "local_id": "grp_elderly",
+     "name": {
+      "value": "Elderly"
+     },
+     "is_healthy": {
+      "value": true
+     },
+     "medical_condition": {
+      "normalized": []
+     }
+    },
+    {
+     "local_id": "grp_pd",
+     "name": {
+      "value": "Patients"
+     },
+     "is_healthy": {
+      "value": false
+     },
+     "medical_condition": {
+      "normalized": []
+     }
+    }
+   ]
+  },
+  "parse": {
+   "analyses": [
+    {
+     "key": "analysis#6ad3e17340bd325a",
+     "points": [
+      {
+       "values": [
+        {
+         "kind": "t",
+         "kind_as_printed": null,
+         "value": 4.19,
+         "level": null,
+         "correction": null
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "case": "group_difference_defined_as_interaction",
+  "study": "xq6xynbu45mn",
+  "claude": {
+   "kind": "group_difference",
+   "record_direction": "same",
+   "groups": {
+    "target": "healthy_controls",
+    "baseline": "patients_methamphetamine"
+   },
+   "baseline": "none",
+   "sign": null
+  },
+  "evidence_vs_record": "same",
+  "record": {
+   "analyses": [
+    {
+     "local_id": "a_analysis_168a89ed28803866",
+     "name": {
+      "value": "Brain regions with significant group differences associated with trial-to-trial adjustments in 30 methamphetamine (MA) abusers and 30 control subjects."
+     },
+     "definition": {
+      "value": "Group differences in activation for trial-to-trial RT adjustments (iI–cI); MA abusers showed lower activation than controls after iI relative to cI sequences."
+     },
+     "effect": {
+      "cells": [
+       {
+        "direction": {
+         "value": "negative"
+        },
+        "label": {},
+        "level": {
+         "value": "MA abusers"
+        },
+        "term": "trm_group"
+       },
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {},
+        "level": {
+         "value": "controls"
+        },
+        "term": "trm_group"
+       },
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {},
+        "level": {
+         "value": "iI"
+        },
+        "term": "trm_sequence"
+       },
+       {
+        "direction": {
+         "value": "negative"
+        },
+        "label": {},
+        "level": {
+         "value": "cI"
+        },
+        "term": "trm_sequence"
+       }
+      ],
+      "kind": {
+       "value": "interaction"
+      },
+      "statistic": {
+       "degrees_of_freedom_denominator": {},
+       "degrees_of_freedom_numerator": {},
+       "family": {}
+      }
+     },
+     "details": {
+      "details_type": "MassUnivariateDetails"
+     },
+     "source_table_analysis": {
+      "value": "analysis#168a89ed28803866"
+     }
+    }
+   ],
+   "model_estimations": [
+    {
+     "terms": [
+      {
+       "functional_form": {},
+       "levels": [
+        {
+         "conditions": [
+          "cond_cC"
+         ],
+         "level": {
+          "value": "cC"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_iC"
+         ],
+         "level": {
+          "value": "iC"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_iI"
+         ],
+         "level": {
+          "value": "iI"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_cI"
+         ],
+         "level": {
+          "value": "cI"
+         },
+         "order": {}
+        }
+       ],
+       "local_id": "trm_sequence",
+       "name": {
+        "value": "trial sequence"
+       },
+       "source_definition": {
+        "value": "Regressors coding cC, iC, iI and cI; I–C contrasts within-trial conflict and iI–cI contrasts trial-to-trial RT adjustments."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {},
+       "variation_level": {
+        "value": "within_subject"
+       }
+      },
+      {
+       "functional_form": {},
+       "levels": [
+        {
+         "groups": [
+          "grp_ma"
+         ],
+         "level": {
+          "value": "MA abusers"
+         },
+         "order": {}
+        },
+        {
+         "groups": [
+          "grp_controls"
+         ],
+         "level": {
+          "value": "controls"
+         },
+         "order": {}
+        }
+       ],
+       "local_id": "trm_group",
+       "name": {
+        "value": "group"
+       },
+       "source_definition": {
+        "value": "MA-abusing subjects versus age-matched non-substance-abusing control subjects."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {},
+       "variation_level": {
+        "value": "between_subject"
+       }
+      }
+     ]
+    }
+   ],
+   "tasks": [
+    {
+     "local_id": "tsk_stroop",
+     "name": {
+      "value": "single-trial Stroop task"
+     },
+     "conditions": [
+      {
+       "local_id": "cond_cC",
+       "name": {
+        "value": "cC"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_iC",
+       "name": {
+        "value": "iC"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_iI",
+       "name": {
+        "value": "iI"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_cI",
+       "name": {
+        "value": "cI"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      }
+     ]
+    }
+   ],
+   "groups": [
+    {
+     "local_id": "grp_ma",
+     "name": {
+      "value": "MA abusers"
+     },
+     "is_healthy": {
+      "value": false
+     },
+     "medical_condition": {
+      "normalized": []
+     }
+    },
+    {
+     "local_id": "grp_controls",
+     "name": {
+      "value": "controls"
+     },
+     "is_healthy": {
+      "value": false
+     },
+     "medical_condition": {
+      "normalized": []
+     }
+    }
+   ]
+  },
+  "parse": {
+   "analyses": [
+    {
+     "key": "analysis#168a89ed28803866",
+     "points": [
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "case": "correlation_negative",
+  "study": "to7v23ph4wcc",
+  "claude": {
+   "kind": "correlation",
+   "record_direction": "same",
+   "groups": {
+    "target": null,
+    "baseline": null
+   },
+   "baseline": "none",
+   "sign": "negative"
+  },
+  "evidence_vs_record": "same",
+  "record": {
+   "analyses": [
+    {
+     "local_id": "a_analysis_a877af4d90334b1f",
+     "name": {
+      "value": "negative correlation with perceived social threat scores during Peer Rejection Feedback > Control Feedback"
+     },
+     "definition": {
+      "value": "Negative associations between perceived social threat scores and activation to Peer Rejection Feedback > Control Feedback in the left and right ventral anterior insula."
+     },
+     "effect": {
+      "cells": [
+       {
+        "direction": {
+         "value": "negative"
+        },
+        "label": {},
+        "level": {},
+        "term": "trm_threat_rejection"
+       },
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {},
+        "level": {
+         "value": "Peer Rejection Feedback"
+        },
+        "term": "trm_condition"
+       },
+       {
+        "direction": {
+         "value": "negative"
+        },
+        "label": {},
+        "level": {
+         "value": "Control Feedback"
+        },
+        "term": "trm_condition"
+       }
+      ],
+      "kind": {
+       "value": "cross_subject_regression"
+      },
+      "statistic": {
+       "degrees_of_freedom_denominator": {},
+       "degrees_of_freedom_numerator": {},
+       "family": {
+        "value": "z"
+       }
+      }
+     },
+     "details": {
+      "details_type": "MassUnivariateDetails"
+     },
+     "source_table_analysis": {
+      "value": "analysis#a877af4d90334b1f"
+     }
+    }
+   ],
+   "model_estimations": [
+    {
+     "terms": [
+      {
+       "functional_form": {},
+       "levels": [
+        {
+         "conditions": [
+          "cond_feedback_anticipation"
+         ],
+         "level": {
+          "value": "Feedback Anticipation"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_choice_anticipation"
+         ],
+         "level": {
+          "value": "Choice Anticipation"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_acceptance"
+         ],
+         "level": {
+          "value": "Peer Acceptance Feedback"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_rejection"
+         ],
+         "level": {
+          "value": "Peer Rejection Feedback"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_choice_feedback"
+         ],
+         "level": {
+          "value": "Choice Feedback"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_control"
+         ],
+         "level": {
+          "value": "Control Feedback"
+         },
+         "order": {}
+        }
+       ],
+       "local_id": "trm_condition",
+       "name": {
+        "value": "task condition"
+       },
+       "source_definition": {
+        "value": "Feedback Anticipation, Choice Anticipation, Peer Acceptance Feedback, Peer Rejection Feedback, Choice Feedback and Control Feedback, consistent with an event-related design."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {},
+       "variation_level": {
+        "value": "within_subject"
+       }
+      },
+      {
+       "assessment": "asm_ema",
+       "functional_form": {
+        "value": "linear"
+       },
+       "local_id": "trm_threat_rejection",
+       "name": {
+        "value": "perceived social threat scores"
+       },
+       "source_definition": {
+        "value": "Sum of eight social threat statements endorsed for each negative peer interaction, averaged across observations with a negative peer interaction."
+       },
+       "type": {
+        "value": "continuous"
+       },
+       "unit": {},
+       "variation_level": {
+        "value": "between_subject"
+       }
+      }
+     ]
+    }
+   ],
+   "tasks": [
+    {
+     "local_id": "tsk_chatroom",
+     "name": {
+      "value": "Chatroom Interact Task"
+     },
+     "conditions": [
+      {
+       "local_id": "cond_feedback_anticipation",
+       "name": {
+        "value": "Feedback Anticipation"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_choice_anticipation",
+       "name": {
+        "value": "Choice Anticipation"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_acceptance",
+       "name": {
+        "value": "Peer Acceptance Feedback"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_rejection",
+       "name": {
+        "value": "Peer Rejection Feedback"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_choice_feedback",
+       "name": {
+        "value": "Choice Feedback"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_control",
+       "name": {
+        "value": "Control Feedback"
+       },
+       "condition_kind": {
+        "value": "control_state"
+       }
+      }
+     ]
+    }
+   ],
+   "groups": []
+  },
+  "parse": {
+   "analyses": [
+    {
+     "key": "analysis#a877af4d90334b1f",
+     "points": [
+      {
+       "values": [
+        {
+         "kind": "z",
+         "kind_as_printed": null,
+         "value": 4.08,
+         "level": null,
+         "correction": null
+        }
+       ]
+      },
+      {
+       "values": [
+        {
+         "kind": "z",
+         "kind_as_printed": null,
+         "value": 3.89,
+         "level": null,
+         "correction": null
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "case": "connectivity",
+  "study": "ajviejssclsn",
+  "claude": {
+   "kind": "connectivity",
+   "record_direction": "same",
+   "groups": {
+    "target": null,
+    "baseline": null
+   },
+   "baseline": "none",
+   "sign": null
+  },
+  "evidence_vs_record": "same",
+  "record": {
+   "analyses": [
+    {
+     "local_id": "a_analysis_25cbe6a81b7c07a4",
+     "name": {
+      "value": "genotype × OC × WM load interaction"
+     },
+     "definition": {
+      "value": "Psychophysiological interaction analysis revealed a genotype × OC × WM load interaction on functional connectivity between left DLPFC and left striatum. In presence of OC, T carriers had greater connectivity strength than CC individuals during 2-Back."
+     },
+     "effect": {
+      "cells": [
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {},
+        "level": {
+         "value": "T carriers"
+        },
+        "term": "trm_ppi_genotype"
+       },
+       {
+        "direction": {
+         "value": "negative"
+        },
+        "label": {},
+        "level": {
+         "value": "CC"
+        },
+        "term": "trm_ppi_genotype"
+       },
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {},
+        "level": {
+         "value": "presence"
+        },
+        "term": "trm_ppi_oc"
+       },
+       {
+        "direction": {
+         "value": "negative"
+        },
+        "label": {},
+        "level": {
+         "value": "absence"
+        },
+        "term": "trm_ppi_oc"
+       },
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {},
+        "level": {
+         "value": "2-back"
+        },
+        "term": "trm_ppi_load"
+       },
+       {
+        "direction": {
+         "value": "negative"
+        },
+        "label": {},
+        "level": {
+         "value": "1-back"
+        },
+        "term": "trm_ppi_load"
+       }
+      ],
+      "kind": {
+       "value": "interaction"
+      },
+      "statistic": {
+       "degrees_of_freedom_denominator": {},
+       "degrees_of_freedom_numerator": {},
+       "family": {
+        "value": "z"
+       }
+      }
+     },
+     "details": {
+      "connectivity_method": {
+       "value": "ppi"
+      },
+      "details_type": "ConnectivityDetails",
+      "inference_target": {
+       "value": "connectivity_parameter"
+      },
+      "modulatory_input": {
+       "value": "WM load"
+      },
+      "seed_regions": [
+       "reg_dlpfc"
+      ]
+     },
+     "source_table_analysis": {
+      "value": "analysis#25cbe6a81b7c07a4"
+     }
+    }
+   ],
+   "model_estimations": [
+    {
+     "terms": [
+      {
+       "assessment": "asm_rs9804190",
+       "functional_form": {},
+       "levels": [
+        {
+         "groups": [
+          "grp_cc_oc",
+          "grp_cc_no_oc"
+         ],
+         "level": {
+          "value": "CC"
+         },
+         "order": {}
+        },
+        {
+         "groups": [
+          "grp_t_oc",
+          "grp_t_no_oc"
+         ],
+         "level": {
+          "value": "T carriers"
+         },
+         "order": {}
+        }
+       ],
+       "local_id": "trm_ppi_genotype",
+       "name": {
+        "value": "rs9804190 genotype"
+       },
+       "source_definition": {
+        "value": "Ank3 rs9804190 genotype, with CC and T carriers as the between-subjects factor."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {},
+       "variation_level": {
+        "value": "between_subject"
+       }
+      },
+      {
+       "assessment": "asm_mcneil_sjostrom",
+       "functional_form": {},
+       "levels": [
+        {
+         "groups": [
+          "grp_cc_no_oc",
+          "grp_t_no_oc"
+         ],
+         "level": {
+          "value": "absence"
+         },
+         "order": {}
+        },
+        {
+         "groups": [
+          "grp_cc_oc",
+          "grp_t_oc"
+         ],
+         "level": {
+          "value": "presence"
+         },
+         "order": {}
+        }
+       ],
+       "local_id": "trm_ppi_oc",
+       "name": {
+        "value": "OC"
+       },
+       "source_definition": {
+        "value": "Obstetric Complications (OC) absence/presence, based on the Obstetric Complications score from the McNeil-Sjöström Scale completed by mothers."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {},
+       "variation_level": {
+        "value": "between_subject"
+       }
+      },
+      {
+       "functional_form": {},
+       "levels": [
+        {
+         "conditions": [
+          "cond_1back"
+         ],
+         "level": {
+          "value": "1-back"
+         },
+         "order": {
+          "value": 1
+         }
+        },
+        {
+         "conditions": [
+          "cond_2back"
+         ],
+         "level": {
+          "value": "2-back"
+         },
+         "order": {
+          "value": 2
+         }
+        }
+       ],
+       "local_id": "trm_ppi_load",
+       "name": {
+        "value": "task load"
+       },
+       "source_definition": {
+        "value": "Task load as the repeated-measures factor, with 1-back and 2-back versions of the N-back task eliciting two loads of working memory processing."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {},
+       "variation_level": {
+        "value": "within_subject"
+       }
+      }
+     ]
+    }
+   ],
+   "tasks": [
+    {
+     "local_id": "tsk_nback",
+     "name": {
+      "value": "N-back task"
+     },
+     "conditions": [
+      {
+       "local_id": "cond_1back",
+       "name": {
+        "value": "1-back"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_2back",
+       "name": {
+        "value": "2-back"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      }
+     ]
+    }
+   ],
+   "groups": [
+    {
+     "local_id": "grp_cc_oc",
+     "name": {
+      "value": "CC with OC"
+     },
+     "is_healthy": {
+      "value": true
+     },
+     "medical_condition": {
+      "normalized": []
+     }
+    },
+    {
+     "local_id": "grp_cc_no_oc",
+     "name": {
+      "value": "CC without OC"
+     },
+     "is_healthy": {
+      "value": true
+     },
+     "medical_condition": {
+      "normalized": []
+     }
+    },
+    {
+     "local_id": "grp_t_oc",
+     "name": {
+      "value": "T carriers with OC"
+     },
+     "is_healthy": {
+      "value": true
+     },
+     "medical_condition": {
+      "normalized": []
+     }
+    },
+    {
+     "local_id": "grp_t_no_oc",
+     "name": {
+      "value": "T carriers without OC"
+     },
+     "is_healthy": {
+      "value": true
+     },
+     "medical_condition": {
+      "normalized": []
+     }
+    }
+   ]
+  },
+  "parse": {
+   "analyses": [
+    {
+     "key": "analysis#25cbe6a81b7c07a4",
+     "points": [
+      {
+       "values": [
+        {
+         "kind": "z",
+         "kind_as_printed": null,
+         "value": 3.59,
+         "level": null,
+         "correction": null
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "case": "conjunction",
+  "study": "bjajadesmiv3",
+  "claude": {
+   "kind": "conjunction",
+   "record_direction": "same",
+   "groups": {
+    "target": null,
+    "baseline": null
+   },
+   "baseline": "active_condition",
+   "sign": null
+  },
+  "evidence_vs_record": "same",
+  "record": {
+   "analyses": [
+    {
+     "local_id": "a_analysis_395fd8b40e2c62db",
+     "name": {
+      "value": "Food craving regulation ∧ Food decision making"
+     },
+     "definition": {
+      "value": "Conjunction of activation associated with intentional food craving regulation and food decision making."
+     },
+     "effect": {
+      "cells": [
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {},
+        "level": {
+         "value": "Regulate"
+        },
+        "term": "trm_condition"
+       },
+       {
+        "direction": {
+         "value": "negative"
+        },
+        "label": {},
+        "level": {
+         "value": "Baseline"
+        },
+        "term": "trm_condition"
+       }
+      ],
+      "kind": {
+       "value": "contrast"
+      },
+      "statistic": {
+       "degrees_of_freedom_denominator": {},
+       "degrees_of_freedom_numerator": {},
+       "family": {
+        "value": "z"
+       }
+      }
+     },
+     "details": {
+      "components": [
+       {
+        "analysis_id": {
+         "value": "ana_t0035_2"
+        },
+        "analysis_type": {
+         "value": "mass_univariate"
+        },
+        "definition": {
+         "value": "Activation associated with intentional food craving regulation, predominantly assessing inhibitory control; 10 contrasts."
+        }
+       },
+       {
+        "analysis_id": {
+         "value": "ana_t0035_3"
+        },
+        "analysis_type": {
+         "value": "mass_univariate"
+        },
+        "definition": {
+         "value": "Activation associated with food decision making, primarily targeting value modulation; 9 contrasts."
+        }
+       }
+      ],
+      "details_type": "ConjunctionDetails",
+      "implementation": {},
+      "null_hypothesis": {}
+     },
+     "source_table_analysis": {
+      "value": "analysis#395fd8b40e2c62db"
+     }
+    }
+   ],
+   "model_estimations": [
+    {
+     "terms": [
+      {
+       "functional_form": {},
+       "levels": [
+        {
+         "conditions": [
+          "cond_regulate"
+         ],
+         "level": {
+          "value": "Regulate"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_baseline"
+         ],
+         "level": {
+          "value": "Baseline"
+         },
+         "order": {}
+        }
+       ],
+       "local_id": "trm_condition",
+       "name": {
+        "value": "condition"
+       },
+       "source_definition": {
+        "value": "Regulate versus baseline conditions in the source studies; baseline instructions were to allow oneself to crave tasty foods or passively view food cues."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {},
+       "variation_level": {
+        "value": "within_subject"
+       }
+      }
+     ]
+    }
+   ],
+   "tasks": [
+    {
+     "local_id": "tsk_dietary",
+     "name": {
+      "value": "Dietary self-control"
+     },
+     "conditions": [
+      {
+       "local_id": "cond_regulate",
+       "name": {
+        "value": "Regulate"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_baseline",
+       "name": {
+        "value": "Baseline"
+       },
+       "condition_kind": {
+        "value": "control_state"
+       }
+      }
+     ]
+    }
+   ],
+   "groups": []
+  },
+  "parse": {
+   "analyses": [
+    {
+     "key": "analysis#395fd8b40e2c62db",
+     "points": [
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "case": "parametric",
+  "study": "u4onqmna6hpx",
+  "claude": {
+   "kind": "parametric",
+   "record_direction": "same",
+   "groups": {
+    "target": null,
+    "baseline": null
+   },
+   "baseline": "none",
+   "sign": null
+  },
+  "evidence_vs_record": "same",
+  "record": {
+   "analyses": [
+    {
+     "local_id": "a_analysis_195c77874e2acf02",
+     "name": {
+      "value": "linear trend of lower beta power (10–20 Hz) with frequency held in WM"
+     },
+     "definition": {
+      "value": "Source localization of the lower beta parametric WM effect, with f1 = 15, 19, 23, 27 Hz and contrast vector [-0.75, -0.25, 0.25, 0.75]."
+     },
+     "effect": {
+      "cells": [
+       {
+        "direction": {
+         "value": "negative"
+        },
+        "label": {},
+        "level": {
+         "value": "15"
+        },
+        "term": "trm_f1_source"
+       },
+       {
+        "direction": {
+         "value": "negative"
+        },
+        "label": {},
+        "level": {
+         "value": "19"
+        },
+        "term": "trm_f1_source"
+       },
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {},
+        "level": {
+         "value": "23"
+        },
+        "term": "trm_f1_source"
+       },
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {},
+        "level": {
+         "value": "27"
+        },
+        "term": "trm_f1_source"
+       }
+      ],
+      "kind": {
+       "value": "parametric_modulation"
+      },
+      "statistic": {
+       "degrees_of_freedom_denominator": {},
+       "degrees_of_freedom_numerator": {},
+       "family": {}
+      }
+     },
+     "details": {
+      "details_type": "MassUnivariateDetails"
+     },
+     "source_table_analysis": {
+      "value": "analysis#195c77874e2acf02"
+     }
+    }
+   ],
+   "model_estimations": [
+    {
+     "terms": [
+      {
+       "functional_form": {},
+       "levels": [
+        {
+         "conditions": [
+          "cond_f1_15"
+         ],
+         "level": {
+          "value": "15"
+         },
+         "order": {
+          "value": 1
+         }
+        },
+        {
+         "conditions": [
+          "cond_f1_19"
+         ],
+         "level": {
+          "value": "19"
+         },
+         "order": {
+          "value": 2
+         }
+        },
+        {
+         "conditions": [
+          "cond_f1_23"
+         ],
+         "level": {
+          "value": "23"
+         },
+         "order": {
+          "value": 3
+         }
+        },
+        {
+         "conditions": [
+          "cond_f1_27"
+         ],
+         "level": {
+          "value": "27"
+         },
+         "order": {
+          "value": 4
+         }
+        }
+       ],
+       "local_id": "trm_f1_source",
+       "name": {
+        "value": "f1"
+       },
+       "source_definition": {
+        "value": "Four f1 conditions: 15, 19, 23, or 27 Hz."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {
+        "value": "Hz"
+       },
+       "variation_level": {
+        "value": "within_subject"
+       }
+      }
+     ]
+    }
+   ],
+   "tasks": [
+    {
+     "local_id": "tsk_vibrotactile",
+     "name": {
+      "value": "vibrotactile frequency comparison task"
+     },
+     "conditions": [
+      {
+       "local_id": "cond_f1_15",
+       "name": {
+        "value": "f1 = 15 Hz"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_f1_19",
+       "name": {
+        "value": "f1 = 19 Hz"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_f1_23",
+       "name": {
+        "value": "f1 = 23 Hz"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_f1_27",
+       "name": {
+        "value": "f1 = 27 Hz"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      }
+     ]
+    }
+   ],
+   "groups": []
+  },
+  "parse": {
+   "analyses": [
+    {
+     "key": "analysis#195c77874e2acf02",
+     "points": [
+      {
+       "values": []
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "case": "condition_interaction",
+  "study": "dunijkwsinbk",
+  "claude": {
+   "kind": "condition_interaction",
+   "record_direction": "same",
+   "groups": {
+    "target": null,
+    "baseline": null
+   },
+   "baseline": "active_condition",
+   "sign": null
+  },
+  "evidence_vs_record": "same",
+  "record": {
+   "analyses": [
+    {
+     "local_id": "a_analysis_0b20c0934929191e",
+     "name": {
+      "value": "faces > scenes distraction effect"
+     },
+     "definition": {
+      "value": "LEC showed a greater distraction effect for faces than scenes."
+     },
+     "effect": {
+      "cells": [
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {},
+        "level": {
+         "value": "faces"
+        },
+        "term": "trm_material"
+       },
+       {
+        "direction": {
+         "value": "negative"
+        },
+        "label": {},
+        "level": {
+         "value": "scenes"
+        },
+        "term": "trm_material"
+       },
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {},
+        "level": {
+         "value": "dist"
+        },
+        "term": "trm_distraction"
+       },
+       {
+        "direction": {
+         "value": "negative"
+        },
+        "label": {},
+        "level": {
+         "value": "nodist"
+        },
+        "term": "trm_distraction"
+       }
+      ],
+      "kind": {
+       "value": "interaction"
+      },
+      "statistic": {
+       "degrees_of_freedom_denominator": {
+        "value": 27
+       },
+       "degrees_of_freedom_numerator": {},
+       "family": {
+        "value": "t"
+       }
+      }
+     },
+     "details": {
+      "details_type": "MassUnivariateDetails"
+     },
+     "source_table_analysis": {
+      "value": "analysis#0b20c0934929191e"
+     }
+    }
+   ],
+   "model_estimations": [
+    {
+     "terms": [
+      {
+       "functional_form": {},
+       "levels": [
+        {
+         "conditions": [
+          "cond_faces_dist",
+          "cond_faces_nodist"
+         ],
+         "level": {
+          "value": "faces"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_scenes_dist",
+          "cond_scenes_nodist"
+         ],
+         "level": {
+          "value": "scenes"
+         },
+         "order": {}
+        }
+       ],
+       "local_id": "trm_material",
+       "name": {
+        "value": "material"
+       },
+       "source_definition": {
+        "value": "Material axis of the four experimental conditions."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {},
+       "variation_level": {
+        "value": "within_subject"
+       }
+      },
+      {
+       "functional_form": {},
+       "levels": [
+        {
+         "conditions": [
+          "cond_faces_dist",
+          "cond_scenes_dist"
+         ],
+         "level": {
+          "value": "dist"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_faces_nodist",
+          "cond_scenes_nodist"
+         ],
+         "level": {
+          "value": "nodist"
+         },
+         "order": {}
+        }
+       ],
+       "local_id": "trm_distraction",
+       "name": {
+        "value": "distraction"
+       },
+       "source_definition": {
+        "value": "Distraction axis of the four experimental conditions."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {},
+       "variation_level": {
+        "value": "within_subject"
+       }
+      }
+     ]
+    }
+   ],
+   "tasks": [
+    {
+     "local_id": "tsk_memory",
+     "name": {
+      "value": "working memory task"
+     },
+     "conditions": [
+      {
+       "local_id": "cond_faces_dist",
+       "name": {
+        "value": "faces/dist"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_faces_nodist",
+       "name": {
+        "value": "faces/nodist"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_scenes_dist",
+       "name": {
+        "value": "scenes/dist"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_scenes_nodist",
+       "name": {
+        "value": "scenes/nodist"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      }
+     ]
+    }
+   ],
+   "groups": []
+  },
+  "parse": {
+   "analyses": [
+    {
+     "key": "analysis#0b20c0934929191e",
+     "points": [
+      {
+       "values": [
+        {
+         "kind": "t",
+         "kind_as_printed": null,
+         "value": 4.6,
+         "level": null,
+         "correction": null
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "case": "restricted_to_one_group",
+  "study": "ybcd77ormpnu",
+  "claude": {
+   "kind": "condition_vs_baseline",
+   "record_direction": "same",
+   "groups": {
+    "target": null,
+    "baseline": null
+   },
+   "baseline": "implicit",
+   "sign": null
+  },
+  "evidence_vs_record": "same",
+  "record": {
+   "analyses": [
+    {
+     "local_id": "a_analysis_a53dbb1eb651f70d",
+     "name": {
+      "value": "Physical pain"
+     },
+     "definition": {
+      "value": "ALE meta-analysis of positive activation coordinates for physical pain, testing spatial convergence across studies."
+     },
+     "effect": {
+      "cells": [
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {},
+        "level": {
+         "value": "Physical pain"
+        },
+        "term": "trm_pp"
+       }
+      ],
+      "kind": {
+       "value": "simple_effect"
+      },
+      "statistic": {
+       "degrees_of_freedom_denominator": {},
+       "degrees_of_freedom_numerator": {},
+       "family": {
+        "value": "ALE"
+       }
+      }
+     },
+     "details": {
+      "details_type": "OtherAnalysisDetails",
+      "method_label": {
+       "value": "activation likelihood estimation (ALE)"
+      },
+      "reason_first_class_type_not_used": {
+       "value": "Coordinate-based ALE meta-analysis tests spatial convergence across published experiments rather than a primary-data mass-univariate model."
+      },
+      "structured_details": {
+       "value": "{\"studies\":30,\"experiments\":32,\"foci\":568,\"test\":\"spatial convergence of positive activation coordinates\"}"
+      }
+     },
+     "source_table_analysis": {
+      "value": "analysis#a53dbb1eb651f70d"
+     }
+    }
+   ],
+   "model_estimations": [
+    {
+     "terms": [
+      {
+       "functional_form": {},
+       "levels": [
+        {
+         "conditions": [
+          "cond_pp"
+         ],
+         "groups": [
+          "grp_pp"
+         ],
+         "level": {
+          "value": "Physical pain"
+         },
+         "order": {}
+        }
+       ],
+       "local_id": "trm_pp",
+       "name": {
+        "value": "domain"
+       },
+       "source_definition": {
+        "value": "Positive physical-pain activation coordinates from 30 studies."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {},
+       "variation_level": {
+        "value": "across published experiments"
+       }
+      }
+     ]
+    }
+   ],
+   "tasks": [
+    {
+     "local_id": "tsk_pp",
+     "name": {
+      "value": "Physical pain"
+     },
+     "conditions": [
+      {
+       "local_id": "cond_pp",
+       "name": {
+        "value": "Physical pain"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      }
+     ]
+    }
+   ],
+   "groups": [
+    {
+     "local_id": "grp_pp",
+     "name": {
+      "value": "Physical pain"
+     },
+     "is_healthy": {
+      "value": true
+     },
+     "medical_condition": {
+      "normalized": []
+     }
+    }
+   ]
+  },
+  "parse": {
+   "analyses": [
+    {
+     "key": "analysis#a53dbb1eb651f70d",
+     "points": [
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      },
+      {
+       "values": []
+      }
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "case": "baseline_higher_kept",
+  "study": "yvkao34cgl2d",
+  "claude": {
+   "kind": "condition_vs_condition",
+   "record_direction": "reversed",
+   "groups": {
+    "target": null,
+    "baseline": null
+   },
+   "baseline": "active_condition",
+   "sign": null
+  },
+  "evidence_vs_record": "same",
+  "record": {
+   "analyses": [
+    {
+     "local_id": "a_analysis_d161675974023f2d",
+     "name": {
+      "value": "TRO: retention versus manipulation"
+     },
+     "definition": {
+      "value": "Pretraining retention-only trials compared to manipulation trials, all 28 participants."
+     },
+     "effect": {
+      "cells": [
+       {
+        "direction": {
+         "value": "positive"
+        },
+        "label": {},
+        "level": {
+         "value": "retention"
+        },
+        "term": "trm_tro"
+       },
+       {
+        "direction": {
+         "value": "negative"
+        },
+        "label": {},
+        "level": {
+         "value": "manipulation"
+        },
+        "term": "trm_tro"
+       }
+      ],
+      "kind": {
+       "value": "contrast"
+      },
+      "statistic": {
+       "degrees_of_freedom_denominator": {},
+       "degrees_of_freedom_numerator": {},
+       "family": {
+        "value": "t"
+       }
+      }
+     },
+     "details": {
+      "details_type": "MassUnivariateDetails"
+     },
+     "source_table_analysis": {
+      "value": "analysis#d161675974023f2d"
+     }
+    }
+   ],
+   "model_estimations": [
+    {
+     "terms": [
+      {
+       "functional_form": {},
+       "levels": [
+        {
+         "conditions": [
+          "cond_manipulation"
+         ],
+         "level": {
+          "value": "manipulation"
+         },
+         "order": {}
+        },
+        {
+         "conditions": [
+          "cond_retention"
+         ],
+         "level": {
+          "value": "retention"
+         },
+         "order": {}
+        }
+       ],
+       "local_id": "trm_tro",
+       "name": {
+        "value": "TRO condition"
+       },
+       "source_definition": {
+        "value": "Manipulation trials versus retention-only trials with visual instruction 1 2 3."
+       },
+       "type": {
+        "value": "categorical"
+       },
+       "unit": {},
+       "variation_level": {
+        "value": "within_subject"
+       }
+      }
+     ]
+    }
+   ],
+   "tasks": [
+    {
+     "local_id": "tsk_tro",
+     "name": {
+      "value": "TRO"
+     },
+     "conditions": [
+      {
+       "local_id": "cond_manipulation",
+       "name": {
+        "value": "manipulation"
+       },
+       "condition_kind": {
+        "value": "task_state"
+       }
+      },
+      {
+       "local_id": "cond_retention",
+       "name": {
+        "value": "retention"
+       },
+       "condition_kind": {
+        "value": "control_state"
+       }
+      }
+     ]
+    }
+   ],
+   "groups": []
+  },
+  "parse": {
+   "analyses": [
+    {
+     "key": "analysis#d161675974023f2d",
+     "points": [
+      {
+       "values": [
+        {
+         "kind": "t",
+         "kind_as_printed": null,
+         "value": 8.28,
+         "level": null,
+         "correction": null
+        }
+       ]
+      },
+      {
+       "values": [
+        {
+         "kind": "t",
+         "kind_as_printed": null,
+         "value": 7.56,
+         "level": null,
+         "correction": null
+        }
+       ]
+      },
+      {
+       "values": [
+        {
+         "kind": "t",
+         "kind_as_printed": null,
+         "value": 7.42,
+         "level": null,
+         "correction": null
+        }
+       ]
+      },
+      {
+       "values": [
+        {
+         "kind": "t",
+         "kind_as_printed": null,
+         "value": 8.14,
+         "level": null,
+         "correction": null
+        }
+       ]
+      },
+      {
+       "values": [
+        {
+         "kind": "t",
+         "kind_as_printed": null,
+         "value": 7.81,
+         "level": null,
+         "correction": null
+        }
+       ]
+      },
+      {
+       "values": [
+        {
+         "kind": "t",
+         "kind_as_printed": null,
+         "value": 9.35,
+         "level": null,
+         "correction": null
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ }
+]
