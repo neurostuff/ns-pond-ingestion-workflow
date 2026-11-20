@@ -48,6 +48,18 @@ HEADING = "Supplementary material"
 #: Rows of a sheet written into the text; the table itself keeps every row.
 SHEET_TEXT_ROWS = 400
 
+#: Rows of each table a supplement's text keeps when it is appended, after the table's first
+#: row; the table itself keeps every row. Data sheets and long Word tables were 69% of the
+#: text of the supplements over the text cap (2026-11-20, 1,500 articles); 92% of the tables
+#: captioned as demographics or participants have no more rows than this.
+APPENDED_TABLE_ROWS = 60
+
+#: Bumped when what `append` writes of a supplement changes: an extraction names it with the
+#: supplements' read digest, so the articles with supplements are joined again.
+APPEND_VERSION = 2
+
+_PIPE_RULE = re.compile(r"^\|[\s|:-]*-[\s|:-]*\|?$")
+
 PMC_CLOUD = "https://pmc-oa-opendata.s3.amazonaws.com"
 ELSEVIER_CDN = "https://ars.els-cdn.com/content/image"
 SPRINGER_ESM = "https://static-content.springer.com/esm/art%3A{doi}/MediaObjects/{name}"
@@ -641,7 +653,7 @@ def append(content: ExtractedContent, supplements: Sequence[Supplement], out_dir
         heading = f"Supplementary file {k} ({item.name})"
         described = " ".join(filter(None, (item.label, item.caption)))
         text += "\n\n" + ("### " if atx else "") + heading + (f": {described}" if described else "")
-        body = Path(item.text_path).read_text(encoding="utf-8").strip()
+        body = shortened_tables(Path(item.text_path).read_text(encoding="utf-8")).strip()
         cut = len(body) > room
         body = body[:max(room, 0)] + ("\n[... the rest of this file's text is left out]" if cut else "")
         room -= len(body)
@@ -669,6 +681,39 @@ def append(content: ExtractedContent, supplements: Sequence[Supplement], out_dir
     content.full_text_path = joined
     content.supplements = entries
     return content
+
+
+def _table_row(line: str) -> bool:
+    """A line of a table as a supplement's text writes one: a Word table's Markdown row
+    (Docling) or a sheet's tab-separated row."""
+    return line.startswith("|") or "\t" in line
+
+
+def shortened_tables(text: str, rows: int = APPENDED_TABLE_ROWS) -> str:
+    """`text` with each table in it cut after its first row and `rows` more, a line saying how
+    many are left out in place of the rest, the padding of its Markdown cells squashed and its
+    `|---|` rule dropped. A table is a run of table lines (`_table_row`); the rest of the text is
+    left as it is."""
+    out: List[str] = []
+    run: List[str] = []
+
+    def close() -> None:
+        if len(run) > rows + 1:
+            out.extend(run[:rows + 1])
+            out.append(f"[... {len(run) - rows - 1:,} more rows of this table are left out of the "
+                       "text; the table keeps them]")
+        else:
+            out.extend(run)
+        run.clear()
+
+    for line in text.split("\n"):
+        if not _table_row(line):
+            close()
+            out.append(line)
+        elif not _PIPE_RULE.match(line.strip()):
+            run.append(re.sub(r" {2,}", " ", line).rstrip() if line.startswith("|") else line)
+    close()
+    return "\n".join(out)
 
 
 def joined_dir(settings, article_id: str) -> Path:
