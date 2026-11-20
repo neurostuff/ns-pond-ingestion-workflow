@@ -1707,6 +1707,28 @@ def data_sources_export(
         typer.echo(f"{rows:>9,} rows -> {out / name}")
 
 
+# -- modality ----------------------------------------------------------------
+
+modality_app = typer.Typer(help="Each paper's acquisition modalities, read by the modality stage.",
+                           no_args_is_help=True)
+app.add_typer(modality_app, name="modality")
+
+
+@modality_app.command("export")
+def modality_export(
+    out: Path = typer.Argument(..., help="The TSV to write."),
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Write one row per Neurostore base study: its modalities and where they were read, the
+    record's over the methods text's."""
+    from ingestion_workflow.services.modality_export import export
+
+    settings = _settings(config)
+    with _catalog(settings) as catalog:
+        written = export(catalog, out)
+    typer.echo(f"{written:>9,} base studies -> {out}")
+
+
 def main() -> None:
     app()
 

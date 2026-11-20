@@ -7,6 +7,7 @@ from .extract import ExtractStage
 from .linkprobe import LinkprobeStage
 from .links import LinksStage
 from .metadata import MetadataStage
+from .modality import ModalityStage
 from .notices import NoticesStage
 from .offloaded import OFFLOADED_STAGES, EvidenceStage, NormalizeStage, RecordStage
 from .passages import PassagesStage
@@ -65,16 +66,19 @@ from .upload import UploadStage
 #: `datasources` searches the text of each paper sync wrote for the data sources
 #: `ingest data-sources pull` keeps in the catalog. No stage reads it:
 #: `ingest data-sources export` writes its matches for neurostore.
+#: `modality` reads each paper's acquisition modalities for its neurostore base study: its
+#: normalized records', else its methods text's. It reads articles that never reach sync,
+#: so it requires triage; it is left out unless named, and `ingest modality export` writes it.
 STAGE_ORDER = ("download", "supplements", "extract", "reflist", "references", "links", "linkprobe", "passages",
                "metadata", "notices", "triage", "analyses", "prose", "resolve", "roles", "space",
                "sync", "record", "evidence", "normalize", "upload", "record_upload",
-               "datasources")
+               "datasources", "modality")
 
 #: Stages that exist only when prose is switched on.
 PROSE_STAGES = ("passages", "prose", "resolve")
 
 #: Stages a run without `--stage` leaves out.
-OPT_IN_STAGES = ("reflist", *OFFLOADED_STAGES, "record_upload")
+OPT_IN_STAGES = ("reflist", *OFFLOADED_STAGES, "record_upload", "modality")
 
 STAGE_TYPES = {
     "download": DownloadStage,
@@ -82,6 +86,7 @@ STAGE_TYPES = {
     "links": LinksStage,
     "linkprobe": LinkprobeStage,
     "metadata": MetadataStage,
+    "modality": ModalityStage,
     "notices": NoticesStage,
     "record": RecordStage,
     "evidence": EvidenceStage,
@@ -133,6 +138,7 @@ __all__ = [
     "ExtractStage",
     "LinkprobeStage",
     "LinksStage",
+    "ModalityStage",
     "MetadataStage",
     "NoticesStage",
     "NormalizeStage",
