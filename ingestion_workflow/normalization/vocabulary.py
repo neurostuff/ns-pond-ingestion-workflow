@@ -4,7 +4,8 @@ The vocabulary is `data/condition_vocabulary_v3.json`. An atom is `(axis, value)
 lower snake_case, numeric values unit last (`deg_17` -> `17_deg`), aliases mapped onto vocabulary atoms, and
 structural axes (task, group, score, drug, session) dropped, since those come from the record. An axis alias
 applies only when the value is valid on the target axis; the cleanup has no task context, so a value the target
-axis does not take keeps its own (local) axis. An axis missing
+axis does not take keeps its own (local) axis. A local-axis alias renames a local axis to the name the
+vocabulary review chose for it. An axis missing
 from the vocabulary is a local axis: kept, and reported by `status`.
 """
 from __future__ import annotations
@@ -43,6 +44,7 @@ def normalize_atom(axis: str, value: str | list[str], vocab: dict | None = None)
     """A labeller's atom as vocabulary atoms. A list value becomes one atom per element."""
     vocab = vocab or load()
     axis_alias, value_alias = vocab["aliases"]["axes"], vocab["aliases"]["values"]
+    local_alias = vocab["aliases"].get("local", {})
     structural = vocab["structural"]
     ax = snake(axis)
     out: list[tuple[str, str]] = []
@@ -59,6 +61,7 @@ def normalize_atom(axis: str, value: str | list[str], vocab: dict | None = None)
             # an axis alias holds only where the value means what the target axis means: `position: above` is
             # spatial, not a serial position, so it stays a local axis
             a, v = ax, _format(raw)
+        a = local_alias.get(a, a)       # a local axis under the name the vocabulary review chose; values as given
         out.append((a, v))
     return [(a, v) for a, v in dict.fromkeys(out) if a not in structural]
 

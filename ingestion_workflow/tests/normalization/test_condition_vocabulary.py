@@ -26,6 +26,13 @@ def test_aliases_land_in_the_vocabulary():
             assert V.status(axis, value) in ("in", "open_value"), (alias, t)
 
 
+def test_local_aliases_join_local_axes():
+    local = VOCAB["aliases"]["local"]
+    assert not set(local) & set(VOCAB["axes"])
+    assert not set(local.values()) & set(VOCAB["axes"])
+    assert not set(local) & set(local.values())        # one step: no alias points at another alias
+
+
 def test_structural_axes_are_not_condition_axes():
     assert not set(VOCAB["structural"]) & set(VOCAB["axes"])
     assert "level" not in VOCAB["axes"]
@@ -53,6 +60,9 @@ def test_structural_axes_are_not_condition_axes():
         ("action", "grasp", [("action", "grasp")]),
         ("action", "cooperate", [("cooperation", "cooperate")]),
         ("complexity", "simple", [("difficulty", "easy")]),
+        # local-axis synonyms seen as the same factor in the double labels
+        ("deviance_feature", "pitch", [("deviant_feature", "pitch")]),
+        ("Signal Type", "stop", [("signal", "stop")]),
         ("score", "bdi_ii", []),
     ],
 )

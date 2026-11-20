@@ -1,7 +1,7 @@
 {
  "name": "ns-pond condition vocabulary",
- "version": "3.0.0",
- "status": "frozen: approved by James, 2026-11-20",
+ "version": "3.1.0",
+ "status": "frozen: 3.0.0 approved by James, 2026-11-20; 3.1.0 (local-axis aliases, sharper judgment/operation/content definitions) approved the same day",
  "source": "guide c2 vocabulary v3 plus the review of 994 Claude-labelled tasks (2026-11-20)",
  "rules": [
   "Rest and fixation are a condition's `kind`, never an atom.",
@@ -10,7 +10,8 @@
   "A condition that differs from its siblings only on a factor differs only on that factor's axis.",
   "Use a vocabulary axis when one fits. Otherwise a local axis is allowed: a snake_case name for the dimension, not a synonym of a vocabulary axis, with snake_case values. A local axis is any axis missing from this file; it counts toward contrast identity, and the vocabulary review clusters local axes into proposals.",
   "No `level` axis: a graded factor names its dimension.",
-  "The absence of something is a value only on axes that list `absent` or `none`; otherwise it is the condition's kind (control_state or implicit_baseline)."
+  "The absence of something is a value only on axes that list `absent` or `none`; otherwise it is the condition's kind (control_state or implicit_baseline).",
+  "Local-axis aliases (`aliases.local`) rename a local axis to the name the vocabulary review chose for it; they keep the values as given."
  ],
  "formats": {
   "case": "lower snake_case; no spaces, hyphens or symbols",
@@ -169,7 +170,7 @@
    "values": [],
    "open": true,
    "since": "v3",
-   "definition": "open: what a stimulus depicts beyond its stimulus class (`threat`, `erotic`, `tools`, `animals`), including semantic categories"
+   "definition": "open: what a stimulus depicts beyond its stimulus class, with the task the same: erotic vs neutral pictures, tools vs animals, threat vs neutral scenes; a semantic category is content"
   },
   "cooperation": {
    "values": [
@@ -418,7 +419,7 @@
    ],
    "open": true,
    "since": "v2",
-   "definition": "the judgment performed on the same stimuli; extend with the judgment's name"
+   "definition": "the judgment made about the same stimuli: gender vs emotion judgments of the same faces, semantic vs phonological judgments of the same words; extend with the judgment's name"
   },
   "language": {
    "values": [
@@ -580,7 +581,7 @@
    "values": [],
    "open": true,
    "since": "v3",
-   "definition": "open: the mental operation a component of the task requires when the task's conditions differ in what the participant does (`arithmetic`, `counting`, `rehearsal`, `navigation`); the judgment made about the same stimuli is `judgment`"
+   "definition": "open: a different mental operation between components of a task, not a judgment about the same stimuli: arithmetic vs finger tapping blocks, rehearsal vs manipulation of the same letters, navigation vs route recall (`arithmetic`, `counting`, `rehearsal`, `navigation`)"
   },
   "orientation": {
    "values": [],
@@ -1253,6 +1254,33 @@
    "trial_type:us": [
     "cs:us"
    ]
+  },
+  "local": {
+   "belief_type": "belief",
+   "deviance_feature": "deviant_feature",
+   "effort_type": "effort",
+   "extinction_status": "extinction",
+   "game_type": "game",
+   "gesture_type": "gesture",
+   "goal_cue": "goal",
+   "humor_type": "humor",
+   "imminence": "proximity",
+   "information_type": "information",
+   "interaction_type": "interaction",
+   "memory_trajectory": "response_trajectory",
+   "object_visibility": "visibility",
+   "prime_relation_type": "prime_relation",
+   "recipient_endowment": "endowment",
+   "relation_type": "relation",
+   "remoteness": "memory_age",
+   "rule_type": "rule",
+   "signal_type": "signal",
+   "stress_condition": "stress",
+   "target_locations": "target_location",
+   "temporal_orientation": "temporal_direction",
+   "violation_type": "violation",
+   "vocal_fold_gesture": "vocal_gesture",
+   "voicing_cue": "voicing"
   }
  }
 }
