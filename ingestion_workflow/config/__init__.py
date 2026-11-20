@@ -781,12 +781,19 @@ class Settings(BaseSettings):
             "and that article failed"
         ),
     )
+    mineru_start_timeout_s: float = Field(
+        # Four workers starting their vLLM engines at once took over 8 minutes on beast
+        # (2026-11-16), so the item limit killed each before its first PDF, over and over.
+        default=1800.0,
+        gt=0,
+        description="Seconds a MinerU worker may take to start and load its models",
+    )
     pdf_extract_timeout_s: float = Field(
         default=600.0,
         gt=0,
         description=(
             "Seconds one PDF extraction may run before its worker is killed and that "
-            "article failed; the first article a worker reads also loads its models"
+            "article failed; the first article a Docling worker reads also loads its models"
         ),
     )
 

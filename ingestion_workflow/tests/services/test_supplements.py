@@ -350,6 +350,42 @@ def test_supplement_text_past_the_cap_is_left_out_and_its_tables_kept(tmp_path):
     assert [t.table_id for t in joined.tables] == ["t1", "s1-table-s1"]
 
 
+def test_a_long_table_in_a_supplement_s_text_is_cut_and_the_table_kept_whole(tmp_path):
+    """Docling writes a Word table as padded Markdown, a sheet as tab-separated rows: each is
+    cut after its first row and APPENDED_TABLE_ROWS more, a short one left whole."""
+    item = _read_supplement(tmp_path)
+    word = ["| Region       | x     | y   | z   |", "|--------------|-------|-----|-----|"]
+    word += [f"| Gene {i:<7} | {i:<5} | 1   | 2   |" for i in range(100)]
+    demographics = ["Group\tN\tAge", "Patients\t24\t31.2", "Controls\t22\t30.8"]
+    text = ("Table S1. Expression.\n" + "\n".join(word)
+            + "\n\nTable S2. Demographics.\n" + "\n".join(demographics) + "\n")
+    Path(item.text_path).write_text(text)
+
+    joined = sp.append(_content(tmp_path), [item], tmp_path / "joined")
+
+    a, b = joined.supplements[0]["span"]
+    text = Path(joined.full_text_path).read_text()[a:b]
+    rows = [line for line in text.split("\n") if line.startswith("|")]
+    assert rows[0] == "| Region | x | y | z |" and len(rows) == 1 + sp.APPENDED_TABLE_ROWS
+    assert ("[... 40 more rows of this table are left out of the text; the table keeps them]"
+            in text)
+    assert "\n".join(demographics) in text and "|---" not in text
+    assert [t.table_id for t in joined.tables] == ["t1", "s1-table-s1"]
+
+
+def test_how_supplements_are_appended_is_in_the_extraction_s_fingerprint(monkeypatch):
+    from ingestion_workflow.catalog import Artifact
+    from ingestion_workflow.pipeline.stages import extract
+
+    download = Artifact(article_id="a", stage="download", source="pubget", fingerprint="dl")
+    before = extract.extraction_fingerprint("pubget", download, "digest")
+    monkeypatch.setattr(sp, "APPEND_VERSION", sp.APPEND_VERSION + 1)
+    assert extract.extraction_fingerprint("pubget", download, "digest") != before
+    # an article without supplements keeps its fingerprint
+    assert extract.extraction_fingerprint("pubget", download) == extract.extraction_fingerprint(
+        "pubget", download, None)
+
+
 def test_the_read_digest_names_each_file_s_bytes_and_reader(tmp_path):
     item = _read_supplement(tmp_path)
     item.sha256 = "a" * 64

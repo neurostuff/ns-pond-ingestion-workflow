@@ -82,9 +82,37 @@ def open_parser() -> None:
     Finalize(_parser, _parser.close, exitpriority=10)
 
 
+#: How a worker whose parser's engine died exits: `bounded` then starts one with a new engine.
+ENGINE_DEAD_EXIT = 75
+
+
 def parse_pdf(pdf: Path) -> Dict[str, Any]:
-    """MinerU's middle JSON for one PDF, by this worker's parser."""
-    return _parser.parse(str(pdf)).middle_json.to_dict()
+    """MinerU's middle JSON for one PDF, by this worker's parser.
+
+    When the parser's vLLM engine has died (the kernel kills it first when the machine runs
+    out of memory), every later PDF fails the same way in seconds and goes to the next
+    engine. The worker exits instead: this PDF fails alone, and its replacement starts a new
+    engine."""
+    try:
+        return _parser.parse(str(pdf)).middle_json.to_dict()
+    except Exception as exc:
+        if engine_dead(exc):
+            logger.error("MinerU's engine died reading %s; this worker exits", pdf.name)
+            sys.stderr.flush()
+            os._exit(ENGINE_DEAD_EXIT)
+        raise
+
+
+def engine_dead(exc: Optional[BaseException]) -> bool:
+    """Whether `exc`, or what it was raised from, is vLLM's `EngineDeadError`: matched by
+    name, since the parent process has no vLLM to import it from."""
+    seen = set()
+    while exc is not None and id(exc) not in seen:
+        if type(exc).__name__ == "EngineDeadError":
+            return True
+        seen.add(id(exc))
+        exc = exc.__cause__ or exc.__context__
+    return False
 
 
 def read_middle_json(middle: Mapping[str, Any]) -> MineruDocument:

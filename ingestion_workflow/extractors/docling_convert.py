@@ -108,17 +108,21 @@ def _torch_can_use_cuda() -> tuple[bool, str]:
 
 
 def free_cuda_devices(min_free_mib: int) -> list[int]:
-    """Indices of CUDA devices with at least `min_free_mib` free, as ``nvidia-smi`` says.
+    """Indices of CUDA devices with at least `min_free_mib` free, as ``nvidia-smi`` says,
+    among those ``CUDA_VISIBLE_DEVICES`` names when it is set (by index or UUID).
 
     Probed with ``nvidia-smi`` rather than torch on purpose. The workers are
     forked or spawned from whichever process calls this, and a parent that has
     already initialised CUDA poisons forked children ("Cannot re-initialize
     CUDA in forked subprocess"). A subprocess probe keeps the parent clean.
     Devices busy with someone else's job are skipped rather than contended for.
+    ``nvidia-smi`` lists every card whatever ``CUDA_VISIBLE_DEVICES`` says, so a
+    run held to some cards would otherwise take the rest once they come free.
+    The indices are ``nvidia-smi``'s, which the workers are pinned to.
     """
     try:
         completed = subprocess.run(
-            ["nvidia-smi", "--query-gpu=memory.free", "--format=csv,noheader,nounits"],
+            ["nvidia-smi", "--query-gpu=index,uuid,memory.free", "--format=csv,noheader,nounits"],
             capture_output=True,
             text=True,
             timeout=30,
@@ -128,17 +132,22 @@ def free_cuda_devices(min_free_mib: int) -> list[int]:
     if completed.returncode != 0:
         return []
 
+    visible = os.environ.get("CUDA_VISIBLE_DEVICES")
+    named = None if visible is None else {v.strip() for v in visible.split(",") if v.strip()}
     usable = []
-    for index, line in enumerate(completed.stdout.splitlines()):
-        line = line.strip()
-        if not line:
+    for line in completed.stdout.splitlines():
+        fields = [field.strip() for field in line.split(",")]
+        if len(fields) != 3:
             continue
+        index, uuid, free = fields
         try:
-            free_mib = int(line)
+            free_mib = int(free)
         except ValueError:
             continue
+        if named is not None and index not in named and uuid not in named:
+            continue
         if free_mib >= min_free_mib:
-            usable.append(index)
+            usable.append(int(index))
     return usable
 
 

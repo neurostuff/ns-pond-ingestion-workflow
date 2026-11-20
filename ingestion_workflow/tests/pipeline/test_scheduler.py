@@ -319,3 +319,29 @@ def test_only_a_transient_note_is_retried_on_its_own(env, notes, redone):
 
     assert run_stages(soon, [stage], refs[:1]).stages["download"].fresh == 1
     assert run_stages(later, [stage], refs[:1]).stages["download"].ok == int(redone)
+
+
+def test_a_stage_that_names_a_batch_size_is_planned_in_batches_of_it(tmp_path):
+    from ingestion_workflow.catalog import ArticleRef
+
+    class Batches(CountingStage):
+        batch_size = 3
+
+        def __init__(self):
+            super().__init__(name="supplements")
+            self.sizes = []
+
+        def plan(self, ctx, refs, artifacts, upstream):
+            self.sizes.append(len(refs))
+            return super().plan(ctx, refs, artifacts, upstream)
+
+    settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c", catalog_root=tmp_path / "k")
+    with Catalog.open(settings.catalog_root) as catalog:
+        for n in range(7):
+            catalog._conn.execute("INSERT INTO articles(id, created_at) VALUES(?, '2026-01-01')", (f"a{n}",))
+        refs = [ArticleRef(id=f"a{n}", identifier=Identifier(pmid=str(n + 1))) for n in range(7)]
+        stage = Batches()
+        run_stages(Context(settings, catalog), [stage], refs)
+
+    assert stage.sizes == [3, 3, 1]
+    assert len(stage.executed) == 7
