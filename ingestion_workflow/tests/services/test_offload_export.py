@@ -294,3 +294,29 @@ def test_a_trimmed_spec_sends_the_text_less_its_reference_list(ctx, tmp_path, fa
     run = BundleDir(report.bundle).bundle().run
     assert run["version"] == "ns-27b-f" and "trimmed-1" in run["prompt_version"]
     assert SPEC.record_text == "full" and TRIMMED.record_text == "trimmed-1"
+
+
+LONG = load_spec(Path(__file__).resolve().parents[3] / "configs" / "offload"
+                 / "ns-27b-f-long.json")
+
+
+def test_a_skip_over_the_limit_is_asked_again_by_a_spec_that_sends_more(
+        ctx, tmp_path, fake_tokens):
+    """271 production papers were skipped as over ns-27b-e's 46,000 input tokens. A spec that
+    trims the text, or reaches further, asks them again; one that sends what ns-27b-e sent
+    does not."""
+    _skip(ctx, tmp_path, "ns-27b-e", OVER.format(SPEC.max_input_tokens))
+    assert export(ctx, SPEC.model_copy(update={"version": "ns-27b-e-r9"}), "vista",
+                  workers=1, now=NOW).fresh == 1
+    for spec, minute in ((TRIMMED, 1), (LONG, 2)):
+        report = export(ctx, spec, "vista", workers=1, now=NOW + timedelta(minutes=minute))
+        assert report.fresh == 0 and len(report.shards) == 1
+
+
+def test_a_long_spec_asks_again_what_the_trimmed_spec_skipped_and_not_its_own_skips(
+        ctx, tmp_path, fake_tokens):
+    _skip(ctx, tmp_path, "ns-27b-f", OVER.format(TRIMMED.max_input_tokens),
+          run_id="ns-27b-f-20261121")
+    assert export(ctx, TRIMMED, "vista", workers=1, now=NOW).fresh == 1
+    assert len(export(ctx, LONG, "vista", workers=1, now=NOW).shards) == 1
+    assert LONG.serve.max_len > LONG.max_input_tokens + LONG.serve.max_tokens - 1

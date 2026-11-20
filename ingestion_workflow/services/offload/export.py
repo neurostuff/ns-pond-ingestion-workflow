@@ -31,6 +31,7 @@ from ingestion_workflow.catalog import Catalog, Run, RunKind, Status
 from ingestion_workflow.pipeline.stage import Context, recorded_path
 from ingestion_workflow.pipeline.stages.offloaded import (
     EvidenceStage,
+    Reach,
     RecordStage,
     parse_keys,
     record_digest,
@@ -192,8 +193,11 @@ def _due(ctx: Context, spec: RunSpec, ids: List[str], report: ExportReport):
     and the skipped rows of the evidence whose record was skipped."""
     catalog = ctx.catalog
     stage = (RecordStage if spec.stage == "record" else EvidenceStage)(ctx.settings)
+    reach = (Reach(spec.version, spec.max_input_tokens, spec.record_text != "full")
+             if spec.stage == "record" else None)
     fresh = stage.fresh_sources(ctx, ids, catalog.artifacts(ids, stage.name),
-                                catalog.artifacts(ids, stage.requires), retry=retry_of(spec))
+                                catalog.artifacts(ids, stage.requires), retry=retry_of(spec),
+                                reach=reach)
     todo = [a for a in ids if spec.source not in fresh.get(a, ())]
     report.fresh = len(ids) - len(todo)
     if spec.stage == "record":
