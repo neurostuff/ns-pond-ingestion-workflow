@@ -1,7 +1,7 @@
 {
  "name": "ns-pond condition vocabulary",
  "version": "3.0.0",
- "status": "draft: awaiting James's review",
+ "status": "frozen: approved by James, 2026-11-20",
  "source": "guide c2 vocabulary v3 plus the review of 994 Claude-labelled tasks (2026-11-20)",
  "rules": [
   "Rest and fixation are a condition's `kind`, never an atom.",
