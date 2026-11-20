@@ -20,7 +20,8 @@ from typing import Dict, Iterable, List, Optional, Tuple
 VOCABULARY = "acquisition_modality"
 
 #: Neurostore stores these values as the Postgres enum `modality` (neurostore#1962) and the spec
-#: lists them (neurostore-spec#134): adding or renaming one needs a Neurostore migration first.
+#: lists them (neurostore-spec#134); its filter copies `PARENT` as `MODALITY_CHILDREN`. Adding or
+#: renaming a value, or changing a parent, needs the matching Neurostore change first.
 LABELS = {
     "fmri": "functional MRI", "smri": "structural MRI", "dmri": "diffusion MRI",
     "mrs": "MR spectroscopy", "mri": "MRI", "eeg": "EEG", "ieeg": "intracranial EEG",
