@@ -12,6 +12,7 @@ jsonschema = pytest.importorskip("jsonschema")
 
 from ingestion_workflow.normalization import records, sidecars  # noqa: E402
 from ingestion_workflow.normalization.taskcat.identity import CardBuilder  # noqa: E402
+from pondie.normalization._records import value_of  # noqa: E402
 
 DATA = json.loads((Path(__file__).parent / "data" / "astra_records.json").read_text())
 FIT = "fit-000000000000"
@@ -95,3 +96,19 @@ def test_a_rerun_replaces_its_own_entries_only():
     assert "someone 1" in tools
     assert not any(FIT in t for t in tools)
     assert sum("fit-111111111111" in t for t in tools) == 2
+
+
+def test_a_family_with_no_task_says_it_is_the_classifiers_guess():
+    study = sorted(DATA)[0]
+    r = copy.deepcopy(DATA[study]["record"])
+    final = {x["task"]: dict(x) for x in DATA[study]["build"]["task_labels"]}
+    tid = next(t for t in final if final[t]["canonical"])
+    final[tid].update(canonical=None, family="emotion", decided_by="contrast",
+                      routes={**final[tid]["routes"], "contrast_p": 0.42})
+    sidecars.write_tasks(r, final, FIT)
+    task = next(t for t in r["tasks"] if str(value_of(t.get("local_id"))) == tid)
+    got = {e["vocabulary"]: e for e in task["name"]["normalized"]}
+    assert got["astra canonical task"]["status"] == "unmapped"
+    fam = got["astra task family"]
+    assert (fam["value"], fam["method"], fam["confidence"]) == (
+        "emotion", "contrast: family only, no task", 0.42)
