@@ -559,7 +559,7 @@ def test_a_wide_sheet_of_coordinates_is_still_found_by_its_head(tmp_path, monkey
 
 
 def test_a_sheet_wider_than_the_head_is_judged_by_its_first_columns(tmp_path, monkeypatch):
-    """`read.extract` took minutes on two rows of 16,381 columns; the head keeps 200."""
+    """`read.extract` took minutes on two rows of 16,381 columns; the head keeps 64."""
     from nspond_tables import grid
 
     from ingestion_workflow.pipeline.stages import triage as t
@@ -571,7 +571,7 @@ def test_a_sheet_wider_than_the_head_is_judged_by_its_first_columns(tmp_path, mo
     header = "Region,x,y,z,T," + ",".join(f"s{c}" for c in range(300))
     table = _sheet(tmp_path / "sheet-01.csv", header, rows)
     assert grid.parse(t._serialised_head(table["raw_content_path"])).width() \
-        == t.LARGE_SHEET_HEAD_COLUMNS
+        == t.LARGE_SHEET_COLUMNS
     gate = _Gate()
     assert t.judge_table(gate, table)["route"] == "candidates" and gate.asked == 1
 
@@ -595,3 +595,16 @@ def test_a_large_coordinate_sheet_is_judged_without_its_padding_or_its_tail(tmp_
     got = t.judge_table(gate, table)
     assert gate.asked == 1 and got["route"] == "candidates"
     assert t.LARGE_SHEET_HEAD_ROWS < got["points"] <= 2_500
+
+
+def test_a_large_sheet_filled_wide_is_judged_on_its_first_columns(tmp_path, monkeypatch):
+    """A gene-set sheet fills 1,600 columns in thousands of rows; judging 200 took minutes."""
+    from nspond_tables import grid
+
+    from ingestion_workflow.pipeline.stages import triage as t
+
+    monkeypatch.setattr(t, "LARGE_SHEET_BYTES", 1_000)
+    genes = ",".join(f"G{c}" for c in range(300))
+    rows = [f"Left insula,{-30 - i % 20},{20 + i % 15},{4 + i % 10},{genes}" for i in range(50)]
+    path = _sheet(tmp_path / "sheet-01.csv", "Region,x,y,z," + genes, rows)["raw_content_path"]
+    assert grid.parse(t._serialised_large(path)).width() == t.LARGE_SHEET_COLUMNS

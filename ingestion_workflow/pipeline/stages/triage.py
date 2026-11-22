@@ -444,17 +444,19 @@ def _rank(source: str) -> int:
 
 
 #: A supplement sheet over this many bytes is judged in full only when its head reads as
-#: coordinates: its first `LARGE_SHEET_HEAD_ROWS` rows and `LARGE_SHEET_HEAD_COLUMNS`
-#: columns, at most `LARGE_SHEET_HEAD_BYTES` of cells. Judging costs about 30 s and
-#: 0.5 GB per MB of sheet, and grows faster than the width (two rows of 16,381 columns
-#: took minutes); supplements hold sheets of hundreds of MB. Of 299,356 tables passed
-#: or read on 2026-11-22, the largest with coordinates was 1.8 MB.
+#: coordinates: its first `LARGE_SHEET_HEAD_ROWS` rows and `LARGE_SHEET_COLUMNS` columns,
+#: at most `LARGE_SHEET_HEAD_BYTES` of cells. Judging costs about 30 s and 0.5 GB per MB
+#: of sheet, and grows faster than the width (200 columns of a gene-set sheet took two
+#: minutes); supplements hold sheets of hundreds of MB. Of 299,356 tables passed or read
+#: on 2026-11-22, the largest with coordinates was 1.8 MB, and coordinate columns sat
+#: within the first 24 of every large sheet.
 LARGE_SHEET_BYTES = 5_000_000
 LARGE_SHEET_HEAD_ROWS = 2_000
-LARGE_SHEET_HEAD_COLUMNS = 200
+LARGE_SHEET_COLUMNS = 64
 LARGE_SHEET_HEAD_BYTES = 500_000
-#: A large sheet whose head holds coordinates is judged on its first this many rows, without
-#: the columns only one row fills (a header row padded to Excel's 16,384 columns). The largest
+#: A large sheet whose head holds coordinates is judged on its first this many rows and
+#: `LARGE_SHEET_COLUMNS` columns, without the columns only one row fills (a header row
+#: padded to Excel's 16,384 columns). The largest
 #: table with coordinates had 5,624 points; `analyses` still reads a passed table whole.
 LARGE_SHEET_JUDGED_ROWS = 20_000
 
@@ -478,7 +480,7 @@ def _serialised_head(path) -> str:
     try:
         with open(path, encoding="utf-8", errors="replace", newline="") as handle:
             for row in itertools.islice(csv.reader(handle), LARGE_SHEET_HEAD_ROWS):
-                row = row[:LARGE_SHEET_HEAD_COLUMNS]
+                row = row[:LARGE_SHEET_COLUMNS]
                 taken += sum(len(cell) for cell in row)
                 if taken > LARGE_SHEET_HEAD_BYTES and rows:
                     break
@@ -502,7 +504,7 @@ def _serialised_large(path) -> str:
     except (OSError, csv.Error):
         return ""
     filled = collections.Counter(i for row in rows for i, cell in enumerate(row) if cell.strip())
-    keep = sorted(i for i, n in filled.items() if n > 1)
+    keep = sorted(i for i, n in filled.items() if n > 1)[:LARGE_SHEET_COLUMNS]
     out = io.StringIO()
     csv.writer(out).writerows([row[i] if i < len(row) else "" for i in keep] for row in rows)
     return serialize.serialize(out.getvalue())
