@@ -97,7 +97,10 @@ class _Results:
 @pytest.fixture()
 def env(tmp_path, monkeypatch):
     from nspond_tables.classify.model import Gate, RoutedGate
+    from ingestion_workflow.pipeline.stages import prose as prose_stage
 
+    # The prompt main read prose with when it made this catalog.
+    monkeypatch.setattr(prose_stage, "PROSE_PROMPT_VERSION", "2026-10-11.nu-prose-v2")
     gate = tmp_path / "gate.json"
     RoutedGate(candidates=Gate(names=[]), residual=Gate(names=[])).save(gate)
     config = tmp_path / "settings.yaml"
