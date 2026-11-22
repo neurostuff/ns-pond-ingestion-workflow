@@ -75,7 +75,7 @@ def test_an_unreachable_prose_server_stops_the_stage_for_the_run(prose_env, monk
 
 
 def _one_at_a_time(monkeypatch):
-    monkeypatch.setattr(scheduler, "batched", lambda refs: batched(refs, 1))
+    monkeypatch.setattr(scheduler, "batched", lambda refs, size=None: batched(refs, 1))
 
 
 def test_a_prose_stop_leaves_the_articles_pending_for_the_next_run(
