@@ -1,4 +1,4 @@
-"""nu-prose-v2: the prompt it was trained on, and what is kept of its answer."""
+"""nu-prose-v3: the prompt it was trained on, and what is kept of its answer."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ from ingestion_workflow.prompts.prose_coordinates import (
 )
 from ingestion_workflow.services.prose_passages import Passage
 
-FIXTURE = Path(__file__).parents[1] / "data" / "prose" / "nu_prose_v2_prompt.json"
+FIXTURE = Path(__file__).parents[1] / "data" / "prose" / "nu_prose_v3_prompt.json"
 TRAINED = json.loads(FIXTURE.read_text(encoding="utf-8"))
 FIELDS = ["x", "y", "z", "statistic", "value", "cluster_size"]
 
@@ -43,7 +43,7 @@ def test_the_request_asks_for_the_trained_fields(tmp_path):
     assert list(point["properties"]) == point["required"] == FIELDS
     assert point["additionalProperties"] is False
     settings = Settings(data_root=tmp_path / "d", cache_root=tmp_path / "c",
-                        prose_model="nu-prose-v2", prose_api_base="http://localhost:8340/v1")
+                        prose_model="nu-prose-v3", prose_api_base="http://localhost:8371/v1")
     passage = Passage(text="Faces > houses (40, -50, -20).", before="We showed faces.")
     request = ProseCoordinateClient(settings).request(passage, title="T", abstract="A")
     content = request["messages"][0]["content"]

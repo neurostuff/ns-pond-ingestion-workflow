@@ -95,3 +95,25 @@ def test_a_rerun_replaces_its_own_entries_only():
     assert "someone 1" in tools
     assert not any(FIT in t for t in tools)
     assert sum("fit-111111111111" in t for t in tools) == 2
+
+
+def test_modality_sidecars_are_schema_normalizations(validator):
+    from ingestion_workflow.normalization import modality
+
+    entry = {"$defs": validator.schema["$defs"], "$ref": "#/$defs/Normalization"}
+    check = type(validator)(entry)
+    data = json.loads((Path(__file__).parent / "data" / "modality_records.json").read_text())
+    written = {}
+    for name, case in data.items():
+        r = written[name] = copy.deepcopy(case["record"])
+        tally = sidecars.write_modalities(r, modality.read(r), FIT)
+        assert sum(tally.values()) == len(r["acquisitions"])
+        for a in r["acquisitions"]:
+            (e,) = a["modality"]["normalized"]
+            assert errors(check, e) == set()
+    acq = next(a for a in written["physio_compat"]["acquisitions"] if a["local_id"] == "acq_emg")
+    assert acq["modality"]["normalized"] == [{
+        "vocabulary": "acquisition_modality", "status": "mapped", "value": "physiological",
+        "label": "peripheral physiological recording", "method": "lexical",
+        "also_read": ["modality_label"],
+        "mapping_tool": f"ingestion_workflow.normalization.modality {FIT}"}]

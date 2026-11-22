@@ -21,7 +21,7 @@ import json
 from pathlib import Path
 
 from ingestion_workflow.services.set_roles import export, labeling
-from ingestion_workflow.services.set_roles.served_prompt import CONTEXT_VERSIONS
+from ingestion_workflow.services.set_roles.decision import CONTEXT_VERSIONS
 
 
 def main():

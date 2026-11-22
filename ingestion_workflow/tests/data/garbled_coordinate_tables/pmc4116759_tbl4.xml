@@ -1,0 +1,130 @@
+<original-table>
+  <table-wrap xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" id="tbl4" position="float">
+    <label>Table 4</label>
+    <caption>
+      <p>Between-group differences in the visuo-motor imitation task.</p>
+    </caption>
+    <table frame="hsides" rules="groups">
+      <thead>
+        <tr>
+          <th/>
+          <th/>
+          <th colspan="5" align="center">Left<hr/></th>
+          <th/>
+          <th colspan="5" align="center">Right<hr/></th>
+        </tr>
+        <tr>
+          <th>Region label</th>
+          <th>BA</th>
+          <th>
+            <italic>x</italic>
+          </th>
+          <th>
+            <italic>y</italic>
+          </th>
+          <th>
+            <italic>z</italic>
+          </th>
+          <th>
+            <italic>t</italic>
+          </th>
+          <th>
+            <italic>d</italic>
+          </th>
+          <th/>
+          <th>
+            <italic>x</italic>
+          </th>
+          <th>
+            <italic>y</italic>
+          </th>
+          <th>
+            <italic>z</italic>
+          </th>
+          <th>
+            <italic>t</italic>
+          </th>
+          <th>
+            <italic>d</italic>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="13">
+            <bold>TYPICALS &gt; AUTISTICS</bold>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <bold>Both conditions</bold>
+          </td>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+        </tr>
+        <tr>
+          <td>
+            <italic>Occipital</italic>
+          </td>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+        </tr>
+        <tr>
+          <td>Inferior occipital gyrus</td>
+          <td>18</td>
+          <td>∧40</td>
+          <td>∧86</td>
+          <td>∧4</td>
+          <td>8.29</td>
+          <td>2.53</td>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+        </tr>
+        <tr>
+          <td>Middle occipital gyrus</td>
+          <td>19</td>
+          <td>∧30</td>
+          <td>∧84</td>
+          <td>4</td>
+          <td>8.40</td>
+          <td>2.56</td>
+          <td/>
+          <td>44</td>
+          <td>∧74</td>
+          <td>0</td>
+          <td>8.48</td>
+          <td>2.59</td>
+        </tr>
+      </tbody>
+    </table>
+    <table-wrap-foot>
+      <fn>
+        <p>Note. Activity associated with group differences in both conditions (left hand + right hand), left hand condition and right hand condition. The coordinates are in MNI space. BA refers to Brodmann area and <italic>d</italic> represents Cohen's effect size. The critical threshold was <italic>t</italic>= 5.38, <italic>p</italic>&lt; .05, FWE. Extent threshold: <italic>k</italic>= 20 voxels.</p>
+      </fn>
+    </table-wrap-foot>
+  </table-wrap>
+</original-table>
