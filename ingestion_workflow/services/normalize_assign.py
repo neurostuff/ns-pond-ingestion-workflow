@@ -243,7 +243,12 @@ def fit_corpus(catalog: Catalog, inputs: Dict[str, Artifact], out_dir: Path, *,
     texts = _Lazy(ids, lambda a: text_of(catalog.root, syncs[a]))
     bibliographies = _Lazy(ids, lambda a: bibliography_of(
         catalog, a, text_source(catalog.root, syncs[a])))
-    kw = dict(fixed_dir=str(fixed_dir) if fixed_dir else None, workers=workers, log=log)
+    # Each paper's own PMID and DOI, so a corpus paper another one cites lends it its task
+    # labels: the fit keys papers by article id, and the fixed manifest knows only Neurostore ids.
+    identifiers = {a: {"pmid": i.pmid, "doi": i.doi}
+                   for a, i in catalog.identifiers(ids).items() if i.pmid or i.doi}
+    kw = dict(fixed_dir=str(fixed_dir) if fixed_dir else None, identifiers=identifiers,
+              workers=workers, log=log)
     if previous:
         return refit(records, texts, bibliographies, str(out_dir), previous=previous, **kw)
     return fit(records, texts, bibliographies, str(out_dir), **kw)

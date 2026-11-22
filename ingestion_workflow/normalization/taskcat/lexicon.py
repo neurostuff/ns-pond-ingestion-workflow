@@ -261,12 +261,19 @@ FAMILY_OVERRIDES = {
 }
 
 # The sense a stimulation names, for a label of tct_sensory_stimulation; the first sense with the most hits wins.
+# Pain comes before touch, so a painful stimulation of the skin is pain stimulation. Electrical stimulation names a
+# sense only through the body part it reaches: deep brain, vagus nerve and TMS stimulation name none.
 SENSES = (
     ("tct_acupuncture_stimulation", r"acupunct|acupoint|\bde[- ]?qi\b|needling|\b(st[- ]?36|li[- ]?4|li[- ]?11|gb[- ]?34|pc[- ]?6|lr[- ]?3|liv[- ]?3|sp[- ]?6|ki[- ]?3|gv[- ]?20)\b"),
     ("tct_visceral_stimulation", r"\brect(al|um)\b|rectosigmoid|colonic|gastric|esophag|oesophag|visceral|barostat|distens|distent"),
     ("tct_gustatory_stimulation", r"\btast(e|es|ant|ants|ing)\b|gustat|sucrose|\bsweet|bitter|\bsalty?\b|\bsour\b|umami|milkshake|saccharin|quinine|\bnacl\b"),
     ("tct_olfactory_stimulation", r"odou?r|olfact|\bsmell|sniff|\bscents?\b|fragran|\bchemosens"),
-    ("tct_touch_stimulation", r"tactile|\btouch|vibr|brush|strok|air[- ]?puff|cutaneous|somatosens|median nerve|\bpressure\b|caress|texture"),
+    ("tct_pain_stimulation", r"\bpain|nocicept|noxious|capsaicin|\bheat\b|cold pressor|laser[- ]evoked"),
+    ("tct_touch_stimulation", r"tactile|\btouch|vibr|brush|strok|air[- ]?puff|cutaneous|somatosens|\bpressure\b|caress|texture"
+                              r"|\b(median|ulnar|tibial|sural|peroneal|sciatic|digital)[- ]nerves?\b|\b(hind|fore)[- ]?(paw|limb|leg)s?\b"
+                              r"|\bpaws?\b|whisker|von[- ]?frey|filament|punctate|mechanical(ly)? (stimul|indent)"
+                              r"|\b(fingers?|digits?|hands?|feet|foot|wrists?|skin|forearms?)\b[^.;]{0,30}\bstimulat"
+                              r"|electrical(ly)? (stimulation of the )?(fingers?|digits?|hands?|feet|foot|wrists?|skin|forearms?)"),
 )
 _SENSE_RE = [(k, re.compile(p, re.I)) for k, p in SENSES]
 

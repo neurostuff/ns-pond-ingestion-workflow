@@ -62,7 +62,10 @@ def write_tasks(record, labels, fit_id):
         else:
             canon = _sidecar.entry("astra canonical task", UNMAPPED, mapping_tool,
                                    **{**common, "method": f"{by}: {row['entity_kind']}" if by == "gate" else by})
-        fam = (_sidecar.entry("astra task family", MAPPED, mapping_tool, value=row["family"], **common)
+        # a family with no task is the contrast classifier's guess from the evidence alone: its method says so, so a
+        # query can leave such families out
+        guessed = {} if row["canonical"] else {"method": f"{by}: family only, no task"}
+        fam = (_sidecar.entry("astra task family", MAPPED, mapping_tool, value=row["family"], **{**common, **guessed})
                if row["family"] else _sidecar.entry("astra task family", UNMAPPED, mapping_tool, method=by,
                                                     also_read=common["also_read"]))
         _sidecar.replace(task["name"], mapping_tool, [canon, fam])
