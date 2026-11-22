@@ -574,3 +574,24 @@ def test_a_sheet_wider_than_the_head_is_judged_by_its_first_columns(tmp_path, mo
         == t.LARGE_SHEET_HEAD_COLUMNS
     gate = _Gate()
     assert t.judge_table(gate, table)["route"] == "candidates" and gate.asked == 1
+
+
+def test_a_large_coordinate_sheet_is_judged_without_its_padding_or_its_tail(tmp_path, monkeypatch):
+    """A header padded to Excel's 16,384 columns made `read.extract` take minutes, and a
+    250,000-row sheet would take gigabytes: the judged sheet keeps the columns more than one
+    row fills, and its first `LARGE_SHEET_JUDGED_ROWS` rows."""
+    from nspond_tables import grid
+
+    from ingestion_workflow.pipeline.stages import triage as t
+
+    monkeypatch.setattr(t, "LARGE_SHEET_BYTES", 1_000)
+    monkeypatch.setattr(t, "LARGE_SHEET_JUDGED_ROWS", 2_500)
+    header = "Region,x,y,z,T," + ",".join(f"Column{c}" for c in range(5_000))
+    rows = [f"Left insula,{-30 - i % 20},{20 + i % 15},{4 + i % 10},{5.1 + i % 3:.2f}"
+            for i in range(3_000)]
+    table = _sheet(tmp_path / "sheet-01.csv", header, rows)
+    assert grid.parse(t._serialised_large(table["raw_content_path"])).width() == 5
+    gate = _Gate()
+    got = t.judge_table(gate, table)
+    assert gate.asked == 1 and got["route"] == "candidates"
+    assert t.LARGE_SHEET_HEAD_ROWS < got["points"] <= 2_500

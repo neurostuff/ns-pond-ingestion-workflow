@@ -28,6 +28,7 @@ inspected afterwards: the record says which gate made it and on what score.
 
 from __future__ import annotations
 
+import collections
 import csv
 import hashlib
 import io
@@ -345,14 +346,16 @@ def judge_table(gate, table: Dict, abstract: str = "") -> Dict:
     if size:
         from nspond_tables import read
 
-        head = read.extract(_serialised_head(path), caption=caption, footer=footer,
-                            abstract=abstract)
+        head_text = _serialised_head(path)
+        head = read.extract(head_text, caption=caption, footer=footer, abstract=abstract)
         if not (head.axis_columns or head.packed_columns or len(head.points) >= 3):
             return {"table_id": table.get("table_id"), "passes": False,
                     "points": len(head.points), "route": "too_large", "score": 0.0,
                     "reason": "a %.0f MB sheet whose head holds no coordinates"
                               % (size / 1e6)}
-    text = _serialised(path)
+        text = _serialised_large(path) or head_text
+    else:
+        text = _serialised(path)
     if not text.strip():
         return {"table_id": table.get("table_id"), "passes": False, "points": 0,
                 "route": "unreadable", "score": 0.0,
@@ -450,6 +453,10 @@ LARGE_SHEET_BYTES = 5_000_000
 LARGE_SHEET_HEAD_ROWS = 2_000
 LARGE_SHEET_HEAD_COLUMNS = 200
 LARGE_SHEET_HEAD_BYTES = 500_000
+#: A large sheet whose head holds coordinates is judged on its first this many rows, without
+#: the columns only one row fills (a header row padded to Excel's 16,384 columns). The largest
+#: table with coordinates had 5,624 points; `analyses` still reads a passed table whole.
+LARGE_SHEET_JUDGED_ROWS = 20_000
 
 
 def _large_sheet_bytes(path) -> int:
@@ -481,6 +488,23 @@ def _serialised_head(path) -> str:
             return ""
     out = io.StringIO()
     csv.writer(out).writerows(rows)
+    return serialize.serialize(out.getvalue())
+
+
+def _serialised_large(path) -> str:
+    """A large sheet as `LARGE_SHEET_JUDGED_ROWS` describes it, serialised; empty if it
+    does not parse as csv."""
+    from nspond_tables import serialize
+
+    try:
+        with open(path, encoding="utf-8", errors="replace", newline="") as handle:
+            rows = list(itertools.islice(csv.reader(handle), LARGE_SHEET_JUDGED_ROWS))
+    except (OSError, csv.Error):
+        return ""
+    filled = collections.Counter(i for row in rows for i, cell in enumerate(row) if cell.strip())
+    keep = sorted(i for i, n in filled.items() if n > 1)
+    out = io.StringIO()
+    csv.writer(out).writerows([row[i] if i < len(row) else "" for i in keep] for row in rows)
     return serialize.serialize(out.getvalue())
 
 
