@@ -113,7 +113,7 @@ def run_stages(
             ctx.settings, len(refs), stage.name, unit="article"
         )
         for batch in batched(refs):
-            plan = _plan_batch(ctx, stage, batch)
+            plan = plan_batch(ctx, stage, batch)
             stage_report.absorb(plan)
             if bar is not None:
                 bar.update(len(batch))
@@ -211,7 +211,7 @@ def _record(ctx: Context, outcomes: List[Outcome]) -> None:
             ctx.catalog.record([outcomes[index]])
 
 
-def _plan_batch(ctx: Context, stage: Stage, batch: List[ArticleRef]) -> StagePlan:
+def plan_batch(ctx: Context, stage: Stage, batch: List[ArticleRef]) -> StagePlan:
     ids = [ref.id for ref in batch]
     artifacts = ctx.catalog.artifacts(ids, stage.name)
     upstream = ctx.catalog.artifacts(ids, stage.requires) if stage.requires else {}

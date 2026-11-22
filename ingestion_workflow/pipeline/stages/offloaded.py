@@ -198,9 +198,9 @@ class _OffloadedStage:
         fresh = self.fresh_sources(ctx, [ref.id for ref in refs], artifacts, upstream)
         for ref in refs:
             if fresh.get(ref.id):
-                plan.fresh += 1
+                plan.add_fresh(ref)
             else:
-                plan.wait(AWAITS_IMPORT, ref.id)
+                plan.wait(ref, AWAITS_IMPORT)
         return plan
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
@@ -338,9 +338,9 @@ class NormalizeStage(_OffloadedStage):
             due = [(s, read) for s, read in due if read is not None]
             if not due:
                 if fresh.get(ref.id):
-                    plan.fresh += 1
+                    plan.add_fresh(ref)
                 else:
-                    plan.wait(NO_NORMALIZE_INPUT, ref.id)
+                    plan.wait(ref, NO_NORMALIZE_INPUT)
                 continue
             for source, read in due:
                 run = self.configured_run(source)
@@ -351,7 +351,7 @@ class NormalizeStage(_OffloadedStage):
                         attempts[source] = ctx.catalog.attempt_counts(ids, self.name, source)
                     count, last = attempts[source].get(ref.id, (0, None))
                     if not ctx.should_attempt(existing, count, last, self.name, source):
-                        plan.permanent += 1
+                        plan.add_permanent(ref)
                         continue
                 plan.pending.append(Work(ref=ref, source=source, fingerprint=fp, upstream=read))
         return plan

@@ -145,16 +145,16 @@ class AnalysesStage:
         for ref in refs:
             triaged = upstream.get(ref.id, {}).get("")
             if triaged is None or triaged.status is not Status.OK:
-                plan.blocked += 1
+                plan.block(ref)
                 continue
             fp, wait = self._current(triaged, extractions.get(ref.id, {}),
                                      metadata.get(ref.id, {}).get(""))
             if fp is None:
-                plan.wait(wait, ref.id)
+                plan.wait(ref, wait)
                 continue
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
-                plan.fresh += 1
+                plan.add_fresh(ref)
                 continue
             count, last = attempts.get(ref.id, (0, None))
             # A skip ("no coordinate tables") judged what triage passed then;
@@ -162,7 +162,7 @@ class AnalysesStage:
             stale_skip = (existing is not None and existing.status is Status.SKIPPED
                           and passes_unseen(existing, fp, triaged))
             if not stale_skip and not ctx.should_attempt(existing, count, last, self.name):
-                plan.permanent += 1
+                plan.add_permanent(ref)
                 continue
             plan.pending.append(Work(ref=ref, source="", fingerprint=fp, upstream=triaged))
         return plan

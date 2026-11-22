@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from datetime import timedelta
 from enum import Enum
 from pathlib import Path
 from typing import List, Optional, Sequence, Tuple
@@ -164,17 +163,11 @@ def _planned(
     A stage that cannot plan from this configuration keeps its whole batch
     rather than dropping work on a guess; the run itself reports it.
     """
-    from ingestion_workflow.pipeline.scheduler import _plan_batch, batched  # noqa: PLC0415
+    from ingestion_workflow.pipeline.scheduler import batched, plan_batch  # noqa: PLC0415
     from ingestion_workflow.pipeline.stage import Context  # noqa: PLC0415
     from ingestion_workflow.pipeline.stages import build  # noqa: PLC0415
 
-    ctx = Context(
-        settings,
-        catalog,
-        refresh=refresh,
-        max_attempts=settings.max_attempts,
-        retry_after=timedelta(hours=settings.retry_after_hours),
-    )
+    ctx = Context.from_settings(settings, catalog, refresh)
     try:
         built = build(names or None, settings)
     except ValueError as exc:
@@ -184,7 +177,7 @@ def _planned(
     for stage_obj in built:
         for batch in batched(selection.refs):
             try:
-                plan = _plan_batch(ctx, stage_obj, batch)
+                plan = plan_batch(ctx, stage_obj, batch)
             except Exception as exc:    # noqa: BLE001
                 logger.warning("%s: cannot tell what is pending (%s); keeping the batch",
                                stage_obj.name, exc)

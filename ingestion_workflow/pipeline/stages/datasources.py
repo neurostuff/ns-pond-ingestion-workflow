@@ -85,26 +85,26 @@ class DataSourcesStage:
         attempts: Dict[str, Dict[str, tuple]] = {}
         for ref in refs:
             if not synced(upstream.get(ref.id, {}).get("")):
-                plan.block(NOT_SYNCED)
+                plan.block(ref, NOT_SYNCED)
                 continue
             if digest is None:
-                plan.wait(NO_DICTIONARY, ref.id)
+                plan.wait(ref, NO_DICTIONARY)
                 continue
             judged = judged_extraction(ctx, extracted.get(ref.id, {}), downloads.get(ref.id, {}))
             if judged is None:
-                plan.block(NO_EXTRACTION)
+                plan.block(ref, NO_EXTRACTION)
                 continue
             source = judged.source
             fp = self.fingerprint_for(digest, judged)
             existing = artifacts.get(ref.id, {}).get(source)
             if ctx.is_fresh(existing, fp):
-                plan.fresh += 1
+                plan.add_fresh(ref)
                 continue
             if source not in attempts:
                 attempts[source] = ctx.catalog.attempt_counts(ids, self.name, source)
             count, last = attempts[source].get(ref.id, (0, None))
             if not ctx.should_attempt(existing, count, last, self.name, source):
-                plan.permanent += 1
+                plan.add_permanent(ref)
                 continue
             plan.pending.append(Work(ref=ref, source=source, fingerprint=fp, upstream=judged))
         return plan
