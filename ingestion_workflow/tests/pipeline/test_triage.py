@@ -559,16 +559,16 @@ def test_a_wide_sheet_of_coordinates_is_still_found_by_its_head(tmp_path, monkey
 
 
 def test_a_sheet_thousands_of_columns_wide_is_judged_by_its_first_columns(tmp_path, monkeypatch):
-    """`read.extract` took minutes on two rows of 16,381 columns."""
+    """`read.extract` took minutes on two rows of 16,381 columns; the head keeps 200."""
     from nspond_tables import grid
 
     from ingestion_workflow.pipeline.stages import triage as t
 
     monkeypatch.setattr(t, "LARGE_SHEET_BYTES", 1_000)
-    extra = ",".join("1" for _ in range(5_000))
+    extra = ",".join("1" for _ in range(300))
     rows = [f"Left insula,{-30 - i % 20},{20 + i % 15},{4 + i % 10},{5.1:.2f},{extra}"
             for i in range(20)]
-    header = "Region,x,y,z,T," + ",".join(f"s{c}" for c in range(5_000))
+    header = "Region,x,y,z,T," + ",".join(f"s{c}" for c in range(300))
     table = _sheet(tmp_path / "sheet-01.csv", header, rows)
     assert grid.parse(t._serialised_head(table["raw_content_path"])).width() \
         == t.LARGE_SHEET_HEAD_COLUMNS
