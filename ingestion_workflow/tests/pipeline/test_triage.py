@@ -558,7 +558,7 @@ def test_a_wide_sheet_of_coordinates_is_still_found_by_its_head(tmp_path, monkey
     assert gate.asked == 1 and got["route"] == "candidates"
 
 
-def test_a_sheet_thousands_of_columns_wide_is_judged_by_its_first_columns(tmp_path, monkeypatch):
+def test_a_sheet_wider_than_the_head_is_judged_by_its_first_columns(tmp_path, monkeypatch):
     """`read.extract` took minutes on two rows of 16,381 columns; the head keeps 200."""
     from nspond_tables import grid
 
