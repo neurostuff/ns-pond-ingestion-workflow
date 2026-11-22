@@ -1,0 +1,54 @@
+{
+ "_source": "MinerU middle JSON for doi:10.1002/jnr.25176 (production run wave7/beast-2), cut to Supplementary Table 1.b's two pieces: the head on one page, the right hemisphere on the next. Table bodies are MinerU's HTML as written to tables/table-1.html and tables/table-004.html, trimmed to a few rows; page indices are illustrative.",
+ "pages": [
+  {
+   "page_idx": 11,
+   "blocks": [
+    {
+     "type": "table",
+     "index": 0,
+     "content": [
+      {
+       "type": "table_caption",
+       "content": [
+        {
+         "type": "text",
+         "content": "Supplementary Table 1.b. List of left and right hemisphere clusters of significant decreases in FWF after Learning on Day 1, after cluster-wise correction for multiple comparisons."
+        }
+       ]
+      },
+      {
+       "type": "table_body",
+       "content": "<table><tr><td rowspan=\"2\"></td><td>Cluster Number</td><td>Cluster Size (mm^2)</td><td colspan=\"3\">Coordinate (MNI)</td><td>Location of Peak Coordinate</td></tr><tr><td></td><td></td><td>x</td><td>y</td><td>z</td><td></td></tr><tr><td colspan=\"7\">Left Hemisphere</td></tr><tr><td></td><td>1</td><td>2446.08</td><td>-24.5</td><td>-83.4</td><td>12.6</td><td>Occipito-superior and transversal sulcus</td></tr><tr><td></td><td>2</td><td>1007.28</td><td>-23.8</td><td>-64.7</td><td>28.2</td><td>Intraparietal sulcus</td></tr></table>"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "page_idx": 12,
+   "blocks": [
+    {
+     "type": "text",
+     "index": 1,
+     "content": [
+      {
+       "type": "text",
+       "content": "Right Hemisphere"
+      }
+     ]
+    },
+    {
+     "type": "table",
+     "index": 2,
+     "content": [
+      {
+       "type": "table_body",
+       "content": "<table><tr><td></td><td>1</td><td>3366.77</td><td>16.7</td><td>-60.7</td><td>27.4</td><td>Parieto-occipital sulcus</td></tr><tr><td></td><td>2</td><td>1108.36</td><td>27.0</td><td>-81.8</td><td>-9.2</td><td>Posterior transverse collateral sulcus</td></tr></table>"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

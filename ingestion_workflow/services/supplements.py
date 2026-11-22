@@ -230,6 +230,17 @@ def page_url(doc) -> Optional[str]:
     return None
 
 
+def link_name(url: str) -> str:
+    """The file a link names: its `file=` parameter, else its last path segment with an
+    extension (Frontiers ends `/file/Data_Sheet_1.docx/1234/1`), else its last segment."""
+    query_name = re.search(r"[?&]file=([^&]+)", url)
+    if query_name:
+        return unquote(query_name.group(1))
+    segments = [unquote(s) for s in urlparse(url).path.split("/") if s]
+    named = [s for s in segments if extension(s) in READ]
+    return named[-1] if named else (segments[-1] if segments else "")
+
+
 def publisher_items(html: bytes, base: Optional[str] = None) -> List[Supplement]:
     """The supplementary files a publisher's article page links to."""
     from lxml import html as lxml_html
@@ -251,8 +262,7 @@ def publisher_items(html: bytes, base: Optional[str] = None) -> List[Supplement]
         if miami:
             url = f"{ELSEVIER_CDN}/{miami.group(1)}"
         known = any(p.search(url) for p in _PUBLISHER_FILES)
-        query_name = re.search(r"[?&]file=([^&]+)", url)
-        name = unquote(query_name.group(1)) if query_name else unquote(urlparse(url).path).rsplit("/", 1)[-1]
+        name = link_name(url)
         if not known and not (_SUPPLEMENTARY_PATH.search(urlparse(url).path) and extension(name) in READ):
             continue
         key = url.split("?", 1)[0] if "silverchair" in url else url
@@ -266,60 +276,111 @@ def publisher_items(html: bytes, base: Optional[str] = None) -> List[Supplement]
 # -- fetching ----------------------------------------------------------------------
 
 
-class TransientFetch(RuntimeError):
-    """A host was busy or down: worth asking again later."""
+#: The reason of an item a busy or down host did not serve: noted on the artifact as
+#: transient, so the article is asked again after the backoff (`Context.due_again`).
+TRANSIENT = "transient"
+
+#: What a file of each type starts with: a host that answers with a page or an error in
+#: place of the file is caught by it.
+_MAGIC = {"pdf": (b"%PDF",), "docx": (b"PK",), "xlsx": (b"PK",), "doc": (b"\xd0\xcf\x11\xe0",),
+          "xls": (b"\xd0\xcf\x11\xe0",)}
+_PAGE = re.compile(rb"^\s*(<!doctype html|<html|<\?xml[^>]*>\s*<html)", re.I)
 
 
-def fetch(item: Supplement, dest: Path, session, *, max_bytes: int) -> None:
+def is_transient(item: Supplement) -> bool:
+    return bool(item.reason) and item.reason.startswith(TRANSIENT)
+
+
+def not_the_file(extension_: str, head: bytes) -> Optional[str]:
+    """Why bytes are not a file of `extension_`, if they are not."""
+    if _PAGE.match(head) and extension_ != "txt":
+        return "a page, not the file"
+    magic = _MAGIC.get(extension_)
+    if magic and not head.startswith(magic):
+        return f"not a .{extension_} file"
+    return None
+
+
+def public_host(url: str) -> bool:
+    """Whether every address the URL's host resolves to is public: a page's link may name
+    any host, and none of ours is to be asked."""
+    import ipaddress
+    import socket
+
+    host = urlparse(url).hostname
+    if not host:
+        return False
+    try:
+        addresses = {info[4][0] for info in socket.getaddrinfo(host, None)}
+    except OSError:
+        return False
+    return bool(addresses) and all(ipaddress.ip_address(a.split("%")[0]).is_global for a in addresses)
+
+
+def fetch(item: Supplement, dest: Path, session, *, max_bytes: int, reuse: bool = True) -> None:
     """Fetch `item` into `dest`, recording its path, size and sha256, or why it has none.
 
-    A transient failure (timeout, 429, 5xx) raises `TransientFetch`, so the article is retried."""
+    A busy or down host (timeout, 429, 5xx) leaves the reason `transient: ...`. A file a
+    finished fetch left at `dest` is reused unless `reuse` is false (`--refresh`). A link
+    from a publisher page is fetched only from a public host, redirects included."""
     import requests
 
     from ingestion_workflow.utils.http import transient
 
-    if dest.is_file():
+    if reuse and dest.is_file():
         # Only a complete fetch is renamed into place, so one there is this file.
         data = dest.read_bytes()
         item.path, item.size, item.sha256 = str(dest), len(data), hashlib.sha256(data).hexdigest()
         return
+    if item.route == "publisher" and not public_host(item.url):
+        item.reason = "not a public host"
+        return
     try:
         with session.get(item.url, stream=True, timeout=(20, 120),
                          headers={"User-Agent": USER_AGENT}) as response:
+            if item.route == "publisher" and response.url != item.url and not public_host(response.url):
+                item.reason = "redirected to a host that is not public"
+                return
             if response.status_code >= 400:
                 if response.status_code == 429 or response.status_code >= 500:
-                    raise TransientFetch(f"{item.url}: HTTP {response.status_code}")
-                item.reason = f"HTTP {response.status_code}"
+                    item.reason = f"{TRANSIENT}: HTTP {response.status_code}"
+                else:
+                    item.reason = f"HTTP {response.status_code}"
                 return
             declared = int(response.headers.get("Content-Length") or 0)
             if declared > max_bytes:
                 item.reason = f"larger than the cap ({max_bytes:,} bytes)"
                 return
             kind = response.headers.get("Content-Type", "").lower()
-            if "text/html" in kind and item.extension != "txt":
+            if ("text/html" in kind or "xhtml" in kind) and item.extension != "txt":
                 item.reason = "a page, not the file"
                 return
             dest.parent.mkdir(parents=True, exist_ok=True)
-            digest, size = hashlib.sha256(), 0
+            digest, size, head = hashlib.sha256(), 0, b""
             part = dest.with_name(dest.name + ".part")
             with part.open("wb") as handle:
                 for chunk in response.iter_content(1 << 16):
                     size += len(chunk)
                     if size > max_bytes:
                         break
+                    head = head or chunk[:512]
                     digest.update(chunk)
                     handle.write(chunk)
             if size > max_bytes:
                 part.unlink(missing_ok=True)
                 item.reason = f"larger than the cap ({max_bytes:,} bytes)"
                 return
+            wrong = not_the_file(item.extension, head)
+            if wrong:
+                part.unlink(missing_ok=True)
+                item.reason = wrong
+                return
             part.replace(dest)
-    except TransientFetch:
-        raise
     except requests.RequestException as exc:
-        if transient(exc):
-            raise TransientFetch(f"{item.url}: {type(exc).__name__}") from exc
-        item.reason = f"{type(exc).__name__}"
+        part = dest.with_name(dest.name + ".part")
+        part.unlink(missing_ok=True)
+        item.reason = (f"{TRANSIENT}: {type(exc).__name__}" if transient(exc)
+                       else f"{type(exc).__name__}")
         return
     item.path, item.size, item.sha256 = str(dest), size, digest.hexdigest()
 
@@ -419,11 +480,13 @@ def read_doc(item: Supplement, out_dir: Path) -> None:
     if soffice is None:
         item.reason = "no converter for .doc (LibreOffice not installed)"
         return
-    converted = out_dir / "converted"
+    converted = (out_dir / "converted").resolve()
     converted.mkdir(parents=True, exist_ok=True)
-    profile = out_dir / "lo-profile"
-    subprocess.run([soffice, f"-env:UserInstallation=file://{profile}", "--headless",
-                    "--convert-to", "docx", "--outdir", str(converted), item.path],
+    # LibreOffice takes its profile as a file:// URL, which must be absolute; a relative
+    # one leaves it waiting until the timeout.
+    profile = (out_dir / "lo-profile").resolve()
+    subprocess.run([soffice, f"-env:UserInstallation={profile.as_uri()}", "--headless",
+                    "--convert-to", "docx", "--outdir", str(converted), str(Path(item.path).resolve())],
                    check=True, capture_output=True, timeout=300)
     shutil.rmtree(profile, ignore_errors=True)
     docx = converted / (Path(item.path).stem + ".docx")
@@ -446,9 +509,33 @@ def _write_text(item: Supplement, out_dir: Path, text: str) -> None:
     item.text_path = str(path)
 
 
+#: Largest a Word file or workbook (a zip) may unpack to, and most it may expand by.
+ZIP_MAX_BYTES = 500 * 2**20
+ZIP_MAX_RATIO = 200
+
+
+def zip_too_big(path: Path) -> Optional[str]:
+    """Why a .docx or .xlsx is not opened: it would unpack to far more than it holds."""
+    import zipfile
+
+    try:
+        with zipfile.ZipFile(path) as archive:
+            unpacked = sum(info.file_size for info in archive.infolist())
+    except zipfile.BadZipFile:
+        return "not a zip (a damaged .docx or .xlsx)"
+    packed = max(1, Path(path).stat().st_size)
+    if unpacked > ZIP_MAX_BYTES or unpacked / packed > ZIP_MAX_RATIO:
+        return f"unpacks to {unpacked:,} bytes from {packed:,}"
+    return None
+
+
 def read(item: Supplement, out_dir: Path) -> None:
     """Read a fetched item that is not a PDF (PDFs are read in a batch by `pdf_engines`)."""
     try:
+        if item.extension in ("docx", "xlsx"):
+            item.reason = zip_too_big(Path(item.path))
+            if item.reason:
+                return
         if item.extension in SHEETS:
             read_sheets(item, out_dir)
         elif item.extension == "docx":
@@ -479,14 +566,29 @@ def from_pdf_content(item: Supplement, content: ExtractedContent) -> None:
 
 _TABLE_NUMBER = re.compile(r"\btable\s*(s?)\s*(\d+)([a-z]?)\b", re.I)
 
+#: Bump when what reading makes of the same file changes (a reader, a caption rule): the
+#: extractions that appended it go stale, and only those.
+READ_VERSION = 2
 
-def table_label(caption: str, file_index: int, table_index: int) -> str:
-    """How the paper would cite a supplementary table: "Table S3" when its caption numbers it
-    (a supplement's own "Table 3" is the paper's S3), else by file and position."""
+
+def table_label(caption: str, file_index: int, table_index: int, own_numbers: bool = True) -> str:
+    """How the paper cites a supplementary table: "Table S3" when its caption says so, or when
+    it says "Table 3" and `own_numbers` (the only file that numbers its tables, whose 3 is the
+    paper's S3). Otherwise by file and position, in words no "Table N" citation matches."""
     match = _TABLE_NUMBER.search(caption or "")
-    if match:
+    if match and (match.group(1) or own_numbers):
         return f"Table S{match.group(2)}{match.group(3).lower()}"
-    return f"Supplementary file {file_index} table {table_index}"
+    return f"Supplementary file {file_index}, table #{table_index}"
+
+
+def read_digest(items: Sequence[Supplement]) -> Optional[str]:
+    """What an extraction appends of `items`, as one value: each read file's route, name,
+    bytes (sha256) and reader, and `READ_VERSION`. None when nothing was read."""
+    read = sorted((i.route, i.name, i.sha256 or "", i.read_by or "") for i in items if i.read)
+    if not read:
+        return None
+    raw = json.dumps([READ_VERSION, read], separators=(",", ":")).encode()
+    return hashlib.sha256(raw).hexdigest()
 
 
 def is_supplementary(table: ExtractedTable) -> bool:
@@ -505,7 +607,8 @@ def without_supplements(content: ExtractedContent) -> ExtractedContent:
     return content
 
 
-def append(content: ExtractedContent, supplements: Sequence[Supplement], out_dir: Path) -> ExtractedContent:
+def append(content: ExtractedContent, supplements: Sequence[Supplement], out_dir: Path,
+           max_chars: int = 100_000) -> ExtractedContent:
     """`content` with each read supplement's text after the text (after the figure legends)
     and its tables after the tables.
 
@@ -513,13 +616,24 @@ def append(content: ExtractedContent, supplements: Sequence[Supplement], out_dir
     links). The joined text is written to `out_dir`, never beside the extractor's: that text may
     sit in a shared source cache, and is left as it is and named `base_text_path`. Each supplement's span in the joined text is recorded in
     `content.supplements`; each table's id is `s<k>-<its id>`, its `metadata.supplement` the
-    supplement's index k (1-based), and its `metadata.table_label` how the paper cites it."""
+    supplement's index k (1-based), and its `metadata.table_label` how the paper cites it.
+    Each table's caption is prefixed with the file it came from, so a supplement's "Table 3"
+    is not read as the main text's. The supplements' text is cut at `max_chars` in all (the
+    record model's prompt has a length limit); their tables are kept whole.
+
+    Nothing is appended to an extraction without a text: supplements alone are not the
+    article. Raises FileNotFoundError when the extraction names a text that is not there,
+    for the same reason."""
     content = without_supplements(content)
     read = [s for s in supplements if s.read]
-    if not read:
+    if not read or content.full_text_path is None:
         return content
-    base_path = Path(content.full_text_path) if content.full_text_path else None
-    base = base_path.read_text(encoding="utf-8") if base_path and base_path.is_file() else ""
+    base_path = Path(content.full_text_path)
+    if not base_path.is_file():
+        raise FileNotFoundError(f"the extraction's text is not there: {base_path}")
+    base = base_path.read_text(encoding="utf-8")
+    numbering = [s for s in read if any(_TABLE_NUMBER.search(t.get("caption") or "") for t in s.tables)]
+    room = max_chars
     atx = re.search(r"(?m)^#{1,6} \S", base) is not None
     text = base.rstrip() + ("\n\n" if base.strip() else "") + ("## " if atx else "") + HEADING
     entries = []
@@ -528,6 +642,9 @@ def append(content: ExtractedContent, supplements: Sequence[Supplement], out_dir
         described = " ".join(filter(None, (item.label, item.caption)))
         text += "\n\n" + ("### " if atx else "") + heading + (f": {described}" if described else "")
         body = Path(item.text_path).read_text(encoding="utf-8").strip()
+        cut = len(body) > room
+        body = body[:max(room, 0)] + ("\n[... the rest of this file's text is left out]" if cut else "")
+        room -= len(body)
         start = len(text) + 2
         text += "\n\n" + body
         table_ids = []
@@ -536,12 +653,14 @@ def append(content: ExtractedContent, supplements: Sequence[Supplement], out_dir
             table.table_id = f"s{k}-{table.table_id}"
             table.table_number = None
             table.metadata = {**table.metadata, "supplement": k,
-                              "table_label": table_label(table.caption, k, n)}
+                              "table_label": table_label(table.caption, k, n, own_numbers=len(numbering) <= 1)}
+            origin = f"Supplementary file {k} ({item.name})"
+            table.caption = f"{origin}: {table.caption}" if table.caption else origin
             content.tables.append(table)
             table_ids.append(table.table_id)
         entries.append({"index": k, "route": item.route, "url": item.url, "name": item.name,
                         "label": item.label, "caption": item.caption, "read_by": item.read_by,
-                        "span": [start, len(text)], "tables": table_ids})
+                        "span": [start, len(text)], "tables": table_ids, **({"truncated": True} if cut else {})})
     text += "\n"
     out_dir.mkdir(parents=True, exist_ok=True)
     joined = out_dir / f"{content.source.value}+supplements.txt"
@@ -567,7 +686,8 @@ def payload_supplements(payload: Optional[Dict[str, Any]]) -> List[Supplement]:
 
 
 __all__ = [
-    "HEADING", "READ", "ROUTES", "Supplement", "TransientFetch", "append", "elsevier_items",
+    "HEADING", "READ", "READ_VERSION", "ROUTES", "Supplement", "TRANSIENT", "append", "elsevier_items",
+    "is_transient", "link_name", "not_the_file", "public_host", "read_digest", "zip_too_big",
     "fetch", "file_name", "from_pdf_content", "is_supplementary", "jats_items", "passed_over",
     "payload_supplements", "pmc_items", "publisher_items", "read", "springer_items",
     "supplement_spans", "table_label", "without_supplements",

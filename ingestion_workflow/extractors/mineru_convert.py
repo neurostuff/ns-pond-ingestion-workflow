@@ -10,9 +10,11 @@ the model loads on the first. MinerU is the `mineru` extra (README).
 
 from __future__ import annotations
 
+import copy
 import importlib.util
 import logging
 import os
+import re
 import sys
 from dataclasses import dataclass, field
 from io import StringIO
@@ -94,6 +96,7 @@ def read_middle_json(middle: Mapping[str, Any]) -> MineruDocument:
     paragraphs: List[str] = []
     captions: List[Tuple[str, str]] = []
     tables: List[MineruTable] = []
+    last_table_page: Optional[int] = None
     for page in middle.get("pages") or []:
         for block in page.get("blocks") or []:
             kind = block.get("type")
@@ -111,8 +114,13 @@ def read_middle_json(middle: Mapping[str, Any]) -> MineruDocument:
                 footer = " ".join(_text(c) for k, c in parts if k == "table_footnote").strip()
                 body = next((c for k, c in parts if k == "table_body"), "")
                 html = mark_header_rows(body if isinstance(body, str) else "")
-                tables.append(MineruTable(caption=caption, footer=footer, html=html))
                 paragraphs.extend(p for p in (caption, table_text(html), footer) if p)
+                page_idx = page.get("page_idx")
+                if (not caption and tables and isinstance(page_idx, int)
+                        and isinstance(last_table_page, int) and page_idx == last_table_page + 1):
+                    caption, html = continued(tables[-1], html, caption)
+                tables.append(MineruTable(caption=caption, footer=footer, html=html))
+                last_table_page = page_idx
                 continue
             if kind == "list":
                 items = (_text(item.get("content")) for item in _parts_of(block))
@@ -122,6 +130,116 @@ def read_middle_json(middle: Mapping[str, Any]) -> MineruDocument:
             if text:
                 paragraphs.append(text)
     return MineruDocument(text="\n\n".join(paragraphs), captions=captions, tables=tables)
+
+
+def continued(previous: MineruTable, html: str, caption: str) -> Tuple[str, str]:
+    """(caption, html) for a table that may be `previous` carried over a page break.
+
+    MinerU reads each page on its own, so a table running onto the next page comes out
+    as two: the first with its caption and header, the second with neither. Read alone,
+    the second piece has no column names, and the extractor took its cluster size and
+    statistic for x and y (doi:10.1002/jnr.25176, Table 2's right hemisphere; 71 such
+    pieces read shifted in the production catalog, 2026-11-19). A captionless piece with
+    no header of its own, on the page after a table of the same width, gets that
+    table's header rows and its caption marked continued, as MinerU's own continued
+    pieces read ("Table 1. (continued)"). Each piece keeps its own rows.
+
+    Equal width is not enough: a table with an empty leading column has the width of
+    one shifted by a column, and its header over the other would name the wrong numbers.
+    Where the previous table has rows of its own, each column must hold the same kind of
+    cell, number or text, in both. A previous table that is only a header -- MinerU often
+    leaves the header at the foot of one page and every row on the next -- has nothing
+    to compare, and width decides."""
+    if _header_rows(html, after_titles=True) or not _header_rows(previous.html):
+        return caption, html
+    width = _width(html)
+    if width != _width(previous.html):
+        return caption, html
+    head_kinds = _column_kinds(_rows(previous.html)[len(_header_rows(previous.html)):], width)
+    if any(head_kinds) and not _same_columns(head_kinds, _column_kinds(_rows(html), width)):
+        return caption, html
+    import lxml.html
+
+    rows = _rows(html)
+    if not rows:
+        return caption, html
+    body = rows[0].getparent()
+    for row in reversed(_header_rows(previous.html)):
+        body.insert(0, copy.deepcopy(row))
+    table = body
+    while table is not None and table.tag != "table":
+        table = table.getparent()
+    if table is None:
+        return caption, html
+    label = previous.caption.removesuffix(" (continued)")
+    return (f"{label} (continued)" if label else ""), lxml.html.tostring(table, encoding="unicode")
+
+
+#: A cell that is nothing but a number: data, never a column name. A digit alone is not
+#: enough -- a header names "Cluster Size (mm^2)".
+_BARE_NUMBER = re.compile(r"^[-+]?\d+(?:[.,]\d+)?$")
+
+
+def _header_rows(html: str, after_titles: bool = False) -> List[Any]:
+    """The table's leading rows that name columns: no cell a bare number, and more than
+    one cell filled -- a lone cell labels a group of rows ("Right Hemisphere").
+
+    With `after_titles`, lone-cell rows at the top are passed over first: a piece that
+    opens "Table 1. (Continued)" and then names its columns has a header of its own."""
+    rows = _rows(html)
+    if after_titles:
+        while rows and not _numbered(rows[0]) and _filled(rows[0]) <= 1:
+            rows = rows[1:]
+    head = []
+    for row in rows:
+        if _numbered(row) or _filled(row) <= 1:
+            break
+        head.append(row)
+    return head
+
+
+def _numbered(row: Any) -> bool:
+    return any(_BARE_NUMBER.match(" ".join(cell.split())) for cell in _cells(row))
+
+
+def _filled(row: Any) -> int:
+    return sum(1 for cell in _cells(row) if cell.strip())
+
+
+#: A cell that reads as a value: a number, signed, bounded or approximate (`< 0.001`).
+_NUMERIC = re.compile(r"^[-+<>=~±]?\s*\.?\d")
+
+
+def _column_kinds(rows: List[Any], width: int) -> List[Optional[str]]:
+    """Per column, "number" or "text" by what most of its filled cells hold, or None when
+    none is filled. Only rows with one cell per column are read: a span moves the rest."""
+    kinds: List[List[bool]] = [[] for _ in range(width)]
+    for row in rows:
+        cells = [" ".join(cell.split()) for cell in _cells(row)]
+        if len(cells) != width:
+            continue
+        for i, cell in enumerate(cells):
+            if cell:
+                kinds[i].append(bool(_NUMERIC.match(cell)))
+    return [None if not k else ("number" if 2 * sum(k) >= len(k) else "text") for k in kinds]
+
+
+def _same_columns(head: List[Optional[str]], piece: List[Optional[str]]) -> bool:
+    """Whether every column both bodies fill holds the same kind in each, and at least two
+    can be compared."""
+    both = [(a, b) for a, b in zip(head, piece) if a and b]
+    return len(both) >= 2 and all(a == b for a, b in both)
+
+
+def _width(html: str) -> int:
+    """The table's width in columns: its widest row, spans counted."""
+    def span(cell: Any) -> int:
+        try:
+            return max(1, int(cell.get("colspan") or 1))
+        except ValueError:
+            return 1
+    return max((sum(span(c) for c in row if c.tag in ("td", "th")) for row in _rows(html)),
+               default=0)
 
 
 def _parts_of(block: Mapping[str, Any]) -> List[Mapping[str, Any]]:

@@ -1,17 +1,19 @@
 {
- "version": "3.1",
- "date": "2026-10-09",
- "n_tasks": 232,
+ "version": "3.2",
+ "date": "2026-11-19",
+ "n_tasks": 237,
  "families": [
   "animal_behavior",
   "attentional_cueing",
+  "auditory_perception",
+  "bodily_sensation",
+  "chemosensation",
   "conditioning_and_reinforcement",
   "conflict_and_interference",
   "dyadic_interaction_observation",
   "emotion",
   "executive_and_reasoning",
   "information_evaluation_and_belief",
-  "ingestive_behavior",
   "language",
   "memory_control",
   "metacognition_and_interoception",
@@ -24,6 +26,7 @@
   "reward_and_value_choice",
   "social_cognition_and_games",
   "spatial_navigation",
+  "visual_perception",
   "visual_search_and_tracking",
   "working_memory_span"
  ],
@@ -7153,7 +7156,7 @@
   {
    "id": "tct_food_intake",
    "name": "Ad Libitum Food Intake (taste test)",
-   "family": "ingestive_behavior",
+   "family": "chemosensation",
    "stem": "tct_food_intake",
    "source": "corpus-extension",
    "definition": null,
@@ -13833,7 +13836,7 @@
   {
    "id": "hedtsk_auditory_masking",
    "name": "Auditory Masking Task",
-   "family": "perceptual_judgment",
+   "family": "auditory_perception",
    "stem": "hedtsk_auditory_masking",
    "source": "hed-task",
    "definition": "Detect, discriminate, or identify a target sound in the presence of a masking sound; threshold shifts between masked and unmasked conditions index frequency selectivity, temporal resolution, and auditory scene analysis.",
@@ -13947,7 +13950,7 @@
   {
    "id": "tct_auditory_discrimination",
    "name": "Auditory Psychophysical Discrimination (pitch, duration, loudness)",
-   "family": "perceptual_judgment",
+   "family": "auditory_perception",
    "stem": "tct_auditory_discrimination",
    "source": "corpus-extension",
    "definition": null,
@@ -14019,7 +14022,7 @@
   {
    "id": "hedtsk_biological_motion_perception",
    "name": "Biological Motion Perception Task",
-   "family": "perceptual_judgment",
+   "family": "visual_perception",
    "stem": "hedtsk_biological_motion_perception",
    "source": "hed-task",
    "definition": "Judgment of human action or identity from sparse point-light displays attached to major joints; indexes recognition of biological motion from kinematic cues alone.",
@@ -14249,7 +14252,7 @@
   {
    "id": "tct_dichotic_listening",
    "name": "Dichotic Listening Task",
-   "family": "perceptual_judgment",
+   "family": "auditory_perception",
    "stem": "tct_dichotic_listening",
    "source": "corpus-extension",
    "definition": null,
@@ -14340,7 +14343,7 @@
   {
    "id": "hedtsk_face_processing",
    "name": "Face Processing Task",
-   "family": "perceptual_judgment",
+   "family": "visual_perception",
    "stem": "face_perception",
    "source": "hed-task",
    "definition": "Blocked or event-related presentation of faces vs. objects (or scrambled faces) to localize face-selective cortical regions (FFA, OFA, pSTS).",
@@ -14544,7 +14547,7 @@
   {
    "id": "tct_checkerboard",
    "name": "Flickering Checkerboard Stimulation",
-   "family": "perceptual_judgment",
+   "family": "visual_perception",
    "stem": "tct_checkerboard",
    "source": "corpus-extension",
    "definition": null,
@@ -14582,7 +14585,7 @@
   {
    "id": "tct_infant_looking",
    "name": "Infant Looking-Time Paradigm (preferential looking, habituation, VoE)",
-   "family": "perceptual_judgment",
+   "family": "visual_perception",
    "stem": "tct_infant_looking",
    "source": "corpus-extension",
    "definition": null,
@@ -14696,7 +14699,7 @@
   {
    "id": "tct_naturalistic_viewing",
    "name": "Naturalistic Movie Viewing",
-   "family": "perceptual_judgment",
+   "family": "visual_perception",
    "stem": "tct_naturalistic_viewing",
    "source": "corpus-extension",
    "definition": null,
@@ -14752,7 +14755,7 @@
   {
    "id": "tct_odor_test",
    "name": "Olfactory Threshold/Identification Test",
-   "family": "perceptual_judgment",
+   "family": "chemosensation",
    "stem": "tct_odor_test",
    "source": "corpus-extension",
    "definition": null,
@@ -14782,7 +14785,7 @@
   {
    "id": "tct_pain_stimulation",
    "name": "Pain Stimulation",
-   "family": "perceptual_judgment",
+   "family": "bodily_sensation",
    "stem": "tct_pain_stimulation",
    "source": "corpus-extension",
    "definition": null,
@@ -14876,7 +14879,7 @@
   {
    "id": "tct_auditory_stimulation",
    "name": "Passive Auditory Stimulation",
-   "family": "perceptual_judgment",
+   "family": "auditory_perception",
    "stem": "tct_auditory_stimulation",
    "source": "corpus-extension",
    "definition": null,
@@ -14946,7 +14949,7 @@
   },
   {
    "id": "tct_sensory_stimulation",
-   "name": "Passive Somatosensory/Chemosensory Stimulation",
+   "name": "Passive Sensory Stimulation (sense unspecified)",
    "family": "perceptual_judgment",
    "stem": "tct_sensory_stimulation",
    "source": "corpus-extension",
@@ -14955,8 +14958,88 @@
    "variations": [],
    "inclusion_test": null,
    "patterns": [
-    "(tactile|vibrotactile|somatosensory|olfactory|gustatory|taste|odou?r|median nerve|acupuncture) (stimulation|stimuli)",
-    "acupuncture"
+    "sensory stimulation",
+    "somatosensory/chemosensory"
+   ],
+   "crosswalk": {
+    "cognitive_atlas": [],
+    "cogpo": [],
+    "brainmap": []
+   },
+   "curated_references": [],
+   "discovered_origin_refs": [],
+   "condition_schema": {
+    "modality": [
+     "tactile",
+     "auditory",
+     "visual"
+    ],
+    "side": [
+     "right",
+     "left"
+    ],
+    "_phases": []
+   },
+   "corpus": null
+  },
+  {
+   "id": "tct_touch_stimulation",
+   "name": "Passive Touch / Somatosensory Stimulation",
+   "family": "bodily_sensation",
+   "stem": "tct_touch_stimulation",
+   "source": "corpus-extension",
+   "definition": null,
+   "aliases": [],
+   "variations": [],
+   "inclusion_test": null,
+   "patterns": [
+    "(tactile|vibrotactile|somatosensory|touch|cutaneous|electrocutaneous|median nerve) (stimulation|stimuli|stimulus)",
+    "(brush|brushing|stroking|air[- ]?puff|vibration) stimul",
+    "affective touch",
+    "(gentle|slow|ct[- ]optimal) (stroking|touch)"
+   ],
+   "crosswalk": {
+    "cognitive_atlas": [],
+    "cogpo": [],
+    "brainmap": [
+     {
+      "class": "Vibrotactile Monitor/Discrimination",
+      "match": "narrower",
+      "first": "Verrillo, 1963"
+     }
+    ]
+   },
+   "curated_references": [],
+   "discovered_origin_refs": [],
+   "condition_schema": {
+    "modality": [
+     "tactile",
+     "auditory",
+     "visual"
+    ],
+    "side": [
+     "right",
+     "left"
+    ],
+    "_phases": []
+   },
+   "corpus": null
+  },
+  {
+   "id": "tct_acupuncture_stimulation",
+   "name": "Acupuncture Stimulation",
+   "family": "bodily_sensation",
+   "stem": "tct_acupuncture_stimulation",
+   "source": "corpus-extension",
+   "definition": null,
+   "aliases": [],
+   "variations": [],
+   "inclusion_test": null,
+   "patterns": [
+    "(electro[- ]?)?acupunct",
+    "acupoints?",
+    "\\bde[- ]?qi\\b",
+    "(manual|dry) needling"
    ],
    "crosswalk": {
     "cognitive_atlas": [],
@@ -14964,28 +15047,8 @@
     "brainmap": [
      {
       "class": "Acupuncture",
-      "match": "narrower",
+      "match": "exact",
       "first": "Han & Terenius, 1982"
-     },
-     {
-      "class": "Olfactory Monitor/Discrimination",
-      "match": "close",
-      "first": "Adrian, 1950"
-     },
-     {
-      "class": "Taste",
-      "match": "broader",
-      "first": "Gowers, 1882"
-     },
-     {
-      "class": "Vestibular Stimulation",
-      "match": "narrower",
-      "first": "Atkinson, 1939"
-     },
-     {
-      "class": "Vibrotactile Monitor/Discrimination",
-      "match": "narrower",
-      "first": "Verrillo, 1963"
      }
     ]
    },
@@ -15054,15 +15117,128 @@
     ],
     "_phases": []
    },
-   "corpus": {
-    "mentions": 329,
-    "papers": 323
-   }
+   "corpus": null
+  },
+  {
+   "id": "tct_olfactory_stimulation",
+   "name": "Passive Olfactory Stimulation",
+   "family": "chemosensation",
+   "stem": "tct_olfactory_stimulation",
+   "source": "corpus-extension",
+   "definition": null,
+   "aliases": [],
+   "variations": [],
+   "inclusion_test": null,
+   "patterns": [
+    "(olfactory|odou?r|odorant|smell) (stimulation|stimuli|stimulus|presentation|exposure|perception|processing)"
+   ],
+   "crosswalk": {
+    "cognitive_atlas": [],
+    "cogpo": [],
+    "brainmap": [
+     {
+      "class": "Olfactory Monitor/Discrimination",
+      "match": "close",
+      "first": "Adrian, 1950"
+     }
+    ]
+   },
+   "curated_references": [],
+   "discovered_origin_refs": [],
+   "condition_schema": {
+    "modality": [
+     "tactile",
+     "auditory",
+     "visual"
+    ],
+    "side": [
+     "right",
+     "left"
+    ],
+    "_phases": []
+   },
+   "corpus": null
+  },
+  {
+   "id": "tct_gustatory_stimulation",
+   "name": "Passive Gustatory Stimulation",
+   "family": "chemosensation",
+   "stem": "tct_gustatory_stimulation",
+   "source": "corpus-extension",
+   "definition": null,
+   "aliases": [],
+   "variations": [],
+   "inclusion_test": null,
+   "patterns": [
+    "(gustatory|taste|tastant|flavou?r) (stimulation|stimuli|stimulus|delivery|presentation|perception|processing)",
+    "(milkshake|sucrose|tastant) (delivery|receipt|task|paradigm)"
+   ],
+   "crosswalk": {
+    "cognitive_atlas": [],
+    "cogpo": [],
+    "brainmap": [
+     {
+      "class": "Taste",
+      "match": "close",
+      "first": "Gowers, 1882"
+     }
+    ]
+   },
+   "curated_references": [],
+   "discovered_origin_refs": [],
+   "condition_schema": {
+    "modality": [
+     "tactile",
+     "auditory",
+     "visual"
+    ],
+    "side": [
+     "right",
+     "left"
+    ],
+    "_phases": []
+   },
+   "corpus": null
+  },
+  {
+   "id": "tct_visceral_stimulation",
+   "name": "Visceral Distension / Stimulation",
+   "family": "bodily_sensation",
+   "stem": "tct_visceral_stimulation",
+   "source": "corpus-extension",
+   "definition": null,
+   "aliases": [],
+   "variations": [],
+   "inclusion_test": null,
+   "patterns": [
+    "(rectal|rectosigmoid|colonic|gastric|esophageal|oesophageal|visceral) (distension|distention|stimulation|balloon)",
+    "barostat"
+   ],
+   "crosswalk": {
+    "cognitive_atlas": [],
+    "cogpo": [],
+    "brainmap": []
+   },
+   "curated_references": [],
+   "discovered_origin_refs": [],
+   "condition_schema": {
+    "modality": [
+     "tactile",
+     "auditory",
+     "visual"
+    ],
+    "side": [
+     "right",
+     "left"
+    ],
+    "_phases": []
+   },
+   "corpus": null
   },
   {
    "id": "tct_bm_passive_viewing",
    "name": "Passive Visual Viewing",
-   "family": "perceptual_judgment",
+   "family": "visual_perception",
    "stem": "tct_bm_passive_viewing",
    "source": "brainmap-derived",
    "definition": null,
@@ -15181,7 +15357,7 @@
   {
    "id": "hedtsk_random_dot_kinematogram",
    "name": "Random Dot Kinematogram Task",
-   "family": "perceptual_judgment",
+   "family": "visual_perception",
    "stem": "hedtsk_random_dot_kinematogram",
    "source": "hed-task",
    "definition": "A field of moving dots in which a variable fraction move coherently; direction judgments and RT under varying coherence support drift-diffusion modeling of perceptual decisions.",
@@ -15310,7 +15486,7 @@
   {
    "id": "tct_retinotopy",
    "name": "Retinotopic Mapping",
-   "family": "perceptual_judgment",
+   "family": "visual_perception",
    "stem": "tct_retinotopy",
    "source": "corpus-extension",
    "definition": null,
@@ -15350,7 +15526,7 @@
   {
    "id": "tct_sound_categorization",
    "name": "Sound / Voice Categorization Task",
-   "family": "perceptual_judgment",
+   "family": "auditory_perception",
    "stem": "tct_sound_categorization",
    "source": "corpus-extension",
    "definition": null,
@@ -15410,7 +15586,7 @@
   {
    "id": "tct_face_identity_matching",
    "name": "Unfamiliar Face Identity Matching",
-   "family": "perceptual_judgment",
+   "family": "visual_perception",
    "stem": "tct_face_identity_matching",
    "source": "corpus-extension",
    "definition": null,
@@ -15460,7 +15636,7 @@
   {
    "id": "tct_bm_vestibular_stimulation",
    "name": "Vestibular Stimulation (caloric/galvanic)",
-   "family": "perceptual_judgment",
+   "family": "bodily_sensation",
    "stem": "tct_bm_vestibular_stimulation",
    "source": "brainmap-derived",
    "definition": null,
@@ -15529,7 +15705,7 @@
   {
    "id": "tct_visual_localizer",
    "name": "Visual Category Localizer",
-   "family": "perceptual_judgment",
+   "family": "visual_perception",
    "stem": "tct_visual_localizer",
    "source": "corpus-extension",
    "definition": null,
@@ -15571,7 +15747,7 @@
   {
    "id": "hedtsk_visual_masking",
    "name": "Visual Masking Task",
-   "family": "perceptual_judgment",
+   "family": "visual_perception",
    "stem": "hedtsk_visual_masking",
    "source": "hed-task",
    "definition": "A brief target is rendered invisible or reduced in visibility by a preceding or following mask; variants include metacontrast, paracontrast, pattern, forward, backward, common-onset, and object-substitution masking.",
@@ -15787,7 +15963,7 @@
   {
    "id": "tct_motion_perception",
    "name": "Visual Motion Perception Task",
-   "family": "perceptual_judgment",
+   "family": "visual_perception",
    "stem": "tct_motion_perception",
    "source": "corpus-extension",
    "definition": null,

@@ -64,21 +64,18 @@ NEUROSTORE_PROFILES: Dict[str, Dict[str, Any]] = {
 
 
 class RoleModel(BaseModel):
-    """A set-role model: a NuExtract3 role fine-tune served behind a vLLM endpoint."""
+    """The set-role decision model: a directory the roles stage loads (`set_roles.decision`)."""
 
-    # A key it does not have (a retired threshold or prompt version, say) is refused, not ignored.
+    # A key it does not have (a retired endpoint or served name, say) is refused, not ignored.
     model_config = ConfigDict(extra="forbid")
 
-    endpoint: str = Field(description="Base URL of the server, up to /v1")
-    model: str = Field(description="The served model name it answers to")
-    path: Optional[str] = Field(
-        default=None,
-        description=(
-            "The checkpoint directory the server loads, spelled as it is served. With it the "
-            "model's identity is known while the server is down, so the articles it has "
-            "labelled stay fresh and can be uploaded; labelling still needs the server"
-        ),
-    )
+    path: str = Field(description=(
+        "The model directory (`decision.json`, `encoder/`, `heads.safetensors`, `tokenizer/`), "
+        "as `experiments/role_classifier/export_decision.py` writes it"))
+    device: str = Field(default="auto", description=(
+        "torch device to run it on: `cuda`, `cuda:1`, `cpu`; `auto` is the first GPU if any"))
+    batch_size: int = Field(default=32, ge=1, description=(
+        "Sets per forward pass, shared by the articles under way"))
 
 
 class Machine(BaseModel):
@@ -379,19 +376,12 @@ class Settings(BaseSettings):
     )
 
     # ===== What each coordinate set is for =====
-    role_model_table: Optional[RoleModel] = Field(
+    role_model: Optional[RoleModel] = Field(
         default=None,
         description=(
-            "The served set-role model for table sets, {endpoint, model}. The roles stage always "
-            "runs; without it every article with a table set is blocked there, and nothing is "
-            "uploaded"
-        ),
-    )
-    role_model_prose: Optional[RoleModel] = Field(
-        default=None,
-        description=(
-            "The served set-role model for prose sets, {endpoint, model}. Without it every "
-            "article with a prose set is blocked at the roles stage"
+            "The set-role decision model, {path, device, batch_size}: one model for table and "
+            "prose sets. The roles stage always runs; without it every article with a set is blocked "
+            "there, and nothing is uploaded"
         ),
     )
 
@@ -723,6 +713,13 @@ class Settings(BaseSettings):
         default=50,
         gt=0,
         description="Supplementary files larger than this (MB) are listed and not fetched",
+    )
+    supplement_max_text_chars: int = Field(
+        # The 27B record model reads the whole text in a 65,536-token prompt; a 40-page
+        # supplement alone would push a paper past it and the paper would be skipped.
+        default=100_000,
+        gt=0,
+        description="Most characters of supplement text appended to an article; tables are kept whole",
     )
     pdf_engines: List[Literal["mineru", "docling"]] = Field(
         # MinerU reads each page from its image, so a text layer that maps the minus to

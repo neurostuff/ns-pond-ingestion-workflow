@@ -63,12 +63,14 @@ TEXT = f"Title\n\nMethods\n\n{PASSAGE}\n\nResults\n\nTable 1 ...\n"
 
 
 def _decided(role="result", *, origin="table", anchor_kind=None, prior=False, evidence=(),
-             source=None):
+             source=None, space="template"):
     """`metadata.set_role` as the roles stage writes it (docs/set-roles-artifact.md)."""
     return {
         "role": role,
         "anchor_kind": anchor_kind,
         "from_prior_study": prior,
+        "space": space if role else None,
+        "coordinate_source": ("prior_study" if prior else "this_study") if role else None,
         "prior_study_evidence": list(evidence),
         "role_confidence": 0.9,
         "role_source": source or f"set-role-{origin}@1",
@@ -110,7 +112,7 @@ def written(tmp_path):
     return _written(tmp_path)
 
 
-def _written(tmp_path, identifier=None, text_copy=COPY, dois=None, **metadata):
+def _written(tmp_path, identifier=None, text_copy=COPY, dois=None, supplemented=False, **metadata):
     identifier = identifier or Identifier(
         pmid="22848644", pmcid="PMC3407125", doi="10.1371/journal.pone.0041873"
     )
@@ -134,6 +136,8 @@ def _written(tmp_path, identifier=None, text_copy=COPY, dois=None, **metadata):
         tables=tables,
         full_text_path=text,
     )
+    if supplemented:
+        content = _supplemented(tmp_path, content)
     metadata = ArticleMetadata(**{
         "title": "Faces and houses",
         "authors": [Author(name="Jones, S")],
@@ -235,6 +239,36 @@ def _written(tmp_path, identifier=None, text_copy=COPY, dois=None, **metadata):
     paper = _compact(json.loads((target / "parse" / "parsed_paper.json").read_text()))
     parse = _compact(json.loads((target / "parse" / "coordinate_parse.json").read_text()))
     return paper, parse, {**summary, "dir": target / "parse"}
+
+
+def _supplemented(tmp_path, content):
+    """`content` with one Word supplement appended: its text and a "Table S1"."""
+    from ingestion_workflow.services import supplements as sp
+
+    out = tmp_path / "supp"
+    out.mkdir()
+    (out / "text.txt").write_text("Table S1. Peaks of the conjunction.\nL insula -34 16 -6\n")
+    (out / "table-s1.csv").write_text("Region,x,y,z\nL insula,-34,16,-6\n")
+    item = sp.Supplement("pmc", "https://pmc/mmc1.docx", "mmc1.docx", label="Data 1", path=str(out / "mmc1.docx"),
+                         text_path=str(out / "text.txt"), read_by="docling", tables=[
+                             ExtractedTable(table_id="table-s1", raw_content_path=out / "table-s1.csv",
+                                            caption="Table S1. Peaks of the conjunction.").to_dict()])
+    return sp.append(content, [item], tmp_path / "joined")
+
+
+def test_a_supplement_is_listed_its_tables_labelled_and_its_text_a_supplement_section(tmp_path):
+    paper, _, _ = _written(tmp_path, supplemented=True)
+
+    assert paper["supplements"] == [{"label": "Data 1", "url": "https://pmc/mmc1.docx", "fetched": True}]
+    labels = {t["table_id"]: t.get("label") for t in paper["tables"]}
+    assert labels["s1-table-s1"] == "Table S1" and labels["tbl1"] is None
+    assert paper["sections"][-1]["kind"] == "supplement"
+
+
+def test_a_paper_without_supplements_lists_none(written):
+    paper, _, _ = written
+    assert "supplements" not in paper
+    assert all("label" not in t for t in paper["tables"])
 
 
 def _compact(value):
@@ -2057,6 +2091,34 @@ def test_a_bregma_table_is_left_out_with_its_reason(tmp_path):
     ]
     [reading] = parse.tables
     assert (reading.reading, reading.reason) == ("no_coordinates", paper_parse.RODENT_ATLAS_REASON)
+
+
+def test_a_set_the_roles_stage_gave_no_role_is_left_out_with_its_reason(tmp_path):
+    refused = {**_decided(), "role": None, "role_source": "geometry@1",
+               "role_reason": "most points lie outside a template brain"}
+    analyses = _collection([
+        Analysis(name="DMN", coordinates=[Coordinate(x=0, y=-47, z=29)]),
+        Analysis(name="FA1", coordinates=[Coordinate(x=82, y=99, z=35)],
+                 metadata={"set_role": refused, "held": True}),
+    ])
+    parse, omitted = _parse(tmp_path, TALAIRACH_TABLE, {"tbl1": analyses}, caption=HUMAN_CAPTION)
+    assert [a.name for a in parse.analyses] == ["DMN"]
+    assert [(o.name, o.table_id, o.reason) for o in omitted] == [
+        ("FA1", "tbl1", f"{paper_parse.NOT_BRAIN_REASON} (geometry@1: "
+                        "most points lie outside a template brain)"),
+    ]
+
+
+def test_a_set_the_roles_stage_put_in_another_frame_is_written_in_other_space(tmp_path):
+    """Its role stands (a seed is a seed), its space is OTHER, and its key is what was read."""
+    other = _decided("anchor", anchor_kind="seed", space="other")
+    for set_role, space in ((_decided("anchor", anchor_kind="seed"), "MNI"), (other, "OTHER")):
+        analyses = _collection([Analysis(name="DMN", coordinates=[Coordinate(x=0, y=-47, z=29)],
+                                         metadata={"set_role": set_role, "held": True})])
+        parse, _ = _parse(tmp_path, TALAIRACH_TABLE, {"tbl1": analyses}, caption=HUMAN_CAPTION)
+        (seed,) = parse.analyses
+        assert (seed.coordinate_space, seed.role, seed.anchor_kind) == (space, "anchor", "seed")
+        assert seed.key == keys.analysis_key("DMN", "MNI", seed.points)
 
 
 def test_a_bregma_table_overrides_the_analyses_stage_s_reading(tmp_path):

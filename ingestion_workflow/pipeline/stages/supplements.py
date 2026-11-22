@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 from urllib.parse import unquote, urlparse
 
-from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
+from ingestion_workflow.catalog import ArticleRef, Artifact, Notes, Outcome, Status, fingerprint
 from ingestion_workflow.models import DownloadResult, DownloadSource
 
 from ..plan import StagePlan, Work
@@ -136,25 +136,24 @@ class SupplementsStage:
                 if item.reason is None:
                     jobs.append((work.article_id, index, item))
 
+        # `--refresh supplements` fetches again what an earlier run left in the cache.
+        reuse = not ctx.refreshing(self.name)
+
         def get(job):
             article_id, index, item = job
             dest = root / article_id / "files" / sp.file_name(index, item)
             try:
-                sp.fetch(item, dest, session, max_bytes=self.settings.supplement_max_mb * 2**20)
-            except sp.TransientFetch as exc:
-                return article_id, str(exc)
-            return article_id, None
+                sp.fetch(item, dest, session, max_bytes=self.settings.supplement_max_mb * 2**20, reuse=reuse)
+            except Exception as exc:  # noqa: BLE001 - a disk full or the like: this file, retried
+                logger.warning("supplements: fetching %s failed: %s", item.url, exc)
+                item.path, item.reason = None, f"{sp.TRANSIENT}: fetch failed: {type(exc).__name__}: {str(exc)[:200]}"
 
         with ThreadPoolExecutor(FETCH_THREADS) as pool:
-            for article_id, error in pool.map(get, jobs):
-                if error:
-                    failed.setdefault(article_id, f"fetch failed: {error}")
+            list(pool.map(get, jobs))
 
         for work in works:
             _dedupe(listed.get(work.article_id, []))
-        for article_id, error in self._read(root, [(a, i, s) for a, i, s in jobs
-                                                   if s.path and s.reason is None]).items():
-            failed.setdefault(article_id, error)
+        self._read(root, [(a, i, s) for a, i, s in jobs if s.path and s.reason is None])
 
         for work in works:
             if work.article_id in failed:
@@ -162,11 +161,18 @@ class SupplementsStage:
                                       fingerprint=work.fingerprint)
                 continue
             items = listed[work.article_id]
+            # A file a busy host or an engine that could not run left unread is noted
+            # transient: the article stands with what was read, and is asked again after the
+            # backoff (`Context.due_again`), so one file never costs the others.
+            notes = Notes()
+            for item in items:
+                if sp.is_transient(item):
+                    notes.error(item.name or item.url or "file", item.reason, transient=True)
             yield Outcome(
                 article_id=work.article_id, stage=self.name, source="", status=Status.OK,
                 fingerprint=work.fingerprint,
                 payload={"supplements": [s.to_dict() for s in items]},
-                summary=_summary(items),
+                summary={**_summary(items), **notes.summary()},
             )
 
     def _list(self, work: Work, stored: Dict[str, DownloadResult], session):
@@ -180,21 +186,15 @@ class SupplementsStage:
         routes = routes_for(work.ref, stored, self.settings.supplement_routes)
         items: List[sp.Supplement] = []
         for route in routes:
-            if route == "pmc":
-                items += _pmc(work.ref.identifier.pmcid, _jats(stored), session, _cloud_record(stored))
-            elif route == "elsevier":
-                xml = _file(stored.get("elsevier"), lambda p: p.name.startswith("content.") and p.suffix == ".xml")
-                if xml is not None:
-                    items += sp.elsevier_items(etree.parse(str(xml), _parser()).getroot())
-            elif route == "springer":
-                jats = _file(stored.get("springer"), lambda p: p.name == "article.xml")
-                if jats is not None:
-                    items += sp.springer_items(etree.parse(str(jats), _parser()).getroot(),
-                                               work.ref.identifier.doi or "")
-            elif route == "publisher":
-                page = _file(stored.get("ace"), lambda p: p.suffix in (".html", ".htm"))
-                if page is not None:
-                    items += sp.publisher_items(page.read_bytes(), _page_address(stored.get("ace")))
+            try:
+                items += self._route(route, work, stored, session)
+            except Exception as exc:  # noqa: BLE001 - one route's failure leaves the others standing
+                from ingestion_workflow.utils.http import transient
+
+                logger.warning("supplements: %s listing failed for %s: %s", route, work.article_id, exc)
+                why = f"listing failed: {type(exc).__name__}: {str(exc)[:200]}"
+                items.append(sp.Supplement(route, None, f"({route} listing)",
+                                           reason=f"{sp.TRANSIENT}: {why}" if transient(exc) else why))
         seen, out = set(), []
         for item in items:
             key = item.name.lower()
@@ -204,38 +204,64 @@ class SupplementsStage:
             out.append(item)
         return out
 
-    def _read(self, root: Path, jobs) -> Dict[str, str]:
-        """Read each fetched file: PDFs together through `pdf_engines`, the rest in a pool of
-        `max_workers` processes (Docling reads a Word file in seconds, on the CPU).
+    @staticmethod
+    def _route(route: str, work: Work, stored, session) -> list:
+        from lxml import etree
 
-        Returns why each article whose PDFs no engine could run on is to be tried again."""
+        from ingestion_workflow.services import supplements as sp
+
+        if route == "pmc":
+            return _pmc(work.ref.identifier.pmcid, _jats(stored), session, _cloud_record(stored))
+        if route == "elsevier":
+            xml = _file(stored.get("elsevier"), lambda p: p.name.startswith("content.") and p.suffix == ".xml")
+            return sp.elsevier_items(etree.parse(str(xml), _parser()).getroot()) if xml is not None else []
+        if route == "springer":
+            jats = _file(stored.get("springer"), lambda p: p.name == "article.xml")
+            return (sp.springer_items(etree.parse(str(jats), _parser()).getroot(), work.ref.identifier.doi or "")
+                    if jats is not None else [])
+        page = _file(stored.get("ace"), lambda p: p.suffix in (".html", ".htm"))
+        return sp.publisher_items(page.read_bytes(), _page_address(stored.get("ace"))) if page is not None else []
+
+    def _read(self, root: Path, jobs) -> None:
+        """Read each fetched file: PDFs together through `pdf_engines`, the rest in a pool of
+        `max_workers` processes (Docling reads a Word file in seconds, on the CPU). A PDF no
+        engine could run on is left `transient`, to be read on the article's retry."""
         pdfs = [job for job in jobs if job[2].extension == "pdf"]
         rest = [job for job in jobs if job[2].extension != "pdf"]
         if rest:
             self._read_rest(root, rest)
-        return self._read_pdfs(root, pdfs) if pdfs else {}
+        if pdfs:
+            self._read_pdfs(root, pdfs)
 
-    def _read_rest(self, root: Path, jobs) -> None:
+    def _read_rest(self, root: Path, jobs, worker=None) -> None:
+        """Read the Word files and sheets, each in a child the parent kills over the PDF
+        limits (`bounded_map`): a reader that crashes or runs away fails its file alone, where
+        a broken process pool failed the whole batch and the scheduler halved it again."""
         import multiprocessing
-        from concurrent.futures import ProcessPoolExecutor
 
+        from ingestion_workflow.extractors.bounded import Limits, bounded_map
         from ingestion_workflow.services import supplements as sp
 
         tasks = [(item.to_dict(), str(root / article_id / "read" / f"{index:02d}"))
                  for article_id, index, item in jobs]
         workers = min(max(1, int(getattr(self.settings, "max_workers", 1) or 1)), READ_WORKERS, len(tasks))
-        if workers == 1:
-            answers = [_read_one(task) for task in tasks]
-        else:
+        answers = bounded_map(
+            tasks, worker or _read_one, (), workers=workers,
+            limits=Limits(memory_mb=self.settings.pdf_extract_memory_mb,
+                          timeout_s=self.settings.pdf_extract_timeout_s),
             # spawn: Docling's torch must not be forked from a parent that has started threads
-            with ProcessPoolExecutor(workers, mp_context=multiprocessing.get_context("spawn")) as pool:
-                answers = list(pool.map(_read_one, tasks, chunksize=4))
-        for (_, _, item), answer in zip(jobs, answers):
+            context=multiprocessing.get_context("spawn"))
+        for index, answer, error in answers:
+            item = jobs[index][2]
+            if error is not None:
+                item.text_path, item.tables, item.read_by = None, [], None
+                item.reason = f"unreadable: {type(error).__name__}: {str(error)[:200]}"
+                continue
             read = sp.Supplement.from_dict(answer)
             item.text_path, item.tables, item.read_by, item.reason = (
                 read.text_path, read.tables, read.read_by, read.reason)
 
-    def _read_pdfs(self, root: Path, pdfs) -> Dict[str, str]:
+    def _read_pdfs(self, root: Path, pdfs) -> None:
         from ingestion_workflow.extractors.pdf_extractor import PdfExtractor
         from ingestion_workflow.extractors.utils import build_downloaded_file
         from ingestion_workflow.models import FileType, Identifier
@@ -251,12 +277,13 @@ class SupplementsStage:
                 files=[build_downloaded_file(Path(item.path), FileType.PDF, source=DownloadSource.PDF)]))
         try:
             contents = PdfExtractor(settings).extract(results)
-        except Exception as exc:  # noqa: BLE001 - no engine could run: tried again later
+        except Exception as exc:  # noqa: BLE001 - no engine could run: read on the retry
             logger.error("supplements: PDF engines could not run: %s", exc)
-            return {a: f"PDF engines could not run: {type(exc).__name__}: {exc}" for a, _, _ in pdfs}
+            for _, _, item in pdfs:
+                item.reason = f"{sp.TRANSIENT}: PDF engines could not run: {type(exc).__name__}: {str(exc)[:200]}"
+            return
         for (_, _, item), content in zip(pdfs, contents):
             sp.from_pdf_content(item, content)
-        return {}
 
 
 def _parser():
@@ -321,6 +348,28 @@ def _cloud_record(stored: Dict[str, DownloadResult]) -> Optional[dict]:
     return record if record.get("version") and record.get("media_urls") is not None else None
 
 
+def _bucket_keys(session, prefix: str) -> List[str]:
+    """Every key under `prefix` in PMC's bucket: a listing answers 1,000 at most, and an
+    article's package can hold more files."""
+    import re
+
+    from ingestion_workflow.services import supplements as sp
+
+    keys: List[str] = []
+    token = None
+    while True:
+        params = {"list-type": "2", "prefix": prefix}
+        if token:
+            params["continuation-token"] = token
+        listing = session.get(sp.PMC_CLOUD, params=params, timeout=60, headers={"User-Agent": sp.USER_AGENT})
+        listing.raise_for_status()
+        keys += re.findall(r"<Key>([^<]+)</Key>", listing.text)
+        more = re.search(r"<NextContinuationToken>([^<]+)</NextContinuationToken>", listing.text)
+        if "<IsTruncated>true</IsTruncated>" not in listing.text or not more:
+            return keys
+        token = more.group(1)
+
+
 def _pmc(pmcid: str, jats_path: Optional[Path], session, cloud: Optional[dict] = None):
     """The article's newest package in PMC's Cloud Service, matched against its JATS: the
     downloaded one, else the package's own. A `pmc_cloud.json` its PMC download kept names
@@ -339,10 +388,7 @@ def _pmc(pmcid: str, jats_path: Optional[Path], session, cloud: Optional[dict] =
                 for u in cloud["media_urls"]]
         root = etree.parse(str(jats_path), _parser()).getroot()
         return sp.pmc_items(root, keys, prefix)
-    listing = session.get(sp.PMC_CLOUD, params={"list-type": "2", "prefix": f"PMC{number}."},
-                          timeout=60, headers={"User-Agent": sp.USER_AGENT})
-    listing.raise_for_status()
-    keys = re.findall(r"<Key>([^<]+)</Key>", listing.text)
+    keys = _bucket_keys(session, f"PMC{number}.")
     versions = sorted({int(m.group(1)) for k in keys if (m := re.match(rf"PMC{number}\.(\d+)/", k))})
     if not versions:
         return []
@@ -376,10 +422,14 @@ def _summary(items) -> Dict:
     for item in items:
         routes[item.route] = routes.get(item.route, 0) + 1
         if item.reason:
-            reason = item.reason.split(":", 1)[0] if item.reason.startswith(("unreadable", "not read")) \
+            reason = item.reason.split(":", 1)[0] if item.reason.startswith(("unreadable", "not read", "transient")) \
                 else item.reason
             passed[reason] = passed.get(reason, 0) + 1
+    from ingestion_workflow.services.supplements import read_digest
+
+    digest = read_digest(items)
     return {
+        **({"read_digest": digest} if digest else {}),
         "listed": len(items),
         "fetched": sum(bool(i.path) for i in items),
         "read": sum(i.read for i in items),
