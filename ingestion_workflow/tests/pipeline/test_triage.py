@@ -500,7 +500,7 @@ def test_a_large_sheet_with_no_coordinates_in_its_head_is_not_judged(tmp_path, m
     gate = _Gate()
     got = t.judge_table(gate, table)
     assert got["passes"] is False and got["route"] == "too_large"
-    assert "first 2000 rows" in got["reason"]
+    assert "head holds no coordinates" in got["reason"]
     assert gate.asked == 0
 
 
@@ -527,3 +527,32 @@ def test_a_sheet_under_the_limit_is_judged_as_before(tmp_path):
     gate = _Gate()
     t.judge_table(gate, table)
     assert gate.asked == 1
+
+
+def test_a_wide_sheet_is_judged_by_a_head_of_bounded_bytes(tmp_path, monkeypatch):
+    """Some sheets have rows of 180 KB: 2,000 of them is the whole 266 MB sheet."""
+    from ingestion_workflow.pipeline.stages import triage as t
+
+    monkeypatch.setattr(t, "LARGE_SHEET_BYTES", 1_000)
+    monkeypatch.setattr(t, "LARGE_SHEET_HEAD_BYTES", 2_000)
+    wide = ",".join(str(3000 + c) for c in range(400))
+    table = _sheet(tmp_path / "sheet-01.csv", ",".join(f"gene{c}" for c in range(400)),
+                   [wide] * 50)
+    head = t._serialised_head(table["raw_content_path"])
+    assert 0 < len(head) < 4_000
+    gate = _Gate()
+    assert t.judge_table(gate, table)["route"] == "too_large" and gate.asked == 0
+
+
+def test_a_wide_sheet_of_coordinates_is_still_found_by_its_head(tmp_path, monkeypatch):
+    from ingestion_workflow.pipeline.stages import triage as t
+
+    monkeypatch.setattr(t, "LARGE_SHEET_BYTES", 1_000)
+    monkeypatch.setattr(t, "LARGE_SHEET_HEAD_BYTES", 2_000)
+    extra = ",".join("0" for _ in range(100))
+    rows = [f"Left insula,{-30 - i % 20},{20 + i % 15},{4 + i % 10},{5.1 + i % 3:.2f},{extra}"
+            for i in range(200)]
+    header = "Region,x,y,z,T," + ",".join(f"c{c}" for c in range(100))
+    gate = _Gate()
+    got = t.judge_table(gate, _sheet(tmp_path / "sheet-01.csv", header, rows))
+    assert gate.asked == 1 and got["route"] == "candidates"

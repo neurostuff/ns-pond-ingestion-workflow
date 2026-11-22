@@ -348,8 +348,8 @@ def judge_table(gate, table: Dict, abstract: str = "") -> Dict:
         if not (head.axis_columns or head.packed_columns or len(head.points) >= 3):
             return {"table_id": table.get("table_id"), "passes": False,
                     "points": len(head.points), "route": "too_large", "score": 0.0,
-                    "reason": "a %.0f MB sheet whose first %d rows hold no coordinates"
-                              % (size / 1e6, LARGE_SHEET_HEAD_ROWS)}
+                    "reason": "a %.0f MB sheet whose head holds no coordinates"
+                              % (size / 1e6)}
     text = _serialised(path)
     if not text.strip():
         return {"table_id": table.get("table_id"), "passes": False, "points": 0,
@@ -439,11 +439,13 @@ def _rank(source: str) -> int:
 
 
 #: A supplement sheet over this many bytes is judged in full only when its first
-#: `LARGE_SHEET_HEAD_ROWS` rows read as coordinates. Judging costs about 30 s and
-#: 0.5 GB per MB of sheet, and supplements hold sheets of hundreds of MB; of
-#: 299,356 tables passed or read on 2026-11-22, the largest with coordinates was 1.8 MB.
+#: `LARGE_SHEET_HEAD_ROWS` rows, or `LARGE_SHEET_HEAD_BYTES` of a wide sheet, read as
+#: coordinates. Judging costs about 30 s and 0.5 GB per MB of sheet, and supplements
+#: hold sheets of hundreds of MB, some with rows of 180 KB; of 299,356 tables passed
+#: or read on 2026-11-22, the largest with coordinates was 1.8 MB.
 LARGE_SHEET_BYTES = 5_000_000
 LARGE_SHEET_HEAD_ROWS = 2_000
+LARGE_SHEET_HEAD_BYTES = 500_000
 
 
 def _large_sheet_bytes(path) -> int:
@@ -458,15 +460,23 @@ def _large_sheet_bytes(path) -> int:
 
 
 def _serialised_head(path) -> str:
-    """The first `LARGE_SHEET_HEAD_ROWS` lines of a csv sheet, serialised."""
+    """A csv sheet's first `LARGE_SHEET_HEAD_ROWS` lines, at most `LARGE_SHEET_HEAD_BYTES`
+    of them, serialised. A cut line is dropped, unless it is the first."""
     from nspond_tables import serialize
 
+    lines, taken = [], 0
     try:
         with open(path, encoding="utf-8", errors="replace") as handle:
-            head = "".join(itertools.islice(handle, LARGE_SHEET_HEAD_ROWS))
+            for line in itertools.islice(handle, LARGE_SHEET_HEAD_ROWS):
+                if taken + len(line) > LARGE_SHEET_HEAD_BYTES:
+                    if not lines:
+                        lines.append(line[:LARGE_SHEET_HEAD_BYTES])
+                    break
+                lines.append(line)
+                taken += len(line)
     except OSError:
         return ""
-    return serialize.serialize(head)
+    return serialize.serialize("".join(lines))
 
 
 def _serialised(path) -> str:
