@@ -29,8 +29,10 @@ inspected afterwards: the record says which gate made it and on what score.
 from __future__ import annotations
 
 import hashlib
+import itertools
 import logging
 import multiprocessing
+import os
 import re
 from concurrent.futures import ProcessPoolExecutor
 from typing import Dict, Iterator, List, Optional, Sequence, Tuple
@@ -334,9 +336,21 @@ def judge_table(gate, table: Dict, abstract: str = "") -> Dict:
     Takes a plain dict rather than an `ExtractedTable`, so the same call works
     in a worker process without the model layer having to be picklable.
     """
-    text = _serialised(table.get("raw_content_path"))
     caption = table.get("caption") or ""
     footer = table.get("footer") or ""
+    path = table.get("raw_content_path")
+    size = _large_sheet_bytes(path)
+    if size:
+        from nspond_tables import read
+
+        head = read.extract(_serialised_head(path), caption=caption, footer=footer,
+                            abstract=abstract)
+        if not (head.axis_columns or head.packed_columns or len(head.points) >= 3):
+            return {"table_id": table.get("table_id"), "passes": False,
+                    "points": len(head.points), "route": "too_large", "score": 0.0,
+                    "reason": "a %.0f MB sheet whose first %d rows hold no coordinates"
+                              % (size / 1e6, LARGE_SHEET_HEAD_ROWS)}
+    text = _serialised(path)
     if not text.strip():
         return {"table_id": table.get("table_id"), "passes": False, "points": 0,
                 "route": "unreadable", "score": 0.0,
@@ -422,6 +436,37 @@ TIE_ORDER = ("pubget", "pmc", "europepmc", "elsevier", "springer", "ace", "pdf")
 
 def _rank(source: str) -> int:
     return TIE_ORDER.index(source) if source in TIE_ORDER else len(TIE_ORDER)
+
+
+#: A supplement sheet over this many bytes is judged in full only when its first
+#: `LARGE_SHEET_HEAD_ROWS` rows read as coordinates. Judging costs about 30 s and
+#: 0.5 GB per MB of sheet, and supplements hold sheets of hundreds of MB; of
+#: 299,356 tables passed or read on 2026-11-22, the largest with coordinates was 1.8 MB.
+LARGE_SHEET_BYTES = 5_000_000
+LARGE_SHEET_HEAD_ROWS = 2_000
+
+
+def _large_sheet_bytes(path) -> int:
+    """The size of a csv sheet over `LARGE_SHEET_BYTES`, else 0."""
+    if not path or not str(path).endswith(".csv"):
+        return 0
+    try:
+        size = os.path.getsize(path)
+    except OSError:
+        return 0
+    return size if size > LARGE_SHEET_BYTES else 0
+
+
+def _serialised_head(path) -> str:
+    """The first `LARGE_SHEET_HEAD_ROWS` lines of a csv sheet, serialised."""
+    from nspond_tables import serialize
+
+    try:
+        with open(path, encoding="utf-8", errors="replace") as handle:
+            head = "".join(itertools.islice(handle, LARGE_SHEET_HEAD_ROWS))
+    except OSError:
+        return ""
+    return serialize.serialize(head)
 
 
 def _serialised(path) -> str:
