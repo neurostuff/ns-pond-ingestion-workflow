@@ -112,7 +112,9 @@ def run_stages(
         bar = None if dry_run else progress_bar(
             ctx.settings, len(refs), stage.name, unit="article"
         )
-        for batch in batched(refs):
+        # A stage whose batch starts something expensive (the supplements' MinerU workers)
+        # names a larger batch.
+        for batch in batched(refs, getattr(stage, "batch_size", BATCH_SIZE)):
             plan = plan_batch(ctx, stage, batch)
             stage_report.absorb(plan)
             if bar is not None:
