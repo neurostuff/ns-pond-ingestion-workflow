@@ -65,8 +65,8 @@ def _run(ctx, catalog, ref):
     return outcomes
 
 
-def test_datasources_runs_last_on_what_sync_wrote():
-    assert STAGE_ORDER[-1] == "datasources"
+def test_datasources_runs_after_upload_on_what_sync_wrote():
+    assert STAGE_ORDER[-2:] == ("datasources", "modality")
     assert STAGE_TYPES["datasources"].requires == "sync"
 
 
