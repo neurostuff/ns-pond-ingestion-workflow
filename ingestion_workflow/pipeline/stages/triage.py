@@ -28,7 +28,9 @@ inspected afterwards: the record says which gate made it and on what score.
 
 from __future__ import annotations
 
+import csv
 import hashlib
+import io
 import itertools
 import logging
 import multiprocessing
@@ -438,13 +440,15 @@ def _rank(source: str) -> int:
     return TIE_ORDER.index(source) if source in TIE_ORDER else len(TIE_ORDER)
 
 
-#: A supplement sheet over this many bytes is judged in full only when its first
-#: `LARGE_SHEET_HEAD_ROWS` rows, or `LARGE_SHEET_HEAD_BYTES` of a wide sheet, read as
-#: coordinates. Judging costs about 30 s and 0.5 GB per MB of sheet, and supplements
-#: hold sheets of hundreds of MB, some with rows of 180 KB; of 299,356 tables passed
+#: A supplement sheet over this many bytes is judged in full only when its head reads as
+#: coordinates: its first `LARGE_SHEET_HEAD_ROWS` rows and `LARGE_SHEET_HEAD_COLUMNS`
+#: columns, at most `LARGE_SHEET_HEAD_BYTES` of cells. Judging costs about 30 s and
+#: 0.5 GB per MB of sheet, and grows faster than the width (two rows of 16,381 columns
+#: took minutes); supplements hold sheets of hundreds of MB. Of 299,356 tables passed
 #: or read on 2026-11-22, the largest with coordinates was 1.8 MB.
 LARGE_SHEET_BYTES = 5_000_000
 LARGE_SHEET_HEAD_ROWS = 2_000
+LARGE_SHEET_HEAD_COLUMNS = 200
 LARGE_SHEET_HEAD_BYTES = 500_000
 
 
@@ -460,23 +464,24 @@ def _large_sheet_bytes(path) -> int:
 
 
 def _serialised_head(path) -> str:
-    """A csv sheet's first `LARGE_SHEET_HEAD_ROWS` lines, at most `LARGE_SHEET_HEAD_BYTES`
-    of them, serialised. A cut line is dropped, unless it is the first."""
+    """A csv sheet's head, as `LARGE_SHEET_BYTES` describes it, serialised."""
     from nspond_tables import serialize
 
-    lines, taken = [], 0
+    rows, taken = [], 0
     try:
-        with open(path, encoding="utf-8", errors="replace") as handle:
-            for line in itertools.islice(handle, LARGE_SHEET_HEAD_ROWS):
-                if taken + len(line) > LARGE_SHEET_HEAD_BYTES:
-                    if not lines:
-                        lines.append(line[:LARGE_SHEET_HEAD_BYTES])
+        with open(path, encoding="utf-8", errors="replace", newline="") as handle:
+            for row in itertools.islice(csv.reader(handle), LARGE_SHEET_HEAD_ROWS):
+                row = row[:LARGE_SHEET_HEAD_COLUMNS]
+                taken += sum(len(cell) for cell in row)
+                if taken > LARGE_SHEET_HEAD_BYTES and rows:
                     break
-                lines.append(line)
-                taken += len(line)
-    except OSError:
-        return ""
-    return serialize.serialize("".join(lines))
+                rows.append(row)
+    except (OSError, csv.Error):
+        if not rows:
+            return ""
+    out = io.StringIO()
+    csv.writer(out).writerows(rows)
+    return serialize.serialize(out.getvalue())
 
 
 def _serialised(path) -> str:
