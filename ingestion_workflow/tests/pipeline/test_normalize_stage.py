@@ -279,6 +279,7 @@ def test_a_fit_knows_each_corpus_paper_by_its_own_pmid_and_doi(ctx, monkeypatch)
     # The citation index lends a cited corpus paper's task labels through `identifiers`; without
     # them a citation resolves only to the fixed manifest's Neurostore ids, which never match the
     # fit's article ids.
+    pytest.importorskip("pondie")
     _recorded(ctx)
     ctx.catalog._conn.executemany(
         "INSERT INTO aliases(kind, value, article_id) VALUES(?, ?, ?)",
