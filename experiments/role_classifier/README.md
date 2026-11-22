@@ -3,11 +3,10 @@
 What each coordinate set is for -- a result of this study, a region it defined, a peak quoted
 from another study, a bare slice position -- decided in the `roles` stage
 (`ingestion_workflow/pipeline/stages/roles.py`), the only place a role is decided. The stage is
-required: space, upload and sync read nothing it has not passed. There are two classifiers, a
-table model (`role_model_table`) for nu-v21's table sets and a prose model (`role_model_prose`)
-for nu-prose's sets, because different evidence matters for each. Neither extractor predicts a
-role, and an article with a set whose origin has no usable model fails the stage; nothing falls
-back to a default. The artifact the stage writes is described in `docs/set-roles-artifact.md`. The code
+required: space, upload and sync read nothing it has not passed. One decision model
+(`role_model`) reads nu-v21's table sets and nu-prose's sets alike, each through its origin's
+context builder. Neither extractor predicts a role, and while the model cannot be used every
+article with a set is blocked at the stage; nothing falls back to a default. The artifact the stage writes is described in `docs/set-roles-artifact.md`. The code
 is in `ingestion_workflow/services/set_roles/`; this directory holds the job scripts.
 
 ```
@@ -20,12 +19,16 @@ services/set_roles/
   labeling.py       per-origin prompts, the resumable codex job, agreement, ledger
   export.py         role-model training rows
   classifier.py     a prediction as the recorded role, with its confidence and model
-  served.py         the role models, NuExtract3 fine-tunes served by vLLM, one request per set
-  served_prompt.py  the prompt they were trained and evaluated with
+  decision.py       the decision model: an encoder with five heads, loaded in the stage's process
+  geometry.py       sets whose numbers cannot be template brain coordinates, refused before the model
 experiments/role_classifier/
-  build_sets.py     labelling units from nu-v21's and the prose model's real training rows (beast)
-  label_sets.py     label / compare / totals
-  export_rows.py    the role-model training rows
+  build_sets.py       labelling units from nu-v21's and the prose model's real training rows (beast)
+  label_sets.py       label / compare / totals
+  export_rows.py      the NuExtract role models' training rows (retired)
+  build_rows.py       the decision model's training rows, built with this code's context builders
+  train_decision.py   fine-tunes the decision model (the run role-decision v1 was trained with)
+  export_decision.py  a training run as the directory the stage loads
+  check_decision.py   an exported model against its run's own eval predictions
 ```
 
 ## Labels
@@ -45,11 +48,12 @@ retyped (`labels.py`); every row the labeller and the role model carry uses them
 
 Numbers that are not brain coordinates at all (channel numbers, lattice points, a phantom's
 positions, rodent stereotaxic coordinates) get no role, not `other`: the labeller answers `coordinates:
-false` and `role: null`. The served role models have no such answer: they give every set a role.
+false` and `role: null`, and so does the decision model.
 
 `from_prior_study` is independent of the role: a seed taken from a meta-analysis is `role:
-anchor`, `anchor_kind: seed`, `from_prior_study: true`. The served model answers
-the role and, for an anchor, its kind; the flag is not its to answer (below).
+anchor`, `anchor_kind: seed`, `from_prior_study: true`. The decision model answers where the
+coordinates come from (`coordinate_source`: `this_study`, `prior_study`, `atlas_or_database`),
+and `from_prior_study` is `coordinate_source == prior_study` (always true for a `reference`).
 
 Resolve keeps every prose point, in one analysis per name, and the prose role classifier
 decides each set's role.[^no-prose-role]
@@ -61,19 +65,18 @@ was no longer a role (`labels/relabel-v4-no-display`). Training reads every labe
 given and takes each set's highest `label_version` (`labeling.latest_labels`); a set whose
 latest label is still `display` is left out.
 
-Decision rule (`classifier.decide`): the set's role is its origin's model's answer, however
-sure, and the record carries its probability (the first role token's mass, renormalised), so the
-unsure ones can be reviewed. There is no not-coordinates answer. An anchor's kind is the model's,
-and may be null. `from_prior_study` is true for a `reference` and null for every other role: the
-model does not answer it. Each decision is recorded with its confidence, its model
-(`name@version`) and its origin.
+Decision rule (`classifier.decide`): the set's role is the model's answer, however sure, and the
+record carries its probability, so the unsure ones can be reviewed. A set the model says is not
+coordinates has no role. A set whose coordinates are not human template millimetres (`space:
+other`: an animal brain, a head frame, voxel indices) keeps its role and is held. Each decision
+is recorded with its confidence, its model (`name@version+digest`) and its origin.
 
 ## Inputs
 
 Table and prose sets are read from different evidence, so each has its own builder and its
 own version (`TABLE_CONTEXT_VERSION`, `PROSE_CONTEXT_VERSION`). Every label and training row
-records the version of its origin, and the served prompt names the context versions it was
-trained on; the stage refuses a model whose prompt names others. Both strings start with
+records the version of its origin, and the model's `decision.json` names the context versions it
+was trained on; the stage refuses a model that names others. Both strings start with
 `[ORIGIN] table|text`, then the short fields (`[POINTS]`, `[CUES]`, `[NAME]`), so truncation
 cuts free text and never structure. No input carries a role: not the extractor's, not a
 dataset's label.
@@ -108,7 +111,31 @@ python label_sets.py label units/prose_units.jsonl labels/sol-prose --model gpt-
 python label_sets.py compare labels/pilot-sol labels/pilot-astra
 ```
 
-## Training the two models
+## Training the decision model
+
+The model in production is `role-decision` v1: `lytang/MiniCheck-RoBERTa-Large`, fully
+fine-tuned for 3 epochs (frozen embeddings, 8-bit AdamW, max length 512) on 21,370 v6-labelled
+sets (13,267 table and 5,860 prose training sets), on one 8 GB card. It was chosen over
+MiniCheck-DeBERTa-v3-Large and ModernBERT-large at 1,024 tokens on the held-out roles evaluation
+set: the best result recall (579/613 with the geometry check), the fewest sets that should be
+uploaded held (42/955), and 170 of 186 prior-study and atlas anchors flagged. Rows, training and
+export:
+
+```
+PYTHONPATH=<this checkout> python build_rows.py UNITS LABEL_DIR... --exclude-articles EVAL_ARTICLES --out rows.jsonl
+python train_decision.py --rows rows.jsonl --eval eval_rows.jsonl --base lytang/MiniCheck-RoBERTa-Large \
+    --out runs/roberta --epochs 3 --batch 8 --accum 2 --max-length 512 --optim adamw8bit \
+    --freeze-embeddings --grad-ckpt
+PYTHONPATH=<this checkout> python export_decision.py runs/roberta /data2/models/role-decision/v2/weights \
+    --name role-decision --version v2 --table-context 2 --text-context 4
+PYTHONPATH=<this checkout> python check_decision.py /data2/models/role-decision/v2/weights \
+    eval_rows.jsonl runs/roberta/eval_predictions.jsonl
+```
+
+`check_decision.py` must report no disagreement before the stage is pointed at the new
+directory (`role_model.path`).
+
+## The retired NuExtract role models
 
 Export writes one file per origin, from every label directory given (highest `label_version`
 per set; between equal versions the first directory wins, so list a gold set first):
@@ -119,8 +146,8 @@ python export_rows.py out --units units/table_units.jsonl units/prose_units.json
     --id-map units/slug_dbids.json
 ```
 
-The role models are NuExtract3 fine-tunes, trained and served on beast; `role_model_table` and
-`role_model_prose` name each one's server and served model name (`docs/set-roles-artifact.md`).
+These were NuExtract3 fine-tunes, one per origin, served on beast by vLLM; the decision model
+replaced them. Their training rows are still what `export_rows.py` writes.
 
 A prose dataset row that is evaluation data (val, test) or hand-labelled is never sent to a
 labeller; the hand rows are the prose role model's gold set.
