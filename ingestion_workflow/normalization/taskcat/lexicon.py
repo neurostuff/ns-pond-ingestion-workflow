@@ -15,15 +15,16 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 HED = os.path.join(HERE, "..", "data", "hed-task")
 
 # Extensions: frequent paradigms in the neuroimaging corpus that hed-task (107) lacks.
-# id -> (canonical name, family, patterns). Families reuse hed-task family ids.
+# id -> (canonical name, family, patterns). Families reuse hed-task family ids, except the four senses split from
+# perceptual_judgment (visual_perception, auditory_perception, bodily_sensation, chemosensation; FAMILY_OVERRIDES).
 EXTENSIONS = {
     "tct_cue_reactivity": ("Cue Reactivity Task", "emotion", [r"cue[- ]?(reactivity|exposure)", r"craving (cue|induction)",
                            r"(drug|alcohol|smoking|cigarette|food|cocaine|cannabis|gambling)[- ]cue"]),
     "tct_emotional_face_matching": ("Emotional Face Matching Task", "emotion", [r"(emotional |hariri |face[- ])?(face|faces)[- ]matching",
                                     r"emotional reactivity", r"faces?[- ]shapes?"]),
-    "tct_pain_stimulation": ("Pain Stimulation", "perceptual_judgment", [r"(painful|noxious|nociceptive|thermal|heat|pain)[- ]?(stimulation|stimuli|stimulus)",
+    "tct_pain_stimulation": ("Pain Stimulation", "bodily_sensation", [r"(painful|noxious|nociceptive|thermal|heat|pain)[- ]?(stimulation|stimuli|stimulus)",
                              r"\bpain (task|paradigm|processing|perception)", r"cold pressor"]),
-    "tct_naturalistic_viewing": ("Naturalistic Movie Viewing", "perceptual_judgment", [r"(movie|film|video)[- ]?(clip )?(watching|viewing)",
+    "tct_naturalistic_viewing": ("Naturalistic Movie Viewing", "visual_perception", [r"(movie|film|video)[- ]?(clip )?(watching|viewing)",
                                  r"naturalistic (viewing|stimul)", r"watch(ed|ing)? (a )?(movie|film)"]),
     "tct_story_listening": ("Narrative Listening", "language", [r"(story|narrative|speech) (listening|comprehension)", r"listen(ed|ing)? to (a |the )?stor"]),
     "tct_semantic_judgment": ("Semantic Judgment Task", "language", [r"semantic (judg|decision|categori[sz]ation|classification|association)",
@@ -42,12 +43,12 @@ EXTENSIONS = {
     "tct_card_guessing": ("Card-Guessing (Gambling) Task", "reward_and_value_choice", [r"card[- ]guessing", r"gambling (task|paradigm)", r"guessing (task|game)", r"\bgambling\b"]),
     "tct_reward_feedback": ("Reward Processing Task (unspecified)", "reward_and_value_choice", [r"reward (task|paradigm|processing)"]),
     "tct_fear_extinction": ("Fear Extinction Task", "conditioning_and_reinforcement", [r"extinction (learning|recall|training|task|paradigm)"]),
-    "tct_retinotopy": ("Retinotopic Mapping", "perceptual_judgment", [r"retinotop", r"(rotating )?wedge", r"expanding ring", r"meridian mapping",
+    "tct_retinotopy": ("Retinotopic Mapping", "visual_perception", [r"retinotop", r"(rotating )?wedge", r"expanding ring", r"meridian mapping",
                        r"population receptive field|\bprf\b"]),
-    "tct_visual_localizer": ("Visual Category Localizer", "perceptual_judgment", [r"\b(ffa|ppa|loc|eba|vwfa|mt\+?|hmt)\b.{0,15}locali[sz]er",
+    "tct_visual_localizer": ("Visual Category Localizer", "visual_perception", [r"\b(ffa|ppa|loc|eba|vwfa|mt\+?|hmt)\b.{0,15}locali[sz]er",
                              r"(face|place|scene|body|object|category|visual)[- ]locali[sz]er", r"functional locali[sz]er"]),
-    "tct_checkerboard": ("Flickering Checkerboard Stimulation", "perceptual_judgment", [r"checker[- ]?board"]),
-    "tct_auditory_stimulation": ("Passive Auditory Stimulation", "perceptual_judgment", [r"passive (auditory|listening)", r"auditory stimulation",
+    "tct_checkerboard": ("Flickering Checkerboard Stimulation", "visual_perception", [r"checker[- ]?board"]),
+    "tct_auditory_stimulation": ("Passive Auditory Stimulation", "auditory_perception", [r"passive (auditory|listening)", r"auditory stimulation",
                                  r"(tone|sound|music) (listening|presentation)", r"music listening"]),
     "tct_imitation": ("Imitation Task", "motor_performance", [r"\bimitation\b"]),
     "tct_mental_arithmetic": ("Mental Arithmetic Task", "executive_and_reasoning", [r"(mental )?arithmetic", r"calculation (task|paradigm)", r"(addition|subtraction|multiplication) task",
@@ -66,13 +67,21 @@ EXTENSIONS = {
     "tct_neurofeedback": ("Neurofeedback Training", "metacognition_and_interoception", [r"neuro[- ]?feedback"]),
     "tct_breath_hold": ("Breath-Hold / Respiratory Challenge", "pseudo_tasks", [r"breath[- ]?hold", r"hypercapni", r"respiratory challenge"]),
     "tct_sleep": ("Sleep Recording", "pseudo_tasks", [r"\bsleep (recording|deprivation|stages?)\b", r"\bnap\b"]),
-    "tct_dichotic_listening": ("Dichotic Listening Task", "perceptual_judgment", [r"dichotic"]),
+    "tct_dichotic_listening": ("Dichotic Listening Task", "auditory_perception", [r"dichotic"]),
     "tct_stress_induction": ("Psychosocial Stress Induction", "emotion", [r"montreal imaging stress", r"\bmist\b", r"trier social stress", r"stress (induction|task|paradigm)"]),
     "tct_time_estimation": ("Time Estimation/Interval Timing Task", "motor_performance", [r"time (estimation|perception|reproduction|discrimination)", r"temporal (discrimination|bisection)", r"interval timing", r"duration (judg|discrimination)"]),
     "tct_deception": ("Deception Task", "social_cognition_and_games", [r"decept", r"\blying\b", r"concealed information|guilty knowledge"]),
     "tct_approach_avoidance": ("Approach-Avoidance Task", "emotion", [r"approach[- ]avoid"]),
     "tct_creativity": ("Divergent Thinking/Creativity Task", "executive_and_reasoning", [r"alternate uses|alternative uses|divergent thinking|creativ"]),
-    "tct_sensory_stimulation": ("Passive Somatosensory/Chemosensory Stimulation", "perceptual_judgment", [r"(tactile|vibrotactile|somatosensory|olfactory|gustatory|taste|odou?r|median nerve|acupuncture) (stimulation|stimuli)", r"acupuncture"]),
+    # tct_sensory_stimulation was one task for touch, acupuncture, smell, taste and visceral stimulation (James
+    # 2026-11-19: "the senses needed to be split"). Each sense is its own task now; the old id stays as the stimulation
+    # whose sense the text does not name, and `split_sensory` moves a label of it to the sense its evidence names.
+    "tct_sensory_stimulation": ("Passive Sensory Stimulation (sense unspecified)", "perceptual_judgment", [r"sensory stimulation", r"somatosensory/chemosensory"]),
+    "tct_touch_stimulation": ("Passive Touch / Somatosensory Stimulation", "bodily_sensation", [r"(tactile|vibrotactile|somatosensory|touch|cutaneous|electrocutaneous|median nerve) (stimulation|stimuli|stimulus)", r"(brush|brushing|stroking|air[- ]?puff|vibration) stimul", r"affective touch", r"(gentle|slow|ct[- ]optimal) (stroking|touch)"]),
+    "tct_acupuncture_stimulation": ("Acupuncture Stimulation", "bodily_sensation", [r"(electro[- ]?)?acupunct", r"acupoints?", r"\bde[- ]?qi\b", r"(manual|dry) needling"]),
+    "tct_olfactory_stimulation": ("Passive Olfactory Stimulation", "chemosensation", [r"(olfactory|odou?r|odorant|smell) (stimulation|stimuli|stimulus|presentation|exposure|perception|processing)"]),
+    "tct_gustatory_stimulation": ("Passive Gustatory Stimulation", "chemosensation", [r"(gustatory|taste|tastant|flavou?r) (stimulation|stimuli|stimulus|delivery|presentation|perception|processing)", r"(milkshake|sucrose|tastant) (delivery|receipt|task|paradigm)"]),
+    "tct_visceral_stimulation": ("Visceral Distension / Stimulation", "bodily_sensation", [r"(rectal|rectosigmoid|colonic|gastric|esophageal|oesophageal|visceral) (distension|distention|stimulation|balloon)", r"barostat"]),
     "tct_saccade": ("Saccade Task (pro/visually guided)", "motor_performance", [r"\bsaccad", r"smooth pursuit", r"oculomotor"]),
     "tct_wheel_of_fortune": ("Wheel of Fortune Task", "reward_and_value_choice", [r"wheel of fortune"]),
     # v3 additions (2026-10-09 01:20): recurring gold NEW procedures + largest residue clusters
@@ -81,8 +90,8 @@ EXTENSIONS = {
     "tct_affective_anticipation": ("Cued Affective Picture Anticipation", "emotion", [r"anticipation of (emotional|aversive|negative)", r"emotional anticipation", r"expectancy (task|paradigm)"]),
     "tct_simple_choice_rt": ("Simple/Choice Reaction Time Task", "motor_performance", [r"(simple|choice|two[- ]choice|four[- ]choice) reaction[- ]time"]),
     "tct_visual_reproduction": ("Visual Reproduction / Figure Recall (drawing from memory)", "recall_and_recognition", [r"visual reproduction", r"rey[- ]osterrieth", r"complex figure", r"\brcft\b", r"benton visual retention"]),
-    "tct_auditory_discrimination": ("Auditory Psychophysical Discrimination (pitch, duration, loudness)", "perceptual_judgment", [r"pitch (discrimination|judg|identification|processing)", r"(tone|frequency|duration|loudness|timbre) discrimination", r"melod(y|ic) (discrimination|comparison)"]),
-    "tct_sound_categorization": ("Sound / Voice Categorization Task", "perceptual_judgment", [r"sound categori", r"(voice|vocal) (localizer|categori|perception)", r"environmental sound", r"sound (identification|recognition)"]),
+    "tct_auditory_discrimination": ("Auditory Psychophysical Discrimination (pitch, duration, loudness)", "auditory_perception", [r"pitch (discrimination|judg|identification|processing)", r"(tone|frequency|duration|loudness|timbre) discrimination", r"melod(y|ic) (discrimination|comparison)"]),
+    "tct_sound_categorization": ("Sound / Voice Categorization Task", "auditory_perception", [r"sound categori", r"(voice|vocal) (localizer|categori|perception)", r"environmental sound", r"sound (identification|recognition)"]),
     "tct_appetitive_conditioning": ("Appetitive (Reward) Pavlovian Conditioning", "conditioning_and_reinforcement", [r"appetitive (conditioning|pavlovian)", r"reward conditioning", r"pavlovian[- ]instrumental transfer|\bpit\b task"]),
     "tct_picture_word_interference": ("Picture-Word Interference Task", "language", [r"picture[- ]word interference", r"\bpwi\b"]),
     "tct_cancellation": ("Cancellation Test", "visual_search_and_tracking", [r"cancell?ation (test|task)", r"letter cancell?ation", r"bells test"]),
@@ -104,8 +113,8 @@ EXTENSIONS = {
     "tct_virtual_navigation": ("Virtual Navigation / Wayfinding", "spatial_navigation", [r"(virtual|spatial|mental) navigation", r"wayfinding", r"path integration", r"route (learning|recall)", r"virtual (town|city|environment) (task|navigation)"]),
     "tct_mental_imagery": ("Mental Imagery Task", "spatial_navigation", [r"(visual|mental|guided|auditory) imagery", r"\bimagery (task|paradigm|condition)"]),
     "tct_sentence_completion": ("Sentence Completion (Hayling)", "language", [r"hayling", r"sentence completion"]),
-    "tct_motion_perception": ("Visual Motion Perception Task", "perceptual_judgment", [r"(visual )?motion (perception|processing|discrimination|detection)", r"\bmt\+? (localizer|mapping)", r"optic flow"]),
-    "tct_odor_test": ("Olfactory Threshold/Identification Test", "perceptual_judgment", [r"sniffin'? sticks", r"\bupsit\b", r"(odou?r|olfactory) (identification|threshold|discrimination) (test|task)"]),
+    "tct_motion_perception": ("Visual Motion Perception Task", "visual_perception", [r"(visual )?motion (perception|processing|discrimination|detection)", r"\bmt\+? (localizer|mapping)", r"optic flow"]),
+    "tct_odor_test": ("Olfactory Threshold/Identification Test", "chemosensation", [r"sniffin'? sticks", r"\bupsit\b", r"(odou?r|olfactory) (identification|threshold|discrimination) (test|task)"]),
     "tct_swallowing": ("Swallowing Task", "motor_performance", [r"swallow"]),
     "tct_grasping": ("Reach-to-Grasp Task", "motor_performance", [r"grasp", r"reach(ing)?[- ]to[- ]grasp", r"\breaching (task|movements?)"]),
     "tct_threat_social_evaluation": ("Social Evaluative Feedback Task", "social_cognition_and_games", [r"social (evaluat|feedback)", r"peer (feedback|evaluation)", r"chatroom", r"social judgment (task|paradigm)"]),
@@ -119,20 +128,20 @@ EXTENSIONS = {
     "tct_face_social_judgment": ("Social Judgment of Faces (attractiveness, trustworthiness)", "social_cognition_and_games", [r"(attractiveness|trustworthiness|dominance|competence) (judg|rating)", r"face (ratings?|evaluation)", r"first impressions?"]),
     "tct_stimulus_rating": ("Stimulus Rating Task (valence/arousal/liking/intensity)", "emotion", [r"(picture|image|photo|stimulus|product|word|music|odou?r) rating", r"rating task", r"affect grid", r"(arousal|valence|liking|intensity) ratings?"]),
     "tct_random_generation": ("Random Number/Sequence Generation", "executive_and_reasoning", [r"random[- ](number|sequence|interval)[- ]generation", r"random generation"]),
-    "tct_infant_looking": ("Infant Looking-Time Paradigm (preferential looking, habituation, VoE)", "perceptual_judgment", [r"preferential looking", r"(novelty|familiarity) preference", r"habituation (paradigm|procedure|task)", r"violation[- ]of[- ]expectation", r"looking[- ]time"]),
+    "tct_infant_looking": ("Infant Looking-Time Paradigm (preferential looking, habituation, VoE)", "visual_perception", [r"preferential looking", r"(novelty|familiarity) preference", r"habituation (paradigm|procedure|task)", r"violation[- ]of[- ]expectation", r"looking[- ]time"]),
     "tct_object_location_memory": ("Object-Location / Spatial Reconstruction Memory", "spatial_navigation", [r"object[- ](location|relocation|placement)", r"spatial reconstruction", r"location (memory|judg)"]),
     "tct_vocabulary_test": ("Vocabulary / Receptive Language Test", "language", [r"vocabulary (test|task|knowledge)", r"\bppvt\b|peabody", r"receptive (vocabulary|language)"]),
     "tct_visual_world": ("Visual World Eye-Tracking Paradigm", "language", [r"visual[- ]world (paradigm|task|eye)"]),
     "tct_serial_recall": ("Immediate Serial Recall / Serial-Order Memory", "working_memory_span", [r"(immediate )?serial (recall|recognition|order (memory|recall|recognition|reconstruction))", r"order reconstruction"]),
     "tct_delayed_estimation": ("Delayed Estimation / Continuous Report", "working_memory_span", [r"delayed estimation", r"continuous report", r"(orientation|colou?r) (reproduction|recall wheel)", r"what was where"]),
-    "tct_face_identity_matching": ("Unfamiliar Face Identity Matching", "perceptual_judgment", [r"glasgow face matching", r"\bgfmt\b", r"face (identity )?matching test", r"(unfamiliar )?face (identity )?(comparison|matching) (task|test)"]),
+    "tct_face_identity_matching": ("Unfamiliar Face Identity Matching", "visual_perception", [r"glasgow face matching", r"\bgfmt\b", r"face (identity )?matching test", r"(unfamiliar )?face (identity )?(comparison|matching) (task|test)"]),
     "tct_famous_face_recognition": ("Famous/Familiar Face Recognition", "recall_and_recognition", [r"famous (face|person)", r"familiar face recognition"]),
     "tct_opposite_naming": ("Opposite-Naming Inhibition (day-night)", "response_inhibition", [r"day[- ]night", r"opposite[- ]naming", r"grass[- ]snow", r"head[- ]toes[- ]knees"]),
     "tct_truth_rating": ("Statement Truth Rating (illusory truth)", "information_evaluation_and_belief", [r"illusory truth", r"truth (rating|judg)", r"(statement|headline) (truth|accuracy|veracity) (rating|judg)", r"truth effect"]),
     "tct_continued_influence": ("Continued Influence / Misinformation Task", "information_evaluation_and_belief", [r"continued[- ]influence", r"misinformation (task|paradigm|effect)", r"(news|headline) sharing"]),
     "tct_event_segmentation": ("Event Segmentation Task", "perceptual_judgment", [r"event segmentation", r"(natural|unitization) segmentation", r"event boundar"]),
     "tct_cognitive_reflection": ("Cognitive Reflection Test", "executive_and_reasoning", [r"cognitive reflection", r"\bcrt[- ]?2?\b(?=.*(reflection|test))|\bcrt[- ]2\b"]),
-    "tct_food_intake": ("Ad Libitum Food Intake (taste test)", "ingestive_behavior", [r"ad[- ]?lib(itum)?", r"(bogus )?taste test", r"food intake (test|task|measure)", r"snack intake"]),
+    "tct_food_intake": ("Ad Libitum Food Intake (taste test)", "chemosensation", [r"ad[- ]?lib(itum)?", r"(bogus )?taste test", r"food intake (test|task|measure)", r"snack intake"]),
     "tct_dyadic_interaction": ("Dyadic / Parent-Infant Interaction (observed)", "dyadic_interaction_observation", [r"free[- ]play", r"(parent|mother|caregiver)[- ](infant|child) interaction", r"dyadic (interaction|communication|coordination)", r"joint action", r"conversation (task|paradigm)"]),
     "tct_aiming": ("Aiming / Pointing Movement Task (Fitts)", "motor_performance", [r"aiming (task|movements?)", r"\bfitts", r"(rapid|discrete) pointing", r"pointing (task|movements?)", r"center[- ]out reach"]),
     "tct_motor_skill_acquisition": ("Motor Skill Acquisition / Practice", "motor_performance", [r"(motor|sport|golf|throwing|putting) skill (acquisition|learning)", r"skill acquisition", r"(bimanual|polyrhythm) coordination"]),
@@ -240,11 +249,53 @@ HED_PATTERNS = {
     "hedtsk_instrumental_conditioning": [r"instrumental (learning|conditioning)", r"reinforcement learning (task|paradigm)", r"probabilistic (reward )?learning"],
 }
 
+# Families that differ from hed-task's own: its perceptual_judgment held every sense, so the hed-task tasks of one sense
+# move to that sense's family (James 2026-11-19). The extensions carry their family in EXTENSIONS and the BrainMap
+# crosswalk.
+FAMILY_OVERRIDES = {
+    "hedtsk_face_processing": "visual_perception",
+    "hedtsk_biological_motion_perception": "visual_perception",
+    "hedtsk_random_dot_kinematogram": "visual_perception",
+    "hedtsk_visual_masking": "visual_perception",
+    "hedtsk_auditory_masking": "auditory_perception",
+}
+
+# The sense a stimulation names, for a label of tct_sensory_stimulation; the first sense with the most hits wins.
+# Pain comes before touch, so a painful stimulation of the skin is pain stimulation. Electrical stimulation names a
+# sense only through the body part it reaches: deep brain, vagus nerve and TMS stimulation name none.
+SENSES = (
+    ("tct_acupuncture_stimulation", r"acupunct|acupoint|\bde[- ]?qi\b|needling|\b(st[- ]?36|li[- ]?4|li[- ]?11|gb[- ]?34|pc[- ]?6|lr[- ]?3|liv[- ]?3|sp[- ]?6|ki[- ]?3|gv[- ]?20)\b"),
+    ("tct_visceral_stimulation", r"\brect(al|um)\b|rectosigmoid|colonic|gastric|esophag|oesophag|visceral|barostat|distens|distent"),
+    ("tct_gustatory_stimulation", r"\btast(e|es|ant|ants|ing)\b|gustat|sucrose|\bsweet|bitter|\bsalty?\b|\bsour\b|umami|milkshake|saccharin|quinine|\bnacl\b"),
+    ("tct_olfactory_stimulation", r"odou?r|olfact|\bsmell|sniff|\bscents?\b|fragran|\bchemosens"),
+    ("tct_pain_stimulation", r"\bpain|nocicept|noxious|capsaicin|\bheat\b|cold pressor|laser[- ]evoked"),
+    ("tct_touch_stimulation", r"tactile|\btouch|vibr|brush|strok|air[- ]?puff|cutaneous|somatosens|\bpressure\b|caress|texture"
+                              r"|\b(median|ulnar|tibial|sural|peroneal|sciatic|digital)[- ]nerves?\b|\b(hind|fore)[- ]?(paw|limb|leg)s?\b"
+                              r"|\bpaws?\b|whisker|von[- ]?frey|filament|punctate|mechanical(ly)? (stimul|indent)"
+                              r"|\b(fingers?|digits?|hands?|feet|foot|wrists?|skin|forearms?)\b[^.;]{0,30}\bstimulat"
+                              r"|electrical(ly)? (stimulation of the )?(fingers?|digits?|hands?|feet|foot|wrists?|skin|forearms?)"),
+)
+_SENSE_RE = [(k, re.compile(p, re.I)) for k, p in SENSES]
+
+
+def split_sensory(label, *texts):
+    """`label`, or for tct_sensory_stimulation the stimulation of the sense `texts` name most; ties go to the sense
+    listed first in SENSES, and no sense named keeps tct_sensory_stimulation."""
+    if label != "tct_sensory_stimulation":
+        return label
+    text = " ".join(t for t in texts if t)
+    hits = [(len(p.findall(text)), -i, k) for i, (k, p) in enumerate(_SENSE_RE)]
+    n, _, k = max(hits)
+    return k if n else label
+
+
 # Tiers: a specific procedure beats a stimulus/presentation class, which beats a generic fallback.
 GENERIC_IDS = {"tct_working_memory_generic", "tct_inhibition_generic", "tct_interference_generic", "tct_reward_feedback",
                "tct_motor_execution", "tct_episodic_encoding", "tct_reading", "tct_speech_production"}
 STIMULUS_IDS = {"hedtsk_affective_picture_viewing", "hedtsk_face_processing", "tct_pain_stimulation",
-                "tct_auditory_stimulation", "tct_sensory_stimulation", "tct_naturalistic_viewing", "tct_checkerboard"}
+                "tct_auditory_stimulation", "tct_sensory_stimulation", "tct_naturalistic_viewing", "tct_checkerboard",
+                "tct_touch_stimulation", "tct_acupuncture_stimulation", "tct_olfactory_stimulation",
+                "tct_gustatory_stimulation", "tct_visceral_stimulation"}
 HEAD_FINAL = 1000  # prefer the rightmost (head) paradigm term in compounds: "masked priming lexical decision"
 def _tier(k):
     return 1 if k in GENERIC_IDS else (2 if k in STIMULUS_IDS else 3)
@@ -269,6 +320,8 @@ class Lexicon:
             EXTENSIONS.setdefault(k, v)
         for k, (name, fam, _) in EXTENSIONS.items():
             self.names[k] = name; self.family[k] = [fam]
+        for k, fam in FAMILY_OVERRIDES.items():
+            self.family[k] = [fam]
         self.entries = []  # (normalized phrase, task_id, variation_id, source)
         for k, t in self.tasks.items():
             self.entries.append((_norm(t["canonical_name"]), k, None, "hed_name"))

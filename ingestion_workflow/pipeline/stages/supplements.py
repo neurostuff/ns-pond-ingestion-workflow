@@ -86,20 +86,20 @@ class SupplementsStage:
         for ref in refs:
             downloads = upstream.get(ref.id, {})
             if not any(a.status is Status.OK for a in downloads.values()):
-                plan.blocked += 1
+                plan.block(ref)
                 continue
             routes = routes_for(ref, [s for s, a in downloads.items() if a.status is Status.OK], wanted)
             if not routes:
-                plan.block(NO_ROUTE)
+                plan.block(ref, NO_ROUTE)
                 continue
             fp = self.fingerprint_for(routes, ref.identifier.pmcid)
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
-                plan.fresh += 1
+                plan.add_fresh(ref)
                 continue
             count, last = attempts.get(ref.id, (0, None))
             if not ctx.should_attempt(existing, count, last, self.name):
-                plan.permanent += 1
+                plan.add_permanent(ref)
                 continue
             plan.pending.append(Work(ref=ref, source="", fingerprint=fp))
         return plan

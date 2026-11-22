@@ -1164,6 +1164,28 @@ class Catalog:
         )
         return {row["article_id"] for row in rows}
 
+    def article_ids_holding(self, stage: str, no_text: str, taken_back: Sequence[str]) -> set:
+        """Articles with a `stage` artifact to replace: not a skip, nor a take-back that went
+        through (fingerprint `no_text`, and OK or failed with one of `taken_back`)."""
+        marks = ", ".join("?" * len(taken_back))
+        rows = self._conn.execute(
+            "SELECT DISTINCT article_id FROM artifacts WHERE stage = ? AND status != 'skipped'"
+            f" AND NOT (fingerprint = ? AND (status = 'ok' OR COALESCE(error, '') IN ({marks})))",
+            (stage, no_text, *taken_back),
+        )
+        return {row["article_id"] for row in rows}
+
+    def article_ids_ever_uploaded(self, no_text: str) -> set:
+        """Articles an upload ever went through for: an OK upload that sent a parse (not a
+        take-back, fingerprint `no_text`), or a later record carrying `last_upload`."""
+        rows = self._conn.execute(
+            "SELECT DISTINCT article_id FROM artifacts WHERE stage = 'upload' AND"
+            " ((status = 'ok' AND fingerprint != ?)"
+            " OR json_extract(summary, '$.last_upload') IS NOT NULL)",
+            (no_text,),
+        )
+        return {row["article_id"] for row in rows}
+
     def articles_naming_base_studies(
         self, base_study_ids: Sequence[str], stages: Sequence[str], skipped_for: str
     ) -> Dict[str, set]:
@@ -1630,16 +1652,12 @@ class Catalog:
         exclusive.
         """
         out: Dict[str, Dict[str, int]] = {}
+        best = " ".join(f"WHEN MAX(status = '{s}') THEN '{s}'" for s in STATUS_RANK[:-1])
         for row in self._conn.execute(
-            """
+            f"""
             SELECT stage, state, COUNT(*) AS n FROM (
                 SELECT stage, article_id,
-                    CASE
-                        WHEN MAX(status = 'ok') THEN 'ok'
-                        WHEN MAX(status = 'failed') THEN 'failed'
-                        WHEN MAX(status = 'permanent') THEN 'permanent'
-                        ELSE 'skipped'
-                    END AS state
+                    CASE {best} ELSE '{STATUS_RANK[-1]}' END AS state
                 FROM artifacts GROUP BY stage, article_id
             ) GROUP BY stage, state
             """
@@ -1816,25 +1834,40 @@ def _chunks(items: Sequence[str], size: int) -> Iterator[Sequence[str]]:
         yield items[start : start + size]
 
 
-def is_retryable(
+#: The statuses, best first: an article with several artifacts at a stage (one per
+#: source) stands at the best any of them reached.
+STATUS_RANK = ("ok", "failed", "permanent", "skipped")
+
+#: Where a failed artifact stands with its retries (`retry_state`).
+RETRY_DUE = "retry due"
+BACKING_OFF = "waiting out retry_after"
+RETRIES_SPENT = "every try allowed has failed"
+NOT_FAILED = "not a failure"
+
+
+def retry_state(
     artifact: Optional[Artifact],
     attempts: int,
     last_attempt: Optional[str],
     *,
     max_attempts: int,
     backoff: timedelta,
-) -> bool:
-    """Whether a failed artifact has earned another try."""
+    now: Optional[datetime] = None,
+) -> str:
+    """Where a failed artifact stands with its retries: RETRY_DUE when it has earned
+    another try now."""
     if artifact is None:
-        return True
+        return RETRY_DUE
     if artifact.status is not Status.FAILED:
-        return False
+        return NOT_FAILED
     if attempts >= max_attempts:
-        return False
+        return RETRIES_SPENT
     if last_attempt is None:
-        return True
+        return RETRY_DUE
     try:
         when = datetime.fromisoformat(last_attempt)
     except ValueError:
-        return True
-    return datetime.now(timezone.utc) - when >= backoff
+        return RETRY_DUE
+    now = now if now is not None else datetime.now(timezone.utc)
+    return RETRY_DUE if now - when >= backoff else BACKING_OFF
+

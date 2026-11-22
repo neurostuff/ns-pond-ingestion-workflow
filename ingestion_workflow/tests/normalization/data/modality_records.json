@@ -1,0 +1,810 @@
+{
+ "cbf": {
+  "article": "f46ce56ufpia",
+  "record": {
+   "acquisitions": [
+    {
+     "local_id": "acq_smri",
+     "acquisition_type": "MRI",
+     "modality": {
+      "extraction_status": "extracted",
+      "value": "sMRI"
+     }
+    },
+    {
+     "local_id": "acq_asl",
+     "acquisition_type": "MRI",
+     "modality": {
+      "extraction_status": "extracted",
+      "value": "MRI"
+     }
+    },
+    {
+     "local_id": "acq_fmri",
+     "acquisition_type": "MRI",
+     "modality": {
+      "extraction_status": "extracted",
+      "value": "fMRI"
+     }
+    }
+   ],
+   "analyses": [
+    {
+     "local_id": "a_analysis_81ec3ba77d6d5e54",
+     "measure": "mea_gmv",
+     "acquisitions": [
+      "acq_smri"
+     ]
+    },
+    {
+     "local_id": "a_analysis_8350e48bb685a95e",
+     "measure": "mea_wmv",
+     "acquisitions": [
+      "acq_smri"
+     ]
+    },
+    {
+     "local_id": "a_analysis_a0128db527969a56",
+     "measure": "mea_rcbf",
+     "acquisitions": [
+      "acq_asl"
+     ]
+    },
+    {
+     "local_id": "a_analysis_0fd1dacbebae97ec",
+     "measure": "mea_alff",
+     "acquisitions": [
+      "acq_fmri"
+     ]
+    }
+   ],
+   "measures": [
+    {
+     "local_id": "mea_gmv",
+     "type": {
+      "extraction_status": "extracted",
+      "value": "gray_matter_volume"
+     }
+    },
+    {
+     "local_id": "mea_wmv",
+     "type": {
+      "extraction_status": "extracted",
+      "value": "white_matter_volume"
+     }
+    },
+    {
+     "local_id": "mea_rcbf",
+     "type": {
+      "extraction_status": "extracted",
+      "value": "cerebral_blood_flow"
+     }
+    },
+    {
+     "local_id": "mea_alff",
+     "type": {
+      "extraction_status": "extracted",
+      "value": "bold_derived_metric"
+     }
+    }
+   ]
+  }
+ },
+ "gmv": {
+  "article": "67wx4w45l3nn",
+  "record": {
+   "acquisitions": [
+    {
+     "local_id": "acq_smri",
+     "acquisition_type": "MRI",
+     "modality": {
+      "extraction_status": "extracted",
+      "value": "sMRI"
+     }
+    },
+    {
+     "local_id": "acq_asl",
+     "acquisition_type": "MRI",
+     "modality": {
+      "extraction_status": "extracted",
+      "value": "MRI"
+     }
+    }
+   ],
+   "analyses": [
+    {
+     "local_id": "a_analysis_0b5ae67677310767",
+     "measure": "mea_gm",
+     "acquisitions": [
+      "acq_smri",
+      "acq_asl"
+     ]
+    },
+    {
+     "local_id": "a_analysis_4dbef1955638489b",
+     "measure": "mea_gm",
+     "acquisitions": [
+      "acq_smri",
+      "acq_asl"
+     ]
+    },
+    {
+     "local_id": "a_analysis_8750e7e820b49476",
+     "measure": "mea_gm",
+     "acquisitions": [
+      "acq_smri",
+      "acq_asl"
+     ]
+    }
+   ],
+   "measures": [
+    {
+     "local_id": "mea_gm",
+     "type": {
+      "extraction_status": "extracted",
+      "value": "gray_matter_volume"
+     }
+    }
+   ]
+  }
+ },
+ "diff": {
+  "article": "5d2qdugt3lqy",
+  "record": {
+   "acquisitions": [
+    {
+     "local_id": "acq_dmri",
+     "acquisition_type": "MRI",
+     "modality": {
+      "extraction_status": "extracted",
+      "value": "dMRI"
+     }
+    },
+    {
+     "local_id": "acq_mrs",
+     "acquisition_type": "MRI",
+     "modality": {
+      "extraction_status": "extracted",
+      "value": "MRI"
+     }
+    },
+    {
+     "local_id": "acq_smri",
+     "acquisition_type": "MRI",
+     "modality": {
+      "extraction_status": "extracted",
+      "value": "sMRI"
+     }
+    }
+   ],
+   "analyses": [
+    {
+     "local_id": "a_analysis_0a4b42ae315bd87d",
+     "measure": "mea_rd",
+     "acquisitions": [
+      "acq_dmri",
+      "acq_mrs"
+     ]
+    },
+    {
+     "local_id": "a_analysis_05dadb13fb3be4ec",
+     "measure": "mea_md",
+     "acquisitions": [
+      "acq_dmri",
+      "acq_mrs"
+     ]
+    },
+    {
+     "local_id": "a_analysis_e55e0094d8d1e105",
+     "measure": "mea_ad",
+     "acquisitions": [
+      "acq_dmri",
+      "acq_mrs"
+     ]
+    },
+    {
+     "local_id": "a_analysis_ee68298dba33b305",
+     "measure": "mea_rd",
+     "acquisitions": [
+      "acq_dmri",
+      "acq_mrs"
+     ]
+    },
+    {
+     "local_id": "a_analysis_d305e43532a7dc9d",
+     "measure": "mea_ad",
+     "acquisitions": [
+      "acq_dmri",
+      "acq_mrs"
+     ]
+    },
+    {
+     "local_id": "a_analysis_4158ce09d5307e05",
+     "measure": "mea_fa",
+     "acquisitions": [
+      "acq_dmri",
+      "acq_mrs"
+     ]
+    }
+   ],
+   "measures": [
+    {
+     "local_id": "mea_fa",
+     "type": {
+      "extraction_status": "extracted",
+      "value": "diffusion_metric"
+     }
+    },
+    {
+     "local_id": "mea_md",
+     "type": {
+      "extraction_status": "extracted",
+      "value": "diffusion_metric"
+     }
+    },
+    {
+     "local_id": "mea_rd",
+     "type": {
+      "extraction_status": "extracted",
+      "value": "diffusion_metric"
+     }
+    },
+    {
+     "local_id": "mea_ad",
+     "type": {
+      "extraction_status": "extracted",
+      "value": "diffusion_metric"
+     }
+    }
+   ]
+  }
+ },
+ "mixed": {
+  "article": "sgaq3jonkvab",
+  "record": {
+   "acquisitions": [
+    {
+     "local_id": "acq_fmri",
+     "acquisition_type": "MRI",
+     "modality": {
+      "extraction_status": "extracted",
+      "value": "fMRI"
+     }
+    },
+    {
+     "local_id": "acq_smri",
+     "acquisition_type": "MRI",
+     "modality": {
+      "extraction_status": "extracted",
+      "value": "sMRI"
+     }
+    },
+    {
+     "local_id": "acq_asl",
+     "acquisition_type": "MRI",
+     "modality": {
+      "extraction_status": "extracted",
+      "value": "MRI"
+     }
+    }
+   ],
+   "analyses": [
+    {
+     "local_id": "a_analysis_837521227a664d85",
+     "measure": "mea_bold",
+     "acquisitions": [
+      "acq_fmri"
+     ]
+    },
+    {
+     "local_id": "a_analysis_07f566a262a1f89c",
+     "measure": "mea_bold",
+     "acquisitions": [
+      "acq_fmri",
+      "acq_smri",
+      "acq_asl"
+     ]
+    },
+    {
+     "local_id": "a_analysis_961c17ccecf894f2",
+     "measure": "mea_bold",
+     "acquisitions": [
+      "acq_fmri",
+      "acq_smri",
+      "acq_asl"
+     ]
+    },
+    {
+     "local_id": "a_analysis_41926f68853f3602",
+     "measure": "mea_gmv",
+     "acquisitions": [
+      "acq_fmri",
+      "acq_smri",
+      "acq_asl"
+     ]
+    },
+    {
+     "local_id": "a_analysis_ba987160ce2e54d4",
+     "measure": "mea_cbf",
+     "acquisitions": [
+      "acq_fmri",
+      "acq_smri",
+      "acq_asl"
+     ]
+    }
+   ],
+   "measures": [
+    {
+     "local_id": "mea_bold",
+     "type": {
+      "extraction_status": "extracted",
+      "value": "bold_response"
+     }
+    },
+    {
+     "local_id": "mea_gmv",
+     "type": {
+      "extraction_status": "extracted",
+      "value": "gray_matter_volume"
+     }
+    },
+    {
+     "local_id": "mea_cbf",
+     "type": {
+      "extraction_status": "extracted",
+      "value": "cerebral_blood_flow"
+     }
+    }
+   ]
+  }
+ },
+ "mrs": {
+  "article": "uo2qzj2srlwn",
+  "record": {
+   "acquisitions": [
+    {
+     "local_id": "acq_mrs_15t",
+     "acquisition_type": "MRI",
+     "modality": {
+      "extraction_status": "extracted",
+      "value": "MRI"
+     }
+    },
+    {
+     "local_id": "acq_mrs_3t",
+     "acquisition_type": "MRI",
+     "modality": {
+      "extraction_status": "extracted",
+      "value": "MRI"
+     }
+    },
+    {
+     "local_id": "acq_mrs_4t",
+     "acquisition_type": "MRI",
+     "modality": {
+      "extraction_status": "extracted",
+      "value": "MRI"
+     }
+    }
+   ],
+   "analyses": [
+    {
+     "local_id": "a_analysis_31bfce5e06edc0a1",
+     "measure": "mea_mrs",
+     "acquisitions": [
+      "acq_mrs_4t"
+     ]
+    },
+    {
+     "local_id": "a_analysis_a3cc5e2c4ff589bc",
+     "measure": "mea_mrs",
+     "acquisitions": [
+      "acq_mrs_15t"
+     ]
+    },
+    {
+     "local_id": "a_analysis_a3cc5e2c4ff589bc_2",
+     "measure": "mea_mrs",
+     "acquisitions": [
+      "acq_mrs_15t"
+     ]
+    },
+    {
+     "local_id": "a_analysis_a3cc5e2c4ff589bc_3",
+     "measure": "mea_mrs",
+     "acquisitions": [
+      "acq_mrs_3t"
+     ]
+    },
+    {
+     "local_id": "a_analysis_a3cc5e2c4ff589bc_4",
+     "measure": "mea_mrs",
+     "acquisitions": [
+      "acq_mrs_15t"
+     ]
+    },
+    {
+     "local_id": "a_analysis_a3cc5e2c4ff589bc_5",
+     "measure": "mea_mrs",
+     "acquisitions": [
+      "acq_mrs_4t"
+     ]
+    },
+    {
+     "local_id": "a_analysis_a3cc5e2c4ff589bc_6",
+     "measure": "mea_mrs",
+     "acquisitions": [
+      "acq_mrs_3t"
+     ]
+    },
+    {
+     "local_id": "a_analysis_a3cc5e2c4ff589bc_7",
+     "measure": "mea_mrs",
+     "acquisitions": [
+      "acq_mrs_3t"
+     ]
+    },
+    {
+     "local_id": "a_analysis_a3cc5e2c4ff589bc_8",
+     "measure": "mea_mrs",
+     "acquisitions": [
+      "acq_mrs_3t"
+     ]
+    },
+    {
+     "local_id": "a_analysis_a3cc5e2c4ff589bc_9",
+     "measure": "mea_mrs",
+     "acquisitions": [
+      "acq_mrs_4t"
+     ]
+    },
+    {
+     "local_id": "a_analysis_a3cc5e2c4ff589bc_10",
+     "measure": "mea_mrs",
+     "acquisitions": [
+      "acq_mrs_3t"
+     ]
+    }
+   ],
+   "measures": [
+    {
+     "local_id": "mea_mrs",
+     "type": {
+      "extraction_status": "extracted",
+      "value": "metabolite concentration and ratios"
+     }
+    }
+   ]
+  }
+ },
+ "ecog": {
+  "article": "zd22seuitygr",
+  "record": {
+   "acquisitions": [
+    {
+     "local_id": "acq_ecog_nihon",
+     "acquisition_type": "OtherModality",
+     "modality": {
+      "extraction_status": "extracted",
+      "value": "other"
+     },
+     "modality_label": {
+      "extraction_status": "extracted",
+      "value": "electrocorticography (ECoG)"
+     }
+    },
+    {
+     "local_id": "acq_ecog_blackrock",
+     "acquisition_type": "OtherModality",
+     "modality": {
+      "extraction_status": "extracted",
+      "value": "other"
+     },
+     "modality_label": {
+      "extraction_status": "extracted",
+      "value": "electrocorticography (ECoG)"
+     }
+    }
+   ],
+   "analyses": [
+    {
+     "local_id": "a_analysis_039c10e03ab3ec26",
+     "measure": "mea_gamma",
+     "acquisitions": [
+      "acq_ecog_nihon",
+      "acq_ecog_blackrock"
+     ]
+    },
+    {
+     "local_id": "a_analysis_7b00a4f1f20a0163",
+     "measure": "mea_gamma",
+     "acquisitions": [
+      "acq_ecog_nihon",
+      "acq_ecog_blackrock"
+     ]
+    },
+    {
+     "local_id": "a_analysis_ee18a9303f84943d",
+     "measure": "mea_gamma",
+     "acquisitions": [
+      "acq_ecog_nihon",
+      "acq_ecog_blackrock"
+     ]
+    },
+    {
+     "local_id": "a_analysis_c3fda284ebd9ec9a",
+     "measure": "mea_gamma",
+     "acquisitions": [
+      "acq_ecog_nihon",
+      "acq_ecog_blackrock"
+     ]
+    }
+   ],
+   "measures": [
+    {
+     "local_id": "mea_gamma",
+     "type": {
+      "extraction_status": "extracted",
+      "value": "electrophysiological_power"
+     }
+    }
+   ]
+  }
+ },
+ "ct": {
+  "article": "h23b62giil5y",
+  "record": {
+   "acquisitions": [
+    {
+     "local_id": "acq_mri",
+     "acquisition_type": "MRI",
+     "modality": {
+      "extraction_status": "extracted",
+      "value": "MRI"
+     }
+    },
+    {
+     "local_id": "acq_ct",
+     "acquisition_type": "OtherModality",
+     "modality": {
+      "extraction_status": "extracted",
+      "value": "CT"
+     },
+     "modality_label": {
+      "extraction_status": "extracted",
+      "value": "CT"
+     }
+    }
+   ],
+   "analyses": [
+    {
+     "local_id": "a_analysis_2355b14796daf933",
+     "measure": "mea_vlsm",
+     "acquisitions": [
+      "acq_mri",
+      "acq_ct"
+     ]
+    },
+    {
+     "local_id": "a_analysis_823d6e5d4064b93d",
+     "measure": "mea_vlsm",
+     "acquisitions": [
+      "acq_mri",
+      "acq_ct"
+     ]
+    },
+    {
+     "local_id": "a_analysis_9ba2f905f7b76b2f",
+     "measure": "mea_vlsm",
+     "acquisitions": [
+      "acq_mri",
+      "acq_ct"
+     ]
+    },
+    {
+     "local_id": "a_analysis_a979a42af8449b42",
+     "measure": "mea_vlsm",
+     "acquisitions": [
+      "acq_mri",
+      "acq_ct"
+     ]
+    }
+   ],
+   "measures": [
+    {
+     "local_id": "mea_vlsm",
+     "type": {
+      "extraction_status": "extracted",
+      "value": "lesion-deficit relationship"
+     }
+    }
+   ]
+  }
+ },
+ "notacq": {
+  "article": "kcqngipqtre2",
+  "record": {
+   "acquisitions": [
+    {
+     "local_id": "acq_brainmap",
+     "acquisition_type": "OtherModality",
+     "modality": {
+      "extraction_status": "extracted",
+      "value": "other"
+     },
+     "modality_label": {
+      "extraction_status": "extracted",
+      "value": "BrainMap\u00ae functional database"
+     }
+    }
+   ],
+   "analyses": [
+    {
+     "local_id": "a_analysis_1d4d1d56f92fcc9b",
+     "measure": "mea_ale",
+     "acquisitions": null
+    },
+    {
+     "local_id": "a_analysis_a15e33a2a8a0a457",
+     "measure": "mea_ale",
+     "acquisitions": null
+    },
+    {
+     "local_id": "a_analysis_6a207afa9a72c024",
+     "measure": "mea_ale",
+     "acquisitions": null
+    },
+    {
+     "local_id": "a_analysis_bf2d1ab73a924526",
+     "measure": "mea_ale",
+     "acquisitions": null
+    },
+    {
+     "local_id": "a_analysis_9d5ccbc26d59fc68",
+     "measure": "mea_ale",
+     "acquisitions": null
+    },
+    {
+     "local_id": "a_analysis_638f107563ef5451",
+     "measure": "mea_ale",
+     "acquisitions": null
+    },
+    {
+     "local_id": "a_analysis_525fe6fc634dcb7c",
+     "measure": "mea_ale",
+     "acquisitions": null
+    },
+    {
+     "local_id": "a_analysis_13f1ddac4f0297fd",
+     "measure": "mea_ale",
+     "acquisitions": null
+    },
+    {
+     "local_id": "a_analysis_8b0fc77201e91209",
+     "measure": "mea_ale",
+     "acquisitions": null
+    },
+    {
+     "local_id": "a_analysis_20bd932c9fa41dc9",
+     "measure": "mea_ale",
+     "acquisitions": null
+    },
+    {
+     "local_id": "a_analysis_9e3c2d319c685538",
+     "measure": "mea_ale",
+     "acquisitions": null
+    }
+   ],
+   "measures": [
+    {
+     "local_id": "mea_ale",
+     "type": {
+      "extraction_status": "extracted",
+      "value": "activation likelihood estimation"
+     }
+    }
+   ]
+  }
+ },
+ "physio_compat": {
+  "article": "4ma2djzq2isd",
+  "record": {
+   "acquisitions": [
+    {
+     "local_id": "acq_fmri",
+     "acquisition_type": "MRI",
+     "modality": {
+      "extraction_status": "extracted",
+      "value": "fMRI"
+     }
+    },
+    {
+     "local_id": "acq_smri",
+     "acquisition_type": "MRI",
+     "modality": {
+      "extraction_status": "extracted",
+      "value": "sMRI"
+     }
+    },
+    {
+     "local_id": "acq_emg",
+     "acquisition_type": "OtherModality",
+     "modality": {
+      "extraction_status": "extracted",
+      "value": "other"
+     },
+     "modality_label": {
+      "extraction_status": "extracted",
+      "value": "MRI-compatible EMG"
+     }
+    }
+   ],
+   "analyses": [
+    {
+     "local_id": "a_analysis_a14f0ab0f66dbe9a",
+     "measure": "mea_bold",
+     "acquisitions": [
+      "acq_fmri",
+      "acq_emg"
+     ]
+    },
+    {
+     "local_id": "a_analysis_c186e0a67539bb58",
+     "measure": "mea_bold",
+     "acquisitions": [
+      "acq_fmri",
+      "acq_emg"
+     ]
+    },
+    {
+     "local_id": "a_analysis_88cde79732a1fe8b",
+     "measure": "mea_bold",
+     "acquisitions": [
+      "acq_fmri",
+      "acq_emg"
+     ]
+    },
+    {
+     "local_id": "a_analysis_88cde79732a1fe8b_2",
+     "measure": "mea_bold",
+     "acquisitions": [
+      "acq_fmri",
+      "acq_emg"
+     ]
+    },
+    {
+     "local_id": "a_analysis_ce7e5c20d4b0a161",
+     "measure": "mea_bold",
+     "acquisitions": [
+      "acq_fmri",
+      "acq_emg"
+     ]
+    },
+    {
+     "local_id": "a_analysis_a3f834f006ccda73",
+     "measure": "mea_ppi",
+     "acquisitions": [
+      "acq_fmri",
+      "acq_emg"
+     ]
+    }
+   ],
+   "measures": [
+    {
+     "local_id": "mea_bold",
+     "type": {
+      "extraction_status": "extracted",
+      "value": "bold_response"
+     }
+    },
+    {
+     "local_id": "mea_ppi",
+     "type": {
+      "extraction_status": "extracted",
+      "value": "connectivity_strength"
+     }
+    }
+   ]
+  }
+ }
+}

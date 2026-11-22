@@ -1,4 +1,4 @@
-"""One rule for a model server that cannot be used: the stage stops, for roles and prose alike.
+"""One rule for a model that cannot be used: the stage stops, for roles and prose alike.
 
 The scheduler stops the stage for the run, records no failure for the articles the model did
 not answer, and says why in the report. An article answered before the stop keeps its outcome.
@@ -20,10 +20,10 @@ from ingestion_workflow.catalog import Outcome, Status
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.tests.clients.test_prose_client import _served, _server
 from ingestion_workflow.tests.pipeline import test_prose_stages as prose
-from ingestion_workflow.tests.pipeline import test_roles_served as roles
+from ingestion_workflow.tests.pipeline import test_roles_model as roles
 from ingestion_workflow.tests.pipeline.test_prose_stages import env as prose_env  # noqa: F401
-from ingestion_workflow.tests.pipeline.test_roles_served import env as roles_env  # noqa: F401
-from ingestion_workflow.tests.pipeline.test_roles_served import stub  # noqa: F401
+from ingestion_workflow.tests.pipeline.test_roles_model import env as roles_env  # noqa: F401
+from ingestion_workflow.tests.pipeline.test_roles_model import model_dir  # noqa: F401
 
 
 # The prose client under test is played by an in-process transport as prose.test.
@@ -139,60 +139,48 @@ def test_a_stopped_prose_stage_blocks_resolve_without_failing_it(prose_env, evid
 # --------------------------------------------------------------------------- roles
 
 
-def test_a_roles_server_that_stops_answering_stops_the_stage_and_keeps_what_it_answered(
-    roles_env, stub, monkeypatch, evidence  # noqa: F811
+@pytest.fixture
+def stand_in(monkeypatch):
+    """The roles stage's model replaced by `test_roles_model.StandIn`, answering `result`."""
+    monkeypatch.setattr("ingestion_workflow.pipeline.stages.roles.DecisionModel", roles.StandIn)
+    monkeypatch.setattr(roles.StandIn, "reply", None)
+    monkeypatch.setattr(roles.StandIn, "loading", None)
+    monkeypatch.setattr(roles.StandIn, "made", [])
+    return roles.StandIn
+
+
+def test_a_roles_model_that_fails_stops_the_stage_and_keeps_what_it_answered(
+    roles_env, stand_in, evidence  # noqa: F811
 ):
     settings, catalog, ref = roles_env
     refs = _role_articles(catalog, ref, "patients",
             evidence=evidence)  # [ref (has Lee), patients-only]
-    monkeypatch.setattr("ingestion_workflow.services.set_roles.served.time.sleep", lambda s: None)
-
-    def answers(body):
-        if "[NAME] Lee" not in str(body["messages"]):
-            return 200, roles._choice('{"role": "result"}', roles.RESULT_LIKELY)
-        stub.healthy = False  # it goes down on the next article, after the plan listed the model
-        return 503, "down"
-
-    stub.reply = answers
+    stand_in.reply = roles._refuse("Lee")
     report = run_stages(Context(settings, catalog), [RolesStage(settings)], [refs[1], refs[0]])
     stage = report.stages["roles"]
-    assert "did not answer in 3 tries: HTTP 503" in stage.stopped
+    assert "CUDA error" in stage.stopped
     assert (stage.ok, stage.failed) == (1, 0)
     assert set(catalog.artifacts([r.id for r in refs], "roles")) == {refs[1].id}
 
 
-def test_a_refused_key_stops_roles(roles_env, stub):  # noqa: F811
-    settings, catalog, ref = roles_env
-    stub.reply = lambda body: (401, {"error": {"message": "Incorrect API key provided."}})
-    report = run_stages(Context(settings, catalog), [RolesStage(settings)], [ref])
-    stage = report.stages["roles"]
-    assert "configuration error:" in stage.stopped and "HTTP 401" in stage.stopped
-    assert (stage.ok, stage.failed) == (0, 0)
-    assert catalog.artifacts([ref.id], "roles") == {}
-
-
-def test_roles_decides_every_set_when_the_server_answers(roles_env, stub):  # noqa: F811
+def test_roles_decides_every_set_when_the_model_answers(roles_env):  # noqa: F811
     settings, catalog, ref = roles_env
     report = run_stages(Context(settings, catalog), [RolesStage(settings)], [ref])
     stage = report.stages["roles"]
     assert (stage.ok, stage.failed, stage.stopped) == (1, 0, None)
 
 
-def test_a_roles_stop_leaves_the_later_batches_unasked(roles_env, stub, monkeypatch, evidence):  # noqa: F811
+def test_a_roles_stop_leaves_the_later_batches_unasked(roles_env, stand_in, monkeypatch,  # noqa: F811
+                                                       evidence):
     settings, catalog, ref = roles_env
     refs = _role_articles(catalog, ref, "controls", evidence=evidence)
-    monkeypatch.setattr("ingestion_workflow.services.set_roles.served.time.sleep", lambda s: None)
-
-    def crashed(body):  # down after the plan listed the model
-        stub.healthy = False
-        return 503, "down"
-
-    stub.reply = crashed
+    stand_in.reply = roles._refuse("")  # every set: the model fails on the first
     _one_at_a_time(monkeypatch)
     report = run_stages(Context(settings, catalog), [RolesStage(settings)], refs)
     stage = report.stages["roles"]
     assert (stage.planned, stage.left_pending) == (1, 2)
     assert "left pending" in stage.line()
-    # only the first article's sets are asked; the second batch is not
-    assert stub.requests and not any("[NAME] controls" in str(r) for r in stub.requests)
+    # only the first article's sets are run; the second batch is not
+    (model,) = stand_in.made
+    assert model.asked and not any("[NAME] controls" in t for t in model.asked)
     assert catalog.artifacts([r.id for r in refs], "roles") == {}

@@ -469,3 +469,142 @@ def test_a_no_text_extraction_with_tables_that_loses_the_tie_break_is_recorded()
     assert skipped_for_text(found, chosen) == [{"source": "pubget", "tables": 9}]
     # nothing is left behind when the chosen one has no text either
     assert skipped_for_text({"pubget": pubget, "ace": ace}, pubget) == []
+
+
+# -- a sheet too large to judge in full -------------------------------------
+
+class _Gate:
+    """Counts what it is asked to decide, and passes everything."""
+
+    def __init__(self):
+        self.asked = 0
+
+    def decide(self, text, caption, footer):
+        self.asked += 1
+        return {"passes": True, "route": "candidates", "score": 0.9}
+
+
+def _sheet(path, header, rows):
+    path.write_text("\n".join([header] + rows) + "\n", encoding="utf-8")
+    return {"table_id": "s1-sheet-01", "raw_content_path": str(path)}
+
+
+def test_a_large_sheet_with_no_coordinates_in_its_head_is_not_judged(tmp_path, monkeypatch):
+    """A million-row sheet of readings took one worker 14 minutes and 4.8 GB; its
+    first rows are enough to say it holds no coordinates."""
+    from ingestion_workflow.pipeline.stages import triage as t
+
+    monkeypatch.setattr(t, "LARGE_SHEET_BYTES", 1_000)
+    table = _sheet(tmp_path / "sheet-01.csv", "well,FL1,FL2,FL3,time",
+                   [f"{i},{3130 + i},{3041 + i},{2952 + i},0.7" for i in range(5_000)])
+    gate = _Gate()
+    got = t.judge_table(gate, table)
+    assert got["passes"] is False and got["route"] == "too_large"
+    assert "head holds no coordinates" in got["reason"]
+    assert gate.asked == 0
+
+
+def test_a_large_sheet_of_coordinates_is_judged_in_full(tmp_path, monkeypatch):
+    """Coordinate tables of thousands of rows are real; size alone drops none."""
+    from ingestion_workflow.pipeline.stages import triage as t
+
+    monkeypatch.setattr(t, "LARGE_SHEET_BYTES", 1_000)
+    rows = [f"Left insula,{-30 - i % 20},{20 + i % 15},{4 + i % 10},{5.1 + i % 3:.2f}"
+            for i in range(3_000)]
+    table = _sheet(tmp_path / "sheet-01.csv", "Region,x,y,z,T", rows)
+    gate = _Gate()
+    got = t.judge_table(gate, table)
+    assert got["route"] == "candidates" and got["passes"] is True
+    assert got["points"] > t.LARGE_SHEET_HEAD_ROWS, "the whole sheet is read, not its head"
+    assert gate.asked == 1
+
+
+def test_a_sheet_under_the_limit_is_judged_as_before(tmp_path):
+    from ingestion_workflow.pipeline.stages import triage as t
+
+    table = _sheet(tmp_path / "sheet-01.csv", "well,FL1,FL2",
+                   [f"{i},{3130 + i},{3041 + i}" for i in range(50)])
+    gate = _Gate()
+    t.judge_table(gate, table)
+    assert gate.asked == 1
+
+
+def test_a_wide_sheet_is_judged_by_a_head_of_bounded_bytes(tmp_path, monkeypatch):
+    """Some sheets have rows of 180 KB: 2,000 of them is the whole 266 MB sheet."""
+    from ingestion_workflow.pipeline.stages import triage as t
+
+    monkeypatch.setattr(t, "LARGE_SHEET_BYTES", 1_000)
+    monkeypatch.setattr(t, "LARGE_SHEET_HEAD_BYTES", 2_000)
+    wide = ",".join(str(3000 + c) for c in range(400))
+    table = _sheet(tmp_path / "sheet-01.csv", ",".join(f"gene{c}" for c in range(400)),
+                   [wide] * 50)
+    head = t._serialised_head(table["raw_content_path"])
+    assert 0 < len(head) < 4_000
+    gate = _Gate()
+    assert t.judge_table(gate, table)["route"] == "too_large" and gate.asked == 0
+
+
+def test_a_wide_sheet_of_coordinates_is_still_found_by_its_head(tmp_path, monkeypatch):
+    from ingestion_workflow.pipeline.stages import triage as t
+
+    monkeypatch.setattr(t, "LARGE_SHEET_BYTES", 1_000)
+    monkeypatch.setattr(t, "LARGE_SHEET_HEAD_BYTES", 2_000)
+    extra = ",".join("0" for _ in range(100))
+    rows = [f"Left insula,{-30 - i % 20},{20 + i % 15},{4 + i % 10},{5.1 + i % 3:.2f},{extra}"
+            for i in range(200)]
+    header = "Region,x,y,z,T," + ",".join(f"c{c}" for c in range(100))
+    gate = _Gate()
+    got = t.judge_table(gate, _sheet(tmp_path / "sheet-01.csv", header, rows))
+    assert gate.asked == 1 and got["route"] == "candidates"
+
+
+def test_a_sheet_wider_than_the_head_is_judged_by_its_first_columns(tmp_path, monkeypatch):
+    """`read.extract` took minutes on two rows of 16,381 columns; the head keeps 64."""
+    from nspond_tables import grid
+
+    from ingestion_workflow.pipeline.stages import triage as t
+
+    monkeypatch.setattr(t, "LARGE_SHEET_BYTES", 1_000)
+    extra = ",".join("1" for _ in range(300))
+    rows = [f"Left insula,{-30 - i % 20},{20 + i % 15},{4 + i % 10},{5.1:.2f},{extra}"
+            for i in range(20)]
+    header = "Region,x,y,z,T," + ",".join(f"s{c}" for c in range(300))
+    table = _sheet(tmp_path / "sheet-01.csv", header, rows)
+    assert grid.parse(t._serialised_head(table["raw_content_path"])).width() \
+        == t.LARGE_SHEET_COLUMNS
+    gate = _Gate()
+    assert t.judge_table(gate, table)["route"] == "candidates" and gate.asked == 1
+
+
+def test_a_large_coordinate_sheet_is_judged_without_its_padding_or_its_tail(tmp_path, monkeypatch):
+    """A header padded to Excel's 16,384 columns made `read.extract` take minutes, and a
+    250,000-row sheet would take gigabytes: the judged sheet keeps the columns more than one
+    row fills, and its first `LARGE_SHEET_JUDGED_ROWS` rows."""
+    from nspond_tables import grid
+
+    from ingestion_workflow.pipeline.stages import triage as t
+
+    monkeypatch.setattr(t, "LARGE_SHEET_BYTES", 1_000)
+    monkeypatch.setattr(t, "LARGE_SHEET_JUDGED_ROWS", 2_500)
+    header = "Region,x,y,z,T," + ",".join(f"Column{c}" for c in range(5_000))
+    rows = [f"Left insula,{-30 - i % 20},{20 + i % 15},{4 + i % 10},{5.1 + i % 3:.2f}"
+            for i in range(3_000)]
+    table = _sheet(tmp_path / "sheet-01.csv", header, rows)
+    assert grid.parse(t._serialised_large(table["raw_content_path"])).width() == 5
+    gate = _Gate()
+    got = t.judge_table(gate, table)
+    assert gate.asked == 1 and got["route"] == "candidates"
+    assert t.LARGE_SHEET_HEAD_ROWS < got["points"] <= 2_500
+
+
+def test_a_large_sheet_filled_wide_is_judged_on_its_first_columns(tmp_path, monkeypatch):
+    """A gene-set sheet fills 1,600 columns in thousands of rows; judging 200 took minutes."""
+    from nspond_tables import grid
+
+    from ingestion_workflow.pipeline.stages import triage as t
+
+    monkeypatch.setattr(t, "LARGE_SHEET_BYTES", 1_000)
+    genes = ",".join(f"G{c}" for c in range(300))
+    rows = [f"Left insula,{-30 - i % 20},{20 + i % 15},{4 + i % 10},{genes}" for i in range(50)]
+    path = _sheet(tmp_path / "sheet-01.csv", "Region,x,y,z," + genes, rows)["raw_content_path"]
+    assert grid.parse(t._serialised_large(path)).width() == t.LARGE_SHEET_COLUMNS

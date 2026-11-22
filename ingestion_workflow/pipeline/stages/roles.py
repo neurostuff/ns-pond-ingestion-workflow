@@ -2,14 +2,13 @@
 
 Required: it runs between `resolve` (or `analyses`, without prose) and
 `space`, and space, upload and sync read nothing it has not passed. Every set's
-role comes from its origin's role model (`services.set_roles`), a NuExtract3
-fine-tune served by vLLM (`role_model_table`, `role_model_prose`): table sets
-from the table model, prose sets from the prose model, each reading its own
-context builder's input. There is no proposal and no default role: an article
-with a set whose origin's model is not configured, or cannot be used, is not
-attempted -- the plan counts it as blocked, with the reason -- so it uses up no
-retries, and it runs as soon as the model is configured. Everything downstream
-of it stays blocked meanwhile.
+role comes from the decision model (`services.set_roles.decision`, `role_model`),
+one encoder for table and prose sets alike, loaded in this process, each set
+read through its origin's context builder. There is no proposal and no default
+role: while the model is not configured, or cannot be used, no article with a
+set is attempted -- the plan counts it as blocked, with the reason -- so it uses
+up no retries, and it runs as soon as the model is configured. Everything
+downstream of it stays blocked meanwhile.
 The payload it writes is described in docs/set-roles-artifact.md.
 """
 
@@ -27,15 +26,15 @@ from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, Set, 
 
 from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fingerprint
 from ingestion_workflow.clients.model_server import ModelUnavailable
-from ingestion_workflow.services.set_roles import Unanswered, decide, prose_context, table_context
-from ingestion_workflow.services.set_roles.labels import is_decided
-from ingestion_workflow.services.set_roles.served import (
-    WORKERS,
-    ServedClassifier,
-    model_identity,
-    served_models,
+from ingestion_workflow.services.set_roles import (
+    decide,
+    decision,
+    geometry,
+    prose_context,
+    table_context,
 )
-from ingestion_workflow.services.set_roles.served_prompt import CONTEXT_VERSIONS, PROMPT
+from ingestion_workflow.services.set_roles.decision import CONTEXT_VERSIONS, DecisionModel
+from ingestion_workflow.services.set_roles.labels import RoleDecision, SetRole, is_decided
 
 from ..plan import StagePlan, Work
 from ..stage import Context, alone, take_back_or_block, taking_back
@@ -46,35 +45,19 @@ from .space import _article_text
 logger = logging.getLogger(__name__)
 
 #: Bump when what the stage writes changes, apart from the models and the contexts.
-ROLES_VERSION = 4
+#: 6: every set has `space` and `coordinate_source`, and only template-space sets are uploaded.
+ROLES_VERSION = 6
 
-#: Articles classified at once, their inputs held in memory meanwhile. An article
-#: waits on one origin's server at a time, so both servers are supplied only while
-#: articles of both kinds are in hand; twice `served.WORKERS` keeps each server
-#: that deep even when every article has a single set waiting on it.
-ARTICLES = 2 * WORKERS
+#: Articles classified at once, their inputs held in memory meanwhile: their sets
+#: share the model's batches (`decision.DecisionModel`), so a batch fills even when
+#: every article has a single set.
+ARTICLES = 64
 
 #: Why roles waits on an article whose prose indexes a passages list other than the current one.
 RESOLVE_READ_OTHER_PROSE = ("its resolve was made from other prose: "
                             "roles waits for resolve to read this prose")
 PROSE_READ_OTHER_PASSAGES = "its prose read other passages: roles waits for prose to read these"
 
-#: The setting naming each origin's model, and the origin's name in a reason.
-MODEL_SETTINGS = {"table": "role_model_table", "text": "role_model_prose"}
-_ORIGIN_NAMES = {"table": "table", "text": "prose"}
-
-
-class UnansweredSets(RuntimeError):
-    """Sets the classifier gave no usable answer for: the article gets no roles at all."""
-
-    def __init__(self, reasons: Mapping[str, str]) -> None:
-        self.reasons = dict(reasons)
-        shown = "; ".join(f"{k}: {v}" for k, v in list(self.reasons.items())[:5])
-        more = len(self.reasons) - 5
-        super().__init__(
-            f"{len(self.reasons)} set(s) without a usable answer: {shown}"
-            + (f" and {more} more" if more > 0 else "")
-        )
 
 
 def _span(sentence: str, text: Optional[str]) -> dict:
@@ -160,52 +143,55 @@ def assign_roles(
     payload: Mapping[str, Any],
     passages: Sequence[Mapping[str, Any]],
     text: Optional[str],
-    classifiers: Mapping[str, Any],
+    classifier: Any,
     raw_tables: Optional[Mapping[str, Path]] = None,
     unread: Optional[Dict[str, str]] = None,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """The payload with every analysis's role decided by its origin's classifier, and a summary.
+    """The payload with every analysis's role decided by the classifier, and a summary.
 
-    `classifiers` maps an origin (`table`, `text`) to its classifier (a
-    `ServedClassifier`), which raises `ModelUnavailable` for an origin it has none for,
-    and sets the classifier could not answer raise `UnansweredSets` with each
-    one's reason: no set is given a role any other way. Each analysis gains
-    `metadata.set_role` (`SET_ROLE_FIELDS`) and `metadata.held`. Tables read
-    without their header and rows go in `unread` (`set_contexts`). Sets of a
-    role that is not uploaded -- a reference, a bare slice position (other),
-    a localization -- are held: they stay in
-    the collection's `analyses`, in their place, so a set's position (pondie's
-    `table_id#ordinal`) never moves, and upload leaves them out (`uploaded_sets`).
+    `classifier` (a `decision.DecisionModel`, or the stage's lazy handle on it)
+    reads every set, table and prose alike, each through its origin's context
+    builder; it raises `ModelUnavailable` when it cannot be used: no set is
+    given a role any other way. Each analysis gains `metadata.set_role`
+    (`SET_ROLE_FIELDS`) and `metadata.held`. Tables read without their header
+    and rows go in `unread` (`set_contexts`). Sets that are not uploaded -- a
+    reference, a bare slice position (other), a localization, or any set whose
+    coordinates are not human template millimetres (space `other`) -- are held:
+    they stay in the collection's `analyses`, in their place, so a set's
+    position (pondie's `table_id#ordinal`) never moves, and upload leaves them
+    out (`uploaded_sets`).
+
+    A set whose points cannot be template brain coordinates (`geometry.not_brain`)
+    is decided before any model is asked: no role, held, with the rule's reason. It
+    stays in its place here and is left out of the parse.
     """
     found = list(set_contexts(payload, passages, text, raw_tables, unread))
-    by_origin: Dict[str, list] = collections.defaultdict(list)
+    decisions = {}
+    asked = []
     for item in found:
-        by_origin[item[2]].append(item)
-    chosen = {}
-    for origin in sorted(by_origin):
-        # The stage's mapping raises `ModelUnavailable` with the reason its model cannot be used.
-        chosen[origin] = classifiers[origin]
-    decisions, unanswered = {}, {}
-    for origin, items in by_origin.items():
-        classifier = chosen[origin]
-        predictions = classifier.predict([module.serialize(ctx) for *_, module, ctx in items])
-        if len(predictions) != len(items):
-            raise ValueError(
-                f"the {_ORIGIN_NAMES[origin]} role model answered {len(predictions)} of "
-                f"{len(items)} sets"
-            )
-        for (table_id, index, _, module, context), prediction in zip(items, predictions):
-            if isinstance(prediction, Unanswered):
-                unanswered[f"{table_id}#{index}"] = prediction.reason
-                continue
+        table_id, index, origin, _, context = item
+        reason = geometry.not_brain(context.points)
+        if reason is None:
+            asked.append(item)
+            continue
+        decisions[(table_id, index)] = RoleDecision(
+            decided=SetRole(None), confidence=1.0, source=geometry.SOURCE, origin=origin,
+            reason=reason,
+        )
+    model_source = None
+    if asked:
+        # The stage's handle raises `ModelUnavailable` with the reason the model cannot be used.
+        predictions = classifier.predict([module.serialize(ctx) for *_, module, ctx in asked])
+        if len(predictions) != len(asked):
+            raise ValueError(f"the role model answered {len(predictions)} of {len(asked)} sets")
+        model_source = classifier.source
+        for (table_id, index, origin, module, context), prediction in zip(asked, predictions):
             decisions[(table_id, index)] = decide(
                 prediction,
-                source=classifier.source,
+                source=model_source,
                 origin=origin,
                 evidence=module.prior_evidence(context),
             )
-    if unanswered:
-        raise UnansweredSets(unanswered)
     out: Dict[str, Any] = {}
     roles, held = collections.Counter(), 0
     values, records = [], []
@@ -226,22 +212,29 @@ def assign_roles(
                 },
             }
             # An anchor by its kind.
-            roles[decision.anchor_kind or decision.role] += 1
+            if decision.role is not None:
+                roles[decision.anchor_kind or decision.role] += 1
             held += not decision.uploaded
             kept.append(analysis)
             values.append([table_id, index, decision.role, decision.anchor_kind,
-                           decision.from_prior_study, not decision.uploaded])
+                           decision.from_prior_study, decision.space,
+                           decision.coordinate_source, not decision.uploaded])
             records.append([table_id, index, metadata, not decision.uploaded])
         out[table_id] = {**collection, "analyses": kept}
     summary = {
         "tables": sum(1 for c in out.values() if (c or {}).get("analyses")),
         "sets": len(found),
-        "sets_by_origin": {o: len(items) for o, items in sorted(by_origin.items())},
+        "sets_by_origin": dict(sorted(collections.Counter(o for _, _, o, *_ in found).items())),
         # Prose sets whose points the classifier could not find in their passage.
-        "text_sets_without_local": sum(not ctx.local for *_, ctx in by_origin.get("text", [])),
+        "text_sets_without_local": sum(not ctx.local for _, _, o, _, ctx in found if o == "text"),
         "roles": dict(roles),
         "held": held,
-        "sources": {o: c.source for o, c in chosen.items()},
+        # Sets refused by `geometry` before any model was asked.
+        "not_brain": sum(d.source == geometry.SOURCE for d in decisions.values()),
+        # Sets the model put in another frame than human template millimetres: held.
+        "other_space": sum(d.space == "other" for d in decisions.values()),
+        # The model that decided every set the geometry check passed; None when it refused all.
+        "model": model_source,
         # The decided roles alone, without confidences or the model that
         # decided them: what upload's freshness follows, so a retrained model
         # re-uploads only the articles where a set's role changed.
@@ -351,14 +344,13 @@ class RolesStage:
     def __init__(self, settings) -> None:
         self.settings = settings
         self.requires, self.requires_flag = self.upstream_for(settings)
-        self._classifiers: Dict[str, Any] = {}
+        self._model: Optional[DecisionModel] = None
         self._lock = threading.Lock()
         self._said: Set[str] = set()
-        #: The origins whose server is down, its model known from its `path`: why it cannot label.
-        self._unserved: Dict[str, str] = {}
-        #: The model states remembered inside `remembering()`; None outside it.
-        self._states: Optional[Dict[str, Tuple[Optional[str], Optional[str]]]] = None
-        #: Why the stage stopped in this run: no classifier is loaded after it, and none asks.
+        #: The model state remembered inside `remembering()`; None outside it.
+        self._state: Optional[Tuple[Optional[str], Optional[str]]] = None
+        self._remembering = False
+        #: Why the stage stopped in this run: no model is loaded after it, and none is asked.
         self._stopped: Optional[str] = None
 
     @classmethod
@@ -372,85 +364,67 @@ class RolesStage:
         """The origins this run's sets can have: prose sets only when prose is on."""
         return ("table", "text") if getattr(self.settings, "prose_model", None) else ("table",)
 
-    def model_state(self, origin: str) -> Tuple[Optional[str], Optional[str]]:
-        """`_model_state`, or, inside `remembering()`, the state it gave first for the origin."""
-        if self._states is None:
-            return self._model_state(origin)
-        if origin not in self._states:
-            self._states[origin] = self._model_state(origin)
-        return self._states[origin]
+    def model_state(self) -> Tuple[Optional[str], Optional[str]]:
+        """`_model_state`, or, inside `remembering()`, the state it gave first."""
+        if not self._remembering:
+            return self._model_state()
+        if self._state is None:
+            self._state = self._model_state()
+        return self._state
 
     @contextlib.contextmanager
     def remembering(self):
-        """Ask each model's server once for the plans made inside: upload's gate plans
-        thousands of articles one at a time, and asked both servers for each."""
-        self._states = {}
+        """Read the model directory once for the plans made inside: upload's gate plans
+        thousands of articles one at a time, and digests the model for each."""
+        self._remembering, self._state = True, None
         try:
             yield self
         finally:
-            self._states = None
+            self._remembering, self._state = False, None
 
-    def _model_state(self, origin: str) -> Tuple[Optional[str], Optional[str]]:
-        """(The source its sets are recorded with, None) of the origin's model; or (None, why).
+    def _model_state(self) -> Tuple[Optional[str], Optional[str]]:
+        """(The source its sets are recorded with, None) of the configured model; or (None, why).
 
-        The model must be listed by its server now, or, with the server down, have its
-        checkpoint `path` configured (then it is known but cannot label: `_unserved`); and
-        the prompt it was trained with must be for the contexts this code builds.
+        The directory must hold a model whose answers are study_schema's and whose
+        contexts are the ones this code builds (`decision.state`).
         """
-        setting = MODEL_SETTINGS[origin]
-        served = getattr(self.settings, setting, None)
-        name = _ORIGIN_NAMES[origin]
-        if served is None:
-            return None, f"no {name} role model is configured ({setting})"
-        where = f"the {name} role model {served.model} at {served.endpoint}"
-        try:
-            PROMPT.check(origin)
-        except ValueError as exc:
-            return None, f"{where} cannot be used: {exc}"
-        try:
-            listed = served_models(served.endpoint)
-        except Exception as exc:  # noqa: BLE001 - recorded as the articles' block
-            down = f"{where} cannot be reached: {type(exc).__name__}: {exc}"
-            if not served.path:
-                return None, down
-            # The checkpoint on disk is the one the server loads: the same identity.
-            self._unserved[origin] = down
-            return f"{served.model}@{PROMPT.version}+{model_identity({'root': served.path})[:12]}", None
-        self._unserved.pop(origin, None)
-        card = next((c for c in listed if c.get("id") == served.model), None)
-        if card is None:
-            names = [c.get("id") for c in listed]
-            return None, f"{where} is not served there (it serves {names})"
-        # The checkpoint, not only its served name: a retrained model is a new source.
-        return f"{served.model}@{PROMPT.version}+{model_identity(card)[:12]}", None
+        configured = getattr(self.settings, "role_model", None)
+        return decision.state(configured.path if configured else None)
 
     def model_fingerprint(self, origin: str, state: Tuple[Optional[str], Optional[str]]) -> str:
-        """One origin's part of the fingerprint: its context version and model, or its absence."""
+        """One origin's part of the fingerprint: its context version and the model, or why none."""
         source, reason = state
         return fingerprint("roles-model", origin, CONTEXT_VERSIONS[origin], source or reason)
 
-    def classifier(self, origin: str) -> ServedClassifier:
-        """The origin's classifier; `ModelUnavailable` with the reason when it has none."""
-        if origin not in self._classifiers:
+    def classifier(self) -> DecisionModel:
+        """The decision model, loaded once; `ModelUnavailable` with the reason it cannot be."""
+        if self._model is None:
             with self._lock:
                 if self._stopped:
                     raise ModelUnavailable(self._stopped)
-                if origin not in self._classifiers:
-                    source, reason = self.model_state(origin)
-                    if source is None or origin in self._unserved:
-                        raise ModelUnavailable(reason or self._unserved[origin])
-                    served = getattr(self.settings, MODEL_SETTINGS[origin])
-                    self._classifiers[origin] = ServedClassifier(
-                        served.endpoint, served.model, source=source
-                    )
+                if self._model is None:
+                    source, reason = self.model_state()
+                    if source is None:
+                        raise ModelUnavailable(reason)
+                    configured = self.settings.role_model
+                    try:
+                        self._model = DecisionModel(configured.path, source=source,
+                                                    device=configured.device,
+                                                    batch_size=configured.batch_size)
+                    except Exception as exc:  # noqa: BLE001 - no article can be read without it
+                        raise ModelUnavailable(
+                            f"the role model at {configured.path} cannot be loaded: "
+                            f"{type(exc).__name__}: {exc}"
+                        ) from exc
                     # Stored before the check, so a stop that did not see it is seen here.
                     if self._stopped:
-                        self._classifiers[origin].stop(self._stopped)
-        return self._classifiers[origin]
+                        self._model.stop(self._stopped)
+        return self._model
 
     def models(self) -> Dict[str, str]:
         """Each origin's part of the fingerprint, by origin."""
-        return {o: self.model_fingerprint(o, self.model_state(o)) for o in self.origins()}
+        state = self.model_state()
+        return {o: self.model_fingerprint(o, state) for o in self.origins()}
 
     def fingerprint_for(self, upstream: Artifact, models: Mapping[str, str],
                         read: Optional[Tuple] = None) -> str:
@@ -503,13 +477,12 @@ class RolesStage:
         upstream: Dict[str, Dict[str, Artifact]],
     ) -> StagePlan:
         plan = StagePlan(stage=self.name)
-        states = {o: self.model_state(o) for o in self.origins()}
-        models = {o: self.model_fingerprint(o, state) for o, state in states.items()}
-        missing = {o: reason for o, (source, reason) in states.items() if source is None}
-        for reason in missing.values():
-            if reason not in self._said:
-                self._said.add(reason)
-                logger.warning("roles: articles with such sets are blocked: %s", reason)
+        state = self.model_state()
+        models = {o: self.model_fingerprint(o, state) for o in self.origins()}
+        missing = state[1]
+        if missing and missing not in self._said:
+            self._said.add(missing)
+            logger.warning("roles: articles with sets are blocked: %s", missing)
         ids = [ref.id for ref in refs]
         attempts = ctx.catalog.attempt_counts(ids, self.name, "")
         prose = ctx.catalog.artifacts(ids, "prose")
@@ -524,34 +497,28 @@ class RolesStage:
             if "text" in self.needs(parent) and read_from_bad_page(
                     prose.get(ref.id, {}).get(""), downloads.get(ref.id, {}),
                     extracted.get(ref.id, {})):
-                plan.block(f"prose {READ_FROM_BAD_PAGE}")
+                plan.block(ref, f"prose {READ_FROM_BAD_PAGE}")
                 continue
             # Not a failure: nothing is attempted, so no retry is used up, and
             # the article is planned on the first run with the model configured.
-            lacking = [missing[o] for o in self.needs(parent) if o in missing]
-            if lacking:
-                plan.wait(lacking[0], ref.id)
+            if missing and self.needs(parent):
+                plan.wait(ref, missing)
                 continue
             read = None
             if "text" in self.needs(parent):
                 read, stale = self.prose_read(prose.get(ref.id, {}).get(""),
                                               passages.get(ref.id, {}).get(""), parent)
                 if stale:
-                    plan.block(stale)
+                    plan.block(ref, stale)
                     continue
             fp = self.fingerprint_for(parent, models, read)
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
-                plan.fresh += 1
-                continue
-            # Known from its checkpoint, but only a server labels: the article waits.
-            down = [self._unserved[o] for o in self.needs(parent) if o in self._unserved]
-            if down:
-                plan.wait(down[0], ref.id)
+                plan.add_fresh(ref)
                 continue
             count, last = attempts.get(ref.id, (0, None))
             if not ctx.should_attempt(existing, count, last, self.name):
-                plan.permanent += 1
+                plan.add_permanent(ref)
                 continue
             plan.pending.append(Work(ref=ref, source="", fingerprint=fp, upstream=parent))
         return plan
@@ -594,12 +561,12 @@ class RolesStage:
             # Not under the lock, which a classifier being loaded holds for its server's answer.
             reason = f"the roles stage stopped: {type(exc).__name__}: {exc}"
             self._stopped = self._stopped or reason
-            for classifier in list(self._classifiers.values()):
-                classifier.stop(self._stopped)
+            if self._model is not None:
+                self._model.stop(self._stopped)
             raise
         finally:
-            # Not waited for: the articles under way are left to their stopped classifiers,
-            # which send nothing more. None is queued, as no more are started than it has threads.
+            # Not waited for: the articles under way are left to the stopped model,
+            # which runs nothing more. None is queued, as no more are started than it has threads.
             pool.shutdown(wait=False)
 
     def _start(self, ctx: Context, pool: ThreadPoolExecutor, work: Work, triaged, extractions,
@@ -607,7 +574,7 @@ class RolesStage:
         """The work's roles, being decided on `pool`.
 
         Its inputs are read here, on the stage's thread, which the catalog's
-        connection belongs to; the pool only waits on the role servers.
+        connection belongs to; the pool builds the contexts and waits on the model.
         """
         future: Future = Future()
         try:
@@ -626,7 +593,7 @@ class RolesStage:
                 payload,
                 _read_passages(ctx, read_payload),
                 _article_text(triage, extractions.get(work.article_id, {}), ctx),
-                _Classifiers(self),
+                _Model(self),
                 raw_tables(triage, extractions.get(work.article_id, {}), ctx),
             )
         except Exception as exc:  # noqa: BLE001 - the article's failure, yielded in its place
@@ -644,15 +611,6 @@ class RolesStage:
             done = future.result()
         except ModelUnavailable:
             raise
-        except UnansweredSets as exc:
-            return Outcome.failure(
-                work.article_id,
-                self.name,
-                "",
-                f"no role for its sets: {exc}",
-                fingerprint=work.fingerprint,
-                summary={"unanswered": exc.reasons},
-            )
         except Exception as exc:  # noqa: BLE001 - the article's failure, not the stage's
             logger.warning("roles failed for %s: %s", work.article_id, exc)
             return Outcome.failure(
@@ -691,17 +649,16 @@ def _assign(inputs) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     return assigned, summary
 
 
-class _Classifiers(Mapping):
-    """The stage's classifiers by origin, each loaded when a set of its origin first needs it."""
+class _Model:
+    """The stage's model, loaded when a set first needs it: an article whose sets the
+    geometry check refused, every one, needs none."""
 
     def __init__(self, stage: RolesStage) -> None:
         self._stage = stage
 
-    def __getitem__(self, origin: str):
-        return self._stage.classifier(origin)
+    def predict(self, texts):
+        return self._stage.classifier().predict(texts)
 
-    def __iter__(self):
-        return iter(MODEL_SETTINGS)
-
-    def __len__(self) -> int:
-        return len(MODEL_SETTINGS)
+    @property
+    def source(self) -> str:
+        return self._stage.classifier().source

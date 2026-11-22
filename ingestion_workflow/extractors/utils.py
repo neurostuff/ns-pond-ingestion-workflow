@@ -204,6 +204,12 @@ _MINUS_CHARS = (
 
 _MINUS_TABLE = dict.fromkeys(map(ord, _MINUS_CHARS), "-")
 
+#: U+2227 LOGICAL AND written for a minus: one PMC table (PMC4116759, Table 4)
+#: prints every negative coordinate as `∧40`, and the extractor read them all as
+#: positive. Only a wedge directly before a digit, and not after a word, is a
+#: sign: `A ∧ B` is a conjunction.
+_WEDGE_MINUS = re.compile(r"(?<![\w)\]])\u2227(?=\d)")
+
 #: Only the minus entities are decoded. A blanket `html.unescape` would turn
 #: `&lt;0.05&gt;` into `<0.05>`, which the serialiser then strips as a tag --
 #: `&lt;` appears 1,357 times and `&#x0003c;` 739 in the same sample.
@@ -227,7 +233,7 @@ def normalize_minus(markup: str) -> str:
     """
     if not markup:
         return markup
-    return _MINUS_ENTITY.sub("-", markup).translate(_MINUS_TABLE)
+    return _WEDGE_MINUS.sub("-", _MINUS_ENTITY.sub("-", markup).translate(_MINUS_TABLE))
 
 
 #: A thousands separator: a comma, or a space of any kind or its entity, between a
