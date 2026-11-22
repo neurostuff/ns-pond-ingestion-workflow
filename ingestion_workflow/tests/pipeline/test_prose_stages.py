@@ -19,6 +19,7 @@ from ingestion_workflow.pipeline.stage import NO_ANALYSES, NO_TEXT
 from ingestion_workflow.pipeline.stages import PROSE_STAGES, STAGE_ORDER, build
 from ingestion_workflow.pipeline.stages.passages import PassagesStage
 from ingestion_workflow.pipeline.stages.prose import ProseStage
+from ingestion_workflow.prompts.prose_coordinates import PROSE_PROMPT_VERSION
 from ingestion_workflow.pipeline.stages.resolve import ResolveStage, resolve
 from ingestion_workflow.pipeline.stages.roles import RolesStage
 from ingestion_workflow.pipeline.stages.space import SpaceStage
@@ -1763,6 +1764,16 @@ def _two_passages(env, pmid, evidence):
     return settings, catalog, ref, ctx, found
 
 
+@pytest.fixture
+def v2_reader(monkeypatch):
+    """Read as nu-prose-v2, the one reader nu-prose's first answers stand for
+    (`FIRST_PRODUCER_STANDS_FOR`): only it takes them without reading again."""
+    from ingestion_workflow.pipeline.stages import prose as prose_stage
+
+    monkeypatch.setattr(prose_stage, "PROSE_PROMPT_VERSION",
+                        prose_stage.FIRST_PRODUCER_STANDS_FOR["prompt_version"])
+
+
 def _earlier_prose(catalog, ref, texts, fingerprint="earlier-prose"):
     """A prose result as nu-prose's first corpus run stored it, before passages were spans:
     the text and the analyses cleaned from its answer, as that answer gave them; no answer
@@ -1802,6 +1813,7 @@ class _Counting(_Reader):
         return super().read(passage, title=title, abstract=abstract)
 
 
+@pytest.mark.usefixtures("v2_reader")
 def test_an_earlier_reading_of_the_same_passage_text_is_reused_at_its_new_span(env, evidence):
     """The corpus's prose was read before passages were spans: the same text is not read again."""
     settings, catalog, ref, ctx, found = _two_passages(env, "81", evidence=evidence)
@@ -1824,6 +1836,7 @@ def test_an_earlier_reading_of_the_same_passage_text_is_reused_at_its_new_span(e
             for p in read.payload["passages"]} == {("nu-prose", "2026-10-06.n5")}
 
 
+@pytest.mark.usefixtures("v2_reader")
 def test_a_passage_whose_text_changed_is_read_again_and_counted(env, evidence):
     settings, catalog, ref, ctx, found = _two_passages(env, "82", evidence=evidence)
     first, second = _texts(catalog, ref, found)
@@ -1849,7 +1862,7 @@ def test_each_passage_read_is_counted_with_its_reason(env, evidence):
     assert read.summary["reused"] == []
     producer = read.payload["passages"][0]["producer"]
     assert (producer["prompt_version"], producer["model"], producer["stage"]) == (
-        "2026-10-11.nu-prose-v2", "nu-prose-v2", "prose")
+        PROSE_PROMPT_VERSION, settings.prose_model, "prose")
     assert read.summary["text_normalization"] == "nfkc-minus-space.1"
     # what each answer was read from: the passage's own text first
     from ingestion_workflow.services.offsets import sha256
@@ -1873,6 +1886,7 @@ def test_each_passage_read_is_counted_with_its_reason(env, evidence):
     assert reader.calls == 2 and third.summary["read_again"] == {"title and abstract changed": 2}
 
 
+@pytest.mark.usefixtures("v2_reader")
 @pytest.mark.parametrize("model, prompt_version, reason", [
     ("nu-prose", "2026-10-06.n5", None),
     ("nu-prose", "2026-09-30.n4", "earlier model not interchangeable"),
@@ -1940,6 +1954,7 @@ def test_the_normalized_text_is_what_a_re_extraction_changes_and_a_reader_does_n
     assert normalized("T = 5") != normalized("t = 5")
 
 
+@pytest.mark.usefixtures("v2_reader")
 def test_a_passage_equal_once_normalized_takes_the_earlier_answer(env, evidence):
     """The old text has a unicode minus and a no-break space where the new one has neither."""
     settings, catalog, ref, ctx, found = _two_passages(env, "86", evidence=evidence)
@@ -1954,6 +1969,7 @@ def test_a_passage_equal_once_normalized_takes_the_earlier_answer(env, evidence)
     assert read.payload["passages"][0]["text"] == first   # re-anchored to the new text
 
 
+@pytest.mark.usefixtures("v2_reader")
 @pytest.mark.parametrize("change", [
     pytest.param(lambda t: t.replace("(x", "( x"), id="parenthesis spacing"),
     pytest.param(lambda t: t[t.index(" ") + 1:], id="boundaries moved"),
@@ -1988,6 +2004,7 @@ def test_another_reader_reads_every_passage_again(env, earlier, evidence):
     assert {p["producer"]["model"] for p in third.payload["passages"]} == {"another-prose-model"}
 
 
+@pytest.mark.usefixtures("v2_reader")
 def test_of_two_earlier_copies_of_a_text_the_first_is_taken(env, evidence):
     settings, catalog, ref, ctx, found = _two_passages(env, "89", evidence=evidence)
     first, second = _texts(catalog, ref, found)
