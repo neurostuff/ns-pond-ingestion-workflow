@@ -498,6 +498,25 @@ RODENT_ATLAS_REASON = (
 )
 
 
+#: The start of the reason a set the roles stage gave no role is left out with.
+NOT_BRAIN_REASON = "its numbers are not brain coordinates"
+
+
+def _not_brain(analysis) -> Optional[str]:
+    """Why a set is left out of the parse: the roles stage decided it has no role.
+
+    Role None is how the roles stage says the numbers are not template brain
+    coordinates (`set_roles.labels`); the parse has no role to give them.
+    """
+    decided = (analysis.metadata or {}).get("set_role")
+    if not isinstance(decided, dict) or not decided.get("role_source"):
+        return None
+    if decided.get("role") is not None:
+        return None
+    why = decided.get("role_reason")
+    return f"{NOT_BRAIN_REASON} ({decided['role_source']}{': ' + why if why else ''})"
+
+
 def is_rodent_atlas_table(table) -> bool:
     """Whether a table's caption, footer and column headings say its points are rodent atlas positions."""
     words = " ".join([table.caption or "", table.footer or "", *(table.column_headings or [])])
@@ -785,7 +804,11 @@ def coordinate_parse(
             continue
         table_analyses = []
         for a in collection.analyses:
-            if a.name.strip().upper() == PLACEHOLDER_NAME and not a.coordinates:
+            not_brain = _not_brain(a)
+            if not_brain is not None:
+                where = None if table_id == "prose" else table_id
+                omitted.append(Omitted(a.name, where, not_brain))
+            elif a.name.strip().upper() == PLACEHOLDER_NAME and not a.coordinates:
                 omitted.append(
                     Omitted(
                         a.name,
@@ -1282,6 +1305,10 @@ def _analysis(
     role = roles.of(analysis, table_id)
     name = analysis.name
     space = _space_value(collection.coordinate_space)
+    # The roles stage found the coordinates are not human template millimetres (an animal
+    # brain, a head frame, voxel indices): the analysis is in OTHER space, whatever the table
+    # was headed. Its key stays what was extracted.
+    other = ((analysis.metadata or {}).get("set_role") or {}).get("space") == "other"
     built = pp.ParsedAnalysis(
         # The key is what was extracted, never where it was read, so both origins
         # mint it here from the analysis's own name, space and points.
@@ -1293,7 +1320,7 @@ def _analysis(
         name=name,
         name_is_printed=False if name.strip().upper() == PLACEHOLDER_NAME else None,
         description=analysis.description or None,
-        coordinate_space=space,
+        coordinate_space=pp.ReportedSpace.OTHER.value if other else space,
         **role,
         statistic=_statistic(points),
         points=points,

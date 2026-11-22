@@ -469,3 +469,61 @@ def test_a_no_text_extraction_with_tables_that_loses_the_tie_break_is_recorded()
     assert skipped_for_text(found, chosen) == [{"source": "pubget", "tables": 9}]
     # nothing is left behind when the chosen one has no text either
     assert skipped_for_text({"pubget": pubget, "ace": ace}, pubget) == []
+
+
+# -- a sheet too large to judge in full -------------------------------------
+
+class _Gate:
+    """Counts what it is asked to decide, and passes everything."""
+
+    def __init__(self):
+        self.asked = 0
+
+    def decide(self, text, caption, footer):
+        self.asked += 1
+        return {"passes": True, "route": "candidates", "score": 0.9}
+
+
+def _sheet(path, header, rows):
+    path.write_text("\n".join([header] + rows) + "\n", encoding="utf-8")
+    return {"table_id": "s1-sheet-01", "raw_content_path": str(path)}
+
+
+def test_a_large_sheet_with_no_coordinates_in_its_head_is_not_judged(tmp_path, monkeypatch):
+    """A million-row sheet of readings took one worker 14 minutes and 4.8 GB; its
+    first rows are enough to say it holds no coordinates."""
+    from ingestion_workflow.pipeline.stages import triage as t
+
+    monkeypatch.setattr(t, "LARGE_SHEET_BYTES", 1_000)
+    table = _sheet(tmp_path / "sheet-01.csv", "well,FL1,FL2,FL3,time",
+                   [f"{i},{3130 + i},{3041 + i},{2952 + i},0.7" for i in range(5_000)])
+    gate = _Gate()
+    got = t.judge_table(gate, table)
+    assert got["passes"] is False and got["route"] == "too_large"
+    assert "first 2000 rows" in got["reason"]
+    assert gate.asked == 0
+
+
+def test_a_large_sheet_of_coordinates_is_judged_in_full(tmp_path, monkeypatch):
+    """Coordinate tables of thousands of rows are real; size alone drops none."""
+    from ingestion_workflow.pipeline.stages import triage as t
+
+    monkeypatch.setattr(t, "LARGE_SHEET_BYTES", 1_000)
+    rows = [f"Left insula,{-30 - i % 20},{20 + i % 15},{4 + i % 10},{5.1 + i % 3:.2f}"
+            for i in range(3_000)]
+    table = _sheet(tmp_path / "sheet-01.csv", "Region,x,y,z,T", rows)
+    gate = _Gate()
+    got = t.judge_table(gate, table)
+    assert got["route"] == "candidates" and got["passes"] is True
+    assert got["points"] > t.LARGE_SHEET_HEAD_ROWS, "the whole sheet is read, not its head"
+    assert gate.asked == 1
+
+
+def test_a_sheet_under_the_limit_is_judged_as_before(tmp_path):
+    from ingestion_workflow.pipeline.stages import triage as t
+
+    table = _sheet(tmp_path / "sheet-01.csv", "well,FL1,FL2",
+                   [f"{i},{3130 + i},{3041 + i}" for i in range(50)])
+    gate = _Gate()
+    t.judge_table(gate, table)
+    assert gate.asked == 1

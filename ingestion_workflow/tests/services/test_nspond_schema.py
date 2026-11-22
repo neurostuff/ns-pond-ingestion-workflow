@@ -42,6 +42,7 @@ def _stage1(root):
 def _decided(role="result", kind=None, origin="table", **meta):
     """An analysis's metadata once the roles stage has decided its role."""
     return {**meta, "set_role": {"role": role, "anchor_kind": kind, "from_prior_study": False,
+                                 "space": "template", "coordinate_source": "this_study",
                                  "prior_study_evidence": [], "role_confidence": 0.9,
                                  "role_source": f"set-roles-{origin}@1", "role_origin": origin}}
 
@@ -202,7 +203,9 @@ def test_a_held_set_keeps_its_place_so_pondie_s_keys_do_not_shift(tmp_path):
 def test_a_table_analysis_carries_its_role_and_no_prose_keys(written):
     [analysis] = _stage1(written)["analyses"]
     assert "source" not in analysis
-    assert {k: analysis[k] for k in nspond.STAGE1_ROLE_FIELDS} == _decided()["set_role"]
+    decided = _decided()["set_role"]
+    assert {k: analysis[k] for k in nspond.STAGE1_ROLE_FIELDS} == {
+        k: decided[k] for k in nspond.STAGE1_ROLE_FIELDS}
 
 
 def test_an_analysis_without_a_decided_role_is_not_written(tmp_path):

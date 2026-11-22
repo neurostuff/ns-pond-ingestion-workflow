@@ -112,3 +112,25 @@ def test_a_family_with_no_task_says_it_is_the_classifiers_guess():
     fam = got["astra task family"]
     assert (fam["value"], fam["method"], fam["confidence"]) == (
         "emotion", "contrast: family only, no task", 0.42)
+
+
+def test_modality_sidecars_are_schema_normalizations(validator):
+    from ingestion_workflow.normalization import modality
+
+    entry = {"$defs": validator.schema["$defs"], "$ref": "#/$defs/Normalization"}
+    check = type(validator)(entry)
+    data = json.loads((Path(__file__).parent / "data" / "modality_records.json").read_text())
+    written = {}
+    for name, case in data.items():
+        r = written[name] = copy.deepcopy(case["record"])
+        tally = sidecars.write_modalities(r, modality.read(r), FIT)
+        assert sum(tally.values()) == len(r["acquisitions"])
+        for a in r["acquisitions"]:
+            (e,) = a["modality"]["normalized"]
+            assert errors(check, e) == set()
+    acq = next(a for a in written["physio_compat"]["acquisitions"] if a["local_id"] == "acq_emg")
+    assert acq["modality"]["normalized"] == [{
+        "vocabulary": "acquisition_modality", "status": "mapped", "value": "physiological",
+        "label": "peripheral physiological recording", "method": "lexical",
+        "also_read": ["modality_label"],
+        "mapping_tool": f"ingestion_workflow.normalization.modality {FIT}"}]

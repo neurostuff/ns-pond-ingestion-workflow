@@ -9,6 +9,7 @@ leaves every other normalizer's alone. Where the entries go:
     groups[].medical_condition         MONDO, ONVOC (pondie's entry shape), astra medical role
     analyses[].name                    astra contrast key, ns-pond contrast set <fit_id>,
                                        ns-pond contrast set orientation <fit_id>
+    acquisitions[].modality            acquisition_modality
 
 An analysis's contrast is its `effect`, which is not an extracted value and so has no sidecar: the contrast
 entries sit on the analysis's `name`, with `also_read` naming `effect` and `tasks`, as an entity-level task label
@@ -158,4 +159,24 @@ def write_contrasts(record, contrasts, assigned, fit_id, threshold):
                                                      "direction", also_read=read))
                 tally["assigned"] += 1
         _sidecar.replace(analysis["name"], mapping_tool, entries)
+    return tally
+
+
+def write_modalities(record, readings, fit_id):
+    """`modality.read`'s readings onto each acquisition's `modality`."""
+    from .modality import LABELS, VOCABULARY
+
+    mapping_tool = tool("modality", fit_id)
+    tally = {}
+    for aid, acquisition in _by_id(record.get("acquisitions")).items():
+        if not isinstance(acquisition.get("modality"), dict):
+            continue
+        r = readings.get(aid)
+        entries = [] if r is None else [_sidecar.entry(
+            VOCABULARY, r.status, mapping_tool, value=r.value, label=LABELS.get(r.value), method=r.method,
+            also_read=list(r.also_read) if r.also_read else None)]
+        _sidecar.replace(acquisition["modality"], mapping_tool, entries)
+        if r is not None:
+            key = r.value or r.status
+            tally[key] = tally.get(key, 0) + 1
     return tally
