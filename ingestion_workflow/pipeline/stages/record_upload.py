@@ -125,7 +125,7 @@ class RecordUploadStage(UploadStage):
         plan = StagePlan(stage=self.name)
         if not self.settings.neurostore_api_url:
             for ref in refs:
-                plan.wait(NO_API_URL, ref.id)
+                plan.wait(ref, NO_API_URL)
             return plan
         ids = [ref.id for ref in refs]
         chosen = self._chains(ctx, ids)
@@ -134,25 +134,25 @@ class RecordUploadStage(UploadStage):
         attempts = {}
         for ref in refs:
             if ref.id not in chosen:
-                plan.wait(NO_CHAIN, ref.id)
+                plan.wait(ref, NO_CHAIN)
                 continue
             parse_id = _uploaded_parse(synced.get(ref.id, {}).get(""),
                                        uploads.get(ref.id, {}).get(""))
             if parse_id is None:
-                plan.wait(NO_PARSE_UPLOADED, ref.id)
+                plan.wait(ref, NO_PARSE_UPLOADED)
                 continue
             source, chain = chosen[ref.id]
             fp = self.fingerprint_for_chain(chain, parse_id)
             existing = artifacts.get(ref.id, {}).get(source)
             if ctx.is_fresh(existing, fp):
-                plan.fresh += 1
+                plan.add_fresh(ref)
                 continue
             if existing is not None and existing.fingerprint == fp:
                 if source not in attempts:
                     attempts[source] = ctx.catalog.attempt_counts(ids, self.name, source)
                 count, last = attempts[source].get(ref.id, (0, None))
                 if not ctx.should_attempt(existing, count, last, self.name, source):
-                    plan.permanent += 1
+                    plan.add_permanent(ref)
                     continue
             plan.pending.append(Work(ref=ref, source=source, fingerprint=fp,
                                      upstream=chain[-1]))

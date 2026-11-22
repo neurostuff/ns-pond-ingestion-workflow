@@ -175,7 +175,7 @@ class ProseStage:
                 continue
             if read_from_bad_page(passages, downloads.get(ref.id, {}), extracted.get(ref.id, {})):
                 # the passages stage blocks rather than takes back, so these stay OK
-                plan.block(f"passages {READ_FROM_BAD_PAGE}")
+                plan.block(ref, f"passages {READ_FROM_BAD_PAGE}")
                 continue
             metadata = fetched.get(ref.id, {}).get("")
             metadata = metadata if metadata is not None and metadata.status is Status.OK else None
@@ -185,16 +185,16 @@ class ProseStage:
             if metadata is not None and passages.summary.get("passages"):
                 read = self.metadata_fingerprint(metadata)
                 if read is None:
-                    plan.wait(NO_DIGESTS, ref.id)
+                    plan.wait(ref, NO_DIGESTS)
                     continue
             fp = self.fingerprint_for(passages, read)
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
-                plan.fresh += 1
+                plan.add_fresh(ref)
                 continue
             count, last = attempts.get(ref.id, (0, None))
             if not ctx.should_attempt(existing, count, last, self.name):
-                plan.permanent += 1
+                plan.add_permanent(ref)
                 continue
             plan.pending.append(Work(ref=ref, source="", fingerprint=fp, upstream=passages))
         return plan
