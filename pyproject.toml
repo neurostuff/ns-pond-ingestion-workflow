@@ -87,6 +87,8 @@ lint = [
 mineru = [
   "mineru[full]==4.0.12",
 ]
+# The roles stage's decision model (`services.set_roles.decision`), run in the stage's process.
+roles = ["torch>=2.5", "transformers>=4.48", "safetensors>=0.4"]
 # The environments an offloaded job runs in on each machine, which `ingest offload setup`
 # checks: vLLM to serve (infer-*), and torch, peft and transformers to merge an adapter
 # (merge-*). They are built on the machine, not here; these pin what was built.

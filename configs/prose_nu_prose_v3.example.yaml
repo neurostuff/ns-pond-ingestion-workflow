@@ -1,0 +1,4 @@
+# nu-prose-v3 from /data2/models/nu-prose/v3 on beast: serve.sh PORT GPUS LOG PIDFILE (served name nu-prose-v3; port 8371 here).
+# Merge these lines into a run config: ingest run -c <config>.yaml
+prose_model: "nu-prose-v3"
+prose_api_base: "http://localhost:8371/v1"

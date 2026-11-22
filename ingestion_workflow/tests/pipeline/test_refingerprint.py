@@ -62,7 +62,8 @@ class _Results:
     def predict(self, texts):
         from ingestion_workflow.services.set_roles import COORDINATE_ROLES, Prediction
 
-        return [Prediction("result", None, {r: float(r == "result") for r in COORDINATE_ROLES})
+        return [Prediction("result", None, {r: float(r == "result") for r in COORDINATE_ROLES},
+                           "template", "this_study", 1.0)
                 for _ in texts]
 
 
@@ -76,8 +77,8 @@ def env(tmp_path, monkeypatch):
     prose = ProseStage(settings)
     prose.client = lambda: _Reader()
     roles = RolesStage(settings)
-    monkeypatch.setattr(roles, "classifier", lambda origin: _Results())
-    monkeypatch.setattr(roles, "model_state", lambda origin: (f"fake-{origin}@1", None))
+    monkeypatch.setattr(roles, "classifier", lambda: _Results())
+    monkeypatch.setattr(roles, "model_state", lambda: ("fake@1", None))
     stages = [DownloadStage(settings), ExtractStage(settings), PassagesStage(settings),
               MetadataStage(settings), TriageStage(settings), AnalysesStage(settings), prose,
               ResolveStage(settings), roles, SpaceStage(settings)]
@@ -401,8 +402,8 @@ def test_a_model_stopped_between_the_plans_counts_its_artifacts_as_running_again
 
     def plan(*args, **kwargs):
         up = next(served)
-        monkeypatch.setattr(roles, "model_state", lambda origin: (
-            (f"fake-{origin}@1", None) if up else (None, "the role model is not served")))
+        monkeypatch.setattr(roles, "model_state", lambda: (
+            ("fake@1", None) if up else (None, "the role model is not served")))
         return planned(*args, **kwargs)
 
     monkeypatch.setattr(roles, "plan", plan)

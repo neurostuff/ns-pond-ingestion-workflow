@@ -11,7 +11,7 @@ from typing import Any, Dict
 
 from ingestion_workflow.models.statistics import STATISTIC_KINDS
 
-PROSE_PROMPT_VERSION = "2026-10-11.nu-prose-v2"
+PROSE_PROMPT_VERSION = "2026-11-22.nu-prose-v3"
 
 INSTRUCTION = (
     "List every brain coordinate in the passage, including region-of-interest centres, seeds, "
@@ -27,8 +27,11 @@ INSTRUCTION = (
     "threat > safe'. Add the group, subset or covariate when it separates analyses ('patients < "
     "controls, covarying for IQ'). Resolve references such as 'the reverse contrast' or 'this "
     "comparison' to the contrast they mean. Never name an analysis after a section heading, a "
-    "method or a region ('Whole-brain analyses', 'ROI analysis', 'Results', 'left amygdala'). A seed "
-    "or ROI is 'amygdala seed' or 'insula ROI' unless the passage says which contrast defined it. "
+    "method or a region ('Whole-brain analyses', 'ROI analysis', 'Results', 'left amygdala'). "
+    "A seed's own centre is an analysis of its own named 'Seed: amygdala', and an ROI is 'insula "
+    "ROI', unless the passage says which contrast defined it. If the passage says that an analysis "
+    "it names found nothing ('the reverse contrast showed no significant clusters'), list that "
+    "analysis with no coordinates. "
     "Examples: 'Compared with controls, patients showed reduced activation in the ACC (4, 30, 22), "
     "which remained when IQ was covaried (6, 28, 24). The reverse contrast showed greater activation "
     "in the precuneus (-6, -60, 40)' has three analyses: 'patients < controls' (4, 30, 22), "
