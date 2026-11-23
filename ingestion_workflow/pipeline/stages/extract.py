@@ -123,10 +123,14 @@ def unusable(extraction: Artifact) -> bool:
 def extraction_fingerprint(source: str, download: Artifact, supplements: Optional[str] = None) -> str:
     """`source` is the download's: the fingerprint names the code that read it, and the
     fingerprint of the supplements appended to it, when any were. An article without
-    supplements keeps the fingerprint it always had."""
+    supplements keeps the fingerprint it always had; one with them names how they are appended
+    (`services.supplements.APPEND_VERSION`)."""
+    from ingestion_workflow.services.supplements import APPEND_VERSION
+
     version = EXTRACTOR_VERSIONS.get(source, DEFAULT_EXTRACTOR_VERSION)
     if supplements:
-        return fingerprint("extract", source, version, supplements, upstream=download.fingerprint)
+        return fingerprint("extract", source, version, supplements, f"append{APPEND_VERSION}",
+                           upstream=download.fingerprint)
     return fingerprint("extract", source, version, upstream=download.fingerprint)
 
 

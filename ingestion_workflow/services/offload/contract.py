@@ -19,7 +19,7 @@ from __future__ import annotations
 import gzip
 import json
 from pathlib import Path
-from typing import Any, Dict, Iterable, Iterator, List, Optional
+from typing import Any, Dict, Iterable, Iterator, List, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -68,6 +68,10 @@ class RunSpec(BaseModel):
     adapter_sha256: str
     prompt_version: str
     schema_version: str
+    #: The paper text a record request carries: "full", the parse's text, or "trimmed-1",
+    #: that text less its copied tables and reference lists (`record_text`). A spec that
+    #: trims names it in its `prompt_version`, which the run's identity holds.
+    record_text: Literal["full", "trimmed-1"] = "full"
     serve: Serve
     shard_size: int = 500
     #: Papers whose request is longer are left out, as skipped.

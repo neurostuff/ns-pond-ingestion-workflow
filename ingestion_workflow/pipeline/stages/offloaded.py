@@ -18,6 +18,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional, Sequence, Set
 
@@ -134,12 +136,34 @@ class _Runs:
         return self._held[run_id]
 
 
-def _asked_again(mine: Artifact, run: Run, retry: Optional[str]) -> bool:
-    """Whether `retry`, a version that decodes otherwise (sampled or guided), asks again the
-    paper of `mine`, a skip: one another version made for want of a usable answer. A skip for
-    an over-long request, or for a skipped record, is the same whoever asks."""
-    return (retry is not None and run.version not in (None, retry)
-            and (mine.error or "").startswith(NO_ANSWER.format("")))
+#: The error of a skip for a request over the spec's `max_input_tokens` (export's OVER).
+_OVER = re.compile(r"^over (\d+) input tokens")
+
+
+@dataclass(frozen=True)
+class Reach:
+    """What a spec asking for records can send: its version, its `max_input_tokens`, and
+    whether it trims the text (`record_text` other than "full")."""
+
+    version: str
+    max_input_tokens: int
+    trims: bool
+
+
+def _asked_again(mine: Artifact, run: Run, retry: Optional[str],
+                 reach: Optional[Reach] = None) -> bool:
+    """Whether the paper of `mine`, a skip, is asked again: by `retry`, a version that decodes
+    otherwise (sampled or guided), when another version had no usable answer for it; or, when
+    its request was over the limit, by a spec that sends longer requests (`reach`) or a
+    shorter text than the version that skipped it. A skipped record's skip is the same
+    whoever asks, and so is an over-long one for a spec that reaches no further."""
+    error = mine.error or ""
+    if (retry is not None and run.version not in (None, retry)
+            and error.startswith(NO_ANSWER.format(""))):
+        return True
+    over = _OVER.match(error)
+    return bool(over and reach is not None and run.version != reach.version
+                and (reach.max_input_tokens > int(over.group(1)) or reach.trims))
 
 
 class _OffloadedStage:
@@ -167,9 +191,10 @@ class _OffloadedStage:
         artifacts: Dict[str, Dict[str, Artifact]],
         upstream: Dict[str, Dict[str, Artifact]],
         retry: Optional[str] = None,
+        reach: Optional[Reach] = None,
     ) -> Dict[str, Set[str]]:
         """{article: the sources whose artifact is fresh}, for `retry`'s run when one is
-        named."""
+        named, and for a spec that reaches `reach`."""
         runs = _Runs(ctx)
         inputs = self.inputs(ctx, list(ids), upstream)
         out: Dict[str, Set[str]] = {}
@@ -179,7 +204,7 @@ class _OffloadedStage:
                 if run is None or mine.status not in (Status.OK, Status.SKIPPED):
                     continue
                 if mine.status is Status.SKIPPED:
-                    if not _asked_again(mine, run, retry):
+                    if not _asked_again(mine, run, retry, reach):
                         out.setdefault(article_id, set()).add(source)
                 elif (
                         self.expected(ctx, run, mine, inputs.get(article_id, {}), source)

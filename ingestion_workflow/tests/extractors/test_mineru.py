@@ -8,6 +8,7 @@ and the hand-over to Docling.
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -123,6 +124,73 @@ def test_a_table_continued_over_pages_keeps_each_piece(tmp_path):
 
 
 # -- the workers -------------------------------------------------------------------
+
+
+class EngineDeadError(Exception):
+    """Stands in for vLLM's, which this test environment has no vLLM to raise."""
+
+
+class _Parsed:
+    def __init__(self, middle):
+        self.middle_json = self
+        self._middle = middle
+
+    def to_dict(self):
+        return self._middle
+
+
+class _DyingParser:
+    """Its engine dies on the first PDF any worker reads (`died` names that worker)."""
+
+    def __init__(self, died: Path):
+        self.died = died
+
+    def parse(self, path):
+        if not self.died.exists():
+            self.died.write_text(str(os.getpid()))
+            raise RuntimeError("output handler failed") from EngineDeadError("EngineCore died")
+        return _Parsed({"pdf": Path(path).name, "pid": os.getpid()})
+
+
+def dying_parser(slot, died):
+    mineru_convert._parser = _DyingParser(Path(died))
+
+
+def parse(item):
+    return mineru_convert.parse_pdf(Path(item))
+
+
+def test_a_worker_whose_engine_died_is_replaced_and_fails_only_its_own_pdf(tmp_path):
+    """Kept alive, the worker whose engine died failed every PDF after (1,390 of a night's
+    1,725, all handed to Docling)."""
+    import multiprocessing
+
+    from ingestion_workflow.extractors.bounded import Limits, Stopped, bounded_map
+
+    died = tmp_path / "died"
+    answers = sorted(bounded_map(
+        ["a.pdf", "b.pdf", "c.pdf"], parse, (), workers=1,
+        limits=Limits(memory_mb=4096, timeout_s=60),
+        context=multiprocessing.get_context("spawn"),
+        initializer=dying_parser, initargs=(str(died),)))
+
+    (_, _, error), *rest = answers
+    assert isinstance(error, Stopped) and f"exit code {mineru_convert.ENGINE_DEAD_EXIT}" in str(error)
+    first = int(died.read_text())
+    assert [(r["pdf"], r["pid"] != first, e) for _, r, e in rest] == [
+        ("b.pdf", True, None), ("c.pdf", True, None)]
+
+
+def test_only_a_dead_engine_ends_the_worker():
+    assert mineru_convert.engine_dead(EngineDeadError())
+    try:
+        try:
+            raise EngineDeadError()
+        except EngineDeadError:
+            raise ValueError("while parsing")
+    except ValueError as exc:
+        assert mineru_convert.engine_dead(exc)
+    assert not mineru_convert.engine_dead(ValueError("MinerU cannot read a.pdf"))
 
 
 def no_parser(slot, gpus):
