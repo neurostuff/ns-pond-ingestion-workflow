@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -2051,9 +2052,9 @@ def test_an_analysis_whose_points_mix_t_and_z_states_no_statistic():
 def test_the_parse_is_stamped_with_the_version_that_keys_analyses_by_content(written):
     """Stored parses from before content keys carry location keys, so they must re-parse."""
     paper, parse, _ = written
-    assert paper_parse.PAPER_PARSE_VERSION == 13
+    assert paper_parse.PAPER_PARSE_VERSION == 14
     assert {paper["header"]["producer"]["version"], parse["header"]["producer"]["version"]} == {
-        "paper_parse.13"
+        "paper_parse.14"
     }
 
 
@@ -2328,3 +2329,59 @@ def test_the_header_holds_each_id_in_one_slot_only(tmp_path):
     paper, parse, _ = _written(tmp_path, identifier)
     for header in (paper["header"], parse["header"]):
         assert header["identifiers"]["alternative_dois"] == ["10.7554/elife.106070.1"]
+
+
+SUSPECT = Path(__file__).resolve().parents[1] / "data" / "suspect_extractions"
+
+
+def _read_back(name):
+    """A table as production stored it, and the collection nu-v23 read from it (2026-11-23)."""
+    stored = json.loads((SUSPECT / f"{name}.json").read_text())
+    markup = next(p for p in SUSPECT.glob(f"{name}.*") if p.suffix != ".json").read_text()
+    collection = _collection([
+        Analysis(name=a["name"], coordinates=[
+            Coordinate(x=x, y=y, z=z, statistic_type=t, statistic_value=v) for x, y, z, t, v in a["points"]
+        ])
+        for a in stored["analyses"]
+    ])
+    return markup, collection, stored
+
+
+def _reading(tmp_path, name):
+    markup, collection, stored = _read_back(name)
+    parse, _ = _parse(tmp_path, markup, {"tbl1": collection},
+                      caption=stored["caption"], footer=stored["footer"])
+    return parse.tables[0]
+
+
+def test_factor_loadings_read_as_points_are_flagged_as_statistics(tmp_path):
+    reading = _reading(tmp_path, "factor_loadings")
+    assert reading.reading == "coordinates"
+    assert "suspect extraction: 37 of 37 points look like statistics" in reading.reason
+
+
+def test_placeholder_points_on_a_table_with_no_coordinates_are_flagged(tmp_path):
+    # Every point is (0, 0, 0): no row prints a 0, so none is printed, and each repeats one number.
+    reason = _reading(tmp_path, "regions_only").reason
+    assert "9 of 9 points have an x, y or z the table does not print" in reason
+    assert "9 of 9 points repeat one number as x, y and z" in reason
+
+
+def test_statistics_moved_up_a_row_are_flagged(tmp_path):
+    # A blank T cell: v23 gave its point the next row's T, and every later point the one after.
+    reason = _reading(tmp_path, "statistic_shifted").reason
+    assert "points carry a statistic printed only in another point's row" in reason
+
+
+def test_decimal_coordinates_near_the_midline_are_not_suspect(tmp_path):
+    # Read correctly: (-27.3, -1.9, -2.3) is a putamen peak, not a statistic.
+    assert _reading(tmp_path, "decimal_coordinates").reason is None
+
+
+def test_a_table_read_right_is_not_suspect(tmp_path):
+    collection = _collection([
+        Analysis(name="Fear > Neutral", coordinates=[Coordinate(x=22, y=-4, z=-20), Coordinate(x=36, y=20, z=4)]),
+        Analysis(name="Surprise > Neutral", coordinates=[Coordinate(x=-10, y=-39, z=44), Coordinate(x=36, y=20, z=4)]),
+    ])
+    parse, _ = _parse(tmp_path, SHARED, {"tbl1": collection})
+    assert parse.tables[0].reason is None

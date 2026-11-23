@@ -1,0 +1,115 @@
+{
+ "article_id": "7gigwdwobbpc",
+ "table_id": "tbl0002",
+ "caption": "Voxel-wise learning-related activity in regions that differed when controlling for iron content and volume.",
+ "footer": "Notes. Peak voxel (x, y, z coordinates in Montreal Neurological Institute space), maximum z-statistic (Z-max), and spatial extent (number of voxels) are provided for each significant cluster (uncorrected p\u00a0<\u00a00.01, k\u00a0\u2265\u00a010 voxels).",
+ "model": "nu-v23",
+ "analyses": [
+  {
+   "name": "Putamen: early task stage",
+   "points": [
+    [
+     25.4,
+     11.7,
+     -5.7,
+     "Z",
+     2.7
+    ],
+    [
+     25.4,
+     11.7,
+     -5.7,
+     "Z",
+     3.1
+    ],
+    [
+     -27.3,
+     -1.9,
+     -2.3,
+     "Z",
+     2.9
+    ],
+    [
+     27.1,
+     13.4,
+     -0.6,
+     "Z",
+     3.1
+    ],
+    [
+     27.1,
+     13.4,
+     -0.6,
+     "Z",
+     3.4
+    ],
+    [
+     30.5,
+     4.9,
+     4.5,
+     "Z",
+     3.2
+    ],
+    [
+     27.1,
+     11.7,
+     -0.6,
+     "Z",
+     3.1
+    ]
+   ]
+  },
+  {
+   "name": "Putamen: late task stage",
+   "points": [
+    [
+     25.4,
+     -0.2,
+     7.9,
+     "Z",
+     2.7
+    ],
+    [
+     25.4,
+     -0.2,
+     6.2,
+     "Z",
+     3.0
+    ],
+    [
+     25.4,
+     -0.2,
+     6.2,
+     "Z",
+     3.4
+    ],
+    [
+     25.4,
+     -0.2,
+     4.5,
+     "Z",
+     3.8
+    ],
+    [
+     25.4,
+     -0.2,
+     4.5,
+     "Z",
+     3.8
+    ]
+   ]
+  },
+  {
+   "name": "Caudate: early task stage",
+   "points": [
+    [
+     15.2,
+     11.7,
+     19.8,
+     "Z",
+     2.9
+    ]
+   ]
+  }
+ ]
+}
