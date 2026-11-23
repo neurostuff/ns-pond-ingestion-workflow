@@ -1466,7 +1466,7 @@ def _suspect(table, collection: AnalysisCollection, grid: Optional[_Table]) -> O
     from ingestion_workflow.services import extraction_signs
 
     points = [
-        (c.x, c.y, c.z, c.statistic_value)
+        (c.x, c.y, c.z, c.statistic_value, c.cluster_size)
         for a in collection.analyses
         for c in a.coordinates
     ]

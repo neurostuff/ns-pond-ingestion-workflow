@@ -19,7 +19,11 @@ SCATTERED = "scattered"
 STATISTIC_LIKE = "statistic_like"
 REPEATED = "repeated"
 STATISTIC_ELSEWHERE = "statistic_elsewhere"
-SIGNS = (UNPRINTED, SCATTERED, STATISTIC_LIKE, REPEATED, STATISTIC_ELSEWHERE)
+CLUSTER_ELSEWHERE = "cluster_size_elsewhere"
+SIGNS = (UNPRINTED, SCATTERED, STATISTIC_LIKE, REPEATED, STATISTIC_ELSEWHERE, CLUSTER_ELSEWHERE)
+#: The signs of a value put on the wrong point, which a constrained retry fixes (2026-11-23: 4 of 4
+#: tables, coordinates unchanged).
+MISPLACED = (STATISTIC_ELSEWHERE, CLUSTER_ELSEWHERE)
 
 DESCRIPTIONS = {
     UNPRINTED: "have an x, y or z the table does not print",
@@ -27,12 +31,14 @@ DESCRIPTIONS = {
     STATISTIC_LIKE: "look like statistics, not coordinates",
     REPEATED: "repeat one number as x, y and z",
     STATISTIC_ELSEWHERE: "carry a statistic printed only in another point's row",
+    CLUSTER_ELSEWHERE: "carry a cluster size printed only in another point's row",
 }
 
 MIN_POINTS = 3
 _NUMBER = re.compile(r"\d+(?:\.\d+)?(?:[eE]-?\d+)?")
 
-Point = Tuple[float, float, float, Optional[float]]
+#: x, y, z, statistic, and optionally cluster size.
+Point = Tuple[float, ...]
 
 
 def _key(value: float) -> str:
@@ -66,7 +72,8 @@ def point_signs(points: Sequence[Point], rows: Iterable[str]) -> Counter:
     held = {i for p in points for i in homes(p)}
     signs: Counter = Counter()
     for point in points:
-        x, y, z, statistic = point
+        x, y, z, statistic = point[:4]
+        cluster = point[4] if len(point) > 4 else None
         want = Counter(_key(v) for v in (x, y, z))
         found = homes(point)
         if any(not anywhere[k] for k in want):
@@ -77,12 +84,13 @@ def point_signs(points: Sequence[Point], rows: Iterable[str]) -> Counter:
             signs[STATISTIC_LIKE] += 1
         if len(want) == 1:
             signs[REPEATED] += 1
-        if statistic is not None and found:
-            s = _key(statistic)
-            # Printed in a row with no point (under its point, or a spanned row) is fine.
-            others = [i for i, row in enumerate(counts) if row[s] and i not in found]
-            if not any(counts[i][s] for i in found) and others and all(i in held for i in others):
-                signs[STATISTIC_ELSEWHERE] += 1
+        for value, sign in ((statistic, STATISTIC_ELSEWHERE), (cluster, CLUSTER_ELSEWHERE)):
+            if value is not None and found:
+                v = _key(value)
+                # Printed in a row with no point (under its point, or a spanned row) is fine.
+                others = [i for i, row in enumerate(counts) if row[v] and i not in found]
+                if not any(counts[i][v] for i in found) and others and all(i in held for i in others):
+                    signs[sign] += 1
     return signs
 
 
@@ -104,4 +112,4 @@ def describe(points: Sequence[Point], rows: Iterable[str]) -> Optional[str]:
     return "suspect extraction: " + "; ".join(parts)
 
 
-__all__ = ["SIGNS", "MIN_POINTS", "point_signs", "suspect_signs", "describe"]
+__all__ = ["SIGNS", "MISPLACED", "MIN_POINTS", "point_signs", "suspect_signs", "describe"]

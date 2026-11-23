@@ -1,0 +1,236 @@
+<original-table>
+  <table-wrap xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" position="float" id="T5">
+    <label>Table 5</label>
+    <caption>
+      <p>Gray matter correlates of realistic interest scores and overlap of realistic and JOCRF spatial correlates (N = 40)</p>
+    </caption>
+    <table frame="hsides" rules="groups" border="1">
+      <colgroup>
+        <col align="left"/>
+        <col align="left"/>
+        <col align="left"/>
+        <col align="left"/>
+        <col align="left"/>
+        <col align="left"/>
+        <col align="left"/>
+      </colgroup>
+      <thead valign="top">
+        <tr>
+          <th align="left">
+            <bold>Size</bold>
+          </th>
+          <th align="left">
+            <italic>
+              <bold>p</bold>
+            </italic>
+          </th>
+          <th colspan="5" align="left">
+            <italic>
+              <bold>x,y,z</bold>
+            </italic>
+          </th>
+        </tr>
+      </thead>
+      <tbody valign="top">
+        <tr>
+          <td colspan="7" align="left" valign="bottom"><italic>Realistic</italic> (<italic>p</italic> &lt; .001, unc.)<hr/></td>
+        </tr>
+        <tr>
+          <td align="left" valign="bottom">7031<hr/></td>
+          <td align="left" valign="bottom">0.000<hr/></td>
+          <td align="left" valign="bottom">8–14 34<hr/></td>
+          <td align="left" valign="bottom">Right<hr/></td>
+          <td align="left" valign="bottom">Limbic<hr/></td>
+          <td align="left" valign="bottom">Cingulate gyrus<hr/></td>
+          <td align="left" valign="bottom">Brodmann area 23<hr/></td>
+        </tr>
+        <tr>
+          <td align="left" valign="bottom">1177<hr/></td>
+          <td align="left" valign="bottom">0.000<hr/></td>
+          <td align="left" valign="bottom">-34 20 40<hr/></td>
+          <td align="left" valign="bottom">Left<hr/></td>
+          <td align="left" valign="bottom">Frontal<hr/></td>
+          <td align="left" valign="bottom">Precentral gyrus<hr/></td>
+          <td align="left" valign="bottom">Brodmann area 9<hr/></td>
+        </tr>
+        <tr>
+          <td align="left" valign="bottom">300<hr/></td>
+          <td align="left" valign="bottom">0.000<hr/></td>
+          <td align="left" valign="bottom">-30 -22 40<hr/></td>
+          <td align="left" valign="bottom">Left<hr/></td>
+          <td align="left" valign="bottom">Parietal<hr/></td>
+          <td align="left" valign="bottom">Postcentral gyrus<hr/></td>
+          <td align="left" valign="bottom">Brodmann area 3<hr/></td>
+        </tr>
+        <tr>
+          <td align="left" valign="bottom">1142<hr/></td>
+          <td align="left" valign="bottom">0.000<hr/></td>
+          <td align="left" valign="bottom">72–36 -18<hr/></td>
+          <td align="left" valign="bottom">Right<hr/></td>
+          <td align="left" valign="bottom">Temporal<hr/></td>
+          <td align="left" valign="bottom">Middle temporal gyrus<hr/></td>
+          <td align="left" valign="bottom">Brodmann area 21<hr/></td>
+        </tr>
+        <tr>
+          <td align="left" valign="bottom">100<hr/></td>
+          <td align="left" valign="bottom">0.000<hr/></td>
+          <td align="left" valign="bottom">-18 48 14<hr/></td>
+          <td align="left" valign="bottom">Left<hr/></td>
+          <td align="left" valign="bottom">Frontal<hr/></td>
+          <td align="left" valign="bottom">Medial frontal gyrus<hr/></td>
+          <td align="left" valign="bottom">Brodmann area 10<hr/></td>
+        </tr>
+        <tr>
+          <td align="left" valign="bottom">210<hr/></td>
+          <td align="left" valign="bottom">0.001<hr/></td>
+          <td align="left" valign="bottom">-28 -76 -6<hr/></td>
+          <td align="left" valign="bottom">Left<hr/></td>
+          <td align="left" valign="bottom">Occipital<hr/></td>
+          <td align="left" valign="bottom">Lingual gyrus<hr/></td>
+          <td align="left" valign="bottom">Brodmann area 19<hr/></td>
+        </tr>
+        <tr>
+          <td align="left" valign="bottom">802<hr/></td>
+          <td align="left" valign="bottom">0.001<hr/></td>
+          <td align="left" valign="bottom">34–18 46<hr/></td>
+          <td align="left" valign="bottom">Right<hr/></td>
+          <td align="left" valign="bottom">Frontal<hr/></td>
+          <td align="left" valign="bottom">Precentral gyrus<hr/></td>
+          <td align="left" valign="bottom">Brodmann area 4<hr/></td>
+        </tr>
+        <tr>
+          <td align="left" valign="bottom">255<hr/></td>
+          <td align="left" valign="bottom">0.001<hr/></td>
+          <td align="left" valign="bottom">64 20 4<hr/></td>
+          <td align="left" valign="bottom">Right<hr/></td>
+          <td align="left" valign="bottom">Frontal<hr/></td>
+          <td align="left" valign="bottom">Inferior frontal gyrus<hr/></td>
+          <td align="left" valign="bottom">Brodmann area 45<hr/></td>
+        </tr>
+        <tr>
+          <td align="left" valign="bottom">2479<hr/></td>
+          <td align="left" valign="bottom">0.001<hr/></td>
+          <td align="left" valign="bottom">8–70 -38<hr/></td>
+          <td align="left" valign="bottom">Right<hr/></td>
+          <td align="left" valign="bottom">Posterior<hr/></td>
+          <td align="left" valign="bottom">Uvula<hr/></td>
+          <td align="left" valign="bottom">--<hr/></td>
+        </tr>
+        <tr>
+          <td align="left" valign="bottom">283<hr/></td>
+          <td align="left" valign="bottom">0.001<hr/></td>
+          <td align="left" valign="bottom">-20 10 14<hr/></td>
+          <td align="left" valign="bottom">Left<hr/></td>
+          <td align="left" valign="bottom">Sub-lobar<hr/></td>
+          <td align="left" valign="bottom">Lentiform nucleus<hr/></td>
+          <td align="left" valign="bottom">Putamen<hr/></td>
+        </tr>
+        <tr>
+          <td colspan="7" align="left" valign="bottom"><italic>Overlap of Realistic and Spatial factor</italic> (<italic>p</italic> &lt; .001, FWE-cor.)<hr/></td>
+        </tr>
+        <tr>
+          <td align="left" valign="bottom">206<hr/></td>
+          <td align="left" valign="bottom">0.000<hr/></td>
+          <td align="left" valign="bottom">-32 14 42<hr/></td>
+          <td align="left" valign="bottom">Left<hr/></td>
+          <td align="left" valign="bottom">Frontal<hr/></td>
+          <td align="left" valign="bottom">Middle frontal gyrus<hr/></td>
+          <td align="left" valign="bottom">Brodmann area 8<hr/></td>
+        </tr>
+        <tr>
+          <td align="left" valign="bottom">147<hr/></td>
+          <td align="left" valign="bottom">0.000<hr/></td>
+          <td align="left" valign="bottom">8–16 36<hr/></td>
+          <td align="left" valign="bottom">Right<hr/></td>
+          <td align="left" valign="bottom">Limbic<hr/></td>
+          <td align="left" valign="bottom">Cingulate gyrus<hr/></td>
+          <td align="left" valign="bottom">Brodmann area 24<hr/></td>
+        </tr>
+        <tr>
+          <td align="left" valign="bottom">423<hr/></td>
+          <td align="left" valign="bottom">0.000<hr/></td>
+          <td align="left" valign="bottom">-18 6 14<hr/></td>
+          <td align="left" valign="bottom">Left<hr/></td>
+          <td align="left" valign="bottom">Sub-lobar<hr/></td>
+          <td align="left" valign="bottom">Lentiform nucleus<hr/></td>
+          <td align="left" valign="bottom">Putamen<hr/></td>
+        </tr>
+        <tr>
+          <td align="left" valign="bottom">179<hr/></td>
+          <td align="left" valign="bottom">0.000<hr/></td>
+          <td align="left" valign="bottom">22 2 18<hr/></td>
+          <td align="left" valign="bottom">Right<hr/></td>
+          <td align="left" valign="bottom">Sub-lobar<hr/></td>
+          <td align="left" valign="bottom">Lentiform nucleus<hr/></td>
+          <td align="left" valign="bottom">Putamen<hr/></td>
+        </tr>
+        <tr>
+          <td align="left" valign="bottom">479<hr/></td>
+          <td align="left" valign="bottom">0.000<hr/></td>
+          <td align="left" valign="bottom">-28 -22 -6<hr/></td>
+          <td align="left" valign="bottom">Left<hr/></td>
+          <td align="left" valign="bottom">Sub-lobar<hr/></td>
+          <td align="left" valign="bottom">Lentiform nucleus<hr/></td>
+          <td align="left" valign="bottom">Putamen<hr/></td>
+        </tr>
+        <tr>
+          <td align="left" valign="bottom">359<hr/></td>
+          <td align="left" valign="bottom">0.000<hr/></td>
+          <td align="left" valign="bottom">36–20 70<hr/></td>
+          <td align="left" valign="bottom">Right<hr/></td>
+          <td align="left" valign="bottom">Frontal<hr/></td>
+          <td align="left" valign="bottom">Precentral gyrus<hr/></td>
+          <td align="left" valign="bottom">Brodmann area 6<hr/></td>
+        </tr>
+        <tr>
+          <td align="left" valign="bottom">85<hr/></td>
+          <td align="left" valign="bottom">0.000<hr/></td>
+          <td align="left" valign="bottom">30 24 38<hr/></td>
+          <td align="left" valign="bottom">Right<hr/></td>
+          <td align="left" valign="bottom">Frontal<hr/></td>
+          <td align="left" valign="bottom">Middle frontal gyrus<hr/></td>
+          <td align="left" valign="bottom">Brodmann area 9<hr/></td>
+        </tr>
+        <tr>
+          <td align="left" valign="bottom">160<hr/></td>
+          <td align="left" valign="bottom">0.000<hr/></td>
+          <td align="left" valign="bottom">6 16 30<hr/></td>
+          <td align="left" valign="bottom">Right<hr/></td>
+          <td align="left" valign="bottom">Limbic<hr/></td>
+          <td align="left" valign="bottom">Cingulate gyrus<hr/></td>
+          <td align="left" valign="bottom">Brodmann area 24<hr/></td>
+        </tr>
+        <tr>
+          <td align="left" valign="bottom">54<hr/></td>
+          <td align="left" valign="bottom">0.000<hr/></td>
+          <td align="left" valign="bottom">34 52 38<hr/></td>
+          <td align="left" valign="bottom">Right<hr/></td>
+          <td align="left" valign="bottom">Frontal<hr/></td>
+          <td align="left" valign="bottom">Superior frontal gyrus<hr/></td>
+          <td align="left" valign="bottom">Brodmann area 9<hr/></td>
+        </tr>
+        <tr>
+          <td align="left" valign="bottom">77<hr/></td>
+          <td align="left" valign="bottom">0.001<hr/></td>
+          <td align="left" valign="bottom">-56 28–10<hr/></td>
+          <td align="left" valign="bottom">Left<hr/></td>
+          <td align="left" valign="bottom">Frontal<hr/></td>
+          <td align="left" valign="bottom">Inferior frontal gyrus<hr/></td>
+          <td align="left" valign="bottom">Brodmann area 47<hr/></td>
+        </tr>
+        <tr>
+          <td align="left">600</td>
+          <td align="left">0.001</td>
+          <td align="left">-36 34 34</td>
+          <td align="left">Left</td>
+          <td align="left">Frontal</td>
+          <td align="left">Superior frontal gyrus</td>
+          <td align="left">Brodmann area 9</td>
+        </tr>
+      </tbody>
+    </table>
+    <table-wrap-foot>
+      <p><italic>Note</italic>. All correlations are positive; size is number of voxels in significant cluster; <italic>p</italic> for Realistic is uncorrected; <italic>p</italic> for overlap correlates is FWE-corrected; <italic>x,y,z</italic> coordinates are maximum voxel (MNI); left/right is hemisphere; Brodmann areas are best estimates from Talairach and Tournoux Atlas (1988).</p>
+    </table-wrap-foot>
+  </table-wrap>
+</original-table>

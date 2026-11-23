@@ -847,3 +847,110 @@ def test_a_supplement_repeating_a_main_text_table_loses_to_it(tmp_path):
     svc = CreateAnalysesService.__new__(CreateAnalysesService)
 
     assert svc._redundant([main, supp], "slug") == {"s1-table-001"}
+
+
+# -- values on the wrong point ------------------------------------------------
+
+from pathlib import Path
+
+SUSPECT = Path(__file__).resolve().parents[1] / "data" / "suspect_extractions"
+
+
+def _shifted():
+    """A table whose p values nu-v23's greedy answer gave to the row above each (recorded
+    2026-11-23), with the answer production's constrained retry gave."""
+    stored = json.loads((SUSPECT / "p_values_shifted.json").read_text())
+    markup = (SUSPECT / "p_values_shifted.xml").read_text()
+    table = SimpleNamespace(table_id="t5", space=None, table_number=5, caption=stored["caption"],
+                            footer=stored["footer"], metadata={})
+    bundle = SimpleNamespace(article_data=SimpleNamespace(tables=[table], slug="slug", identifier=None))
+    return stored, markup, bundle
+
+
+def _service_answering(markup, *answers):
+    """A service over the real serialiser whose extractor gives `answers` in turn."""
+    from ingestion_workflow.services.nuextract_payload import parse_payload
+
+    asked = []
+
+    def native(document, constrained=False):
+        asked.append(constrained)
+        return parse_payload(answers[len(asked) - 1])
+
+    svc = _service()
+    svc.client = SimpleNamespace(parse_analyses_native=native)
+    svc._redundant = lambda tables, slug: set()
+    svc._read_table_content = lambda table: markup
+    svc._build_document = lambda bundle, table, text: text
+    return svc, asked
+
+
+def _p_values(collection):
+    return [c.statistic_value for a in collection.analyses for c in a.coordinates]
+
+
+def test_values_on_the_wrong_point_are_asked_again_constrained():
+    stored, markup, bundle = _shifted()
+    svc, asked = _service_answering(markup, stored["greedy_answer"], stored["constrained_answer"])
+    retried = {}
+    kept = svc.run(bundle, retried=retried)["t5"]
+    assert asked == [False, True]
+    assert retried == {"t5": "statistic_elsewhere; kept the constrained retry"}
+    # Each cluster's own p, as printed: the greedy answer gave each the next row's.
+    assert _p_values(kept)[:3] == [0.0, 0.0, 0.0]
+
+
+def test_a_retry_that_reads_other_coordinates_is_not_kept():
+    stored, markup, bundle = _shifted()
+    other = '{"space": "MNI", "analyses": [{"name": "A", "points": [[1, 2, 3], [4, 5, 6], [7, 8, 9]]}]}'
+    svc, asked = _service_answering(markup, stored["greedy_answer"], other)
+    retried = {}
+    kept = svc.run(bundle, retried=retried)["t5"]
+    assert asked == [False, True]
+    assert retried["t5"].endswith("kept the first answer: the retry read other coordinates")
+    assert len(_p_values(kept)) == 21
+
+
+def test_an_answer_with_every_value_on_its_own_row_is_asked_once():
+    stored, markup, bundle = _shifted()
+    svc, asked = _service_answering(markup, stored["constrained_answer"])
+    retried = {}
+    svc.run(bundle, retried=retried)
+    assert asked == [False] and retried == {}
+
+
+def test_a_constrained_parse_asks_under_the_grammar_with_the_loop_penalty():
+    client, sent = _answering_client((GOOD, "stop"))
+    client.parse_analyses_native("doc", constrained=True)
+    extra = sent[0]["extra_body"]
+    assert extra["structured_outputs"] == {"json": CoordinateParsingClient.native_schema()}
+    assert extra["repetition_penalty"] == CoordinateParsingClient.LOOP_PENALTY
+
+
+def test_cluster_sizes_moved_down_a_row_are_flagged():
+    """The table's points, each given the Size its own row prints (its first column), are
+    clean; given the next cluster's, they are flagged."""
+    import re
+
+    from ingestion_workflow.services import extraction_signs
+    from ingestion_workflow.services.create_analyses import CreateAnalysesService, _points
+    from ingestion_workflow.services.nuextract_payload import parse_payload
+
+    stored, markup, _ = _shifted()
+    rows = CreateAnalysesService._serialise(markup, "t5").splitlines()
+    points = _points(parse_payload(stored["constrained_answer"])[0])
+
+    def own_size(point):
+        x, y, z = (abs(v) for v in point[:3])
+        for row in rows:
+            cells = [c.strip() for c in row.split("|")]
+            found = {abs(float(n)) for n in re.findall(r"-?\d+(?:\.\d+)?", " ".join(cells[2:3]))}
+            if {x, y, z} <= found:
+                return int(cells[0])
+        raise AssertionError(f"no row prints {point[:3]}")
+
+    sized = [(*p[:4], own_size(p)) for p in points]
+    assert extraction_signs.suspect_signs(sized, rows) == []
+    sizes = [p[4] for p in sized]
+    moved = [(*p[:4], size) for p, size in zip(sized, sizes[1:] + sizes[:1])]
+    assert extraction_signs.suspect_signs(moved, rows) == ["cluster_size_elsewhere"]

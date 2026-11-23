@@ -60,7 +60,7 @@ class _Parser:
     def __init__(self):
         self.given = []
 
-    def run(self, bundle, *, readings, unread):
+    def run(self, bundle, *, readings, unread, retried=None):
         self.given.append(bundle.article_metadata)
         return {}
 

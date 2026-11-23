@@ -204,8 +204,13 @@ class CoordinateParsingClient(GenericLLMClient):
         #: It had been raised once before, from 2,048, for the same reason.
         max_tokens: int = 8192,
         context_window: Optional[int] = None,
+        constrained: bool = False,
     ) -> Tuple[ParseAnalysesOutput, Optional[str]]:
         """Parse a table with the fine-tuned extractor, and report its space.
+
+        `constrained` asks under the template's grammar with the loop penalty from the
+        first try: the retry `CreateAnalysesService` makes when values sit on the wrong
+        point.
 
         No function tool and no instructions: the schema goes in the template
         slot and the document in the message, which is the shape the model was
@@ -230,6 +235,10 @@ class CoordinateParsingClient(GenericLLMClient):
         request = self.fit_to_window(
             document, model=model, max_tokens=max_tokens, context_window=context_window
         )
+        if constrained:
+            request["extra_body"] = {
+                **request["extra_body"], **self._grammar(), "repetition_penalty": self.LOOP_PENALTY
+            }
         choice = self.client.chat.completions.create(**request).choices[0]
         try:
             return parse_payload(choice.message.content or "")

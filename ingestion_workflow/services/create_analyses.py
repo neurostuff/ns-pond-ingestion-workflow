@@ -192,6 +192,38 @@ def split_by_sign(name, coordinates, taken=()):
     ]
 
 
+def _points(parsed: ParseAnalysesOutput):
+    """Each parsed point as (x, y, z, statistic, cluster size)."""
+    out = []
+    for analysis in parsed.analyses:
+        for point in analysis.points:
+            values = point.values or []
+            try:
+                statistic = float(values[0].value) if values else None
+            except (TypeError, ValueError):
+                statistic = None  # a printed "<0.001" is not a number to place
+            out.append((*point.coordinates, statistic, point.cluster_size))
+    return out
+
+
+def _coordinates(parsed: ParseAnalysesOutput):
+    return sorted(tuple(round(v, 3) for v in p[:3]) for p in _points(parsed))
+
+
+def _misplaced(parsed: ParseAnalysesOutput, rows) -> list:
+    """The `extraction_signs.MISPLACED` signs an answer carries against its table's rows.
+
+    A greedy answer sometimes gives a point the statistic or cluster size printed in
+    another point's row: the next row's p, the next cluster's t on subpeaks, the
+    first row's value copied down. Asked again under the grammar with the loop
+    penalty, all of 4 such tables read every value from its own row (2026-11-23).
+    """
+    from ingestion_workflow.services import extraction_signs
+
+    signs = extraction_signs.suspect_signs(_points(parsed), rows)
+    return [s for s in signs if s in extraction_signs.MISPLACED]
+
+
 def table_reading(collection: AnalysisCollection) -> str:
     """What reading one table found, in the coordinate parse's vocabulary.
 
@@ -267,16 +299,20 @@ class CreateAnalysesService:
         progress_hook: Callable[[int], None] | None = None,
         readings: Optional[Dict[str, str]] = None,
         unread: Optional[Dict[str, str]] = None,
+        retried: Optional[Dict[str, str]] = None,
     ) -> Dict[str, AnalysisCollection]:
         """Create analyses for every table in the bundle.
 
         `readings`, when given, is filled with what reading each table found
-        (`table_reading`), including the tables that yield no collection; and
-        `unread` with why a table was not read. Passed in rather than kept on
-        the service, which is shared across threads.
+        (`table_reading`), including the tables that yield no collection;
+        `unread` with why a table was not read; and `retried` with the tables
+        asked again because values sat on the wrong point (`_misplaced`), and
+        which answer was kept. Passed in rather than kept on the service, which
+        is shared across threads.
         """
         readings = {} if readings is None else readings
         unread = {} if unread is None else unread
+        retried = {} if retried is None else retried
         if not bundle.article_data.tables:
             return {}
 
@@ -312,9 +348,8 @@ class CreateAnalysesService:
                 continue
             model_space = None
             if getattr(self.settings, "llm_native_schema", False):
-                document = self._build_document(
-                    bundle, table, self._serialise(table_text, table_key)
-                )
+                serialised = self._serialise(table_text, table_key)
+                document = self._build_document(bundle, table, serialised)
                 try:
                     parsed_output, model_space = self.client.parse_analyses_native(document)
                 except UnreadableAnswer as exc:
@@ -322,6 +357,12 @@ class CreateAnalysesService:
                     unread[table_key] = f"unreadable answer: {exc}"
                     unreadable = unreadable or exc
                     continue
+                rows = [*serialised.splitlines(), table.caption or "", table.footer or ""]
+                misplaced = _misplaced(parsed_output, rows)
+                if misplaced:
+                    parsed_output, model_space, retried[table_key] = self._retry(
+                        document, rows, misplaced, parsed_output, model_space
+                    )
             else:
                 prompt = self._build_prompt(bundle, table, table_text, table_key)
                 parsed_output = self.client.parse_analyses(prompt)
@@ -358,6 +399,21 @@ class CreateAnalysesService:
             # one with no coordinates and never be asked again.
             raise unreadable
         return results
+
+    def _retry(self, document, rows, misplaced, first, first_space):
+        """Ask again constrained; keep that answer when it reads the same coordinates
+        and puts no value on the wrong point, else the first. Returns the answer kept,
+        its space, and what was retried and kept."""
+        what = ", ".join(misplaced)
+        try:
+            again, space = self.client.parse_analyses_native(document, constrained=True)
+        except UnreadableAnswer:
+            return first, first_space, f"{what}; kept the first answer: the retry was unreadable"
+        if _coordinates(again) != _coordinates(first):
+            return first, first_space, f"{what}; kept the first answer: the retry read other coordinates"
+        if _misplaced(again, rows):
+            return first, first_space, f"{what}; kept the first answer: the retry misplaces values too"
+        return again, space, f"{what}; kept the constrained retry"
 
     def _build_collection(
         self,

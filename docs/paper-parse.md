@@ -31,9 +31,15 @@ least a third of them, carry it:
 | statistic-like | all three are non-integers under 10, or two have three or more decimals |
 | repeated | x, y and z are one number |
 | statistic elsewhere | its statistic is printed only in another point's row |
+| cluster size elsewhere | its cluster size is printed only in another point's row |
 
 Signs are ignored when matching numbers, since `±30` and `-2/8` print one number for two
 points. The sync stage's summary lists such tables as `suspect_tables`.
+
+The analyses stage acts on the last two before this: a table whose answer puts a statistic
+or cluster size on the wrong point is asked again under the template's grammar with the loop
+penalty, and the retry is kept when it reads the same coordinates and places every value on
+its own row. The stage summary's `retried` names each such table and which answer was kept.
 
 # What the parsed paper says about its copy and its identifiers
 
