@@ -104,19 +104,19 @@ class ModalityStage:
         attempts = ctx.catalog.attempt_counts(ids, self.name, "")
         for ref in refs:
             if not inputs.base[ref.id]:
-                plan.block(NOT_IN_NEUROSTORE)
+                plan.block(ref, NOT_IN_NEUROSTORE)
                 continue
             if not inputs.records[ref.id] and inputs.text[ref.id] is None:
-                plan.block(NOTHING_TO_READ)
+                plan.block(ref, NOTHING_TO_READ)
                 continue
             fp = self.fingerprint_for(inputs, ref.id)
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
-                plan.fresh += 1
+                plan.add_fresh(ref)
                 continue
             count, last = attempts.get(ref.id, (0, None))
             if not ctx.should_attempt(existing, count, last, self.name, ""):
-                plan.permanent += 1
+                plan.add_permanent(ref)
                 continue
             plan.pending.append(Work(ref=ref, source="", fingerprint=fp,
                                      upstream=inputs.text[ref.id]))
