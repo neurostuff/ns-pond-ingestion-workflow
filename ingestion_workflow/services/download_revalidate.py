@@ -20,7 +20,7 @@ from datetime import timedelta
 from pathlib import Path
 from typing import Callable, Dict, Iterator, List, Optional, Sequence, Tuple
 
-from ingestion_workflow.catalog import Artifact, Catalog, Outcome, Status, utcnow
+from ingestion_workflow.catalog import Artifact, Catalog, Outcome, Status
 from ingestion_workflow.services import download_check
 
 _BATCH = 900
@@ -206,7 +206,9 @@ def effects(ctx, download_stage, revalidation: Revalidation) -> Dict[str, Counte
     out = {"next": Counter(), "stale": Counter(), "judged_before": Counter()}
     ctx = copy.copy(ctx)
     ctx.retry_after = timedelta(0)
-    now = utcnow()
+    # the failure is recorded at ctx.now, not the wall clock: later than ctx.now, the
+    # source would read as backing off despite the zero backoff
+    now = ctx.now.isoformat()
     for start in range(0, len(ids), _BATCH):
         chunk = ids[start:start + _BATCH]
         refs = {ref_id: ctx.catalog.ref(ref_id) for ref_id in chunk}
