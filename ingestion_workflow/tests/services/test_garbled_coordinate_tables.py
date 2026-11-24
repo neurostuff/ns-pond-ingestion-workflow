@@ -93,6 +93,78 @@ def test_a_lone_direction_letter_is_left_alone():
     assert _signed_by_direction("Region | 6L | 12P | 3") == "Region | 6L | 12P | 3"
 
 
+# -- a row whose first cell spans columns ----------------------------------------------
+
+
+def test_a_row_whose_first_cell_spans_columns_lines_up_with_its_header():
+    """PMC5622290 Table 2 spans each sub-peak's region over the cluster-size column. Sent as
+    `<2:Caudate (L/R) | 12 | 6 | 16 | 8.34`, nu-v23 read 6, 16, 8 as x, y, z and 12 as a cluster
+    size, in all 21 sub-peaks (supplements production run, 2026-11-24)."""
+    lines = _serialised("pmc5622290_t2.xml")
+
+    assert "Caudate (L/R) |  | 12 | 6 | 16 | 8.34" in lines
+    assert "Cluster #1b | 9,727 |  |  |  | " in lines
+    assert not any(line.startswith("<2:") for line in lines)
+
+
+def test_a_spanned_region_before_the_coordinates_leaves_x_in_its_column():
+    """Lancet 1998 (doi:10.1016/S0140-6736(98)02470-2) Table 1 spans four regions over the
+    Brodmann column; nu-v23 dropped their x and read the Z score as z."""
+    lines = _serialised("elsevier_9690407_tbl1.xml")
+
+    assert "Left hypothalamus |  | -2 | -18 | -8 | 3·68" in lines
+    assert "Right cingulate cortex | 24 | 2 | 22 | 24 | 4·9" in lines
+
+
+@pytest.mark.parametrize("line", [
+    "<6:Alcohol group > healthy controls",  # a row-group banner
+    "<2:PBO |  |  |  | ",                   # a banner with empty cells after it
+    "#<3:MNI coordinates | #T",             # a header
+    "Caudate | <2:12 | 16 | 8.34",          # a span after the first cell
+    # two banners side by side (luukio3kr5kr tbl3)
+    "<5:Encoding-reading | <5:Reading-encoding",
+    # a header row the source did not mark (4txarhgtrzng s2-table-003)
+    "<3:Coordinate | Accuracy | p | Extent | Hemi",
+    # an empty spanned cell (hxphsknjjo5e s1-table-010)
+    "<8:^6: | 26 | 2.74 | -42 | -42 | 54",
+    # a block's banner set beside another block's rows (vk5rtp22s3da s9-table-001)
+    "<6:K=1, Negative connectivity map | L Cerebellum | -6 | -27 | -18 | 6.41 | 5.55",
+])
+def test_a_banner_a_header_and_a_later_span_are_left_alone(line):
+    from ingestion_workflow.services.create_analyses import _leading_span_cells
+
+    assert _leading_span_cells(line) == line
+
+
+def test_spans_are_spelt_out_only_where_other_rows_keep_those_columns_apart():
+    """3odyz2h6hh7b s1-table-003 spans every row's region over two columns, under a header row
+    the source did not mark that spans them too: consistent as written. PMC5622290 prints
+    `Cluster #3 | 946` in the columns `<2:Caudate (L/R)` spans."""
+    from ingestion_workflow.services.create_analyses import _leading_span_rows
+
+    consistent = ["<2:Anatomical area | BA | Coordinates | Cluster Size | t-value",
+                  "<2:Right Orbitofrontal Cortex. | 10, 11 | 34 60 -12 | 1679 | 5.34",
+                  "<2:Left Angular Gyrus. | 40, 7 | -46 -50 58 | 2911 | 5.52"]
+    assert _leading_span_rows(consistent) == consistent
+    apart = ["#Brain region | #Cluster size (voxels) | #x | #y | #z | #z-statistic",
+             "Cluster #3 | 946 |  |  |  | ",
+             "<2:Caudate (L/R) | 12 | 6 | 16 | 8.34"]
+    assert _leading_span_rows(apart)[2] == "Caudate (L/R) |  | 12 | 6 | 16 | 8.34"
+
+
+def test_a_span_as_wide_as_the_headers_first_cell_is_left_alone():
+    """An ALE table (crmamvju5ixf, tbl0015) heads its label column `#<2:Domain & Anatomical
+    Label`, so `<2:L Caudate | 2384 | 1 | -10` lines up with it as written. Spelt out, the row
+    was one cell wider than its header and nu-v23 read the cluster number as x."""
+    from ingestion_workflow.services.create_analyses import _header_first_span, _leading_span_cells
+
+    lines = ["#<2:Domain & Anatomical Label | #Volume | #Cluster | #x | #y | #z",
+             "<2:L Caudate | 2384 | 1 | -10 | 12 | 0"]
+    assert _header_first_span(lines) == 2
+    assert _leading_span_cells(lines[1], 2) == lines[1]
+    assert _header_first_span(["# | # | #<3:MNI", "#Region | #Side | #x | #y | #z"]) == 1
+
+
 # -- a table carried over a page break ------------------------------------------------
 
 
