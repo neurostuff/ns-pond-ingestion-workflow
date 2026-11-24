@@ -140,7 +140,31 @@ _LEADING_SPAN = re.compile(r"^<(\d+):(.*)$", re.S)
 _BARE_NUMBER = re.compile(r"^[-+−]?\d+(?:\.\d+)?$")
 
 
-def _leading_span_cells(line: str, header_span: int = 1) -> str:
+def _leading_span_rows(lines: Sequence[str]) -> List[str]:
+    """The table's lines, each data row with a leading span spelt out where the table itself
+    keeps those columns apart: another data row, with no span of its own, prints a value in one
+    of the columns the span covers (PMC5622290's `Cluster #1b | 9,727` beside
+    `<2:Caudate (L/R) | 12`). Where every row spans them, the table is consistent as written,
+    and spelt out v23 read it worse (3odyz2h6hh7b, every row `<2:` under an unmarked `<2:`
+    header)."""
+    kept_apart = set()
+    for line in lines:
+        if line.startswith("#") or " | " not in line:
+            continue
+        cells = line.split(" | ")
+        if _LEADING_SPAN.match(cells[0]) or not any(_BARE_NUMBER.match(c.strip()) for c in cells[1:]):
+            continue
+        column = 0
+        for cell in cells:
+            span = _LEADING_SPAN.match(cell)
+            if column and cell.strip() not in ("", "~"):
+                kept_apart.add(column)
+            column += int(span.group(1)) if span else 1
+    head = _header_first_span(lines)
+    return [_leading_span_cells(line, head, kept_apart) for line in lines]
+
+
+def _leading_span_cells(line: str, header_span: int = 1, kept_apart=None) -> str:
     """One serialised row with a column-spanning first cell written as that cell and empty cells.
 
     A row-group banner is a line `<N:text`; a data row whose first cell spans columns begins the
@@ -151,15 +175,20 @@ def _leading_span_cells(line: str, header_span: int = 1) -> str:
     Only a data row is rewritten: one whose span holds text and whose later cells print a bare
     number. Left as they are, because v23 read them worse spelt out: banners, side by side or
     with empty cells after them; a header row the source did not mark (`<3:Coordinate |
-    Accuracy | p`); an empty spanned cell (`<8:^6:`); and a row whose span is no wider than the
-    header's own first cell (`header_span`), which already lines up with `#<2:Region`."""
+    Accuracy | p`); an empty spanned cell (`<8:^6:`); a row with a second span, whose cells
+    don't follow the header's boundaries (`<2:Mid calcarine | <2:1660` under `#Region |
+    #<3:Cluster extent`); and a row whose span is no wider than the header's own first cell
+    (`header_span`), which already lines up with `#<2:Region`."""
     if line.startswith("#") or " | " not in line:
         return line
     cells = line.split(" | ")
     span = _LEADING_SPAN.match(cells[0])
     if (not span or int(span.group(1)) <= header_span
             or not re.sub(r"^\^\d+:", "", span.group(2)).strip()
-            or not any(_BARE_NUMBER.match(c.strip()) for c in cells[1:])):
+            or not any(_BARE_NUMBER.match(c.strip()) for c in cells[1:])
+            or any(_LEADING_SPAN.match(c) for c in cells[1:])
+            or (kept_apart is not None
+                and not any(c in kept_apart for c in range(1, int(span.group(1)))))):
         return line
     return " | ".join([span.group(2)] + [""] * (int(span.group(1)) - 1) + cells[1:])
 
@@ -838,8 +867,7 @@ Raw Table Content:
             out = ""
         if out.strip():
             lines = out.split("\n")
-            head = _header_first_span(lines)
-            return "\n".join(_signed_by_direction(_leading_span_cells(line, head)) for line in lines)
+            return "\n".join(_signed_by_direction(line) for line in _leading_span_rows(lines))
         # Neither form read as a table. Text beats markup, and markup beats
         # nothing at all -- the model can only answer about what it is sent.
         return _text_of(markup) or markup

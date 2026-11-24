@@ -134,6 +134,22 @@ def test_a_banner_a_header_and_a_later_span_are_left_alone(line):
     assert _leading_span_cells(line) == line
 
 
+def test_spans_are_spelt_out_only_where_other_rows_keep_those_columns_apart():
+    """3odyz2h6hh7b s1-table-003 spans every row's region over two columns, under a header row
+    the source did not mark that spans them too: consistent as written. PMC5622290 prints
+    `Cluster #3 | 946` in the columns `<2:Caudate (L/R)` spans."""
+    from ingestion_workflow.services.create_analyses import _leading_span_rows
+
+    consistent = ["<2:Anatomical area | BA | Coordinates | Cluster Size | t-value",
+                  "<2:Right Orbitofrontal Cortex. | 10, 11 | 34 60 -12 | 1679 | 5.34",
+                  "<2:Left Angular Gyrus. | 40, 7 | -46 -50 58 | 2911 | 5.52"]
+    assert _leading_span_rows(consistent) == consistent
+    apart = ["#Brain region | #Cluster size (voxels) | #x | #y | #z | #z-statistic",
+             "Cluster #3 | 946 |  |  |  | ",
+             "<2:Caudate (L/R) | 12 | 6 | 16 | 8.34"]
+    assert _leading_span_rows(apart)[2] == "Caudate (L/R) |  | 12 | 6 | 16 | 8.34"
+
+
 def test_a_span_as_wide_as_the_headers_first_cell_is_left_alone():
     """An ALE table (crmamvju5ixf, tbl0015) heads its label column `#<2:Domain & Anatomical
     Label`, so `<2:L Caudate | 2384 | 1 | -10` lines up with it as written. Spelt out, the row
