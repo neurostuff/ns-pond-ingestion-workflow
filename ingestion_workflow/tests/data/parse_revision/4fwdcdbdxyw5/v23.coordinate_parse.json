@@ -1,0 +1,496 @@
+{
+  "header": {
+    "artifact_kind": "coordinate_parse",
+    "schema_version": "0.11.0",
+    "article_id": "4fwdcdbdxyw5",
+    "identifiers": {
+      "pmid": "26576733",
+      "pmcid": "PMC4649361",
+      "doi": "10.1038/srep16701",
+      "alternative_pmids": null,
+      "alternative_pmcids": null,
+      "alternative_dois": null,
+      "preprint_dois": null,
+      "preprint_pmids": null,
+      "preprint_pmcids": null,
+      "publication_status": "published"
+    },
+    "producer": {
+      "name": "ns-pond-ingestion-workflow",
+      "version": "paper_parse.13",
+      "stage": "sync",
+      "model": null,
+      "prompt_version": null
+    },
+    "inputs": [
+      {
+        "artifact_kind": "parsed_paper",
+        "fingerprint": "97b76436b8149c3b2519231aed1e34e1af6fa82b5c3191ea10238846e7f51d5e",
+        "producer_version": null
+      },
+      {
+        "artifact_kind": "analyses",
+        "fingerprint": "a6dbcb320f1e6abef04491e89956c6b0",
+        "producer_version": null
+      }
+    ],
+    "created_at": null,
+    "neurostore_base_study_id": "7Y4ZoXe5edwZ"
+  },
+  "parse_id": "6344a96c3822ab1f9c7622343a03b68083a073f4aad4a1f3f9f98407dec0e5ac",
+  "text_sha256": "97b76436b8149c3b2519231aed1e34e1af6fa82b5c3191ea10238846e7f51d5e",
+  "revision_of": null,
+  "analyses": [
+    {
+      "key": "analysis#599301277eb89643",
+      "cells": null,
+      "text_spans": [
+        {
+          "start_char": 33551,
+          "end_char": 33561,
+          "text": null
+        },
+        {
+          "start_char": 33578,
+          "end_char": 33590,
+          "text": null
+        }
+      ],
+      "origin": "text",
+      "table_id": null,
+      "name": "amygdala ROI",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "MNI",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "anchor",
+      "anchor_kind": "node",
+      "from_prior_study": true,
+      "prior_study_evidence": null,
+      "role_confidence": 0.9997232556343079,
+      "role_source": "role-decision@v1+eb7ad21cbdab",
+      "split": null,
+      "derived_from": null,
+      "statistic": null,
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            27.0,
+            5.0,
+            -17.0
+          ],
+          "space": null,
+          "row": null,
+          "column_group": null,
+          "text_span": {
+            "start_char": 33551,
+            "end_char": 33561,
+            "text": null
+          },
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            -15.0,
+            -1.0,
+            -14.0
+          ],
+          "space": null,
+          "row": null,
+          "column_group": null,
+          "text_span": {
+            "start_char": 33578,
+            "end_char": 33590,
+            "text": null
+          },
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    },
+    {
+      "key": "analysis#f6898bc4d70076c9",
+      "cells": null,
+      "text_spans": [
+        {
+          "start_char": 35232,
+          "end_char": 35242,
+          "text": null
+        }
+      ],
+      "origin": "text",
+      "table_id": null,
+      "name": "vmPFC ROI",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "MNI",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "anchor",
+      "anchor_kind": "roi",
+      "from_prior_study": false,
+      "prior_study_evidence": null,
+      "role_confidence": 0.9973117113113403,
+      "role_source": "role-decision@v1+eb7ad21cbdab",
+      "split": null,
+      "derived_from": null,
+      "statistic": null,
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            9.0,
+            54.0,
+            -12.0
+          ],
+          "space": null,
+          "row": null,
+          "column_group": null,
+          "text_span": {
+            "start_char": 35232,
+            "end_char": 35242,
+            "text": null
+          },
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    },
+    {
+      "key": "analysis#e0e89166db727752",
+      "cells": [
+        {
+          "row": 0,
+          "column_group": 0
+        },
+        {
+          "row": 1,
+          "column_group": 0
+        },
+        {
+          "row": 2,
+          "column_group": 0
+        },
+        {
+          "row": 3,
+          "column_group": 0
+        },
+        {
+          "row": 4,
+          "column_group": 0
+        },
+        {
+          "row": 5,
+          "column_group": 0
+        },
+        {
+          "row": 6,
+          "column_group": 0
+        },
+        {
+          "row": 7,
+          "column_group": 0
+        },
+        {
+          "row": 8,
+          "column_group": 0
+        },
+        {
+          "row": 9,
+          "column_group": 0
+        }
+      ],
+      "text_spans": null,
+      "origin": "table",
+      "table_id": "t1",
+      "name": "ALFF differences between reminder group and the no reminder group following the fear reminder. (REST2 vs. REST1).",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "MNI",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "result",
+      "anchor_kind": null,
+      "from_prior_study": false,
+      "prior_study_evidence": null,
+      "role_confidence": 0.9998692274093628,
+      "role_source": "role-decision@v1+eb7ad21cbdab",
+      "split": null,
+      "derived_from": null,
+      "statistic": "t",
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            -9.0,
+            9.0,
+            27.0
+          ],
+          "space": null,
+          "row": 0,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "t",
+              "kind_as_printed": null,
+              "value": 4.26,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 109.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            6.0,
+            -15.0,
+            33.0
+          ],
+          "space": null,
+          "row": 1,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "t",
+              "kind_as_printed": null,
+              "value": 3.91,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": true,
+          "label": null
+        },
+        {
+          "coordinates": [
+            -6.0,
+            -12.0,
+            33.0
+          ],
+          "space": null,
+          "row": 2,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "t",
+              "kind_as_printed": null,
+              "value": 3.47,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": true,
+          "label": null
+        },
+        {
+          "coordinates": [
+            12.0,
+            57.0,
+            -6.0
+          ],
+          "space": null,
+          "row": 3,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "t",
+              "kind_as_printed": null,
+              "value": 4.01,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 78.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            9.0,
+            42.0,
+            -9.0
+          ],
+          "space": null,
+          "row": 4,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "t",
+              "kind_as_printed": null,
+              "value": 3.32,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": true,
+          "label": null
+        },
+        {
+          "coordinates": [
+            6.0,
+            42.0,
+            6.0
+          ],
+          "space": null,
+          "row": 5,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "t",
+              "kind_as_printed": null,
+              "value": 2.65,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": true,
+          "label": null
+        },
+        {
+          "coordinates": [
+            -24.0,
+            36.0,
+            -12.0
+          ],
+          "space": null,
+          "row": 6,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "t",
+              "kind_as_printed": null,
+              "value": 3.58,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 131.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            -12.0,
+            15.0,
+            -9.0
+          ],
+          "space": null,
+          "row": 7,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "t",
+              "kind_as_printed": null,
+              "value": 3.21,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": true,
+          "label": null
+        },
+        {
+          "coordinates": [
+            -9.0,
+            33.0,
+            -6.0
+          ],
+          "space": null,
+          "row": 8,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "t",
+              "kind_as_printed": null,
+              "value": 3.19,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": true,
+          "label": null
+        },
+        {
+          "coordinates": [
+            -30.0,
+            -60.0,
+            -33.0
+          ],
+          "space": null,
+          "row": 9,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "t",
+              "kind_as_printed": null,
+              "value": 3.28,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 52.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "table_id": "t1",
+      "reading": "coordinates",
+      "reason": null
+    }
+  ],
+  "omitted_analyses": null,
+  "text_sweep": {
+    "passages_found": 2,
+    "passages_read": 2,
+    "truncated": false,
+    "points_dropped_as_table_restatements": 0
+  },
+  "verdicts": null
+}

@@ -23,6 +23,12 @@ A record sent alone (`record` with `parse_id`, `base_study_id`, `run_id` and
 extraction-record and answered as neurostore's ingester answers it: 422 UNKNOWN_PARSE
 for a parse this server was never sent for the base study, 422 RUN_CONFLICT for a run_id
 it holds with other fields, else a `record` summary whose provenance holds the runs.
+
+A parse is answered as neurostore's `_apply_parse` checks it: a stored parse that is not
+the base study's current one is 422 NOT_CURRENT. A revision (`revision_of` set) is 422
+NOT_CURRENT unless it revises the current parse, UNKNOWN_PARSE when the parse it names was
+never sent, and MISSING or UNKNOWN_KEY unless its verdicts cover every key of the revised
+parse and name only keys it holds. Each parse sent is kept, by parse_id, in `parses`.
 """
 
 from __future__ import annotations
@@ -176,6 +182,9 @@ class Neurostore:
         #: The analysis keys each base study holds, and the parses it was sent.
         self._keys: Dict[str, Set[str]] = {}
         self._parses: Dict[str, Set[str]] = {}
+        #: Each base study's current parse_id, and every parse taken, by parse_id.
+        self.current: Dict[str, str] = {}
+        self.parses: Dict[str, Dict[str, Any]] = {}
         #: Each run it holds, by run_id, as it was first sent.
         self.runs: Dict[str, Dict[str, Any]] = {}
         self._errors = 0
@@ -296,7 +305,7 @@ class Neurostore:
         body = self._check_upload(request, content)
         self.uploads.append(body)
         answer = self._script.pop(0) if self._script else (
-            self._record_refusal(body) or self.summary())
+            self._record_refusal(body) or self._parse_refusal(body) or self.summary())
         return self._send(answer, request, body)
 
     def _grant(self, request: httpx.Request, content: bytes) -> httpx.Response:
@@ -370,6 +379,8 @@ class Neurostore:
             else:
                 self._keys[body["base_study_id"]] = _keys(upload)
                 self._parses.setdefault(body["base_study_id"], set()).add(body["parse_id"])
+                self.current[body["base_study_id"]] = body["parse_id"]
+                self.parses[body["parse_id"]] = upload["coordinate_parse"]
         return httpx.Response(answer.status, json=body, headers=answer.headers)
 
     def _record_refusal(self, upload: Dict[str, Any]) -> Optional[Answer]:
@@ -385,6 +396,43 @@ class Neurostore:
             if held is not None and held != run:
                 return self.error(422, "This run_id names a stored run with other fields.",
                                   codes=("RUN_CONFLICT",), field_name=f"pipeline/runs/{i}")
+        return None
+
+    def _parse_refusal(self, upload: Dict[str, Any]) -> Optional[Answer]:
+        """neurostore's 422 for a parse it does not take as the paper's next, or None."""
+        parse = upload.get("coordinate_parse")
+        if parse is None:
+            return None
+        base = parse["header"].get("neurostore_base_study_id") or _created_base_study(
+            parse["header"])
+        current = self.current.get(base)
+        if current not in (None, parse["parse_id"]) \
+                and parse["parse_id"] in self._parses.get(base, set()):
+            return self.error(422, "This parse is stored and is no longer the paper's "
+                              "current parse.", codes=("NOT_CURRENT",),
+                              field_name="coordinate_parse/parse_id")
+        revised_id = parse.get("revision_of")
+        if not revised_id:
+            return None
+        if current not in (None, parse["parse_id"], revised_id):
+            return self.error(422, "A revision must revise the paper's current parse.",
+                              codes=("NOT_CURRENT",), field_name="coordinate_parse/revision_of")
+        revised = self.parses.get(revised_id)
+        if revised is None:
+            return self.error(422, "A revision revises a stored parse; the one it names is "
+                              "not stored for the paper.", codes=("UNKNOWN_PARSE",),
+                              field_name="coordinate_parse/revision_of")
+        keys = _keys(upload)
+        verdicts = parse.get("verdicts") or []
+        judged = {v["key"] for v in verdicts if v["verdict"] != "add"}
+        if {a["key"] for a in revised["analyses"]} - judged:
+            return self.error(422, "The revision's verdicts do not cover the parse it revises.",
+                              codes=("MISSING",), field_name="coordinate_parse/verdicts")
+        named = {k for v in verdicts for k in v.get("replaced_by") or ()}
+        named |= {v["key"] for v in verdicts if v["verdict"] in ("accept", "relabel", "add")}
+        if named - keys:
+            return self.error(422, "The revision's verdicts do not cover the parse it revises.",
+                              codes=("UNKNOWN_KEY",), field_name="coordinate_parse/verdicts")
         return None
 
     def _summary_of(self, upload: Dict[str, Any]) -> Dict[str, Any]:

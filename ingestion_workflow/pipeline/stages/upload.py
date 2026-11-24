@@ -29,21 +29,42 @@ def _sent_by_ingester(existing: Optional[Artifact]) -> bool:
     return existing is not None and (existing.summary or {}).get("backend") == "ingester"
 
 
+#: What an upload's summary keeps of the parse it sent, carried through later failures.
+KEPT = ("base_study_id", "parse_id", "analyses", "text_sha256", "text_length", "revisions")
+
+
 def _last_upload(existing: Optional[Artifact]) -> Optional[Dict[str, Any]]:
-    """What the last successful upload of the article sent, carried through later failures."""
+    """What the last successful upload of the article sent, carried through later failures:
+    with the blob of the parse it sent (`parse_blob`) and the ingester it went to."""
     if existing is None:
         return None
     summary = existing.summary or {}
     if existing.status is Status.OK and existing.fingerprint != NO_TEXT:
-        return {k: summary.get(k) for k in ("base_study_id", "parse_id", "analyses")} | {
-            "at": existing.updated_at, "backend": summary.get("backend", "legacy")}
+        return {k: summary.get(k) for k in KEPT} | {
+            "at": existing.updated_at, "backend": summary.get("backend", "legacy"),
+            "parse_blob": existing.blob,
+            "endpoint": (summary.get("ingester") or {}).get("endpoint")}
     return summary.get("last_upload")
+
+
+def not_kept(parse_id: str) -> str:
+    """Why a paper whose stored parse is not kept here is not sent."""
+    return (f"{GATED}: Neurostore holds parse {parse_id} for this paper, which is not kept "
+            "here, so this parse would replace it rather than revise it; set "
+            "upload_revised_root to a corpus tree holding it")
 
 
 class UploadStage:
     """Post the coordinate parse sync wrote to neurostore's study_schema ingester.
 
-    One call per article. The ingester keys analyses by the parse's keys and supersedes
+    One call per article. A paper uploaded before goes as a revision of the parse sent
+    then (`parse_revision`), so what Neurostore holds against an analysis the new parse
+    keeps, corrects, splits or merges is carried to it; a paper whose earlier parse is not
+    kept (the artifact's blob, else `upload_revised_root`) is held back, since a plain
+    parse would supersede it. Each upload keeps the parse it sent as its blob, and its
+    summary the text it was read from and the `revisions` since the paper's first parse.
+
+    The ingester keys analyses by the parse's keys and supersedes
     the ones a new parse lacks, so a parse built from a table or prose reading that is
     not fresh is held back (`GATED`) with what is behind and how many analyses it holds
     against the last upload. Each record's summary names the backend, whether it was a
@@ -77,6 +98,9 @@ class UploadStage:
         self.assessor = Assessor(settings)
         self._dry_path: Optional[Path] = None
         self._dry_counts: Dict[str, int] = {}
+        #: {article: the parse it revises, or None} and {article: what was sent}, per batch.
+        self._revised: Dict[str, Any] = {}
+        self._sent: Dict[str, Dict[str, Any]] = {}
 
 
     @property
@@ -221,6 +245,13 @@ class UploadStage:
                     summary={**summary, "gate": gate}))
                 continue
             summary["gate"] = gate
+            revised, why = self.revised_for(ctx, work, last)
+            if why:
+                yield from self._record(work, Outcome.failure(
+                    work.article_id, self.name, "", why, fingerprint=work.fingerprint,
+                    summary=summary))
+                continue
+            self._revised[work.article_id] = revised
             if not summary["analyses"] and last is None:
                 # Never uploaded and nothing to say: the ingester would create a study
                 # claiming the paper reports no coordinates.
@@ -230,7 +261,37 @@ class UploadStage:
                     summary={**summary, "reason": "no analyses to upload"}))
                 continue
             sending.append((work, summary))
-        yield from self._send_all(sending, learned)
+        try:
+            yield from self._send_all(sending, learned)
+        finally:
+            self._revised.clear()
+            self._sent.clear()
+
+    def revised_for(self, ctx: Context, work: Work, last: Optional[Dict[str, Any]]):
+        """(the parse Neurostore holds for the paper, which this one revises, or None for a
+        plain parse; why the paper is held back instead, or None). A paper never sent through
+        the ingester, or sent to another neurostore, gets a plain parse."""
+        from ingestion_workflow.services.neurostore_ingest import UPLOAD_PATH, Revised
+
+        if not last or last.get("backend") != "ingester" or not last.get("parse_id"):
+            return None, None
+        mine = (self.settings.neurostore_api_url or "").rstrip("/") + UPLOAD_PATH
+        if last.get("endpoint") not in (None, mine):
+            return None, None
+        held = ctx.catalog.blobs.get(last.get("parse_blob")) if last.get("parse_blob") else None
+        if held is not None and held.get("parse_id") == last["parse_id"]:
+            return Revised(held, last.get("text_sha256"), last.get("text_length")), None
+        root = getattr(self.settings, "upload_revised_root", None)
+        if root:
+            parse_dir = Path(root) / Path(work.upstream.summary.get("path") or "").name / "parse"
+            try:
+                held = json.loads((parse_dir / "coordinate_parse.json").read_text("utf-8"))
+                paper = json.loads((parse_dir / "parsed_paper.json").read_text("utf-8"))
+            except (OSError, ValueError):
+                held = None
+            if held is not None and held.get("parse_id") == last["parse_id"]:
+                return Revised(held, paper.get("text_sha256"), paper.get("text_length")), None
+        return None, not_kept(last["parse_id"])
 
     def _send_all(self, sending, learned) -> Iterator[Outcome]:
         """Each paper sent, `neurostore_upload_workers` at once, its outcome as it is answered.
@@ -282,7 +343,11 @@ class UploadStage:
 
     def _send_one(self, ingester, work: Work) -> Dict[str, Any]:
         """Send one paper; its upload artifact."""
-        return ingester.upload(Path(work.upstream.summary.get("path") or ""))
+        sent: Dict[str, Any] = {}
+        artifact = ingester.upload(Path(work.upstream.summary.get("path") or ""),
+                                   revised=self._revised.get(work.article_id), sent=sent)
+        self._sent[work.article_id] = sent
+        return artifact
 
     def _summary(self, synced: Optional[Artifact],
                  last: Optional[Dict[str, Any]]) -> Dict[str, Any]:
@@ -302,7 +367,11 @@ class UploadStage:
         from ingestion_workflow.services.neurostore_ingest import Result
 
         result = Result(artifact["status"])
-        record = {k: v for k, v in artifact.items() if k not in ("history", "last_uploaded")}
+        record = {k: v for k, v in artifact.items()
+                  if k not in ("history", "last_uploaded", "revision")}
+        step = artifact.get("revision")
+        if step is not None:
+            record["revision"] = {k: step[k] for k in ("revision_of", "verdicts", "text")}
         summary = {**summary, "ingester": record}
         status = result.catalog_status
         if status is Status.OK:
@@ -310,9 +379,20 @@ class UploadStage:
             if base_study_id:
                 summary["base_study_id"] = base_study_id
                 learned.append((work.article_id, "neurostore", base_study_id))
-            summary.pop("last_upload", None)
+            last = summary.pop("last_upload", None) or {}
+            sent = self._sent.get(work.article_id) or {}
+            paper = sent.get("parsed_paper") or {}
+            revised = self._revised.get(work.article_id)
+            # The revisions since the paper's first parse: those of the parse this one
+            # revises or repeats, and this one's.
+            prior = list(last.get("revisions") or []) if revised is not None or (
+                last.get("parse_id") == summary.get("parse_id")) else []
+            summary.update(text_sha256=paper.get("text_sha256"),
+                           text_length=paper.get("text_length"),
+                           revisions=prior + ([step] if step is not None else []))
             return Outcome(article_id=work.article_id, stage=self.name, source="",
-                           status=Status.OK, fingerprint=work.fingerprint, summary=summary)
+                           status=Status.OK, fingerprint=work.fingerprint, summary=summary,
+                           payload=sent.get("coordinate_parse"))
         error = record.get("error") or {}
         detail = error.get("detail") or error.get("title") or "no detail"
         if error.get("codes"):  # KEY_MISMATCH, DUPLICATE_KEY, NOT_CURRENT, ...

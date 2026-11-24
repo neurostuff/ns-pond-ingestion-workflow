@@ -1,0 +1,158 @@
+{
+  "header": {
+    "artifact_kind": "coordinate_parse",
+    "schema_version": "0.11.0",
+    "article_id": "4l3oivy5q5on",
+    "identifiers": {
+      "pmid": "28989977",
+      "pmcid": "PMC5628620",
+      "doi": "10.1038/s41562-016-0006",
+      "alternative_pmids": null,
+      "alternative_pmcids": null,
+      "alternative_dois": null,
+      "preprint_dois": null,
+      "preprint_pmids": null,
+      "preprint_pmcids": null,
+      "publication_status": "published"
+    },
+    "producer": {
+      "name": "ns-pond-ingestion-workflow",
+      "version": "paper_parse.13",
+      "stage": "sync",
+      "model": null,
+      "prompt_version": null
+    },
+    "inputs": [
+      {
+        "artifact_kind": "parsed_paper",
+        "fingerprint": "e55f77b221ee80e619d0a6109b1324780c44ff1e73266bacb396948f70664acd",
+        "producer_version": null
+      },
+      {
+        "artifact_kind": "analyses",
+        "fingerprint": "72ef85c224b44627552eddd3b0012dfa",
+        "producer_version": null
+      }
+    ],
+    "created_at": null,
+    "neurostore_base_study_id": "3tT2jEUx6BVs"
+  },
+  "parse_id": "0e536693e0a3307cb905d42b60f58acb31ead837481146f3352342ef790221d6",
+  "text_sha256": "e55f77b221ee80e619d0a6109b1324780c44ff1e73266bacb396948f70664acd",
+  "revision_of": null,
+  "analyses": [
+    {
+      "key": "analysis#2ba703fb7e169021",
+      "cells": null,
+      "text_spans": [
+        {
+          "start_char": 27282,
+          "end_char": 27292,
+          "text": null
+        }
+      ],
+      "origin": "text",
+      "table_id": null,
+      "name": "fear relevant trials > fixation during the Acquisition session",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "MNI",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "anchor",
+      "anchor_kind": "roi",
+      "from_prior_study": null,
+      "prior_study_evidence": null,
+      "role_confidence": 0.9996725859995713,
+      "role_source": "role-text@v5+d83dae2b8718",
+      "split": null,
+      "derived_from": null,
+      "statistic": null,
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            0.0,
+            40.0,
+            -12.0
+          ],
+          "space": null,
+          "row": null,
+          "column_group": null,
+          "text_span": {
+            "start_char": 27282,
+            "end_char": 27292,
+            "text": null
+          },
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    },
+    {
+      "key": "analysis#66b77dc2effcc281",
+      "cells": null,
+      "text_spans": [
+        {
+          "start_char": 27282,
+          "end_char": 27292,
+          "text": null
+        }
+      ],
+      "origin": "text",
+      "table_id": null,
+      "name": "all US trials and the last 2 trials of each CS+ > fixation during the Acquisition session",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "MNI",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "anchor",
+      "anchor_kind": "roi",
+      "from_prior_study": null,
+      "prior_study_evidence": null,
+      "role_confidence": 0.9996485487791166,
+      "role_source": "role-text@v5+d83dae2b8718",
+      "split": null,
+      "derived_from": null,
+      "statistic": null,
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            0.0,
+            40.0,
+            -12.0
+          ],
+          "space": null,
+          "row": null,
+          "column_group": null,
+          "text_span": {
+            "start_char": 27282,
+            "end_char": 27292,
+            "text": null
+          },
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    }
+  ],
+  "tables": null,
+  "omitted_analyses": null,
+  "text_sweep": {
+    "passages_found": 1,
+    "passages_read": 1,
+    "truncated": false,
+    "points_dropped_as_table_restatements": 0
+  },
+  "verdicts": null
+}

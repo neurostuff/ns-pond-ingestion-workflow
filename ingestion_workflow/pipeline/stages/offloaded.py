@@ -11,7 +11,11 @@ saved fit; without one it too waits for an import.
 
 `normalize` reads the evidence record, or the record itself when evidence was skipped.
 
-A parse change that keeps the keys a record points at leaves the record fresh.
+A parse change that keeps the keys a record points at leaves the record fresh. So does one
+uploaded as a revision that carries every analysis (`carried_from`): each step since the
+parse the record read accepted, edited, split or merged every analysis, added none, and kept
+or extended the text. Neurostore carried the record's claims along, so the record stays as
+imported, keyed to the parse it read, and evidence reads the text the record read.
 """
 
 from __future__ import annotations
@@ -101,10 +105,11 @@ class Parse:
     the file they were read from."""
 
     def __init__(self, text_sha256: Optional[str], keys: Set[str],
-                 path: Optional[Path] = None) -> None:
+                 path: Optional[Path] = None, parse_id: Optional[str] = None) -> None:
         self.text_sha256 = text_sha256
         self.keys = keys
         self.path = path
+        self.parse_id = parse_id
 
     @classmethod
     def of(cls, catalog_root: Path, sync: Optional[Artifact]) -> Optional["Parse"]:
@@ -118,7 +123,39 @@ class Parse:
         except (OSError, ValueError):
             return None
         return cls(held.get("text_sha256"),
-                   {a["key"] for a in held.get("analyses") or [] if a.get("key")}, path)
+                   {a["key"] for a in held.get("analyses") or [] if a.get("key")}, path,
+                   held.get("parse_id"))
+
+
+def carried_from(record: Artifact, parse: Optional[Parse],
+                 upload: Optional[Artifact]) -> Optional[str]:
+    """The parse_id of the earlier parse `record` read, when the revisions uploaded since
+    carry it to `parse` whole; None otherwise.
+
+    `parse` must be the parse last uploaded, and the record must have read the text and the
+    keys of a parse that a step of the upload's `revisions` revised. From that step on, every
+    step must carry every analysis (`carries_all`) and keep or extend the text, and the keys
+    the record names must reach keys `parse` has."""
+    summary = (upload.summary or {}) if upload is not None and upload.ok else {}
+    if parse is None or not parse.parse_id or summary.get("parse_id") != parse.parse_id:
+        return None
+    named = set((record.summary or {}).get("parse_keys") or ())
+    text = (record.summary or {}).get("text_sha256")
+    steps = summary.get("revisions") or []
+    start = next((i for i in range(len(steps) - 1, -1, -1)
+                  if steps[i].get("revised_text_sha256") == text
+                  and named <= set(steps[i].get("map") or {})), None)
+    if start is None:
+        return None
+    keys = named
+    for step in steps[start:]:
+        if not step.get("carries_all") or step.get("text") not in ("same", "extended"):
+            return None
+        mapped = step.get("map") or {}
+        if not keys <= set(mapped):
+            return None
+        keys = {new for key in keys for new in mapped[key]}
+    return steps[start]["revision_of"] if keys <= parse.keys else None
 
 
 class _Runs:
@@ -239,21 +276,33 @@ def _parses(ctx: Context, ids: List[str]) -> Dict[str, Optional[Parse]]:
             for article_id in ids}
 
 
+def _with_uploads(ctx: Context, ids: List[str]) -> Dict[str, Dict[str, Any]]:
+    uploads = ctx.catalog.artifacts(ids, "upload")
+    return {article_id: {"parse": parse, "upload": uploads.get(article_id, {}).get("")}
+            for article_id, parse in _parses(ctx, ids).items()}
+
+
 class RecordStage(_OffloadedStage):
-    """A schema-extraction record per extractor family, pointing into the article's parse."""
+    """A schema-extraction record per extractor family, pointing into the article's parse,
+    or into an earlier one the uploaded revisions carry whole to it (`carried_from`)."""
 
     name = "record"
     requires = "sync"
 
     def inputs(self, ctx, ids, upstream):
-        return {article_id: {"parse": parse} for article_id, parse in _parses(ctx, ids).items()}
+        return _with_uploads(ctx, ids)
 
     def expected(self, ctx, run, mine, inputs, source):
         parse = inputs.get("parse")
         if parse is None:
             return None
         named = set(mine.summary.get("parse_keys") or ())
-        return record_fingerprint(run, parse.text_sha256, named & parse.keys)
+        here = record_fingerprint(run, parse.text_sha256, named & parse.keys)
+        if here != mine.fingerprint and carried_from(mine, parse, inputs.get("upload")) \
+                and record_fingerprint(run, mine.summary.get("text_sha256"), named) \
+                == mine.fingerprint:
+            return mine.fingerprint
+        return here
 
 
 class EvidenceStage(_OffloadedStage):
@@ -263,14 +312,17 @@ class EvidenceStage(_OffloadedStage):
     requires = "record"
 
     def inputs(self, ctx, ids, upstream):
-        return {article_id: {"parse": parse, "records": upstream.get(article_id, {})}
-                for article_id, parse in _parses(ctx, ids).items()}
+        return {article_id: {**held, "records": upstream.get(article_id, {})}
+                for article_id, held in _with_uploads(ctx, ids).items()}
 
     def expected(self, ctx, run, mine, inputs, source):
         parse, record = inputs.get("parse"), inputs.get("records", {}).get(source)
         if parse is None or record is None or not record.ok:
             return None
-        return evidence_fingerprint(run, parse.text_sha256, record)
+        # A carried record's evidence reads the text the record read.
+        text = (record.summary.get("text_sha256")
+                if carried_from(record, parse, inputs.get("upload")) else parse.text_sha256)
+        return evidence_fingerprint(run, text, record)
 
 
 def normalize_input(evidence: Optional[Artifact],
@@ -450,6 +502,7 @@ __all__ = [
     "OFFLOADED_STAGES",
     "Parse",
     "RecordStage",
+    "carried_from",
     "evidence_fingerprint",
     "normalize_fingerprint",
     "normalize_input",

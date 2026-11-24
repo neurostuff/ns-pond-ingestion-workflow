@@ -21,7 +21,7 @@ class _Ingester:
         self.sent = []
         self.fail_on = fail_on
 
-    def upload(self, path):
+    def upload(self, path, **given):
         with self.lock:
             self.now += 1
             self.most = max(self.most, self.now)

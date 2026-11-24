@@ -1,0 +1,106 @@
+{
+  "header": {
+    "artifact_kind": "coordinate_parse",
+    "schema_version": "0.11.0",
+    "article_id": "4l3oivy5q5on",
+    "identifiers": {
+      "pmid": "28989977",
+      "pmcid": "PMC5628620",
+      "doi": "10.1038/s41562-016-0006",
+      "alternative_pmids": null,
+      "alternative_pmcids": null,
+      "alternative_dois": null,
+      "preprint_dois": null,
+      "preprint_pmids": null,
+      "preprint_pmcids": null,
+      "publication_status": "published"
+    },
+    "producer": {
+      "name": "ns-pond-ingestion-workflow",
+      "version": "paper_parse.13",
+      "stage": "sync",
+      "model": null,
+      "prompt_version": null
+    },
+    "inputs": [
+      {
+        "artifact_kind": "parsed_paper",
+        "fingerprint": "e55f77b221ee80e619d0a6109b1324780c44ff1e73266bacb396948f70664acd",
+        "producer_version": null
+      },
+      {
+        "artifact_kind": "analyses",
+        "fingerprint": "3ea5f2b017a1d6c985905b24e366a870",
+        "producer_version": null
+      }
+    ],
+    "created_at": null,
+    "neurostore_base_study_id": "3tT2jEUx6BVs"
+  },
+  "parse_id": "8aa1de6c673e1b64eb989214ea118963dd43c5de1c8fbf6c76d8bad27c119f02",
+  "text_sha256": "e55f77b221ee80e619d0a6109b1324780c44ff1e73266bacb396948f70664acd",
+  "revision_of": null,
+  "analyses": [
+    {
+      "key": "analysis#18ee3161043fbbe6",
+      "cells": null,
+      "text_spans": [
+        {
+          "start_char": 27282,
+          "end_char": 27292,
+          "text": null
+        }
+      ],
+      "origin": "text",
+      "table_id": null,
+      "name": "VMPFC ROI",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "MNI",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "anchor",
+      "anchor_kind": "roi",
+      "from_prior_study": true,
+      "prior_study_evidence": null,
+      "role_confidence": 0.9995661377906799,
+      "role_source": "role-decision@v1+eb7ad21cbdab",
+      "split": null,
+      "derived_from": null,
+      "statistic": null,
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            0.0,
+            40.0,
+            -12.0
+          ],
+          "space": null,
+          "row": null,
+          "column_group": null,
+          "text_span": {
+            "start_char": 27282,
+            "end_char": 27292,
+            "text": null
+          },
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    }
+  ],
+  "tables": null,
+  "omitted_analyses": null,
+  "text_sweep": {
+    "passages_found": 1,
+    "passages_read": 1,
+    "truncated": false,
+    "points_dropped_as_table_restatements": 0
+  },
+  "verdicts": null
+}

@@ -901,6 +901,15 @@ class Settings(BaseSettings):
             "worker count (WEB_CONCURRENCY) is faster; 1 sends them one after another"
         ),
     )
+    upload_revised_root: Optional[Path] = Field(
+        default=None,
+        description=(
+            "A corpus tree (`<study>/parse/`) holding the parses Neurostore holds for papers "
+            "uploaded before the upload stage kept what it sent, such as a pre-sync corpus "
+            "backup: a new parse goes as their revision. A parse there is used only when its "
+            "parse_id is the one last uploaded"
+        ),
+    )
 
 
 def _read_yaml_mapping(yaml_path: Path) -> Dict[str, Any]:

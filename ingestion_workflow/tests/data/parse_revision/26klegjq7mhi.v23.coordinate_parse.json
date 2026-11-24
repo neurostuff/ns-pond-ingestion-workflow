@@ -1,0 +1,167 @@
+{
+  "header": {
+    "artifact_kind": "coordinate_parse",
+    "schema_version": "0.11.0",
+    "article_id": "26klegjq7mhi",
+    "identifiers": {
+      "pmid": "30069597",
+      "pmcid": null,
+      "doi": "10.1007/s00441-018-2899-6",
+      "alternative_pmids": null,
+      "alternative_pmcids": null,
+      "alternative_dois": null,
+      "preprint_dois": null,
+      "preprint_pmids": null,
+      "preprint_pmcids": null,
+      "publication_status": "published"
+    },
+    "producer": {
+      "name": "ns-pond-ingestion-workflow",
+      "version": "paper_parse.13",
+      "stage": "sync",
+      "model": null,
+      "prompt_version": null
+    },
+    "inputs": [
+      {
+        "artifact_kind": "parsed_paper",
+        "fingerprint": "067a69b2021e98a832a2f32080848e5e58b7337dffed66dc3ac895cca3f5d680",
+        "producer_version": null
+      },
+      {
+        "artifact_kind": "analyses",
+        "fingerprint": "f5e3e4f9c92cbdb3a6ad01d2543604e2",
+        "producer_version": null
+      }
+    ],
+    "created_at": null,
+    "neurostore_base_study_id": "tS8tSUXeybTo"
+  },
+  "parse_id": "eeea9c2d8cd542552fb8943c0e8670574c2d713714ba05235a3c421ce032e10a",
+  "text_sha256": "067a69b2021e98a832a2f32080848e5e58b7337dffed66dc3ac895cca3f5d680",
+  "revision_of": null,
+  "analyses": [
+    {
+      "key": "analysis#840c7bec806dd3ad",
+      "cells": null,
+      "text_spans": [
+        {
+          "start_char": 9947,
+          "end_char": 9954,
+          "text": null
+        },
+        {
+          "start_char": 9956,
+          "end_char": 9964,
+          "text": null
+        },
+        {
+          "start_char": 9970,
+          "end_char": 9978,
+          "text": null
+        }
+      ],
+      "origin": "text",
+      "table_id": null,
+      "name": "Laird et al. (2011)",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "MNI",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "reference",
+      "anchor_kind": null,
+      "from_prior_study": true,
+      "prior_study_evidence": [
+        {
+          "start_char": 9885,
+          "end_char": 9999,
+          "text": null
+        },
+        {
+          "start_char": 9980,
+          "end_char": 9997,
+          "text": null
+        }
+      ],
+      "role_confidence": 0.9966219663619995,
+      "role_source": "role-decision@v1+eb7ad21cbdab",
+      "split": null,
+      "derived_from": null,
+      "statistic": null,
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            4.0,
+            39.0,
+            25.0
+          ],
+          "space": null,
+          "row": null,
+          "column_group": null,
+          "text_span": {
+            "start_char": 9947,
+            "end_char": 9954,
+            "text": null
+          },
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            39.0,
+            29.0,
+            -4.0
+          ],
+          "space": null,
+          "row": null,
+          "column_group": null,
+          "text_span": {
+            "start_char": 9956,
+            "end_char": 9964,
+            "text": null
+          },
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            -8.0,
+            37.0,
+            39.0
+          ],
+          "space": null,
+          "row": null,
+          "column_group": null,
+          "text_span": {
+            "start_char": 9970,
+            "end_char": 9978,
+            "text": null
+          },
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    }
+  ],
+  "tables": null,
+  "omitted_analyses": null,
+  "text_sweep": {
+    "passages_found": 2,
+    "passages_read": 2,
+    "truncated": false,
+    "points_dropped_as_table_restatements": 0
+  },
+  "verdicts": null
+}

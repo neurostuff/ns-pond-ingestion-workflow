@@ -1,0 +1,738 @@
+{
+  "header": {
+    "artifact_kind": "coordinate_parse",
+    "schema_version": "0.11.0",
+    "article_id": "36c6nlhdbfh4",
+    "identifiers": {
+      "pmid": "40180313",
+      "pmcid": null,
+      "doi": "10.1016/j.bpsc.2025.03.009",
+      "alternative_pmids": null,
+      "alternative_pmcids": null,
+      "alternative_dois": null,
+      "preprint_dois": null,
+      "preprint_pmids": null,
+      "preprint_pmcids": null,
+      "publication_status": "published"
+    },
+    "producer": {
+      "name": "ns-pond-ingestion-workflow",
+      "version": "paper_parse.13",
+      "stage": "sync",
+      "model": null,
+      "prompt_version": null
+    },
+    "inputs": [
+      {
+        "artifact_kind": "parsed_paper",
+        "fingerprint": "392515b9a931eff807616f237187dc751ddc6e3f8bce626a5df5bdc7f3a499f3",
+        "producer_version": null
+      },
+      {
+        "artifact_kind": "analyses",
+        "fingerprint": "cf1355bd3958da9678b9d55d9c50d507",
+        "producer_version": null
+      }
+    ],
+    "created_at": null,
+    "neurostore_base_study_id": "L3azukEppoKu"
+  },
+  "parse_id": "de4861f8606219c97e5a09662dcd4e2db5614b754070a5948bc08b817b42e6c4",
+  "text_sha256": "392515b9a931eff807616f237187dc751ddc6e3f8bce626a5df5bdc7f3a499f3",
+  "revision_of": null,
+  "analyses": [
+    {
+      "key": "analysis#a1c6a48a92270013",
+      "cells": [
+        {
+          "row": 1,
+          "column_group": 0
+        }
+      ],
+      "text_spans": null,
+      "origin": "table",
+      "table_id": "tbl2",
+      "name": "Contrast: Negative–Neutral — MDD < HC",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "MNI",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "result",
+      "anchor_kind": null,
+      "from_prior_study": false,
+      "prior_study_evidence": null,
+      "role_confidence": 0.9998693466186523,
+      "role_source": "role-decision@v1+eb7ad21cbdab",
+      "split": null,
+      "derived_from": null,
+      "statistic": "z",
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            -40.0,
+            0.0,
+            50.0
+          ],
+          "space": null,
+          "row": 1,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 5.8,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 387.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    },
+    {
+      "key": "analysis#a9be11d67759a036",
+      "cells": [
+        {
+          "row": 2,
+          "column_group": 0
+        }
+      ],
+      "text_spans": null,
+      "origin": "table",
+      "table_id": "tbl2",
+      "name": "Contrast: Negative–Neutral — BPD > HC",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "MNI",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "result",
+      "anchor_kind": null,
+      "from_prior_study": false,
+      "prior_study_evidence": null,
+      "role_confidence": 0.999830961227417,
+      "role_source": "role-decision@v1+eb7ad21cbdab",
+      "split": null,
+      "derived_from": null,
+      "statistic": "z",
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            -28.0,
+            -30.0,
+            -8.0
+          ],
+          "space": null,
+          "row": 2,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 3.877,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 238.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    },
+    {
+      "key": "analysis#c7cc0be24e744807",
+      "cells": [
+        {
+          "row": 3,
+          "column_group": 0
+        },
+        {
+          "row": 4,
+          "column_group": 0
+        }
+      ],
+      "text_spans": null,
+      "origin": "table",
+      "table_id": "tbl2",
+      "name": "Contrast: Negative–Neutral — BPD < HC",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "MNI",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "result",
+      "anchor_kind": null,
+      "from_prior_study": false,
+      "prior_study_evidence": null,
+      "role_confidence": 0.9998643398284912,
+      "role_source": "role-decision@v1+eb7ad21cbdab",
+      "split": null,
+      "derived_from": null,
+      "statistic": "z",
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            -44.0,
+            -14.0,
+            50.0
+          ],
+          "space": null,
+          "row": 3,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 4.26,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 140.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            52.0,
+            34.0,
+            2.0
+          ],
+          "space": null,
+          "row": 4,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 4.337,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 92.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    },
+    {
+      "key": "analysis#408f130a56daa4c1",
+      "cells": [
+        {
+          "row": 5,
+          "column_group": 0
+        }
+      ],
+      "text_spans": null,
+      "origin": "table",
+      "table_id": "tbl2",
+      "name": "Contrast: Negative–Neutral — MDD < BPD",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "MNI",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "result",
+      "anchor_kind": null,
+      "from_prior_study": false,
+      "prior_study_evidence": null,
+      "role_confidence": 0.999840497970581,
+      "role_source": "role-decision@v1+eb7ad21cbdab",
+      "split": null,
+      "derived_from": null,
+      "statistic": "z",
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            0.0,
+            52.0,
+            -2.0
+          ],
+          "space": null,
+          "row": 5,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 3.317,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 337.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    },
+    {
+      "key": "analysis#68b813d43dd764e6",
+      "cells": [
+        {
+          "row": 6,
+          "column_group": 0
+        },
+        {
+          "row": 7,
+          "column_group": 0
+        }
+      ],
+      "text_spans": null,
+      "origin": "table",
+      "table_id": "tbl2",
+      "name": "Contrast: Negative–Neutral — MDD ∩ BPD",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "MNI",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "result",
+      "anchor_kind": null,
+      "from_prior_study": false,
+      "prior_study_evidence": null,
+      "role_confidence": 0.9998502731323242,
+      "role_source": "role-decision@v1+eb7ad21cbdab",
+      "split": null,
+      "derived_from": null,
+      "statistic": "z",
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            -48.0,
+            4.0,
+            24.0
+          ],
+          "space": null,
+          "row": 6,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 3.403,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 22.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            44.0,
+            0.0,
+            52.0
+          ],
+          "space": null,
+          "row": 7,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 3.441,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 18.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    },
+    {
+      "key": "analysis#1337a1a43847daa5",
+      "cells": [
+        {
+          "row": 9,
+          "column_group": 0
+        },
+        {
+          "row": 10,
+          "column_group": 0
+        },
+        {
+          "row": 11,
+          "column_group": 0
+        },
+        {
+          "row": 12,
+          "column_group": 0
+        },
+        {
+          "row": 13,
+          "column_group": 0
+        }
+      ],
+      "text_spans": null,
+      "origin": "table",
+      "table_id": "tbl2",
+      "name": "Contrast: Positive–Neutral — MDD < HC",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "MNI",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "result",
+      "anchor_kind": null,
+      "from_prior_study": false,
+      "prior_study_evidence": null,
+      "role_confidence": 0.9998273253440857,
+      "role_source": "role-decision@v1+eb7ad21cbdab",
+      "split": null,
+      "derived_from": null,
+      "statistic": "z",
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            -56.0,
+            4.0,
+            -16.0
+          ],
+          "space": null,
+          "row": 9,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 4.79,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 1296.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            6.0,
+            60.0,
+            20.0
+          ],
+          "space": null,
+          "row": 10,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 4.104,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 895.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            -18.0,
+            -78.0,
+            -30.0
+          ],
+          "space": null,
+          "row": 11,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 3.71,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 444.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            42.0,
+            -12.0,
+            42.0
+          ],
+          "space": null,
+          "row": 12,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 4.583,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 27.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            -10.0,
+            -48.0,
+            -10.0
+          ],
+          "space": null,
+          "row": 13,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 3.85,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 11.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    },
+    {
+      "key": "analysis#87ecc7df37dcd174",
+      "cells": [
+        {
+          "row": 14,
+          "column_group": 0
+        }
+      ],
+      "text_spans": null,
+      "origin": "table",
+      "table_id": "tbl2",
+      "name": "Contrast: Positive–Neutral — MDD < BPD",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "MNI",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "result",
+      "anchor_kind": null,
+      "from_prior_study": false,
+      "prior_study_evidence": null,
+      "role_confidence": 0.9998420476913452,
+      "role_source": "role-decision@v1+eb7ad21cbdab",
+      "split": null,
+      "derived_from": null,
+      "statistic": "z",
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            -52.0,
+            4.0,
+            -18.0
+          ],
+          "space": null,
+          "row": 14,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 3.568,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 321.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "table_id": "tbl1",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "tbl2",
+      "reading": "coordinates",
+      "reason": null
+    },
+    {
+      "table_id": "s1-table-001",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-002",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-003",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-004",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-005",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-006",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-007",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-008",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-009",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-010",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-011",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-012",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-013",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-014",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-015",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-016",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-017",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-018",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-019",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-020",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-021",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-022",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-023",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "s1-table-024",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    }
+  ],
+  "omitted_analyses": null,
+  "text_sweep": {
+    "passages_found": 0,
+    "passages_read": 0,
+    "truncated": false,
+    "points_dropped_as_table_restatements": 0
+  },
+  "verdicts": null
+}

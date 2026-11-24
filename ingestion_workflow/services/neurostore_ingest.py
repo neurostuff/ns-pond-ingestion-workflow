@@ -7,7 +7,9 @@ a base study the ingester creates its bibliography, and its `bibliography.correc
 mark the paper retracted or not. `text` is the file the ParsedPaper's `text_path` names,
 which neurostore stores as one of the base study's full texts. The upload is one
 transaction keyed by the parse's analysis content keys, so sending the same parse again
-changes nothing.
+changes nothing. Given the parse Neurostore holds (`Revised`), a new parse goes as its
+revision, with a verdict for each analysis (`parse_revision`), so what Neurostore stores
+against an analysis the new parse keeps, corrects, splits or merges is carried to it.
 
 A record (`upload_record`) is sent alone, as `{"record", "parse_id", "base_study_id",
 "run_id", "pipeline"}`, after its parse: neurostore attaches it to that stored parse, and
@@ -303,6 +305,8 @@ def _json_schema_problems(raw_parse, raw_paper) -> List[str]:
     """The ingester's own check: study_schema's JSON Schema."""
     problems = []
     for name, raw in (("coordinate-parse", raw_parse), ("parsed-paper", raw_paper)):
+        if raw is None:
+            continue
         schema = load_json_schema(name)
         validator = jsonschema.validators.validator_for(schema)(schema)
         problems += [
@@ -359,6 +363,44 @@ class _Scrub(logging.Filter):
 _SCRUB = _Scrub()
 for _name in (*_HTTP_LOGGERS, logger.name):
     logging.getLogger(_name).addFilter(_SCRUB)
+
+
+class Revised:
+    """The parse Neurostore holds as a paper's current one, which the next goes as a
+    revision of, with the text it was read from: its sha256 and length in characters."""
+
+    def __init__(self, parse: Dict[str, Any], text_sha256: Optional[str] = None,
+                 text_length: Optional[int] = None) -> None:
+        self.parse = parse
+        self.text_sha256 = text_sha256 or parse.get("text_sha256")
+        self.text_length = text_length
+
+    def text_change(self, text: str) -> str:
+        """`same`, `extended` (this text begins with the revised one, so its offsets
+        hold: a supplement appended) or `changed`."""
+        if hashlib.sha256(text.encode("utf-8")).hexdigest() == self.text_sha256:
+            return "same"
+        if self.text_length is not None and len(text) > self.text_length and hashlib.sha256(
+                text[:self.text_length].encode("utf-8")).hexdigest() == self.text_sha256:
+            return "extended"
+        return "changed"
+
+    def revise(self, parse: Dict[str, Any], text: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+        """`parse` as a revision of this one, and how: a step of the upload's `revisions`."""
+        from ingestion_workflow.services.parse_revision import as_revision, revise
+
+        revision = revise(self.parse, parse)
+        step = {
+            "revision_of": self.parse["parse_id"],
+            "parse_id": parse["parse_id"],
+            "verdicts": dict(sorted(revision.counts().items())),
+            "carries_all": revision.carries_all and not revision.added,
+            "map": revision.key_map(),
+            "added": revision.added,
+            "revised_text_sha256": self.text_sha256,
+            "text": self.text_change(text),
+        }
+        return as_revision(parse, self.parse["parse_id"], revision), step
 
 
 class NeurostoreIngester:
@@ -444,11 +486,15 @@ class NeurostoreIngester:
     def __exit__(self, *exc) -> None:
         self.close()
 
-    def upload(self, study_dir: Path) -> Dict[str, Any]:
+    def upload(self, study_dir: Path, revised: Optional["Revised"] = None,
+               sent: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Upload one paper, write its artifact, and return it.
 
-        `study_dir` is `<ns_pond_root>/<study_id>`, as sync wrote it. Raises a StopRun,
-        writing nothing, when the token or the URL is wrong or the API is down.
+        `study_dir` is `<ns_pond_root>/<study_id>`, as sync wrote it. With `revised`, the
+        parse Neurostore holds for the paper, a parse other than it goes as its revision
+        (`parse_revision`), and the artifact's `revision` says how. `sent`, when given, gets
+        the coordinate parse and parsed paper as sent. Raises a StopRun, writing nothing,
+        when the token or the URL is wrong or the API is down.
         """
         study_dir = Path(study_dir)
         out = self.dry_run_root / study_dir.name if self.dry_run else study_dir / UPLOAD_DIR
@@ -472,6 +518,17 @@ class NeurostoreIngester:
             parse_id=parse.get("parse_id"),
             checks=checks,
         )
+        if revised is not None and revised.parse["parse_id"] != parse["parse_id"]:
+            payload["coordinate_parse"], record["revision"] = revised.revise(
+                parse, payload["text"])
+            problems = _json_schema_problems(payload["coordinate_parse"], None)
+            if problems:
+                error = {"detail": "invalid revision", "problems": problems}
+                return self._finish(out, record, Result.INVALID, error=error)
+            parse = payload["coordinate_parse"]
+            record["checks"] = [*checks, "revision"]
+        if sent is not None:
+            sent.update(coordinate_parse=parse, parsed_paper=payload["parsed_paper"])
         body = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
         record["payload_sha256"] = hashlib.sha256(body).hexdigest()
         if self.dry_run:
@@ -830,6 +887,7 @@ __all__ = [
     "NeurostoreIngester",
     "NeurostoreUnavailable",
     "Result",
+    "Revised",
     "StopRun",
     "api_url",
     "auth0",
