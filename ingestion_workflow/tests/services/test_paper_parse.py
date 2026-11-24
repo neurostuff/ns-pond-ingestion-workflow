@@ -1078,12 +1078,81 @@ def test_a_point_printed_in_decorated_cells_of_one_row_is_placed(tmp_path, cells
         (["Ages", "2, 4, 5, 7, 9"], (5, 7, 9)),
         # One hemisphere's x of a pair (`7/-8`) is not a point's x on its own.
         (["Th", "7/-8", "-11", "2"], (-8, -11, 2)),
+        # The halves of pairs are not mixed: x's first with y's second.
+        (["IFG", "-48/-52", "13/22", "-12/+2"], (-48, 22, -12)),
+        # A run of spaced numbers is a point at its start, not anywhere in it.
+        (["Ages 2 4 5 7 9"], (5, 7, 9)),
+        # Nor a list in order (mp3vmkff2kg6: `2 8 12 14` Hz), nor counts (`8 -6 -23 -1 voxels`).
+        (["Bands 2 8 12 14"], (2, 8, 12)),
+        (["Change 8 -6 -23 -1 voxels"], (8, -6, -23)),
+        # One axis per cell, stacked (hnfg6oapoxlk): a cell's first three values are not a point.
+        (["Peaks", "22 44 -20 32", "-92 18 6 0", "0 52 -12 8"], (22, 44, -20)),
     ],
 )
 def test_a_row_does_not_print_a_point_it_only_resembles(tmp_path, cells, point):
     parse, omitted = _decorated_parse(_html_grid(tmp_path, [cells]), [point])
     assert parse.analyses == []
     assert [o.reason for o in omitted] == ["no row of the table prints its points"]
+
+
+@pytest.mark.parametrize(
+    "rows, points",
+    [
+        # Shapes of tables sync emptied on 2026-11-24 ("no row of the table prints its
+        # points"); the model had read every point right.
+        # ±: one ROI for both hemispheres (5asinvfp5t6k).
+        ([["FC", "±50", "14", "29"]], [(50, 14, 29), (-50, 14, 29)]),
+        # Decimal commas (qqhqzoswlehn, e66lj5az2nee).
+        ([["Patient 1", "4,5", "20,7", "-17,0"], ["Patient 2", "-11,2", "-13,1", "-6,4"]],
+         [(4.5, 20.7, -17.0), (-11.2, -13.1, -6.4)]),
+        # Slash pairs, two hemispheres per cell (x47oe3xjjh6g), or a shared z (jwwgaouqasu2).
+        ([["Insula", "-48/-52", "13/22", "-12/+2"]], [(-48, 13, -12), (-52, 22, 2)]),
+        ([["mPFC", "2/-2", "38/40", "38"]], [(2, 38, 38), (-2, 40, 38)]),
+        # A table set as one cell, numbers apart by spaces (326vr3cu65hl).
+        ([["Left insula -31 21 -4 10.52 Right insula 33 22 -6 9.1"]], [(-31, 21, -4)]),
+        # One axis per cell, stacked (hnfg6oapoxlk): the points run down the cells.
+        ([["Peaks", "22 44 -20 32", "-92 18 6 0", "0 52 -12 8"]], [(22, -92, 0), (32, 0, 8)]),
+        # `+-` for ± (kqi65lcpsovl), and a bracket split across the cells (kotes4mz6xnl).
+        ([["IPS", "+-31", "63", "-27"]], [(31, 63, -27)]),
+        ([["MFG", "(-34", "51", "5)"]], [(-34, 51, 5)]),
+    ],
+)
+def test_a_point_printed_in_loose_cells_is_placed(tmp_path, rows, points):
+    parse, omitted = _decorated_parse(_html_grid(tmp_path, rows), points)
+    assert omitted == []
+    assert len(parse.analyses[0].points) == len(points)
+
+
+def test_decimal_commas_are_read_only_in_a_table_that_prints_no_decimal_point(tmp_path):
+    rows = [["A", "4,5", "20,7", "-17,0"], ["B", "1.5", "22.5", "3.5"]]
+    parse, omitted = _decorated_parse(_html_grid(tmp_path, rows), [(4.5, 20.7, -17.0)])
+    assert parse.analyses == []
+    assert [o.reason for o in omitted] == ["no row of the table prints its points"]
+
+
+def test_a_table_printing_x_y_and_z_down_labelled_rows_places_each_column_s_point(tmp_path):
+    """Sites one per column, x, y and z in rows (kooolohylxrg, hsxignjugdv4)."""
+    rows = [["x", "47 ± 3", "42 ± 6"], ["y", "-62 ± 4", "10 ± 2"], ["z", "40 ± 5", "50 ± 6"]]
+    parse, omitted = _decorated_parse(_html_grid(tmp_path, rows), [(47, -62, 40), (42, 10, 50)])
+    assert omitted == []
+    assert {c.row for c in parse.analyses[0].cells} == {0}
+
+
+def test_labelled_rows_with_a_block_per_hemisphere_place_each_block_s_point(tmp_path):
+    """Two label columns per row, a block each (hsxignjugdv4 Table 2)."""
+    rows = [["ASD", "X", "-50.66", "5.89", "X", "53.53", "3.84"],
+            ["", "Y", "-21.29", "7.77", "Y", "-11.06", "4.46"],
+            ["", "Z", "6.27", "4.22", "Z", "3.37", "3.02"]]
+    points = [(-50.66, -21.29, 6.27), (53.53, -11.06, 3.37)]
+    parse, omitted = _decorated_parse(_html_grid(tmp_path, rows), points)
+    assert omitted == []
+    assert len(parse.analyses[0].points) == 2
+
+
+def test_rows_not_labelled_as_axes_print_no_point_down_a_column(tmp_path):
+    rows = [["Age", "47"], ["Score", "-62"], ["IQ", "40"]]
+    parse, omitted = _decorated_parse(_html_grid(tmp_path, rows), [(47, -62, 40)])
+    assert parse.analyses == []
 
 
 def test_a_point_the_cell_readers_place_keeps_its_cell_when_a_decorated_copy_is_printed_too(
@@ -2097,9 +2166,9 @@ def test_an_analysis_whose_points_mix_t_and_z_states_no_statistic():
 def test_the_parse_is_stamped_with_the_version_that_keys_analyses_by_content(written):
     """Stored parses from before content keys carry location keys, so they must re-parse."""
     paper, parse, _ = written
-    assert paper_parse.PAPER_PARSE_VERSION == 14
+    assert paper_parse.PAPER_PARSE_VERSION == 15
     assert {paper["header"]["producer"]["version"], parse["header"]["producer"]["version"]} == {
-        "paper_parse.14"
+        "paper_parse.15"
     }
 
 
