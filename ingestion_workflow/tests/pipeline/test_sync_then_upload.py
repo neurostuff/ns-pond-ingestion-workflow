@@ -39,6 +39,7 @@ from ingestion_workflow.pipeline.stages.sync import (
     NO_IDENTIFIER,
     RETRACTION_NOTICE,
     SHARED_BASE_STUDY,
+    TAKEN_BACK_BEFORE_ROLES,
     SyncStage,
     is_preprint,
     new_articles_root,
@@ -969,6 +970,41 @@ def test_a_taken_back_article_never_uploaded_has_nothing_to_retract(env, monkeyp
     assert recorded.summary["base_study_id"] is None and "last_upload" not in recorded.summary
     plan, outcomes = _run(upload, ctx, catalog, ref)
     assert (plan.blocked, plan.reasons, outcomes) == (1, {}, [])
+
+
+def test_an_uploaded_article_resolve_took_back_waits_and_writes_nothing(env, monkeypatch,
+                                                                       evidence):
+    """25yynlgwmknl and 161 others in the 2026-11-24 production sync: uploaded before, then
+    resolve took its sets back (the re-read held none). Roles keeps an uploaded article's
+    sets for a person to decide, so roles and space still hold the sets read before; sync
+    waits rather than write them, or fail asking for roles."""
+    settings, catalog, _ = env
+    ctx, ref = _prose_article(env, monkeypatch, "40402910", "BS40402910", evidence=evidence)
+    catalog.record([Outcome(article_id=ref.id, stage="upload", source="", fingerprint="up-1",
+                            summary={"base_study_id": "BS40402910", "analyses": 1})])
+    catalog.record([Outcome.failure(ref.id, "resolve", "", NO_ANALYSES, fingerprint=NO_TEXT)])
+    assert catalog.artifact(ref.id, "space", "").status is Status.OK
+    sync = SyncStage(settings)
+    plan, outcomes = _run(sync, ctx, catalog, ref)
+    why = TAKEN_BACK_BEFORE_ROLES.format(stage="resolve", why=NO_ANALYSES)
+    assert (plan.pending, plan.blocked, plan.reasons, outcomes) == ([], 1, {why: 1}, [])
+    assert list(settings.ns_pond_root.rglob("coordinate_parse.json")) == []
+
+
+def test_an_article_waiting_for_roles_to_take_back_holds_no_claim_on_its_base_study(
+        env, monkeypatch, evidence):
+    """Never uploaded, it waits for roles to take its sets back and never writes; an
+    article whose upload names its base study is written. (An uploaded one keeps its
+    claim: its parse is current on neurostore.)"""
+    settings, catalog, _ = env
+    ctx, held = _prose_article(env, monkeypatch, "40402910", "BS40402910", evidence=evidence)
+    catalog.record([Outcome.failure(held.id, "resolve", "", NO_ANALYSES, fingerprint=NO_TEXT)])
+    _, other = _prose_article(env, monkeypatch, "40402911", evidence=evidence)
+    catalog.record([Outcome(article_id=other.id, stage="upload", source="", fingerprint="up-2",
+                            summary={"base_study_id": "BS40402910", "analyses": 1})])
+    plan = _plan_sync(SyncStage(settings), ctx, catalog, [held, other])
+    assert [(w.article_id, w.skip) for w in plan.pending] == [(other.id, None)]
+    assert plan.blocked == 1
 
 
 def test_notices_are_the_parsed_paper_s_corrections_and_a_notice_is_not_synced(
