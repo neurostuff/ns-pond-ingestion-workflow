@@ -1308,11 +1308,13 @@ def _analysis(
     space = _space_value(collection.coordinate_space)
     # The roles stage found the coordinates are not human template millimetres (an animal
     # brain, a head frame, voxel indices): the analysis is in OTHER space, whatever the table
-    # was headed. Its key stays what was extracted.
-    other = ((analysis.metadata or {}).get("set_role") or {}).get("space") == "other"
+    # was headed.
+    if ((analysis.metadata or {}).get("set_role") or {}).get("space") == "other":
+        space = pp.ReportedSpace.OTHER.value
     built = pp.ParsedAnalysis(
         # The key is what was extracted, never where it was read, so both origins
-        # mint it here from the analysis's own name, space and points.
+        # mint it here from the analysis's own name, space and points. The space is the
+        # written one: study_schema derives the key from `coordinate_space`.
         key=keys.analysis_key(name, space, points),
         cells=cells,
         text_spans=text_spans,
@@ -1321,7 +1323,7 @@ def _analysis(
         name=name,
         name_is_printed=False if name.strip().upper() == PLACEHOLDER_NAME else None,
         description=analysis.description or None,
-        coordinate_space=pp.ReportedSpace.OTHER.value if other else space,
+        coordinate_space=space,
         **role,
         statistic=_statistic(points),
         points=points,

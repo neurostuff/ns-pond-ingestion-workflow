@@ -23,7 +23,7 @@ from ingestion_workflow.models.metadata import ArticleMetadata, Author
 from ingestion_workflow.services import nspond, paper_parse
 from ingestion_workflow.models.statistics import point_values, schema_kind
 from ingestion_workflow.services.paper_parse import ParseInputs
-from study_schema import keys
+from study_schema import keys, layouts
 from study_schema.jsonschema import load
 from study_schema.models import paper_parse as pp
 from study_schema.models.paper_parse import CopyAccess, CopyRoute, CopyVersion
@@ -1601,6 +1601,51 @@ def test_a_stated_other_space_is_written_as_other_and_validates():
     assert point.space == "OTHER"
 
 
+def test_a_set_the_roles_stage_puts_in_other_space_is_keyed_in_other_space():
+    # 6qi3mkqyf34h (PMID 15219579): pig-brain peaks in a figure legend, in a prose collection
+    # headed MNI; the roles stage decided space "other". Sync refused the parse because the
+    # key was minted from MNI while `coordinate_space` said OTHER.
+    passage = (
+        "For pig, the pB of [11C]NNC 112 for dopamine D1 sites (B) and the pB of "
+        "[11C]raclopride dopamine D2/3 sites (D) are shown co-registered to the corresponding "
+        "MR slices (grey scale), as defined according the MR standard stereotaxic coordinate "
+        "system (Watanabe et al., 2001): [x = 12, y = \u22125, z = 18] (A) and "
+        "[x = 5, y = \u22128, z = 20] (C)"
+    )
+    text = f"Results\n\n{passage}\n"
+    set_role = {
+        "anchor_kind": None, "coordinate_source": "this_study", "from_prior_study": False,
+        "prior_study_evidence": [], "role": "result", "role_confidence": 0.98,
+        "role_origin": "text", "role_source": "role-decision@v1+eb7ad21cbdab", "space": "other",
+    }
+    collection = AnalysisCollection(
+        slug="15219579-10-1016-j-neuroimage-2004-03-004",
+        coordinate_space=CoordinateSpace.MNI,
+        analyses=[
+            Analysis(
+                name=name,
+                table_id="prose",
+                metadata={"source": "prose", "passages": [0], "ordinal": i, "held": True,
+                          "set_role": set_role},
+                coordinates=[Coordinate(x=x, y=y, z=z, space=CoordinateSpace.MNI)],
+            )
+            for i, (name, (x, y, z)) in enumerate(
+                [("dopamine D1 sites (pig)", (12, -5, 18)),
+                 ("dopamine D2/3 sites (pig)", (5, -8, 20))]
+            )
+        ],
+    )
+    paper = SimpleNamespace(
+        header=SimpleNamespace(identifiers=IDENTIFIERS), text_sha256="0" * 64, tables=[]
+    )
+    parse, _ = paper_parse.coordinate_parse(
+        paper, text, {}, {"prose": collection}, _inputs(prose=_prose(text, passage))
+    )
+    assert [a.coordinate_space for a in parse.analyses] == ["OTHER", "OTHER"]
+    assert [a.key for a in parse.analyses] == [keys.key_for(a) for a in parse.analyses]
+    assert layouts._check_keys(parse, "the parse") == []
+
+
 def test_the_meta_analysis_basis_names_what_said_so():
     basis = paper_parse._meta_basis
     assert basis("A meta-analysis of fear", ["Journal Article"]) == "title"
@@ -2111,7 +2156,7 @@ def test_a_set_the_roles_stage_gave_no_role_is_left_out_with_its_reason(tmp_path
 
 
 def test_a_set_the_roles_stage_put_in_another_frame_is_written_in_other_space(tmp_path):
-    """Its role stands (a seed is a seed), its space is OTHER, and its key is what was read."""
+    """Its role stands (a seed is a seed), its space is OTHER, and its key is minted in OTHER."""
     other = _decided("anchor", anchor_kind="seed", space="other")
     for set_role, space in ((_decided("anchor", anchor_kind="seed"), "MNI"), (other, "OTHER")):
         analyses = _collection([Analysis(name="DMN", coordinates=[Coordinate(x=0, y=-47, z=29)],
@@ -2119,7 +2164,7 @@ def test_a_set_the_roles_stage_put_in_another_frame_is_written_in_other_space(tm
         parse, _ = _parse(tmp_path, TALAIRACH_TABLE, {"tbl1": analyses}, caption=HUMAN_CAPTION)
         (seed,) = parse.analyses
         assert (seed.coordinate_space, seed.role, seed.anchor_kind) == (space, "anchor", "seed")
-        assert seed.key == keys.analysis_key("DMN", "MNI", seed.points)
+        assert seed.key == keys.analysis_key("DMN", space, seed.points) == keys.key_for(seed)
 
 
 def test_a_bregma_table_overrides_the_analyses_stage_s_reading(tmp_path):
