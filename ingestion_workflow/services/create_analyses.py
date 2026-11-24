@@ -138,6 +138,9 @@ def _signed_by_direction(line: str) -> str:
 #: A data row whose first cell spans columns: `<2:Caudate (L/R) | 12 | 6 | 16 | 8.34`.
 _LEADING_SPAN = re.compile(r"^<(\d+):(.*)$", re.S)
 _BARE_NUMBER = re.compile(r"^[-+−]?\d+(?:\.\d+)?$")
+#: A region over its BA or cluster-size column spans two or three. Wider, the span is a block's
+#: banner set beside another block's rows (vk5rtp22s3da), and v23 read those worse spelt out.
+_WIDEST_SPAN = 3
 
 
 def _leading_span_rows(lines: Sequence[str]) -> List[str]:
@@ -183,7 +186,7 @@ def _leading_span_cells(line: str, header_span: int = 1, kept_apart=None) -> str
         return line
     cells = line.split(" | ")
     span = _LEADING_SPAN.match(cells[0])
-    if (not span or int(span.group(1)) <= header_span
+    if (not span or int(span.group(1)) <= header_span or int(span.group(1)) > _WIDEST_SPAN
             or not re.sub(r"^\^\d+:", "", span.group(2)).strip()
             or not any(_BARE_NUMBER.match(c.strip()) for c in cells[1:])
             or any(_LEADING_SPAN.match(c) for c in cells[1:])

@@ -127,6 +127,8 @@ def test_a_spanned_region_before_the_coordinates_leaves_x_in_its_column():
     "<3:Coordinate | Accuracy | p | Extent | Hemi",
     # an empty spanned cell (hxphsknjjo5e s1-table-010)
     "<8:^6: | 26 | 2.74 | -42 | -42 | 54",
+    # a block's banner set beside another block's rows (vk5rtp22s3da s9-table-001)
+    "<6:K=1, Negative connectivity map | L Cerebellum | -6 | -27 | -18 | 6.41 | 5.55",
 ])
 def test_a_banner_a_header_and_a_later_span_are_left_alone(line):
     from ingestion_workflow.services.create_analyses import _leading_span_cells
