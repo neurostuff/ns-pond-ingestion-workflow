@@ -8,7 +8,7 @@ import logging
 import re
 from dataclasses import replace
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Sequence
+from typing import Callable, Dict, List, Optional, Sequence, Tuple
 
 from ingestion_workflow.clients import CoordinateParsingClient
 from ingestion_workflow.config import Settings
@@ -133,6 +133,93 @@ def _signed_by_direction(line: str) -> str:
         else:
             i += 1
     return " | ".join(cells)
+
+
+#: A cell printing a whole triple with spaces between: `15 24 33`.
+_PACKED_TRIPLE = re.compile(
+    r"^([+\-]?\d+(?:\.\d+)?)\s+([+\-]?\d+(?:\.\d+)?)\s+([+\-]?\d+(?:\.\d+)?)$")
+#: A header naming coordinates: "MNI", "Coordinate x/y/z", "Peak (x y z)", "Talairach".
+_COORDINATE_HEADER = re.compile(
+    r"coord|mni|talairach|\btal\b|x\s*[,/ ]?\s*y\s*[,/ ]?\s*z|location|position|peak", re.I)
+_SPAN_CELL = re.compile(r"^(#?)([<^])(\d+):(.*)$", re.S)
+_NO_VALUE = {"", "-", "–", "—", "~"}
+
+
+def _columns(cells: Sequence[str]) -> List[Tuple[int, int]]:
+    """(first column, width) of each cell of a serialised row, a `<N:` cell spanning N."""
+    out, col = [], 0
+    for cell in cells:
+        span = _SPAN_CELL.match(cell)
+        width = int(span.group(3)) if span and span.group(2) == "<" else 1
+        out.append((col, width))
+        col += width
+    return out
+
+
+def _split_packed_triples(text: str) -> str:
+    """A table printing each triple in one cell, under a header naming coordinates, with the
+    triple in three columns.
+
+    With `15 24 33` in one cell, nu-v23 read a number printed before it -- the t value, the
+    cluster size, the voxel count -- as x or y, and dropped z (Psychiatry Res Neuroimaging
+    2025 Table 7 read (15, -6.61, 33); PMC3717405 Table 2, "Voxel | xyz", read the voxel count
+    as x). Split, the row reads like the x | y | z tables that make up most of its training.
+
+    Only a table with exactly one such column is rewritten: with two packed columns side by
+    side (two tables printed as one), splitting both made v23 read neither. A column is packed
+    when at least two rows print a triple in it and every other row prints nothing there.
+    """
+    lines = text.split("\n")
+    rows = [(i, line.split(" | ")) for i, line in enumerate(lines)
+            if " | " in line or line.startswith(("#", "<"))]
+    # A header row, or a later header row that continues spanned cells (`~ | ~ | #x | #y`).
+    heading = {i for i, cells in rows if lines[i].startswith("#") or (
+        any(c.startswith("#") for c in cells) and all(c.startswith("#") or c in ("~", "") for c in cells))}
+    head = [(i, cells) for i, cells in rows if i in heading]
+    if not head:
+        return text
+    counts: Dict[int, List[int]] = {}
+    for i, cells in rows:
+        if i in heading:
+            continue
+        for (col, width), cell in zip(_columns(cells), cells):
+            if width != 1:
+                continue
+            tally = counts.setdefault(col, [0, 0])
+            value = cell.strip()
+            if _PACKED_TRIPLE.match(value):
+                tally[0] += 1
+            elif value not in _NO_VALUE:
+                tally[1] += 1
+    packed = [col for col, (triples, others) in counts.items() if triples >= 2 and not others]
+    named = [col for col in packed
+             if _COORDINATE_HEADER.search(" ".join(
+                 _SPAN_CELL.sub(r"\4", cell.lstrip("#")) for _, cells in head
+                 for (start, width), cell in zip(_columns(cells), cells)
+                 if start <= col < start + width))]
+    if len(packed) != 1 or len(named) != 1:
+        return text
+    target = named[0]
+    for i, cells in rows:
+        out: List[str] = []
+        for (start, width), cell in zip(_columns(cells), cells):
+            if not start <= target < start + width:
+                out.append(cell)
+                continue
+            span = _SPAN_CELL.match(cell)
+            if width > 1:
+                # A cell spanning the column now spans its two new columns too.
+                out.append(f"{span.group(1)}<{width + 2}:{span.group(4)}")
+            elif i in heading:
+                out.append(f"#<3:{cell[1:]}" if cell.startswith("#") else " | ".join([cell] * 3))
+            elif _PACKED_TRIPLE.match(cell.strip()):
+                out.extend(_PACKED_TRIPLE.match(cell.strip()).groups())
+            elif cell == "~":
+                out.extend(["~", "~", "~"])
+            else:
+                out.extend([cell, "", ""])
+        lines[i] = " | ".join(out)
+    return "\n".join(lines)
 
 
 def _text_of(markup: str) -> str:
@@ -797,7 +884,8 @@ Raw Table Content:
             logger.warning("could not serialise table %s (%s); sending text", table_key, exc)
             out = ""
         if out.strip():
-            return "\n".join(_signed_by_direction(line) for line in out.split("\n"))
+            out = "\n".join(_signed_by_direction(line) for line in out.split("\n"))
+            return _split_packed_triples(out)
         # Neither form read as a table. Text beats markup, and markup beats
         # nothing at all -- the model can only answer about what it is sent.
         return _text_of(markup) or markup

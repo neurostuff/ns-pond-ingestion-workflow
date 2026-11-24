@@ -188,3 +188,56 @@ def test_a_header_left_alone_on_its_page_heads_the_rows_on_the_next():
     lines = CreateAnalysesService._serialise(html, "t").split("\n")
     assert lines[0].split(" | ")[1:4] == ["x", "y", "z"]
     assert lines[1] == "48 | 60 | -6 | 32 | 0.008 | R | Primary somatosensory cortex"
+
+
+# -- a triple printed in one cell -----------------------------------------------------
+
+
+def test_a_packed_triple_is_split_into_three_columns():
+    """Psychiatry Res Neuroimaging 2025 (doi:10.1016/j.pscychresns.2025.111946) Table 7 prints
+    `15 24 33` in one "Coordinate x/y/z" cell; nu-v23 read (15, -6.61, 33), taking the t value
+    for y, on every row."""
+    lines = _serialised("elsevier_39823711_tbl0007.xml")
+
+    assert "#<3:Coordinatex/y/z | #t-value" in lines[0]
+    assert any(line.endswith("| 4630 | R | 45 | 3 | -51 | -5.38 | < 0.001") for line in lines)
+
+
+def test_a_number_before_a_packed_triple_keeps_its_own_column():
+    """PMC12499305 Table 6 prints an ROI number before each `x y z` cell; nu-v23 read the ROI
+    number as x and dropped z on 41 of 42 rows."""
+    lines = _serialised("pmc12499305_t6.xml")
+
+    assert "#<3:MNI Coordinates (mm)" in lines[0]
+    assert "^17:Nback-fMRI | 10 | 10 | -46 | 73 | Precuneus R | SM Hand" in lines
+
+
+@pytest.mark.parametrize("text", [
+    # two packed columns side by side: two tables printed as one
+    "#Node | #MNI | #Label | #Node | #MNI | #Label\n18 | 34 32 7 | R IFG | 42 | 43 1 12 | R insula\n"
+    "53 | 44 -11 38 | R PoCG | 62 | -38 -15 59 | L PrCG",
+    # a header that names no coordinates (thresholds)
+    "#Region | #Thresholds\nA | 0.01 0.005 0.001\nB | 0.01 0.005 0.001",
+    # a column that also prints something other than a triple
+    "#Region | #MNI\nA | 1 2 3\nB | 4 5 6\nC | see text",
+    # one packed row is not a packed column
+    "#Region | #MNI\nA | 1 2 3\nB | 4",
+])
+def test_a_packed_cell_is_left_alone_unless_its_column_is_one_of_coordinates(text):
+    from ingestion_workflow.services.create_analyses import _split_packed_triples
+
+    assert _split_packed_triples(text) == text
+
+
+def test_a_spanned_header_and_a_continued_cell_take_the_new_columns():
+    from ingestion_workflow.services.create_analyses import _split_packed_triples
+
+    text = ("#<2:Peak | #T\n~ | #x y z | ~\n<3:Patients > controls\n"
+            "A | 1 -2 3 | 4.1\n~ | 5 6 -7 | 3.9")
+    assert _split_packed_triples(text).split("\n") == [
+        "#<4:Peak | #T",
+        "~ | #<3:x y z | ~",
+        "<5:Patients > controls",
+        "A | 1 | -2 | 3 | 4.1",
+        "~ | 5 | 6 | -7 | 3.9",
+    ]
