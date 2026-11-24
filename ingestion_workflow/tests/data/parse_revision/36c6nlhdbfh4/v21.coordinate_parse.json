@@ -1,0 +1,483 @@
+{
+  "header": {
+    "artifact_kind": "coordinate_parse",
+    "schema_version": "0.11.0",
+    "article_id": "36c6nlhdbfh4",
+    "identifiers": {
+      "pmid": "40180313",
+      "pmcid": null,
+      "doi": "10.1016/j.bpsc.2025.03.009",
+      "alternative_pmids": null,
+      "alternative_pmcids": null,
+      "alternative_dois": null,
+      "preprint_dois": null,
+      "preprint_pmids": null,
+      "preprint_pmcids": null,
+      "publication_status": "published"
+    },
+    "producer": {
+      "name": "ns-pond-ingestion-workflow",
+      "version": "paper_parse.13",
+      "stage": "sync",
+      "model": null,
+      "prompt_version": null
+    },
+    "inputs": [
+      {
+        "artifact_kind": "parsed_paper",
+        "fingerprint": "925a5003934a63913a41aa71bfce27425b77c59b9a88a6eb9687d86fdf8c3bfc",
+        "producer_version": null
+      },
+      {
+        "artifact_kind": "analyses",
+        "fingerprint": "aee1c0772aa5caf464186211d2fc2d5f",
+        "producer_version": null
+      }
+    ],
+    "created_at": null,
+    "neurostore_base_study_id": "L3azukEppoKu"
+  },
+  "parse_id": "77a3da0be0d492bb3d69c2275814aa042d8656786847060c58f0e58d8b040e35",
+  "text_sha256": "925a5003934a63913a41aa71bfce27425b77c59b9a88a6eb9687d86fdf8c3bfc",
+  "revision_of": null,
+  "analyses": [
+    {
+      "key": "analysis#c7e9bc777f4b8204",
+      "cells": [
+        {
+          "row": 1,
+          "column_group": 0
+        },
+        {
+          "row": 2,
+          "column_group": 0
+        },
+        {
+          "row": 3,
+          "column_group": 0
+        },
+        {
+          "row": 4,
+          "column_group": 0
+        },
+        {
+          "row": 5,
+          "column_group": 0
+        },
+        {
+          "row": 6,
+          "column_group": 0
+        },
+        {
+          "row": 7,
+          "column_group": 0
+        }
+      ],
+      "text_spans": null,
+      "origin": "table",
+      "table_id": "tbl2",
+      "name": "Contrast: Negative–Neutral",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "MNI",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "result",
+      "anchor_kind": null,
+      "from_prior_study": null,
+      "prior_study_evidence": null,
+      "role_confidence": 0.9999998398902309,
+      "role_source": "role-table@v5+37457641272a",
+      "split": null,
+      "derived_from": null,
+      "statistic": "z",
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            -40.0,
+            0.0,
+            50.0
+          ],
+          "space": null,
+          "row": 1,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 5.8,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 387.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            -28.0,
+            -30.0,
+            -8.0
+          ],
+          "space": null,
+          "row": 2,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 3.877,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 238.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            -44.0,
+            -14.0,
+            50.0
+          ],
+          "space": null,
+          "row": 3,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 4.26,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 140.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            52.0,
+            34.0,
+            2.0
+          ],
+          "space": null,
+          "row": 4,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 4.337,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 92.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            0.0,
+            52.0,
+            -2.0
+          ],
+          "space": null,
+          "row": 5,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 3.317,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 337.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            -48.0,
+            4.0,
+            24.0
+          ],
+          "space": null,
+          "row": 6,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 3.403,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 22.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            44.0,
+            0.0,
+            52.0
+          ],
+          "space": null,
+          "row": 7,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 3.441,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 18.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    },
+    {
+      "key": "analysis#e84dc70c34897e33",
+      "cells": [
+        {
+          "row": 9,
+          "column_group": 0
+        },
+        {
+          "row": 10,
+          "column_group": 0
+        },
+        {
+          "row": 11,
+          "column_group": 0
+        },
+        {
+          "row": 12,
+          "column_group": 0
+        },
+        {
+          "row": 13,
+          "column_group": 0
+        },
+        {
+          "row": 14,
+          "column_group": 0
+        }
+      ],
+      "text_spans": null,
+      "origin": "table",
+      "table_id": "tbl2",
+      "name": "Contrast: Positive–Neutral",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "MNI",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "result",
+      "anchor_kind": null,
+      "from_prior_study": null,
+      "prior_study_evidence": null,
+      "role_confidence": 0.9999997815658218,
+      "role_source": "role-table@v5+37457641272a",
+      "split": null,
+      "derived_from": null,
+      "statistic": "z",
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            -56.0,
+            4.0,
+            -16.0
+          ],
+          "space": null,
+          "row": 9,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 4.79,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 1296.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            6.0,
+            60.0,
+            20.0
+          ],
+          "space": null,
+          "row": 10,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 4.104,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 895.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            -18.0,
+            -78.0,
+            -30.0
+          ],
+          "space": null,
+          "row": 11,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 3.71,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 444.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            42.0,
+            -12.0,
+            42.0
+          ],
+          "space": null,
+          "row": 12,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 4.583,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 27.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            -10.0,
+            -48.0,
+            -10.0
+          ],
+          "space": null,
+          "row": 13,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 3.85,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 11.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            -52.0,
+            4.0,
+            -18.0
+          ],
+          "space": null,
+          "row": 14,
+          "column_group": 0,
+          "text_span": null,
+          "values": [
+            {
+              "kind": "z",
+              "kind_as_printed": null,
+              "value": 3.568,
+              "level": null,
+              "correction": null
+            }
+          ],
+          "cluster_size": 321.0,
+          "cluster_measure": "voxels",
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "table_id": "tbl1",
+      "reading": "rejected_by_triage",
+      "reason": "residual"
+    },
+    {
+      "table_id": "tbl2",
+      "reading": "coordinates",
+      "reason": null
+    }
+  ],
+  "omitted_analyses": null,
+  "text_sweep": {
+    "passages_found": 0,
+    "passages_read": 0,
+    "truncated": false,
+    "points_dropped_as_table_restatements": 0
+  },
+  "verdicts": null
+}

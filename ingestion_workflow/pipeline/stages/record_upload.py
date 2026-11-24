@@ -13,7 +13,7 @@ from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Run, Statu
 from ..plan import StagePlan, Work
 from ..stage import Context, recorded_path
 from ..upstream import short_reason
-from .offloaded import EvidenceStage, NormalizeStage, RecordStage
+from .offloaded import EvidenceStage, NormalizeStage, Parse, RecordStage, carried_from
 from .upload import NO_API_URL, UploadStage
 
 #: 1: the normalized record, sent alone after its parse, with its chain's runs.
@@ -71,7 +71,10 @@ class RecordUploadStage(UploadStage):
     The record sent is the last one in the chain with output, the normalization's when
     none was skipped; `pipeline.runs` names the runs that made it as the catalog keeps
     them, so neurostore keys its config on them and a rerun of the same runs lands in the
-    same config. Answers are treated as `upload`'s are,
+    same config. A record carried to the current parse by uploaded revisions
+    (`offloaded.carried_from`) names the parse it read: Neurostore carried its claims along
+    when it took the revision, so one sent before is not sent again, and one never sent is
+    carried through the revisions on arrival. Answers are treated as `upload`'s are,
     StopRun included; a dry run writes each body under the ingester's dry-run root."""
 
     name = "record_upload"
@@ -136,12 +139,12 @@ class RecordUploadStage(UploadStage):
             if ref.id not in chosen:
                 plan.wait(ref, NO_CHAIN)
                 continue
-            parse_id = _uploaded_parse(synced.get(ref.id, {}).get(""),
-                                       uploads.get(ref.id, {}).get(""))
+            source, chain = chosen[ref.id]
+            parse_id = self._read_parse(ctx, chain, synced.get(ref.id, {}).get(""),
+                                        uploads.get(ref.id, {}).get(""))
             if parse_id is None:
                 plan.wait(ref, NO_PARSE_UPLOADED)
                 continue
-            source, chain = chosen[ref.id]
             fp = self.fingerprint_for_chain(chain, parse_id)
             existing = artifacts.get(ref.id, {}).get(source)
             if ctx.is_fresh(existing, fp):
@@ -175,7 +178,7 @@ class RecordUploadStage(UploadStage):
             runs = [ctx.catalog.run(a.run_id) for a in chain]
             summary = {"backend": "ingester", "dry_run": self.dry_run,
                        "base_study_id": upload.summary.get("base_study_id"),
-                       "parse_id": upload.summary.get("parse_id"),
+                       "parse_id": self._read_parse(ctx, chain, sync, upload),
                        "runs": [a.run_id for a in chain]}
             if any(run is None for run in runs):
                 yield from self._record(work, Outcome.failure(
@@ -193,6 +196,16 @@ class RecordUploadStage(UploadStage):
             yield from self._send_all(sending, [])
         finally:
             self._requests.clear()
+
+    @staticmethod
+    def _read_parse(ctx: Context, chain: Sequence[Artifact], sync: Optional[Artifact],
+                    upload: Optional[Artifact]) -> Optional[str]:
+        """The stored parse the record is sent against: the one it read, which is the current
+        one unless revisions carried it (`carried_from`); None until the current is uploaded."""
+        current = _uploaded_parse(sync, upload)
+        if current is None:
+            return None
+        return carried_from(chain[0], Parse.of(ctx.catalog.root, sync), upload) or current
 
     def _send_one(self, ingester, work: Work) -> Dict[str, Any]:
         study_dir, request = self._requests[(work.article_id, work.source)]
