@@ -55,7 +55,8 @@ logger = get_logger(__name__)
 #: 12: each link's occurrences, and the reference list they name.
 #: 13: study_schema paper-parse 0.11.0, whose licence ids are snake_case (`cc_by`).
 #: 14: a table whose points look invented says so in its reading's `reason`.
-PAPER_PARSE_VERSION = 14
+#: 15: points in loose cells (decimal commas, ±, pairs, spaced runs, axis-labelled rows) are placed.
+PAPER_PARSE_VERSION = 15
 PRODUCER = "ns-pond-ingestion-workflow"
 PARSE_DIR = "parse"
 
@@ -123,20 +124,26 @@ class _Table:
 
     def index(self) -> list:
         """Per body row, read once: its numbers and the triples printed in one cell, as the
-        cell readers read them, then the same with decorated cells (`_coordinate_number`) and
-        comma-separated triples (`_comma_triples`) read too."""
+        cell readers read them; the same with decorated cells (`_coordinate_number`) and
+        comma-separated triples (`_comma_triples`) read too; then each cell's loose readings
+        (`_loose_number`) and the triples a cell spells out (`_spelled_triples`) or a column
+        prints down rows labelled x, y and z (`_axis_rows`)."""
         if self._index is None:
             from nspond_tables.grid import as_number
             from nspond_tables.read import triples_in
 
+            commas = _decimal_commas(self.rows)
+            down = _axis_rows(self.rows, commas)
             self._index = [
                 (
                     [(as_number(text), col) for text, col in cells],
                     [(trio, col) for text, col in cells for trio in triples_in(text)],
                     [(_coordinate_number(text), col) for text, col in cells],
                     [(trio, col) for text, col in cells for trio in _comma_triples(text)],
+                    [(_loose_number(text, commas), col) for text, col in cells],
+                    _row_spelled(cells) + down.get(index, []),
                 )
-                for cells in self.rows
+                for index, cells in enumerate(self.rows)
             ]
         return self._index
 
@@ -190,6 +197,155 @@ def _comma_triples(text: str) -> List[Tuple[float, float, float]]:
         if len(values) % 3 == 0:
             trios = [tuple(values[i : i + 3]) for i in range(0, len(values), 3)]
             out += [trio for trio in trios if in_head(trio)]
+    return out
+
+
+_DECIMAL_COMMA = re.compile(r"^[-+]?\d+,\d+$")
+_DECIMAL_POINT = re.compile(r"\d\.\d")
+
+
+def _decimal_commas(rows) -> bool:
+    """Whether a table writes decimals with a comma (`4,5 | 20,7 | -17,0`): some cell is a
+    number with one comma and none prints a decimal point."""
+    texts = [str(text).strip() for cells in rows for text, _ in cells]
+    return any(_DECIMAL_COMMA.match(t) for t in texts) and not any(
+        _DECIMAL_POINT.search(t) for t in texts
+    )
+
+
+def _clean(text: str) -> str:
+    return str(text).strip().replace("−", "-").replace("–", "-")
+
+
+_PAIR = re.compile(rf"^({_AXIS})\s*/\s*({_AXIS})$")
+_PLUS_MINUS = re.compile(r"^(?:±|\+/-|\+-)\s*(\d+(?:\.\d+)?)$")
+#: A triple's bracket split across its cells: `(-34 | 51 | 5)`.
+_SPLIT_BRACKET = re.compile(rf"^\(\s*({_AXIS})$|^({_AXIS})\s*\)$")
+
+
+def _loose_number(text: str, commas: bool):
+    """A cell's x, y or z read loosely, for a point nothing else places: a list of the values
+    it may print (`±50` is 50 or -50; `4,5` is 4.5 in a table of decimal commas; `(-34`
+    and `5)`, a bracket split across cells), or a pair (`-48/-52`, two hemispheres'
+    values) as a tuple; None for none."""
+    s = _clean(text)
+    bracket = _SPLIT_BRACKET.match(s)
+    if bracket:
+        s = bracket.group(1) or bracket.group(2)
+    if commas and _DECIMAL_COMMA.match(s):
+        return [float(s.replace(",", "."))]
+    pair = _PAIR.match(s)
+    if pair:
+        return (float(pair.group(1)), float(pair.group(2)))
+    signless = _PLUS_MINUS.match(s)
+    if signless:
+        return [float(signless.group(1)), -float(signless.group(1))]
+    number = _coordinate_number(s)
+    return None if number is None else [number]
+
+
+def _loose_triples(cells: Sequence) -> List[Tuple[float, float, float]]:
+    """The points three loosely read cells may print. A pair is the same half in every
+    cell holding one, and at least two of the three must hold one: a single `7/-8`
+    beside plain y and z is two hemispheres' x of one row, not a point."""
+    if any(c is None for c in cells):
+        return []
+    pairs = [isinstance(c, tuple) for c in cells]
+    if any(pairs):
+        if sum(pairs) < 2 or any(not p and len(c) != 1 for p, c in zip(pairs, cells)):
+            return []
+        return [tuple(c[half] if p else c[0] for p, c in zip(pairs, cells)) for half in (0, 1)]
+    return list(itertools.product(*cells))
+
+
+#: An axis letter with its value (`x(40) y(75) z(40)`, `x = -30, y = -15, z = 60`).
+_SPELLED = re.compile(
+    rf"\bx\s*[(=:]?\s*({_AXIS})\s*\)?[\s,;]*y\s*[(=:]?\s*({_AXIS})\s*\)?[\s,;]*"
+    rf"z\s*[(=:]?\s*({_AXIS})\b",
+    re.I,
+)
+#: Numbers a cell separates by spaces alone (a table set as one cell, `Left insula -31 21 -4`).
+_SPACED_RUN = re.compile(rf"(?<![\w.,/])(?:{_AXIS})(?:[ \t]+{_AXIS}){{2,}}(?![\w.,/])")
+
+
+def _spelled_triples(text: str) -> List[Tuple[float, float, float]]:
+    """The triples a cell spells out with axis letters, and the first three numbers of
+    every run it separates by spaces alone (then each later three, when the run is a
+    multiple of three), that could be brain coordinates. Not a run of counts (`voxels`
+    after it), nor a list in order (`2 8 12 14` Hz) read only for its first three."""
+    from nspond_tables.read import in_head
+
+    s = _clean(text)
+    out = [tuple(float(v) for v in m.groups()) for m in _SPELLED.finditer(s)]
+    for run in _SPACED_RUN.finditer(s):
+        if re.match(r"\s*voxels?\b", s[run.end():], re.I):
+            continue
+        values = [float(v) for v in run.group().split()]
+        if len(values) % 3 == 0:
+            stop = len(values)
+        elif len(values) >= 4 and min(values) >= 0 and values == sorted(values):
+            continue
+        else:
+            stop = 3
+        out += [tuple(values[i : i + 3]) for i in range(0, stop, 3)]
+    return [trio for trio in out if in_head(trio)]
+
+
+def _pure_run(text: str) -> Optional[List[float]]:
+    """A cell that is only numbers apart by spaces, as those numbers; else None."""
+    s = _clean(text)
+    return [float(v) for v in s.split()] if s and _SPACED_RUN.fullmatch(s) else None
+
+
+def _row_spelled(cells) -> List[Tuple[Tuple[float, float, float], int]]:
+    """`_spelled_triples` of a row's cells, except cells stacking one axis each: three
+    consecutive cells, each a run of the same N numbers whose column-wise triples could
+    all be brain coordinates (`22 44 -20 32 | -92 18 6 0 | 0 52 -12 8`), print N points
+    down them, not one per cell. Three numbers a cell could be either, so both are read."""
+    from nspond_tables.read import in_head
+
+    filled = [(text, col) for text, col in cells if str(text).strip()]
+    runs = [_pure_run(text) for text, _ in filled]
+    stacked, out = set(), []
+    for i in range(len(filled) - 2):
+        trio = runs[i : i + 3]
+        if (all(r is not None for r in trio) and len({len(r) for r in trio}) == 1
+                and all(in_head(p) for p in zip(*trio))):
+            if len(trio[0]) != 3:
+                stacked.update(range(i, i + 3))
+            out += [(tuple(p), filled[i][1]) for p in zip(*trio)]
+    for i, (text, col) in enumerate(filled):
+        if i not in stacked:
+            out += [(trio, col) for trio in _spelled_triples(text)]
+    return out
+
+
+#: A cell that labels its row as one axis (`x`, `Y (mm)`, `Medio-lateral (x)`).
+_AXIS_LABEL = re.compile(r"^(?:[a-z-]+\s*)?\(?\s*([xyz])\s*\)?\s*(?:\(?mm\)?)?$", re.I)
+
+
+def _axis_rows(rows, commas: bool) -> Dict[int, List[Tuple[Tuple[float, float, float], int]]]:
+    """Triples a table prints down a column, in three consecutive rows labelled x, y and
+    z in one column (`X | -50.66 | X | 53.53`: a block per label column, up to the next):
+    row index of the x row -> [(triple, column)]."""
+    labels = [
+        {col: m.group(1).lower() for text, col in cells if (m := _AXIS_LABEL.match(_clean(text)))}
+        for cells in rows
+    ]
+    out: Dict[int, List] = {}
+    for i in range(len(rows) - 2):
+        starts = sorted(col for col, axis in labels[i].items()
+                        if axis == "x" and labels[i + 1].get(col) == "y"
+                        and labels[i + 2].get(col) == "z")
+        if not starts:
+            continue
+        by_col = [{col: _loose_number(text, commas) for text, col in rows[i + k]} for k in range(3)]
+        for start, stop in zip(starts, starts[1:] + [None]):
+            for col in by_col[0]:
+                if col <= start or (stop is not None and col >= stop) or col in labels[i]:
+                    continue
+                for point in _loose_triples([by_col[k].get(col) for k in range(3)]):
+                    out.setdefault(i, []).append((point, col))
     return out
 
 
@@ -1076,14 +1232,18 @@ def _candidates(coordinate, grid: _Table) -> List[Tuple[int, int]]:
     """Every (body row, x column) printing this point's x, y, z; one per row.
 
     Decorated cells and comma-separated triples are read only for a point no row prints
-    otherwise, so that they never move a point the cell readers place.
+    otherwise, so that they never move a point the cell readers place; loose cells, spelled
+    triples and axis-labelled rows only for a point none of those place.
     """
     xyz = (coordinate.x, coordinate.y, coordinate.z)
 
     def same(trio) -> bool:
         return all(v is not None and abs(a - v) <= _SAME_NUMBER for a, v in zip(xyz, trio))
 
-    def search(numbers_at: int, triples_at: int) -> List[Tuple[int, int]]:
+    def loose(cells) -> bool:
+        return any(same(trio) for trio in _loose_triples(cells))
+
+    def search(numbers_at: int, triples_at: int, match=same) -> List[Tuple[int, int]]:
         found = []
         for index, read in enumerate(grid.index()):
             numbers, triples = read[numbers_at], read[triples_at]
@@ -1091,7 +1251,7 @@ def _candidates(coordinate, grid: _Table) -> List[Tuple[int, int]]:
                 (
                     numbers[i][1]
                     for i in range(len(numbers) - 2)
-                    if same([n for n, _ in numbers[i : i + 3]])
+                    if match([n for n, _ in numbers[i : i + 3]])
                 ),
                 None,
             )
@@ -1101,7 +1261,7 @@ def _candidates(coordinate, grid: _Table) -> List[Tuple[int, int]]:
                 found.append((index, hit))
         return found
 
-    return search(0, 1) or search(2, 3)
+    return search(0, 1) or search(2, 3) or search(4, 5, loose)
 
 
 def _place_all(
