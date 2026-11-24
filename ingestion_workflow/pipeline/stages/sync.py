@@ -24,9 +24,9 @@ from ingestion_workflow.utils.preprints import is_preprint_doi
 
 from .. import exclusions as excl
 from ..plan import StagePlan, Work
-from ..stage import NO_TEXT, Context, is_take_back, take_back_or_block
+from ..stage import NO_TEXT, Context, is_take_back, take_back_or_block, taken_back
 from .extract import READ_FROM_BAD_PAGE, read_from, read_from_bad_page
-from .roles import refuse_unassigned, with_roles
+from .roles import RolesStage, refuse_unassigned, with_roles
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +49,12 @@ NEW_ARTICLES = "-new"
 
 #: Why a paper is not synced: PubMed lists it as a retraction notice, not a study.
 RETRACTION_NOTICE = "retraction notice"
+
+#: Why an article waits for sync: the stage roles reads took its sets back, and roles has
+#: not. Roles takes them back on its next run, unless the article was ever uploaded: that
+#: one keeps its earlier sets (`selection._gated`) until a person decides.
+TAKEN_BACK_BEFORE_ROLES = ("{stage} took its sets back ({why}); roles has not: for an "
+                           "uploaded article a person decides")
 
 #: Why an article is not synced: another catalog article that reaches sync names the same
 #: base study. The ingester keeps one current parse per base study and supersedes what a
@@ -236,14 +242,21 @@ class SyncStage:
         ok, roles assigned, not a retraction notice, and a known base study."""
         ids = [ref.id for ref in refs]
         roled = with_roles(ctx, ids)
+        _, parents = self._roles_inputs(ctx, ids)
         noticed = ctx.catalog.artifacts(ids, "notices")
         bases = known_base_study_ids(ctx, refs)
         return shared_base_studies(ctx, {
             ref.id: bases[ref.id] for ref in refs
             if ref.id in bases and ref.id in roled
+            and not taken_back(parents.get(ref.id, {}).get(""))
             and (spaced := upstream.get(ref.id, {}).get("")) is not None
             and spaced.status is Status.OK
             and not _retraction_notice(_answered(noticed.get(ref.id, {}).get("")))})
+
+    def _roles_inputs(self, ctx: Context, ids: Sequence[str]):
+        """The stage roles reads, and its artifacts for `ids`."""
+        stage = RolesStage.upstream_for(self.settings)[0]
+        return stage, ctx.catalog.artifacts(list(ids), stage)
 
     def plan_contended(
         self,
@@ -257,6 +270,7 @@ class SyncStage:
         plan = StagePlan(stage=self.name)
         ids = [ref.id for ref in refs]
         roled = with_roles(ctx, ids)
+        parent_stage, parents = self._roles_inputs(ctx, ids)
         prose = ctx.catalog.artifacts(ids, "prose")
         downloads = ctx.catalog.artifacts(ids, "download")
         extracted = ctx.catalog.artifacts(ids, "extract")
@@ -276,6 +290,12 @@ class SyncStage:
                 continue
             if ref.id not in roled:
                 plan.block(ref)
+                continue
+            # Space and roles still hold the sets read before the take-back; never write them.
+            parent = parents.get(ref.id, {}).get("")
+            if taken_back(parent):
+                plan.block(ref, TAKEN_BACK_BEFORE_ROLES.format(stage=parent_stage,
+                                                               why=parent.error))
                 continue
             base_study_id = bases.get(ref.id)
             identifier = ref.identifier
