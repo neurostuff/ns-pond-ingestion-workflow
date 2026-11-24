@@ -3,6 +3,7 @@
 import gzip
 import json
 import sqlite3
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -13,11 +14,11 @@ from ingestion_workflow.extractors.base import BaseExtractor
 from ingestion_workflow.models import DownloadedFile, DownloadResult, DownloadSource, FileType
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
+from ingestion_workflow.pipeline.stage import metadata_digests
 from ingestion_workflow.pipeline.stages import DownloadStage
 from ingestion_workflow.pipeline.stages.extract import ExtractStage, extraction_fingerprint
 from ingestion_workflow.pipeline.stages.triage import TriageStage
 from ingestion_workflow.services import download_revalidate as revalidate
-from ingestion_workflow.pipeline.stage import metadata_digests
 from typer.testing import CliRunner
 
 PAGES = Path(__file__).resolve().parents[1] / "data" / "download_pages"
@@ -264,7 +265,8 @@ def test_effects_sort_articles_by_what_happens_next(env, tmp_path, evidence):
                     Outcome(replan.id, "passages", "", Status.FAILED, "p-1")])
     stage = DownloadStage(settings)
     stage._extractors = {s: AnySource() for s in DownloadSource}
-    ctx = Context(settings, catalog)
+    # built before the scan, as the CLI builds it, so the scan's attempts come after ctx.now
+    ctx = Context(settings, catalog, now=datetime.now(timezone.utc) - timedelta(seconds=5))
     # every other source failed for good
     catalog.record([Outcome.failure(replan.id, "download", s, "no full text", permanent=True)
                     for s in ("pubget", "pdf")])
