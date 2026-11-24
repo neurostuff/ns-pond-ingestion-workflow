@@ -135,6 +135,27 @@ def _signed_by_direction(line: str) -> str:
     return " | ".join(cells)
 
 
+#: A data row whose first cell spans columns: `<2:Caudate (L/R) | 12 | 6 | 16 | 8.34`.
+_LEADING_SPAN = re.compile(r"^<(\d+):(.*)$", re.S)
+
+
+def _leading_span_cells(line: str) -> str:
+    """One serialised row with a column-spanning first cell written as that cell and empty cells.
+
+    A row-group banner is a line `<N:text`; a data row whose first cell spans columns begins the
+    same way. nu-v23 read such a row's cell as one column, so every value after it moved one
+    column left: x became the cluster size, y the x (PMC5622290 Table 2, where the region spans
+    the cluster-size column of each sub-peak). As plain cells the row lines up with its header.
+    A banner (no other cell) and a header row are left as they are."""
+    if line.startswith("#") or " | " not in line:
+        return line
+    cells = line.split(" | ")
+    span = _LEADING_SPAN.match(cells[0])
+    if not span:
+        return line
+    return " | ".join([span.group(2)] + [""] * (int(span.group(1)) - 1) + cells[1:])
+
+
 def _text_of(markup: str) -> str:
     """The words in a table, with its grid kept and its tags dropped.
 
@@ -797,7 +818,7 @@ Raw Table Content:
             logger.warning("could not serialise table %s (%s); sending text", table_key, exc)
             out = ""
         if out.strip():
-            return "\n".join(_signed_by_direction(line) for line in out.split("\n"))
+            return "\n".join(_signed_by_direction(_leading_span_cells(line)) for line in out.split("\n"))
         # Neither form read as a table. Text beats markup, and markup beats
         # nothing at all -- the model can only answer about what it is sent.
         return _text_of(markup) or markup

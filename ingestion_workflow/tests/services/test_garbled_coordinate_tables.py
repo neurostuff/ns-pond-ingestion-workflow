@@ -93,6 +93,40 @@ def test_a_lone_direction_letter_is_left_alone():
     assert _signed_by_direction("Region | 6L | 12P | 3") == "Region | 6L | 12P | 3"
 
 
+# -- a row whose first cell spans columns ----------------------------------------------
+
+
+def test_a_row_whose_first_cell_spans_columns_lines_up_with_its_header():
+    """PMC5622290 Table 2 spans each sub-peak's region over the cluster-size column. Sent as
+    `<2:Caudate (L/R) | 12 | 6 | 16 | 8.34`, nu-v23 read 6, 16, 8 as x, y, z and 12 as a cluster
+    size, in all 21 sub-peaks (supplements production run, 2026-11-24)."""
+    lines = _serialised("pmc5622290_t2.xml")
+
+    assert "Caudate (L/R) |  | 12 | 6 | 16 | 8.34" in lines
+    assert "Cluster #1b | 9,727 |  |  |  | " in lines
+    assert not any(line.startswith("<2:") for line in lines)
+
+
+def test_a_spanned_region_before_the_coordinates_leaves_x_in_its_column():
+    """Lancet 1998 (doi:10.1016/S0140-6736(98)02470-2) Table 1 spans four regions over the
+    Brodmann column; nu-v23 dropped their x and read the Z score as z."""
+    lines = _serialised("elsevier_9690407_tbl1.xml")
+
+    assert "Left hypothalamus |  | -2 | -18 | -8 | 3·68" in lines
+    assert "Right cingulate cortex | 24 | 2 | 22 | 24 | 4·9" in lines
+
+
+@pytest.mark.parametrize("line", [
+    "<6:Alcohol group > healthy controls",  # a row-group banner
+    "#<3:MNI coordinates | #T",             # a header
+    "Caudate | <2:12 | 16 | 8.34",          # a span after the first cell
+])
+def test_a_banner_a_header_and_a_later_span_are_left_alone(line):
+    from ingestion_workflow.services.create_analyses import _leading_span_cells
+
+    assert _leading_span_cells(line) == line
+
+
 # -- a table carried over a page break ------------------------------------------------
 
 
