@@ -121,6 +121,12 @@ def test_a_spanned_region_before_the_coordinates_leaves_x_in_its_column():
     "<2:PBO |  |  |  | ",                   # a banner with empty cells after it
     "#<3:MNI coordinates | #T",             # a header
     "Caudate | <2:12 | 16 | 8.34",          # a span after the first cell
+    # two banners side by side (luukio3kr5kr tbl3)
+    "<5:Encoding-reading | <5:Reading-encoding",
+    # a header row the source did not mark (4txarhgtrzng s2-table-003)
+    "<3:Coordinate | Accuracy | p | Extent | Hemi",
+    # an empty spanned cell (hxphsknjjo5e s1-table-010)
+    "<8:^6: | 26 | 2.74 | -42 | -42 | 54",
 ])
 def test_a_banner_a_header_and_a_later_span_are_left_alone(line):
     from ingestion_workflow.services.create_analyses import _leading_span_cells

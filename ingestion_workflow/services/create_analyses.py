@@ -137,6 +137,7 @@ def _signed_by_direction(line: str) -> str:
 
 #: A data row whose first cell spans columns: `<2:Caudate (L/R) | 12 | 6 | 16 | 8.34`.
 _LEADING_SPAN = re.compile(r"^<(\d+):(.*)$", re.S)
+_BARE_NUMBER = re.compile(r"^[-+−]?\d+(?:\.\d+)?$")
 
 
 def _leading_span_cells(line: str, header_span: int = 1) -> str:
@@ -147,14 +148,18 @@ def _leading_span_cells(line: str, header_span: int = 1) -> str:
     column left: x became the cluster size, y the x (PMC5622290 Table 2, where the region spans
     the cluster-size column of each sub-peak). As plain cells the row lines up with its header.
 
-    Left as they are: a header row; a banner, with or without empty cells after it; and a row
-    whose span is no wider than the header's own first cell (`header_span`), which already
-    lines up with `#<2:Region` cell for cell -- written out, it would not."""
+    Only a data row is rewritten: one whose span holds text and whose later cells print a bare
+    number. Left as they are, because v23 read them worse spelt out: banners, side by side or
+    with empty cells after them; a header row the source did not mark (`<3:Coordinate |
+    Accuracy | p`); an empty spanned cell (`<8:^6:`); and a row whose span is no wider than the
+    header's own first cell (`header_span`), which already lines up with `#<2:Region`."""
     if line.startswith("#") or " | " not in line:
         return line
     cells = line.split(" | ")
     span = _LEADING_SPAN.match(cells[0])
-    if not span or int(span.group(1)) <= header_span or not any(c.strip() for c in cells[1:]):
+    if (not span or int(span.group(1)) <= header_span
+            or not re.sub(r"^\^\d+:", "", span.group(2)).strip()
+            or not any(_BARE_NUMBER.match(c.strip()) for c in cells[1:])):
         return line
     return " | ".join([span.group(2)] + [""] * (int(span.group(1)) - 1) + cells[1:])
 
