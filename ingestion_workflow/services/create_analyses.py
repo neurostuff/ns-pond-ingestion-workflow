@@ -139,21 +139,35 @@ def _signed_by_direction(line: str) -> str:
 _LEADING_SPAN = re.compile(r"^<(\d+):(.*)$", re.S)
 
 
-def _leading_span_cells(line: str) -> str:
+def _leading_span_cells(line: str, header_span: int = 1) -> str:
     """One serialised row with a column-spanning first cell written as that cell and empty cells.
 
     A row-group banner is a line `<N:text`; a data row whose first cell spans columns begins the
     same way. nu-v23 read such a row's cell as one column, so every value after it moved one
     column left: x became the cluster size, y the x (PMC5622290 Table 2, where the region spans
     the cluster-size column of each sub-peak). As plain cells the row lines up with its header.
-    A banner (no other cell) and a header row are left as they are."""
+
+    Left as they are: a header row; a banner, with or without empty cells after it; and a row
+    whose span is no wider than the header's own first cell (`header_span`), which already
+    lines up with `#<2:Region` cell for cell -- written out, it would not."""
     if line.startswith("#") or " | " not in line:
         return line
     cells = line.split(" | ")
     span = _LEADING_SPAN.match(cells[0])
-    if not span:
+    if not span or int(span.group(1)) <= header_span or not any(c.strip() for c in cells[1:]):
         return line
     return " | ".join([span.group(2)] + [""] * (int(span.group(1)) - 1) + cells[1:])
+
+
+def _header_first_span(lines: Sequence[str]) -> int:
+    """The widest first cell of the table's header rows (`#<2:Region` is 2), else 1."""
+    widest = 1
+    for line in lines:
+        if not line.startswith("#"):
+            continue
+        span = re.match(r"^#(?:\^\d+:)?<(\d+):", line)
+        widest = max(widest, int(span.group(1)) if span else 1)
+    return widest
 
 
 def _text_of(markup: str) -> str:
@@ -818,7 +832,9 @@ Raw Table Content:
             logger.warning("could not serialise table %s (%s); sending text", table_key, exc)
             out = ""
         if out.strip():
-            return "\n".join(_signed_by_direction(_leading_span_cells(line)) for line in out.split("\n"))
+            lines = out.split("\n")
+            head = _header_first_span(lines)
+            return "\n".join(_signed_by_direction(_leading_span_cells(line, head)) for line in lines)
         # Neither form read as a table. Text beats markup, and markup beats
         # nothing at all -- the model can only answer about what it is sent.
         return _text_of(markup) or markup

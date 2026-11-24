@@ -118,6 +118,7 @@ def test_a_spanned_region_before_the_coordinates_leaves_x_in_its_column():
 
 @pytest.mark.parametrize("line", [
     "<6:Alcohol group > healthy controls",  # a row-group banner
+    "<2:PBO |  |  |  | ",                   # a banner with empty cells after it
     "#<3:MNI coordinates | #T",             # a header
     "Caudate | <2:12 | 16 | 8.34",          # a span after the first cell
 ])
@@ -125,6 +126,19 @@ def test_a_banner_a_header_and_a_later_span_are_left_alone(line):
     from ingestion_workflow.services.create_analyses import _leading_span_cells
 
     assert _leading_span_cells(line) == line
+
+
+def test_a_span_as_wide_as_the_headers_first_cell_is_left_alone():
+    """An ALE table (crmamvju5ixf, tbl0015) heads its label column `#<2:Domain & Anatomical
+    Label`, so `<2:L Caudate | 2384 | 1 | -10` lines up with it as written. Spelt out, the row
+    was one cell wider than its header and nu-v23 read the cluster number as x."""
+    from ingestion_workflow.services.create_analyses import _header_first_span, _leading_span_cells
+
+    lines = ["#<2:Domain & Anatomical Label | #Volume | #Cluster | #x | #y | #z",
+             "<2:L Caudate | 2384 | 1 | -10 | 12 | 0"]
+    assert _header_first_span(lines) == 2
+    assert _leading_span_cells(lines[1], 2) == lines[1]
+    assert _header_first_span(["# | # | #<3:MNI", "#Region | #Side | #x | #y | #z"]) == 1
 
 
 # -- a table carried over a page break ------------------------------------------------
