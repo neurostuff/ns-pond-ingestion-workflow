@@ -54,7 +54,8 @@ logger = get_logger(__name__)
 #: 11: a "Data availability" heading is a data_availability section, not references.
 #: 12: each link's occurrences, and the reference list they name.
 #: 13: study_schema paper-parse 0.11.0, whose licence ids are snake_case (`cc_by`).
-PAPER_PARSE_VERSION = 13
+#: 14: a table whose points look invented says so in its reading's `reason`.
+PAPER_PARSE_VERSION = 14
 PRODUCER = "ns-pond-ingestion-workflow"
 PARSE_DIR = "parse"
 
@@ -875,7 +876,7 @@ def coordinate_parse(
         parse_id=parse_id,
         text_sha256=paper.text_sha256,
         analyses=analyses,
-        tables=_readings(paper, per_table, inputs, omitted, rodent) or None,
+        tables=_readings(paper, per_table, inputs, omitted, rodent, grids) or None,
         omitted_analyses=[
             pp.OmittedAnalysis(
                 name=o.name,
@@ -1406,6 +1407,7 @@ def _readings(
     inputs: ParseInputs,
     omitted: Sequence[Omitted] = (),
     rodent: Set[str] = frozenset(),
+    grids: Mapping[str, _Table] = {},
 ):
     """One TableReading per table of the paper whose reading is known.
 
@@ -1413,7 +1415,8 @@ def _readings(
     holding no coordinates, with its reason), then what the analyses stage
     recorded. An article analysed before readings were recorded has them only
     for the tables it made a collection for; the rest are not recorded. A table
-    some of whose analyses were left out names them in `reason`.
+    some of whose analyses were left out names them in `reason`, and so does a table
+    read for coordinates whose points look invented (`extraction_signs`).
     """
     left_out: Dict[str, List[str]] = {}
     for o in omitted:
@@ -1448,9 +1451,28 @@ def _readings(
             out.append(pp.TableReading(table_id=tid, reading=table_reading(per_table[tid])))
         else:
             continue
-        if tid in left_out and out[-1].reason is None:
-            out[-1].reason = "; ".join(left_out[tid])
+        notes = list(left_out.get(tid, ())) if out[-1].reason is None else []
+        if out[-1].reading == "coordinates" and tid in per_table:
+            suspect = _suspect(table, per_table[tid], grids.get(tid))
+            if suspect:
+                notes.append(suspect)
+        if notes:
+            out[-1].reason = "; ".join(([out[-1].reason] if out[-1].reason else []) + notes)
     return out
+
+
+def _suspect(table, collection: AnalysisCollection, grid: Optional[_Table]) -> Optional[str]:
+    """`extraction_signs.describe` for a table's points, against its rows, caption and footer."""
+    from ingestion_workflow.services import extraction_signs
+
+    points = [
+        (c.x, c.y, c.z, c.statistic_value, c.cluster_size)
+        for a in collection.analyses
+        for c in a.coordinates
+    ]
+    rows = [" ".join(text for text, _ in cells) for cells in (grid.rows if grid else [])]
+    rows += [table.caption or "", table.footer or ""]
+    return extraction_signs.describe(points, rows)
 
 
 def _text_sweep(inputs: ParseInputs):
@@ -1506,6 +1528,9 @@ def write(
         "analyses": len(parse.analyses),
         **({"parse_omitted": left} if (left := [str(o) for o in omitted if not o.kept]) else {}),
         **({"parse_notes": notes} if (notes := [str(o) for o in omitted if o.kept]) else {}),
+        **({"suspect_tables": suspect} if (suspect := [
+            t.table_id for t in parse.tables or [] if "suspect extraction" in (t.reason or "")
+        ]) else {}),
     }
 
 

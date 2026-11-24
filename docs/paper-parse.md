@@ -18,6 +18,29 @@ with bregma, "interaural", Paxinos or Franklin, or all three of the AP, ML and D
 Each analysis of such a table is omitted with the same reason; a table a person excluded or
 triage rejected keeps that reading.
 
+A table read for `coordinates` whose points look invented keeps its reading and its analyses,
+and its `reason` starts `suspect extraction:` and names each sign it carries
+(`ingestion_workflow/services/extraction_signs.py`), for example "37 of 37 points look like
+statistics, not coordinates". A sign counts when at least 3 of the table's points, and at
+least a third of them, carry it:
+
+| Sign | A point carries it when |
+|---|---|
+| unprinted | its x, y or z is printed nowhere in the table, caption or footer |
+| scattered | each of x, y and z is printed, but no single row prints them together |
+| statistic-like | all three are non-integers under 10, or two have three or more decimals |
+| repeated | x, y and z are one number |
+| statistic elsewhere | its statistic is printed only in another point's row |
+| cluster size elsewhere | its cluster size is printed only in another point's row |
+
+Signs are ignored when matching numbers, since `±30` and `-2/8` print one number for two
+points. The sync stage's summary lists such tables as `suspect_tables`.
+
+The analyses stage acts on the last two before this: a table whose answer puts a statistic
+or cluster size on the wrong point is asked again under the template's grammar with the loop
+penalty, and the retry is kept when it reads the same coordinates and places every value on
+its own row. The stage summary's `retried` names each such table and which answer was kept.
+
 # What the parsed paper says about its copy and its identifiers
 
 - `text_copy` is the copy the text was read from, as its download recorded it: `route`,

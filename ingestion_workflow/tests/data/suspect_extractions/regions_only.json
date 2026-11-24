@@ -1,0 +1,102 @@
+{
+ "article_id": "3zl2tjsd7gmm",
+ "table_id": "html-table-6",
+ "caption": "",
+ "footer": "** Survived p value < 0.05; FWE peak level.",
+ "model": "nu-v23",
+ "analyses": [
+  {
+   "name": "p-tau \u00d7 sex",
+   "points": [
+    [
+     0.0,
+     0.0,
+     0.0,
+     "T",
+     4.11
+    ]
+   ]
+  },
+  {
+   "name": "p-tau \u00d7 sex \u2014 atrophy female > male",
+   "points": [
+    [
+     0.0,
+     0.0,
+     0.0,
+     "T",
+     4.07
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     "T",
+     4.04
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     "T",
+     3.92
+    ]
+   ]
+  },
+  {
+   "name": "YKL-40 \u00d7 sex",
+   "points": [
+    [
+     0.0,
+     0.0,
+     0.0,
+     "T",
+     7.0
+    ]
+   ]
+  },
+  {
+   "name": "YKL-40 \u00d7 sex \u2014 atrophy female > male",
+   "points": [
+    [
+     0.0,
+     0.0,
+     0.0,
+     "T",
+     6.11
+    ]
+   ]
+  },
+  {
+   "name": "sTREM2 \u00d7 sex",
+   "points": [
+    [
+     0.0,
+     0.0,
+     0.0,
+     "T",
+     4.82
+    ]
+   ]
+  },
+  {
+   "name": "sTREM2 \u00d7 sex \u2014 atrophy female > male",
+   "points": [
+    [
+     0.0,
+     0.0,
+     0.0,
+     "T",
+     4.39
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     "T",
+     3.78
+    ]
+   ]
+  }
+ ]
+}

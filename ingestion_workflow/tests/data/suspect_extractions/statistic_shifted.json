@@ -1,0 +1,82 @@
+{
+ "article_id": "7m5455ki54b5",
+ "table_id": "tab2",
+ "caption": "BOLD signal showing positive correlation with increasing feedback values in a priori ROIs and the amygdala ROI.",
+ "footer": "pFWE, SVC indicates the p value resulting from family-wise error (FWE) small volume correction (SVC) on peak voxel activity within a priori ROIs and the amygdala ROI. T-statistics were obtained from t-tests.ns, not significant.aNo voxels within the anatomically defined VTA ROI included in the \u201creward mask\u201d were significantly activated by feedback value. However, a complimentary ROI analysis using a slightly different and functionally defined VTA ROI showed that VTA BOLD signal significantly tracked feedback value (see Supplementary Note 4 for details).bThe amygdala was not part of the initial hypotheses, thus a stricter (Bonferroni-corrected) statistical threshold was applied in order to infer any involvement of the amygdala (\u03b1\u2009=\u20090.0167).",
+ "model": "nu-v23",
+ "analyses": [
+  {
+   "name": "Reward mask",
+   "points": [
+    [
+     -18.0,
+     5.0,
+     -14.0,
+     "T",
+     9.085
+    ],
+    [
+     15.0,
+     8.0,
+     -11.0,
+     "T",
+     7.593
+    ]
+   ]
+  },
+  {
+   "name": "Memory mask",
+   "points": [
+    [
+     -15.0,
+     2.0,
+     -20.0,
+     "T",
+     6.724
+    ],
+    [
+     -24.0,
+     -13.0,
+     -14.0,
+     "T",
+     4.31
+    ],
+    [
+     -21.0,
+     -7.0,
+     -20.0,
+     "T",
+     4.329
+    ],
+    [
+     -21.0,
+     -28.0,
+     -8.0,
+     "T",
+     5.004
+    ],
+    [
+     27.0,
+     -34.0,
+     -5.0,
+     "T",
+     4.522
+    ],
+    [
+     18.0,
+     5.0,
+     -20.0,
+     "T",
+     6.147
+    ],
+    [
+     18.0,
+     2.0,
+     20.0,
+     "T",
+     4.069
+    ]
+   ]
+  }
+ ]
+}
