@@ -425,3 +425,42 @@ def test_numbers_that_cannot_be_template_brain_coordinates_are_refused(points, r
 )
 def test_template_brain_coordinates_and_empty_sets_pass(points):
     assert geometry.not_brain([{"x": x, "y": y, "z": z} for x, y, z in points]) is None
+
+
+def _xyz(points):
+    return [{"x": x, "y": y, "z": z} for x, y, z in points]
+
+
+# Sets the near-origin rule refused in production (geometry@1 audit, 2026-11-25), each with
+# the other points read from its source: subcortical and midline peaks beside brain peaks.
+@pytest.mark.parametrize(
+    "points, source",
+    [
+        # Base study Mghe4Qs8GdPD, table t2 "Non-smokers vs. Relapsers".
+        ([(-8, -8, 8)], [(-4, 58, -16), (18, 20, -8), (-8, -8, 8), (58, -18, 28)]),
+        # Base study rB5ULZL5Ej8Q, table-028 "Linker vorderer Thalamuskern".
+        ([(-8, -7, 9)], [(-8, -7, 9), (-62, -10, 14), (40, 12, -2), (-30, 22, 4)]),
+        # Base study 4w7A4VAhiaV5, prose "left NAc ROI", beside the paper's other prose peaks.
+        ([(-9, 9, -8)], [(-9, 9, -8), (36, 22, -4), (-32, 20, -6)]),
+    ],
+)
+def test_a_near_origin_set_among_brain_peaks_is_not_refused(points, source):
+    assert geometry.not_brain(_xyz(points)) == geometry.NEAR_ORIGIN
+    assert geometry.not_brain(_xyz(points), source=_xyz(source)) is None
+
+
+@pytest.mark.parametrize(
+    "points, source",
+    [
+        # Whole numbers, but nothing in the table reaches brain scale.
+        ([(-2, 0, -1), (3, 1, -4)], [(-2, 0, -1), (3, 1, -4), (-6, 2, 5)]),
+        # A misread row (cluster size read as x) lies outside the box: it is no brain scale.
+        ([(-2, 0, -1)], [(-2, 0, -1), (158, -2, 3)]),
+        # A rat lesion table, mm from bregma, beside a row that reaches 12 mm.
+        ([(-2.0, 0.3, -1.2), (-2.0, -0.3, -1.2)], [(-2.0, 0.3, -1.2), (-12.4, 1.5, -4.0)]),
+        # F, t and p read as x, y, z, in a table of brain peaks (production, geometry@1 audit).
+        ([(9.0, 3.19, 0.026)], [(9.0, 3.19, 0.026), (-42, 18, 24), (36, -61, 12)]),
+    ],
+)
+def test_a_near_origin_set_without_a_brain_scale_source_or_in_decimals_is_refused(points, source):
+    assert geometry.not_brain(_xyz(points), source=_xyz(source)) == geometry.NEAR_ORIGIN
