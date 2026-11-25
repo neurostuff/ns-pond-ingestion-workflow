@@ -209,6 +209,68 @@ def test_supplementary_pdfs_are_read_together_each_into_its_own_directory(env, t
     assert [(s.read, s.read_by) for _, _, s in pdfs] == [(True, "docling")] * 3
 
 
+def test_supplements_are_appended_to_each_current_extraction_not_only_the_first_source(env, tmp_path):
+    """Extract keeps its first source's extraction, but triage judges the one with the most
+    tables, which can be another (a PDF beside an ACE page): of 99,683 articles whose
+    supplements were read (2026-11-25), 778 had them on an extraction triage passed over. Each
+    of the article's current extractions gets them, appended without reading its download."""
+    from ingestion_workflow.pipeline.stages.triage import _most_tables
+
+    settings, catalog, ctx = env
+    ref = _article(catalog, "a1", pmcid="PMC1")
+    downloads = {source: _download(catalog, tmp_path, ref, source) for source in ("pubget", "elsevier")}
+    for source, download in downloads.items():
+        content = _extraction(tmp_path, ref)
+        if source == "elsevier":  # the publisher's XML holds the article's second table too
+            content.tables.append(ExtractedTable(table_id="t2", raw_content_path=tmp_path / "t2.xml"))
+        catalog.record([Outcome(ref.id, "extract", source, Status.OK,
+                                extraction_fingerprint(source, download), payload=content.to_dict(),
+                                summary={"tables": len(content.tables)})])
+    digest = _read_supplements(catalog, tmp_path, ref)
+    stage = ExtractStage(settings)
+
+    def refuse(source):
+        raise AssertionError("the download was read again")
+
+    stage.extractor = refuse
+    plan = _plan(stage, ctx, catalog, [ref])
+    assert sorted(w.source for w in plan.pending) == ["elsevier", "pubget"]
+
+    outcomes = list(stage.execute(ctx, plan.pending))
+    catalog.record(outcomes)
+
+    assert sorted((o.source, o.fingerprint) for o in outcomes) == sorted(
+        (s, extraction_fingerprint(s, d, digest)) for s, d in downloads.items())
+    extractions = catalog.artifacts([ref.id], "extract")[ref.id]
+    current = current_extractions(ctx, extractions, downloads)
+    assert set(current) == {"pubget", "elsevier"}
+    judged = _most_tables(current)
+    assert judged.source == "elsevier" and judged.summary["supplements_fingerprint"] == digest
+    assert _plan(stage, ctx, catalog, [ref]).pending == []
+
+
+def test_an_extraction_left_without_the_supplements_by_an_earlier_run_is_appended_them(env, tmp_path):
+    """The first source got the supplements on an earlier run and is fresh; the extraction
+    triage judges did not (Wiers 2015a: on ACE's page, not the Wiley PDF): it alone is queued."""
+    settings, catalog, ctx = env
+    ref = _article(catalog, "a1", pmcid="PMC1")
+    downloads = {source: _download(catalog, tmp_path, ref, source) for source in ("pubget", "elsevier")}
+    digest = _read_supplements(catalog, tmp_path, ref)
+    pubget, elsevier = downloads["pubget"], downloads["elsevier"]
+    catalog.record([
+        Outcome(ref.id, "extract", "pubget", Status.OK, extraction_fingerprint("pubget", pubget, digest),
+                payload=_extraction(tmp_path, ref).to_dict(),
+                summary={"tables": 2, "supplements_fingerprint": digest,
+                         "base_fingerprint": extraction_fingerprint("pubget", pubget)}),
+        Outcome(ref.id, "extract", "elsevier", Status.OK, extraction_fingerprint("elsevier", elsevier),
+                payload=_extraction(tmp_path, ref).to_dict(), summary={"tables": 1})])
+
+    plan = _plan(ExtractStage(settings), ctx, catalog, [ref])
+
+    assert [(w.source, w.fingerprint) for w in plan.pending] == [
+        ("elsevier", extraction_fingerprint("elsevier", elsevier, digest))]
+
+
 def test_a_work_with_the_extraction_s_own_fingerprint_is_read_again_and_gets_the_supplements(env, tmp_path):
     """A caller replaying a read (scripts/pdf_rerun.py) hands in the extraction's fingerprint:
     the extractor runs, and the outcome names the supplements appended to what it read."""
