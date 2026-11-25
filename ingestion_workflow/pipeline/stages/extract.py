@@ -291,6 +291,12 @@ class ExtractStage:
         above it has been ruled out. The article is fresh when that source's
         extraction is, not when a lower one's is. A fresh extraction that is
         `unusable` rules its source out too.
+
+        Supplements are the exception: they are appended to each of the article's
+        extractions that is current for its download (`_rejoins`, which reads no
+        download), since triage judges the one with the most tables, not the first
+        source's (`triage._most_tables`). On 2026-11-25, 778 of the 99,683 articles
+        whose supplements were read had them only on an extraction triage passed over.
         """
         plan = StagePlan(stage=self.name)
         ids = [ref.id for ref in refs]
@@ -334,7 +340,10 @@ class ExtractStage:
                     break
 
             if chosen is None:
-                if is_fresh:
+                rejoining = self._rejoining(ref, downloads, existing, sup) if is_fresh else []
+                if rejoining:
+                    plan.pending.extend(rejoining)
+                elif is_fresh:
                     plan.add_fresh(ref)
                 else:
                     plan.add_permanent(ref)
@@ -349,7 +358,25 @@ class ExtractStage:
                     upstream=download,
                 )
             )
+            plan.pending.extend(self._rejoining(ref, downloads, existing, sup, skip=source))
         return plan
+
+    def _rejoining(self, ref, downloads, existing, sup, skip=None) -> List[Work]:
+        """A work for each of the article's other extractions, current for its download, that
+        does not carry the supplements read now: each is appended them again (`_rejoins`)."""
+        if not sup:
+            return []
+        works = []
+        for source, download in downloads.items():
+            extraction = existing.get(source)
+            if (source == skip or extraction is None or extraction.status is not Status.OK
+                    or unusable(extraction)):
+                continue
+            fp = self.fingerprint_for(download.source, download, sup)
+            if (extraction.fingerprint != fp
+                    and base_fingerprint(extraction) == extraction_fingerprint(download.source, download)):
+                works.append(Work(ref=ref, source=source, fingerprint=fp, upstream=download))
+        return works
 
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
         """Extract each work; a failure over an extraction failed as a bad page keeps
@@ -357,13 +384,16 @@ class ExtractStage:
         ids = list({w.article_id for w in works})
         earlier = ctx.catalog.artifacts(ids, self.name)
         self._appending = _supplements_of(ctx, ids)
-        read = {w.article_id: w.upstream.source for w in works if w.upstream.source != w.source}
+        # An article's works are one per source: its first source's, and the extractions
+        # the supplements are appended to again (`_rejoining`).
+        read = {(w.article_id, w.source): w.upstream.source for w in works if w.upstream.source != w.source}
         rejoin = [w for w in works if self._rejoins(ctx, w, earlier.get(w.article_id, {}).get(w.source))]
-        again = {w.article_id for w in rejoin}
+        again = {(w.article_id, w.source) for w in rejoin}
         outcomes = [self._rejoined(ctx, w, earlier[w.article_id][w.source]) for w in rejoin]
-        for outcome in [*outcomes, *self._extract(ctx, [w for w in works if w.article_id not in again])]:
-            if outcome.article_id in read:
-                outcome.summary["download_source"] = read[outcome.article_id]
+        rest = [w for w in works if (w.article_id, w.source) not in again]
+        for outcome in [*outcomes, *self._extract(ctx, rest)]:
+            if (outcome.article_id, outcome.source) in read:
+                outcome.summary["download_source"] = read[(outcome.article_id, outcome.source)]
             before = earlier.get(outcome.article_id, {}).get(outcome.source)
             if (outcome.status is not Status.OK and before is not None
                     and before.status is not Status.OK and before.summary.get("bad_page")):
