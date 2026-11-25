@@ -1509,6 +1509,29 @@ def test_a_passage_with_a_hit_outside_the_legends_is_not_from_a_legend(env, tmp_
     assert found and not any(p.from_legend for p in found)
 
 
+def test_an_fsl_cluster_report_in_a_legend_is_a_passage_for_the_prose_model(tmp_path):
+    """Elkins et al. 2017 (PMC5625029) reports its one result only in Figure 3's legend, in FSL's
+    cluster-report form. The text was filtered as holding no coordinate; it is read now, and
+    the passage goes to the prose model, then the role model, marked as from a legend."""
+    from ingestion_workflow.extractors.figure_captions import append_legends
+    from ingestion_workflow.pipeline.stages import passages
+
+    legend = ("Figure 3. Statistical fMRI image of the pre- to post-treatment reduction in alcohol craving "
+              "related brain activity. Cluster Index = 1, Voxels = 439, p = 0.043, -log10(P) = 1.36, "
+              "Z-MAX = 3.84, Z-Max X (mm) = 40, Z-Max Y (mm) = -62, Z-MAX Z (mm) = 6, COPE-MAX = 13.2, "
+              "COPE-MEAN = 7.63. Note that the X, Y, Z coordinates are in MNI space.")
+    body = "## Results\n\nCraving fell after treatment in every patient.\n"
+    text, spans = append_legends(body, [(["F3"], legend)])
+    path = tmp_path / "elkins.txt"
+    path.write_text(text, encoding="utf-8")
+
+    how, found, _, _ = passages.find_passages({"text_path": str(path), "figure_captions": spans})
+
+    assert how != "filtered"
+    assert [(h.x, h.y, h.z) for p in found for h in p.hits] == [(40, -62, 6)]
+    assert all(p.from_legend for p in found)
+
+
 def test_passages_over_the_cap_are_recorded_with_their_reason(
         env, tmp_path, monkeypatch, evidence):
     from ingestion_workflow.pipeline.stages import passages
