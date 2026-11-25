@@ -1645,6 +1645,48 @@ def searches_manifest(
     typer.echo(f"{len(ids):,} articles -> {path}")
 
 
+# -- supplements attached by hand -------------------------------------------
+
+supplements_app = typer.Typer(
+    help="Supplementary files downloaded by hand, for the supplements stage to read.",
+    no_args_is_help=True,
+)
+app.add_typer(supplements_app, name="supplements")
+
+
+@supplements_app.command("attach")
+def supplements_attach(
+    identifier: str = typer.Argument(..., help="The article's PMID, PMC id or DOI."),
+    files: List[Path] = typer.Argument(..., exists=True, dir_okay=False, help="The files to attach."),
+    neurostore: bool = typer.Option(
+        False, "--neurostore", help="IDENTIFIER is the article's Neurostore base_study_id."
+    ),
+    config: Optional[Path] = ConfigOption,
+) -> None:
+    """Attach supplementary files to an article: the next `ingest run` reads them.
+
+    For files every route was refused (a publisher's HTTP 403) or lists none of. Each is
+    copied into the article's hand folder of the supplements cache; one named like a file a
+    route lists is read in that file's place. The catalog is not written: attaching changes
+    the supplements stage's fingerprint, so that stage, then every stage after it, is pending
+    for the article.
+    """
+    from ingestion_workflow.services import supplements as sp
+
+    wanted = Identifier(neurostore=identifier) if neurostore else _parse_identifier(identifier)
+    settings = _settings(config)
+    with _catalog(settings) as catalog:
+        ref = catalog.resolve(wanted)
+    if ref is None:
+        raise typer.BadParameter(f"no article in the catalog holds {identifier}")
+    try:
+        copied = sp.attach(Path(settings.cache_root) / "supplements", ref.id, files)
+    except ValueError as exc:
+        raise typer.BadParameter(str(exc)) from None
+    for path in copied:
+        typer.echo(f"{ref.id}: {path}")
+
+
 # -- data sources ------------------------------------------------------------
 
 data_sources_app = typer.Typer(

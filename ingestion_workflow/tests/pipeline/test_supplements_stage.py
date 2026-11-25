@@ -338,3 +338,119 @@ def test_a_kept_cloud_record_names_the_package_without_listing_the_bucket(tmp_pa
     [item] = _pmc("PMC5520049", jats, NoNetwork(), cloud)
 
     assert item.url == f"{sp.PMC_CLOUD}/PMC5520049.1/ncomms16052-s1.pdf"
+
+
+# -- files attached by hand ------------------------------------------------------
+
+
+def _hand(settings, article_id, name, body=b"%PDF-1.4 hand"):
+    source = Path(settings.cache_root).parent / "downloaded" / name
+    source.parent.mkdir(parents=True, exist_ok=True)
+    source.write_bytes(body)
+    return sp.attach(Path(settings.cache_root) / "supplements", article_id, [source])[0]
+
+
+def test_attaching_a_file_makes_the_article_pending_and_leaves_the_others_fingerprints(env, tmp_path):
+    from ingestion_workflow.catalog import fingerprint
+    from ingestion_workflow.pipeline.stages.supplements import SUPPLEMENTS_VERSION
+
+    settings, catalog, ctx = env
+    refs = [_article(catalog, f"a{n}", pmcid=f"PMC{n + 1}") for n in range(2)]
+    for ref in refs:
+        _download(catalog, tmp_path, ref, "pubget")
+    stage = SupplementsStage(settings)
+    before = {w.article_id: w.fingerprint for w in _plan(stage, ctx, catalog, refs).pending}
+    # An article with no hand file keeps the fingerprint it had before this feature.
+    assert before["a1"] == fingerprint("supplements", SUPPLEMENTS_VERSION, "pmc", "PMC2")
+    catalog.record([Outcome(r.id, "supplements", "", Status.OK, before[r.id], payload={"supplements": []})
+                    for r in refs])
+    assert _plan(stage, ctx, catalog, refs).pending == []
+
+    _hand(settings, "a0", "S1.pdf")
+    after = _plan(stage, ctx, catalog, refs)
+
+    assert [w.article_id for w in after.pending] == ["a0"]
+    assert after.pending[0].fingerprint != before["a0"]
+    _hand(settings, "a0", "S1.pdf", b"%PDF-1.4 another copy")
+    assert _plan(stage, ctx, catalog, refs).pending[0].fingerprint != after.pending[0].fingerprint
+
+
+def test_an_article_no_route_lists_supplements_for_is_asked_once_a_file_is_attached(env, tmp_path):
+    settings, catalog, ctx = env
+    ref = _article(catalog, "a1", doi="10.1/x")
+    _download(catalog, tmp_path, ref, "pdf")
+    stage = SupplementsStage(settings)
+    assert _plan(stage, ctx, catalog, [ref]).reasons == {NO_ROUTE: 1}
+
+    _hand(settings, "a1", "Data Sheet 1.pdf")
+
+    assert [w.article_id for w in _plan(stage, ctx, catalog, [ref]).pending] == ["a1"]
+
+
+def test_an_attached_file_is_read_in_the_place_of_the_copy_its_host_refused(env, tmp_path, monkeypatch):
+    """Wiley answered 403 for adb12221-sup-0001-si.doc; the copy attached under that name is
+    read in its place, and nothing is asked of the network for it."""
+    settings, catalog, ctx = env
+    ref = _article(catalog, "a1", doi="10.1111/adb.12221")
+    _download(catalog, tmp_path, ref, "ace")
+    stage = SupplementsStage(settings)
+    listed = [sp.Supplement("publisher", "https://w.example/adb12221-sup-0001-si.doc", "adb12221-sup-0001-si.doc"),
+              sp.Supplement("publisher", "https://w.example/adb12221-sup-0002-si.xlsx", "adb12221-sup-0002-si.xlsx")]
+    monkeypatch.setattr(stage, "_list", lambda work, stored, session: [sp.Supplement(**vars(s)) for s in listed])
+    fetched, read = [], []
+
+    def fetch(item, dest, session, **kw):
+        fetched.append((item.name, dest.name))
+        item.reason = "HTTP 403"
+
+    monkeypatch.setattr(sp, "fetch", fetch)
+    monkeypatch.setattr(stage, "_read", lambda root, jobs: read.extend((i, s.route, s.name) for _, i, s in jobs))
+    attached = _hand(settings, "a1", "adb12221-sup-0001-si.doc", b"\xd0\xcf\x11\xe0 a Word 97 file")
+    plan = _plan(stage, ctx, catalog, [ref])
+
+    [outcome] = list(stage.execute(ctx, plan.pending))
+
+    assert fetched == [("adb12221-sup-0002-si.xlsx", "02-adb12221-sup-0002-si.xlsx")]
+    assert read == [(1, "hand", "adb12221-sup-0001-si.doc")]
+    first, second = outcome.payload["supplements"]
+    assert (first["route"], first["path"], first["size"]) == ("hand", str(attached), attached.stat().st_size)
+    assert second["route"] == "publisher" and second["reason"] == "HTTP 403"
+    assert outcome.summary["routes"] == {"hand": 1, "publisher": 1}
+
+
+def test_a_kind_of_file_the_stage_does_not_read_is_not_attached(tmp_path):
+    image = tmp_path / "Figure S1.png"
+    image.write_bytes(b"\x89PNG")
+    with pytest.raises(ValueError, match="Figure S1.png"):
+        sp.attach(tmp_path / "root", "a1", [image])
+    assert not (tmp_path / "root" / "a1").exists()
+
+
+def test_the_attach_command_copies_the_files_for_the_article_an_identifier_names(tmp_path):
+    import json
+
+    from typer.testing import CliRunner
+
+    from ingestion_workflow.cli.main import app
+
+    config = tmp_path / "settings.yaml"
+    config.write_text(json.dumps({
+        "data_root": str(tmp_path / "data"), "cache_root": str(tmp_path / "cache"),
+        "catalog_root": str(tmp_path / "catalog"), "log_to_file": False, "show_progress": False,
+    }), encoding="utf-8")
+    with Catalog.open(tmp_path / "catalog") as catalog:
+        catalog._conn.execute("INSERT INTO articles(id, created_at) VALUES('a1', '2026-01-01')")
+        catalog._conn.execute("INSERT INTO aliases(kind, value, article_id) VALUES('neurostore', 'tcbia58KWKZj', 'a1')")
+        catalog._conn.commit()
+    supplement = tmp_path / "adb12221-sup-0001-si.doc"
+    supplement.write_bytes(b"\xd0\xcf\x11\xe0")
+    runner = CliRunner()
+
+    out = runner.invoke(app, ["supplements", "attach", "tcbia58KWKZj", str(supplement), "--neurostore",
+                              "--config", str(config)])
+
+    assert out.exit_code == 0, out.output
+    assert (tmp_path / "cache" / "supplements" / "a1" / "hand" / supplement.name).read_bytes() == b"\xd0\xcf\x11\xe0"
+    missing = runner.invoke(app, ["supplements", "attach", "nope", str(supplement), "--neurostore",
+                                  "--config", str(config)])
+    assert missing.exit_code != 0 and "no article in the catalog holds nope" in missing.output
