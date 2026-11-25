@@ -1014,13 +1014,14 @@ def _decorated_parse(grid, points):
     )
 
 
-def _html_grid(tmp_path, rows):
+def _html_grid(tmp_path, rows, heads=(("Region", "x", "y", "z"),), context=()):
     from ingestion_workflow.services.paper_parse import _grid
 
+    head = "".join("<tr>" + "".join(f"<th>{c}</th>" for c in row) + "</tr>" for row in heads)
     body = "".join("<tr>" + "".join(f"<td>{c}</td>" for c in row) + "</tr>" for row in rows)
     path = tmp_path / "t.html"
-    path.write_text(f"<table><tr><th>Region</th><th>x</th><th>y</th><th>z</th></tr>{body}</table>")
-    return _grid(path)
+    path.write_text(f"<table>{head}{body}</table>")
+    return _grid(path, context)
 
 
 @pytest.mark.parametrize(
@@ -1121,6 +1122,40 @@ def test_a_point_printed_in_loose_cells_is_placed(tmp_path, rows, points):
     parse, omitted = _decorated_parse(_html_grid(tmp_path, rows), points)
     assert omitted == []
     assert len(parse.analyses[0].points) == len(points)
+
+
+#: A sensitivity sweep, one cell per column (um7jeogmbcqd Table 5, a segmentation paper):
+#: the parameter's values and two scores stack like x, y and z.
+SWEEP = [["2 4 6 8 10", "87.12 87.18 87.28 87.20 87.15", "79.23 79.16 79.26 79.25 79.12"]]
+
+
+def test_cells_stacked_in_a_table_that_names_no_coordinates_print_no_point(tmp_path):
+    grid = _html_grid(tmp_path, SWEEP, heads=[("τ", "WT", "TC")],
+                      context=("Sensitivity analysis of the temperature coefficient τ.", None))
+    parse, omitted = _decorated_parse(grid, [(2, 87.12, 79.23), (4, 87.18, 79.16)])
+    assert parse.analyses == []
+    assert [o.reason for o in omitted] == ["no row of the table prints its points"]
+
+
+@pytest.mark.parametrize(
+    "heads, context",
+    [
+        # Named in an upper header row only (4bagc437wuwr, tqnilkdobnwh).
+        ([("Region", "Peak MNI coordinates", "", ""), ("", "a", "b", "c")], ()),
+        # Named in the caption only.
+        ([("Region", "a", "b", "c")], ("Cluster maxima in Talairach space", None)),
+        # One axis per heading, with its space (6mtqer4bgfb2).
+        ([("Cluster", "Tal X", "Tal Y", "Tal Z")], ()),
+    ],
+)
+def test_cells_stacked_in_a_table_that_names_coordinates_print_their_points(
+    tmp_path, heads, context
+):
+    rows = [["Peaks", "22 44 -20 32", "-92 18 6 0", "0 52 -12 8"]]
+    grid = _html_grid(tmp_path, rows, heads=heads, context=context)
+    parse, omitted = _decorated_parse(grid, [(22, -92, 0), (32, 0, 8)])
+    assert omitted == []
+    assert len(parse.analyses[0].points) == 2
 
 
 def test_decimal_commas_are_read_only_in_a_table_that_prints_no_decimal_point(tmp_path):
@@ -2166,9 +2201,9 @@ def test_an_analysis_whose_points_mix_t_and_z_states_no_statistic():
 def test_the_parse_is_stamped_with_the_version_that_keys_analyses_by_content(written):
     """Stored parses from before content keys carry location keys, so they must re-parse."""
     paper, parse, _ = written
-    assert paper_parse.PAPER_PARSE_VERSION == 15
+    assert paper_parse.PAPER_PARSE_VERSION == 16
     assert {paper["header"]["producer"]["version"], parse["header"]["producer"]["version"]} == {
-        "paper_parse.15"
+        "paper_parse.16"
     }
 
 

@@ -56,7 +56,8 @@ logger = get_logger(__name__)
 #: 13: study_schema paper-parse 0.11.0, whose licence ids are snake_case (`cc_by`).
 #: 14: a table whose points look invented says so in its reading's `reason`.
 #: 15: points in loose cells (decimal commas, ±, pairs, spaced runs, axis-labelled rows) are placed.
-PAPER_PARSE_VERSION = 15
+#: 16: points stacked down cells are read only in a table that names coordinates.
+PAPER_PARSE_VERSION = 16
 PRODUCER = "ns-pond-ingestion-workflow"
 PARSE_DIR = "parse"
 
@@ -120,13 +121,15 @@ class ParseInputs:
 class _Table:
     headings: List[str]
     rows: List[List[Tuple[str, int]]]  # body rows: (cell text, resolved column)
+    #: Whether its caption, footer or any cell names coordinates (`_names_coordinates`).
+    names_coordinates: bool = True
     _index: Optional[list] = field(default=None, repr=False)
 
     def index(self) -> list:
         """Per body row, read once: its numbers and the triples printed in one cell, as the
         cell readers read them; the same with decorated cells (`_coordinate_number`) and
         comma-separated triples (`_comma_triples`) read too; then each cell's loose readings
-        (`_loose_number`) and the triples a cell spells out (`_spelled_triples`) or a column
+        (`_loose_number`) and the triples a row spells out (`_row_spelled`) or a column
         prints down rows labelled x, y and z (`_axis_rows`)."""
         if self._index is None:
             from nspond_tables.grid import as_number
@@ -141,7 +144,7 @@ class _Table:
                     [(_coordinate_number(text), col) for text, col in cells],
                     [(trio, col) for text, col in cells for trio in _comma_triples(text)],
                     [(_loose_number(text, commas), col) for text, col in cells],
-                    _row_spelled(cells) + down.get(index, []),
+                    _row_spelled(cells, self.names_coordinates) + down.get(index, []),
                 )
                 for index, cells in enumerate(self.rows)
             ]
@@ -297,17 +300,20 @@ def _pure_run(text: str) -> Optional[List[float]]:
     return [float(v) for v in s.split()] if s and _SPACED_RUN.fullmatch(s) else None
 
 
-def _row_spelled(cells) -> List[Tuple[Tuple[float, float, float], int]]:
+def _row_spelled(cells, stacks: bool = True) -> List[Tuple[Tuple[float, float, float], int]]:
     """`_spelled_triples` of a row's cells, except cells stacking one axis each: three
     consecutive cells, each a run of the same N numbers whose column-wise triples could
     all be brain coordinates (`22 44 -20 32 | -92 18 6 0 | 0 52 -12 8`), print N points
-    down them, not one per cell. Three numbers a cell could be either, so both are read."""
+    down them, not one per cell. Three numbers a cell could be either, so both are read.
+
+    Cells are read as stacked only when `stacks`: in a table that does not name
+    coordinates, stacked runs are parameter sweeps and counts (`2 4 6 8 10 | 87.12 ...`)."""
     from nspond_tables.read import in_head
 
     filled = [(text, col) for text, col in cells if str(text).strip()]
     runs = [_pure_run(text) for text, _ in filled]
     stacked, out = set(), []
-    for i in range(len(filled) - 2):
+    for i in range(len(filled) - 2 if stacks else 0):
         trio = runs[i : i + 3]
         if (all(r is not None for r in trio) and len({len(r) for r in trio}) == 1
                 and all(in_head(p) for p in zip(*trio))):
@@ -435,7 +441,9 @@ def parsed_paper(root: Path, bundle: ArticleExtractionBundle, inputs: ParseInput
         is_meta = is_a_meta_analysis(title, types)
     verdicts = {str(v.get("table_id")): v for v in triage.get("tables") or [] if v.get("table_id")}
 
-    grids: Dict[str, _Table] = {t.table_id: _grid(t.raw_content_path) for t in content.tables}
+    grids: Dict[str, _Table] = {
+        t.table_id: _grid(t.raw_content_path, (t.caption, t.footer)) for t in content.tables
+    }
     inlined = _inlined_tables(content.tables, grids, text)
     tables = [
         _parsed_table(
@@ -686,8 +694,28 @@ def is_rodent_atlas_table(table) -> bool:
     )
 
 
-def _grid(raw_path) -> _Table:
-    """The table's header cells and body rows, as nspond_tables reads them."""
+#: Words a table uses for the positions it prints. In the corpus, only tables without
+#: them stacked junk down cells: segmentation scores, nodal-stage counts.
+_COORDINATE_WORDS = re.compile(
+    r"\bMNI\b|talairach|\btal\b|coordinat|stereotact|\bdipole|\bECD\b|\blocation|\bposition"
+    r"|\bcent(?:er|re) of (?:gravity|mass)|\bpeak|\bmaxim|\b[xyz]\s*\(mm\)"
+    r"|\bx\s*[,/;|]?\s*y\s*[,/;|]?\s*z\b",
+    re.I,
+)
+#: A cell naming one axis: `x`, `Tal X`, `y (mm)`.
+_AXIS_CELL = re.compile(r"^(?:(?:tal|mni)\s*)?[xyz]\s*(?:\(\s*mm\s*\))?$", re.I)
+
+
+def _names_coordinates(texts: Sequence[str]) -> bool:
+    """Whether a table's caption, footer and cells (`texts`) name coordinates."""
+    texts = [str(t or "").strip() for t in texts]
+    return (any(_AXIS_CELL.match(t) for t in texts)
+            or bool(_COORDINATE_WORDS.search(" | ".join(texts))))
+
+
+def _grid(raw_path, context: Sequence[Optional[str]] = ()) -> _Table:
+    """The table's header cells and body rows, as nspond_tables reads them. `context`
+    (its caption and footer) is read with the cells for whether it names coordinates."""
     from nspond_tables import serialize
     from nspond_tables.grid import is_header_row
 
@@ -700,13 +728,15 @@ def _grid(raw_path) -> _Table:
         return _Table([], [])
     headings: List[str] = []
     rows: List[List[Tuple[str, int]]] = []
+    texts: List[str] = [t for t in context if t]
     for row in resolved:
+        texts += [p.cell.text for p in row]
         if is_header_row(row):
             if not rows:
                 headings = [p.cell.text for p in row]
             continue
         rows.append([(p.cell.text, p.col) for p in row])
-    return _Table(headings, rows)
+    return _Table(headings, rows, _names_coordinates(texts))
 
 
 def _parsed_table(root: Path, index: int, table, grid: _Table, verdict, excluded, inlined):
