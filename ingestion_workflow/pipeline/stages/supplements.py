@@ -69,9 +69,13 @@ class SupplementsStage:
     def __init__(self, settings) -> None:
         self.settings = settings
 
-    def fingerprint_for(self, routes: Sequence[str], pmcid: Optional[str]) -> str:
-        return fingerprint("supplements", SUPPLEMENTS_VERSION, *routes,
-                           (pmcid or "") if "pmc" in routes else "")
+    def fingerprint_for(self, routes: Sequence[str], pmcid: Optional[str], hand=()) -> str:
+        """The routes asked, and any files attached by hand (name and sha256): attaching one
+        makes the article pending, and an article without any keeps the fingerprint it had."""
+        parts = [*routes, (pmcid or "") if "pmc" in routes else ""]
+        if hand:
+            parts.append(sorted((item.name, item.sha256) for item in hand))
+        return fingerprint("supplements", SUPPLEMENTS_VERSION, *parts)
 
     def plan(
         self,
@@ -80,8 +84,11 @@ class SupplementsStage:
         artifacts: Dict[str, Dict[str, Artifact]],
         upstream: Dict[str, Dict[str, Artifact]],
     ) -> StagePlan:
+        from ingestion_workflow.services import supplements as sp
+
         plan = StagePlan(stage=self.name)
         wanted = list(self.settings.supplement_routes)
+        root = Path(self.settings.cache_root) / "supplements"
         attempts = ctx.catalog.attempt_counts([ref.id for ref in refs], self.name, "")
         for ref in refs:
             downloads = upstream.get(ref.id, {})
@@ -89,10 +96,11 @@ class SupplementsStage:
                 plan.block(ref)
                 continue
             routes = routes_for(ref, [s for s, a in downloads.items() if a.status is Status.OK], wanted)
-            if not routes:
+            hand = sp.hand_items(root, ref.id)
+            if not routes and not hand:
                 plan.block(ref, NO_ROUTE)
                 continue
-            fp = self.fingerprint_for(routes, ref.identifier.pmcid)
+            fp = self.fingerprint_for(routes, ref.identifier.pmcid, hand)
             existing = artifacts.get(ref.id, {}).get("")
             if ctx.is_fresh(existing, fp):
                 plan.add_fresh(ref)
@@ -127,7 +135,7 @@ class SupplementsStage:
         with ThreadPoolExecutor(LIST_THREADS) as pool:
             for article_id, items, exc in pool.map(ask, works):
                 if exc is None:
-                    listed[article_id] = items
+                    listed[article_id] = _with_hand(sp.hand_items(root, article_id), items)
                 else:
                     logger.warning("supplements: listing failed for %s: %s", article_id, exc)
                     failed[article_id] = f"listing failed: {type(exc).__name__}: {exc}"
@@ -144,6 +152,8 @@ class SupplementsStage:
 
         def get(job):
             article_id, index, item = job
+            if item.route == sp.HAND:
+                return  # already here: `hand_items` recorded its path, size and sha256
             dest = root / article_id / "files" / sp.file_name(index, item)
             try:
                 sp.fetch(item, dest, session, max_bytes=self.settings.supplement_max_mb * 2**20, reuse=reuse)
@@ -294,6 +304,16 @@ class SupplementsStage:
             return
         for (_, _, item), content in zip(pdfs, contents):
             sp.from_pdf_content(item, content)
+
+
+def _with_hand(hand: list, items: list) -> list:
+    """The routes' items with each one a hand-attached file is named for replaced by that file
+    in its place (a file its host refused, HTTP 403, is read from the copy), then the other
+    hand-attached files. The routes' items keep their positions, and so the names their
+    fetched files are cached under (`file_name`)."""
+    by_name = {item.name.lower(): item for item in hand}
+    out = [by_name.pop(item.name.lower(), item) for item in items]
+    return out + [item for item in hand if item.name.lower() in by_name]
 
 
 def _parser():

@@ -33,6 +33,11 @@ logger = logging.getLogger(__name__)
 
 ROUTES = ("pmc", "elsevier", "springer", "publisher")
 
+#: Files someone downloaded by hand, where every route was refused or lists none
+#: (`ingest supplements attach`): kept in the article's `hand/` folder of the stage's cache,
+#: listed before any route, so a copy refused by its host is read from the attached file.
+HAND = "hand"
+
 #: Extensions fetched and read. Images, video, archives and code are listed and passed over.
 READ = {"pdf", "docx", "doc", "xlsx", "xls", "csv", "tsv", "txt"}
 SHEETS = {"xlsx", "xls", "csv", "tsv"}
@@ -122,7 +127,10 @@ def _local(el) -> str:
 
 
 def passed_over(item: Supplement) -> Optional[str]:
-    """Why a listed item is not fetched, if it is not."""
+    """Why a listed item is not fetched, if it is not. A file attached by hand has no
+    address: it is already here."""
+    if item.route == HAND:
+        return None if item.extension in READ else f"not read: .{item.extension or '?'}"
     if not item.url:
         return "no address"
     if item.extension not in READ:
@@ -130,6 +138,38 @@ def passed_over(item: Supplement) -> Optional[str]:
     if NOT_RESULTS.search(f"{item.label} {item.caption}"):
         return "about the paper's review or reporting"
     return None
+
+
+# -- attached by hand -------------------------------------------------------------
+
+
+def hand_dir(root: Path, article_id: str) -> Path:
+    """Where an article's hand-attached files are kept, under the stage's cache `root`."""
+    return Path(root) / article_id / HAND
+
+
+def hand_items(root: Path, article_id: str) -> List[Supplement]:
+    """The files attached to an article by hand, by name, each with its path, size and sha256."""
+    folder = hand_dir(root, article_id)
+    if not folder.is_dir():
+        return []
+    items = []
+    for path in sorted(p for p in folder.iterdir() if p.is_file() and not p.name.startswith(".")):
+        data = path.read_bytes()
+        items.append(Supplement(HAND, None, path.name, path=str(path), size=len(data),
+                                sha256=hashlib.sha256(data).hexdigest()))
+    return items
+
+
+def attach(root: Path, article_id: str, files: Sequence[Path]) -> List[Path]:
+    """Copy `files` into the article's hand folder, under their own names; a file of one name
+    is replaced. A file of a kind the stage does not read is refused before any is copied."""
+    unread = [f.name for f in files if extension(f.name) not in READ]
+    if unread:
+        raise ValueError(f"not a kind of file the supplements stage reads: {', '.join(unread)}")
+    folder = hand_dir(root, article_id)
+    folder.mkdir(parents=True, exist_ok=True)
+    return [Path(shutil.copy2(f, folder / f.name)) for f in files]
 
 
 # -- listing ---------------------------------------------------------------------
