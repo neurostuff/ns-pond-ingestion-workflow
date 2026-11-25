@@ -29,11 +29,34 @@ SEP = rf"\s*[,;/]\s*(?:and\s+)?|\s+|(?=[{MINUS}-])"
 #: hundreds of them between a bare "x" and the next number.
 SPACES = re.compile(r"[ \t\u00a0]{2,}")
 
+#: After an axis letter, the unit a report prints: "X (mm) = 40". Only millimetres: FSL's
+#: cluster report prints voxel indices beside them as "X (vox) = 45".
+_UNIT = r"(?:\s*\(\s*mm\s*\))?"
+#: Before the y and z of a labelled triplet, the label the report repeats for each axis:
+#: "Z-Max X (mm) = 40, Z-Max Y (mm) = -62, Z-MAX Z (mm) = 6", "COG Y (mm) = -12".
+#: The same label also names statistics per axis ("FWHM x = 6.66, FWHM y = 6.88, FWHM z = 6.79",
+#: head motion "P X = 0.161, P Y = 0.107"): a triplet read with it is dropped when every value
+#: is a fraction under 10 (`_axis_statistics`).
+_REPEATED = r"(?:[A-Za-z][A-Za-z-]{0,9}\s+)?"
 LABELLED = re.compile(
-    rf"\bx\s*(?:[=:]\s*)?(?P<x>{NUM})\s*(?:[,;]\s*)?(?:and\s+)?\by\s*(?:[=:]\s*)?(?P<y>{NUM})"
-    rf"\s*(?:[,;]\s*)?(?:and\s+)?\bz\s*(?:[=:]\s*)?(?P<z>{NUM})",
+    rf"\bx{_UNIT}\s*(?:[=:]\s*)?(?P<x>{NUM})\s*(?:[,;]\s*)?(?:and\s+)?(?P<ly>{_REPEATED})\by{_UNIT}\s*(?:[=:]\s*)?"
+    rf"(?P<y>{NUM})\s*(?:[,;]\s*)?(?:and\s+)?(?P<lz>{_REPEATED})\bz{_UNIT}\s*(?:[=:]\s*)?(?P<z>{NUM})",
     re.I,
 )
+
+
+#: Labels that name a statistic per axis, never a location: smoothness, resels, p, SD, SE.
+_STATISTIC_LABEL = re.compile(r"(?i)^(?:fwhm|fhwm|smooth\w*|resels?|p|sd|se|sem)$")
+
+
+def _axis_statistics(m: re.Match, values) -> bool:
+    """Whether a labelled triplet read through a repeated label is a statistic per axis: the
+    label names one, or every value is a fraction under 10."""
+    labels = [(m.group(k) or "").strip() for k in ("ly", "lz")]
+    if not any(labels):
+        return False
+    return (any(_STATISTIC_LABEL.match(label) for label in labels if label)
+            or all(v != int(v) and abs(v) < 10 for v in values))
 HEADED = re.compile(
     rf"(?:\(\s*)?\bx\s*,\s*y\s*,\s*z\s*(?:\)\s*)?[=:]\s*(?:[\(\[]\s*)?(?P<x>{NUM})(?:{SEP})(?P<y>{NUM})(?:{SEP})"
     rf"(?P<z>{NUM})\s*[\)\]]?",
@@ -264,6 +287,8 @@ def find(sentence: str) -> List[Hit]:
             except ValueError:
                 continue
             if not plausible(x, y, z):
+                continue
+            if name == "labelled" and _axis_statistics(m, (x, y, z)):
                 continue
             # Where a figure is cut ("slices at x = 30, y = 50"), not a result.
             if re.search(r"\bslices?\b[^.;]{0,40}$", sentence[:m.start()], re.I):

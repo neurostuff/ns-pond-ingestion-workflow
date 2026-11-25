@@ -41,6 +41,16 @@ def _xyz(sentence):
      [(-48, -72, 0), (-3, -21, -21), (9, -24, -6), (3, 9, 63)]),
     ("the left STS (−62, −23, 0; P < 0.05 corrected and posterior portion: −65, −51, 18; P = 0.001)",
      [(-62, -23, 0), (-65, -51, 18)]),
+    # FSL's cluster report in a figure legend, each axis labelled with its unit (Elkins et al. 2017,
+    # Front Behav Neurosci, Figure 3; PMC5625029)
+    ("Cluster Index = 1, Voxels = 439, p = 0.043, −log10(P) = 1.36, Z-MAX = 3.84, Z-Max X (mm) = 40, "
+     "Z-Max Y (mm) = −62, Z-MAX Z (mm) = 6, COPE-MAX = 13.2, COPE-MEAN = 7.63.", [(40, -62, 6)]),
+    ("the peak (MNI x (mm) = −22, y (mm) = −4, z (mm) = −18)", [(-22, -4, -18)]),
+    ("its centre of gravity, COG X (mm) = 30, COG Y (mm) = −12, COG Z (mm) = 52", [(30, -12, 52)]),
+    # each value labelled with its own axis, and a fraction that is a coordinate
+    ("right posterior cerebellar cortex (Tal x : 14, Tal y : -64, Tal z : -13; 18 voxels)", [(14, -64, -13)]),
+    ("the Putamen X = -22 mm Y = 12 mm Z = -4 mm in the cortex", [(-22, 12, -4)]),
+    ("an exploratory cluster (mean x = -7.5, mean y = 19.2, mean z = 5.5) in the cortex", [(-7.5, 19.2, 5.5)]),
 ])
 def test_the_forms_papers_write(sentence, expected):
     assert _xyz(sentence) == expected
@@ -57,6 +67,12 @@ def test_the_forms_papers_write(sentence, expected):
     "temporal gyri (BA 20, 21, 22) as well as temporopolar cortex (BA 38)",
     "a multiband sequence (TR/TE = 1,000/34.0 ms, 66 slices, 2 mm voxels)",
     "VMPFC group: 0.37 ± 0.01, 95% CI = [0.34, 0.40] in the cortex",
+    # FSL's voxel indices, printed beside the millimetres: not template coordinates
+    "Z-MAX X (vox) = 45, Z-MAX Y (vox) = 32, Z-MAX Z (vox) = 40, in the cluster",
+    # a statistic per axis under a repeated label (production texts, 2026-11-25)
+    "Gaussian filter widths: FWHM x = 6.66, FHWM y = 6.88, and FWHM z = 6.79 in the cortex",
+    "the estimated smoothness was FWHM x = 13.25, FWHM y = 13.98, FWHM z = 12.13 in the cortex",
+    "no difference in head motion between the groups (P X = 0.161, P Y = 0.107, P Z = 0.475, P pitch = 0.193)",
 ])
 def test_what_is_not_a_coordinate(sentence):
     assert _xyz(sentence) == []
