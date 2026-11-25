@@ -954,3 +954,25 @@ def test_cluster_sizes_moved_down_a_row_are_flagged():
     sizes = [p[4] for p in sized]
     moved = [(*p[:4], size) for p, size in zip(sized, sizes[1:] + sizes[:1])]
     assert extraction_signs.suspect_signs(moved, rows) == ["cluster_size_elsewhere"]
+
+
+# -- coordinates read off the headed x, y and z columns -------------------------
+
+COLUMN_SHIFT = Path(__file__).resolve().parents[1] / "data" / "column_shift"
+
+
+def test_coordinates_read_off_the_headed_columns_are_read_back_before_the_retry_check():
+    """Klausen 2022 Table S14 (production's answer): x, y and z read one column left, so
+    the roles stage refused the set as "outside a template brain"."""
+    stored = json.loads((COLUMN_SHIFT / "shifted_left_of_headed_xyz.json").read_text())
+    markup = (COLUMN_SHIFT / "shifted_left_of_headed_xyz.html").read_text()
+    table = SimpleNamespace(table_id="s1-table-14", space=None, table_number=14,
+                            caption=stored["caption"], footer=stored["footer"], metadata={})
+    bundle = SimpleNamespace(article_data=SimpleNamespace(tables=[table], slug="slug", identifier=None))
+    svc, asked = _service_answering(markup, stored["answer"])
+    realigned, retried = {}, {}
+    kept = svc.run(bundle, retried=retried, realigned=realigned)["s1-table-14"]
+    assert [(c.x, c.y, c.z) for a in kept.analyses for c in a.coordinates] == [
+        (-56, -10, -12), (60, 6, -22), (28, -20, -20), (-6, -12, -20)]
+    assert realigned["s1-table-14"].startswith("4 of 4 points read 1 column left")
+    assert asked == [False] and retried == {}

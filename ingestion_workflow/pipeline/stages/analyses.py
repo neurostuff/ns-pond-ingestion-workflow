@@ -264,9 +264,10 @@ class AnalysesStage:
         readings: Dict[str, str] = {}
         unread: Dict[str, str] = {}
         retried: Dict[str, str] = {}
+        realigned: Dict[str, str] = {}
         try:
             collections = self._service().run(
-                bundle, readings=readings, unread=unread, retried=retried
+                bundle, readings=readings, unread=unread, retried=retried, realigned=realigned
             )
         except Exception as exc:
             logger.warning("analyses failed for %s: %s", work.article_id, exc)
@@ -297,5 +298,6 @@ class AnalysesStage:
                 "readings": readings,
                 **({"unread": unread} if unread else {}),
                 **({"retried": retried} if retried else {}),
+                **({"realigned": realigned} if realigned else {}),
             },
         )

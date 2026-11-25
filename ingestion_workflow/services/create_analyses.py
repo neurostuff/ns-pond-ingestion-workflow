@@ -32,6 +32,7 @@ from ingestion_workflow.services.coordinate_flags import (
     is_placeholder,
     subpeak_flags,
 )
+from ingestion_workflow.services import column_shift
 from ingestion_workflow.services.naming import sanitize_table_id
 from ingestion_workflow.services.nuextract_payload import UnreadableAnswer
 from ingestion_workflow.utils.progress import emit_progress
@@ -372,6 +373,7 @@ class CreateAnalysesService:
         readings: Optional[Dict[str, str]] = None,
         unread: Optional[Dict[str, str]] = None,
         retried: Optional[Dict[str, str]] = None,
+        realigned: Optional[Dict[str, str]] = None,
     ) -> Dict[str, AnalysisCollection]:
         """Create analyses for every table in the bundle.
 
@@ -379,12 +381,14 @@ class CreateAnalysesService:
         (`table_reading`), including the tables that yield no collection;
         `unread` with why a table was not read; and `retried` with the tables
         asked again because values sat on the wrong point (`_misplaced`), and
-        which answer was kept. Passed in rather than kept on the service, which
-        is shared across threads.
+        which answer was kept; `realigned` with the tables whose points were read
+        off the headed x, y and z columns and read back (`column_shift.realign`).
+        Passed in rather than kept on the service, which is shared across threads.
         """
         readings = {} if readings is None else readings
         unread = {} if unread is None else unread
         retried = {} if retried is None else retried
+        realigned = {} if realigned is None else realigned
         if not bundle.article_data.tables:
             return {}
 
@@ -429,6 +433,12 @@ class CreateAnalysesService:
                     unread[table_key] = f"unreadable answer: {exc}"
                     unreadable = unreadable or exc
                     continue
+                # Before the misplaced check, which finds each point's row by its x, y and z.
+                parsed_output, moved = column_shift.realign(
+                    parsed_output, _footnote_marks(normalize_minus(table_text))
+                )
+                if moved:
+                    realigned[table_key] = moved
                 rows = [*serialised.splitlines(), table.caption or "", table.footer or ""]
                 misplaced = _misplaced(parsed_output, rows)
                 if misplaced:
