@@ -1,0 +1,10 @@
+{
+ "article_id": "qmnkgb36a3oi",
+ "base_study": "7UfrWhLFVTpg",
+ "table_id": "tbl4",
+ "model": "nu-v23",
+ "recorded": "rebuilt from the analyses artifact of 2026-11-24 (production catalog)",
+ "caption": "Maxima of regions showing significant BOLD signal changes in comparison of Go stimuli vs. baseline condition from patients with PD and controls.",
+ "footer": "sup=superior; inf=inferior; ant=anterior; post=posterior; mid=middle; med=medial; R=right; L=left; BA=Brodmann area. Statistical values refer to an F-test including HRF, temporal and dispersion derivatives. The size of each region is expressed in number of voxels. Only regions that survived after correction for multiple comparisons (pCorrected<0.05) have been considered. See text for further details.",
+ "answer": "{\"space\":\"MNI\",\"analyses\":[{\"name\":\"Controls\",\"points\":[[-26.0,-26.0,50.0,\"Z\",7.12,3902],[-48.0,-18.0,44.0,\"Z\",6.7,null],[-38.0,-22.0,48.0,\"Z\",5.67,null],[16.0,-58.0,-22.0,\"Z\",6.39,322],[-40.0,-74.0,-8.0,\"Z\",6.18,613],[-44.0,-54.0,-18.0,\"Z\",5.63,null],[0.0,-6.0,48.0,\"Z\",5.84,640],[-2.0,-5.0,62.0,\"Z\",5.22,null],[25.0,-8.0,62.0,\"Z\",5.21,null],[42.0,-32.0,66.0,\"Z\",5.68,100],[28.0,-80.0,-10.0,\"Z\",5.54,162],[34.0,76.0,-4.0,\"Z\",5.32,null],[38.0,-52.0,-12.0,\"Z\",5.08,null],[-22.0,-62.0,50.0,\"Z\",5.51,46],[48.0,-30.0,40.0,\"Z\",5.47,84],[8.0,-80.0,12.0,\"Z\",5.38,85],[64.0,-32.0,20.0,\"Z\",5.35,92],[-12.0,-20.0,2.0,\"Z\",5.08,29],[-56.0,4.0,34.0,\"Z\",5.05,42],[58.0,8.0,22.0,\"Z\",5.03,18],[50.0,-76.0,4.0,\"Z\",4.98,54],[-56.0,6.0,-8.0,\"Z\",4.91,11]],\"measure\":\"voxels\"},{\"name\":\"Patients with PD\",\"points\":[[-52.0,-16.0,10.0,\"Z\",6.72,38],[-14.0,-68.0,26.0,\"Z\",5.64,84],[-34.0,-18.0,50.0,\"Z\",5.39,110],[-8.0,-14.0,-4.0,\"Z\",4.91,5],[-28.0,-92.0,4.0,\"Z\",4.86,8],[10.0,-14.0,-4.0,\"Z\",4.84,null],[14.0,-32.0,32.0,\"Z\",4.82,3],[20.0,34.0,34.0,\"Z\",4.73,2],[-50.0,-18.0,44.0,\"Z\",4.73,8]],\"measure\":\"voxels\"}]}"
+}

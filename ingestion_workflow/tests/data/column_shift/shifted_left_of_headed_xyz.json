@@ -1,0 +1,10 @@
+{
+ "article_id": "4zaarb5tgnc6",
+ "base_study": "rYszPogkix6X",
+ "table_id": "s1-table-14",
+ "model": "nu-v23",
+ "recorded": "rebuilt from the analyses artifact of 2026-11-23 (production catalog)",
+ "caption": "Supplementary file 1 (jciinsight-7-159863-s185.pdf): Table 14: Decrease of cue-induced activation over time in the exenatide group (n=10) from baseline to the week 26 re-scan, (contrast alcohol - neutral stimuli, combined voxel-wise- [P < 0.001] and cluster-extent threshold [k >= 104 voxels], corresponding to pFWE < 0.05) (Figure 5)",
+ "footer": null,
+ "answer": "{\"space\":null,\"analyses\":[{\"name\":\"Decrease of cue-induced activation over time in the exenatide group (n=10) from baseline to the week 26 re-scan, (contrast alcohol - neutral stimuli, combined voxel-wise- [P < 0.001] and cluster-extent threshold [k >= 104 voxels], corresponding to pFWE < 0.05) (Figure 5)\",\"points\":[[158.0,-56.0,-10.0,\"T\",4.496,12529],[136.0,60.0,6.0,\"T\",4.59,902422],[218.0,28.0,-20.0,\"T\",5.533,978894],[553.0,-6.0,-12.0,\"T\",5.1571,8174211513211]],\"measure\":\"voxels\"}]}"
+}

@@ -1,0 +1,66 @@
+<original-table>
+  <table-wrap xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" position="float" id="t0010">
+    <label>Table 2</label>
+    <caption>
+      <p>Selected regions of interest (ROIs, from the fMRI task; <xref rid="f0015" ref-type="fig">Fig. 3</xref>B and C) used in the rs-fMRI ROI-to-ROI analysis. Clustering threshold = 4.0 voxels. Family-wise error correction = 0.95. The full table of all ROIs can be found in Supplementary Material <xref rid="t0015" ref-type="table">Table 3</xref>.</p>
+    </caption>
+    <table frame="hsides" rules="groups">
+      <thead>
+        <tr>
+          <th colspan="2" rowspan="2">Contrast</th>
+          <th colspan="4">Max. intensity<break/>MNI coordinates<hr/></th>
+          <th rowspan="2">Brain Regions<break/>(Harvard-Oxford atlas)</th>
+          <th rowspan="2">Cluster size<break/>(voxels)</th>
+        </tr>
+        <tr>
+          <th>BA</th>
+          <th>x</th>
+          <th>y</th>
+          <th>z</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Intelligibility<break/>Clear &gt; Rotated</td>
+          <td>4</td>
+          <td>20</td>
+          <td>−46</td>
+          <td>12</td>
+          <td>−34</td>
+          <td>L temporal pole</td>
+          <td>82</td>
+        </tr>
+        <tr>
+          <td/>
+          <td>14</td>
+          <td>21</td>
+          <td>−50</td>
+          <td>−34</td>
+          <td>−6</td>
+          <td>L middle temporal gyrus, post</td>
+          <td>635</td>
+        </tr>
+        <tr>
+          <td>Semantics<break/>Clear &gt; Rotated + Vocoded</td>
+          <td>7</td>
+          <td>20</td>
+          <td>44</td>
+          <td>0</td>
+          <td>−26</td>
+          <td>R STG, ant</td>
+          <td>108</td>
+        </tr>
+        <tr>
+          <td/>
+          <td>24</td>
+          <td>37</td>
+          <td>−38</td>
+          <td>−40</td>
+          <td>–22</td>
+          <td>L temporal fusiform cortex, post</td>
+          <td>4</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+</original-table>

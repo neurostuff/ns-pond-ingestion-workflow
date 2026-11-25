@@ -1,0 +1,10 @@
+{
+ "article_id": "u5h6wqgbjant",
+ "base_study": "PrdVj784R4oQ",
+ "table_id": "t0010",
+ "model": "nu-v23",
+ "recorded": "rebuilt from the analyses artifact of 2026-11-23 (production catalog)",
+ "caption": "Selected regions of interest (ROIs, from the fMRI task; Fig. 3B and C) used in the rs-fMRI ROI-to-ROI analysis. Clustering threshold\u00a0=\u00a04.0 voxels. Family-wise error correction\u00a0=\u00a00.95. The full table of all ROIs can be found in Supplementary Material Table 3.",
+ "footer": null,
+ "answer": "{\"space\":\"OTHER\",\"analyses\":[{\"name\":\"Intelligibility Clear > Rotated\",\"points\":[[20.0,-46.0,12.0,null,null,82],[21.0,-50.0,-34.0,null,null,635]],\"measure\":\"voxels\"},{\"name\":\"Semantics Clear > Rotated + Vocoded\",\"points\":[[20.0,44.0,0.0,null,null,108],[37.0,-38.0,-40.0,null,null,4]],\"measure\":\"voxels\"}]}"
+}
