@@ -161,16 +161,20 @@ def assign_roles(
     position (pondie's `table_id#ordinal`) never moves, and upload leaves them
     out (`uploaded_sets`).
 
-    A set whose points cannot be template brain coordinates (`geometry.not_brain`)
-    is decided before any model is asked: no role, held, with the rule's reason. It
+    A set whose points cannot be template brain coordinates (`geometry.not_brain`,
+    given every point of the set's table, or of the prose, for scale) is decided
+    before any model is asked: no role, held, with the rule's reason. It
     stays in its place here and is left out of the parse.
     """
     found = list(set_contexts(payload, passages, text, raw_tables, unread))
+    source_points: Dict[str, List[Any]] = collections.defaultdict(list)
+    for table_id, _, _, _, context in found:
+        source_points[table_id] += context.points
     decisions = {}
     asked = []
     for item in found:
         table_id, index, origin, _, context = item
-        reason = geometry.not_brain(context.points)
+        reason = geometry.not_brain(context.points, source=source_points[table_id])
         if reason is None:
             asked.append(item)
             continue

@@ -478,6 +478,28 @@ def test_a_set_that_cannot_be_brain_coordinates_has_no_role_and_is_not_asked():
     assert "role_reason" not in out["t2"]["analyses"][0]["metadata"]["set_role"]
 
 
+def test_a_near_origin_set_is_judged_by_its_table_not_alone():
+    """A thalamic peak within 10 mm of the origin, in a table of brain peaks, goes to the model;
+    the same set in a table where nothing reaches brain scale is refused."""
+    def thalamus():
+        analysis = _analysis("Left anterior thalamus")
+        analysis["coordinates"] = [{"x": -8.0, "y": -7.0, "z": 9.0, "space": "MNI"}]
+        return analysis
+
+    answers = {**TABLE_ANSWERS, "Left anterior thalamus": ("result", 0.95)}
+    payload = _tables()
+    payload["t2"]["analyses"].append(thalamus())
+    out, summary = assign_roles(payload, [], TEXT, FakeClassifier(answers))
+    assert out["t2"]["analyses"][2]["metadata"]["set_role"]["role_source"] == "fake@1"
+    assert summary["not_brain"] == 0
+
+    alone = _tables()
+    alone["t2"]["analyses"] = [thalamus()]
+    out, summary = assign_roles(alone, [], TEXT, FakeClassifier(answers))
+    assert out["t2"]["analyses"][0]["metadata"]["set_role"]["role_reason"] == geometry.NEAR_ORIGIN
+    assert summary["not_brain"] == 1
+
+
 def test_a_table_of_refused_sets_needs_no_model():
     payload = {"t2": {**_tables()["t2"], "analyses": [_voxel_indices()]}}
     out, summary = assign_roles(payload, [], TEXT, None)  # never asked
