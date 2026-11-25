@@ -449,18 +449,22 @@ def test_a_near_origin_set_among_brain_peaks_is_not_refused(points, source):
     assert geometry.not_brain(_xyz(points), source=_xyz(source)) is None
 
 
+def test_a_near_origin_set_in_decimals_among_brain_peaks_is_not_refused():
+    # Human peaks printed to a decimal place, beside brain-scale peaks in the same table.
+    points = [(-6.52, -1.35, -0.3)]
+    source = [(-6.52, -1.35, -0.3), (-21.6, 4.2, -10.8), (14.1, -18.3, 7.5)]
+    assert geometry.not_brain(_xyz(points), source=_xyz(source)) is None
+
+
 @pytest.mark.parametrize(
-    "points, source",
+    "source",
     [
-        # Whole numbers, but nothing in the table reaches brain scale.
-        ([(-2, 0, -1), (3, 1, -4)], [(-2, 0, -1), (3, 1, -4), (-6, 2, 5)]),
+        # Nothing in the table reaches brain scale: rat mm from bregma.
+        [(-2.0, 0.3, -1.2), (-2.0, -0.3, -1.2), (-2.0, 0.3, -2.5), (-3.3, 1.5, -4.0)],
         # A misread row (cluster size read as x) lies outside the box: it is no brain scale.
-        ([(-2, 0, -1)], [(-2, 0, -1), (158, -2, 3)]),
-        # A rat lesion table, mm from bregma, beside a row that reaches 12 mm.
-        ([(-2.0, 0.3, -1.2), (-2.0, -0.3, -1.2)], [(-2.0, 0.3, -1.2), (-12.4, 1.5, -4.0)]),
-        # F, t and p read as x, y, z, in a table of brain peaks (production, geometry@1 audit).
-        ([(9.0, 3.19, 0.026)], [(9.0, 3.19, 0.026), (-42, 18, 24), (36, -61, 12)]),
+        [(-2.0, 0.3, -1.2), (158.0, -2.0, 3.0)],
     ],
 )
-def test_a_near_origin_set_without_a_brain_scale_source_or_in_decimals_is_refused(points, source):
+def test_a_near_origin_set_in_a_source_with_no_brain_peak_is_refused(source):
+    points = [(-2.0, 0.3, -1.2), (-2.0, -0.3, -1.2), (-2.0, 0.3, -2.5)]
     assert geometry.not_brain(_xyz(points), source=_xyz(source)) == geometry.NEAR_ORIGIN

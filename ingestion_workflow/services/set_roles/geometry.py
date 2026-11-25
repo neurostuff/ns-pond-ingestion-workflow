@@ -13,11 +13,9 @@ refuse are mostly misread rows (a lost sign, a range read as x, y, z) and dipole
 in a head frame, which are not template coordinates either.
 
 A thalamic or accumbens peak can lie within 10 mm of the origin, so the near-origin
-rule lets a set through when it is printed in whole millimetres, as template peaks
-are, and its source (its table, or the paper's prose) holds a plausible point beyond
-that. Rodent mm from bregma and statistics read as x, y, z print decimals. In the
-production catalog (2026-11-25), version 1 refused 6,729 near-origin sets; this
-passes 1,255 of them (834 papers) to the role model.
+rule reads the set's source (its table, or the paper's prose): a set is refused only
+when nothing there is a plausible point beyond 10 mm. Rodent stereotaxic tables are
+told apart elsewhere (`paper_parse.is_rodent_atlas_table`), not here.
 """
 
 from __future__ import annotations
@@ -58,18 +56,17 @@ def not_brain(points: Iterable[Any], source: Iterable[Any] = ()) -> Optional[str
     """Why these points cannot be template brain coordinates, or None when they can be.
 
     `source` is every point read from the set's table, or from the paper's prose.
-    A set within 10 of zero is refused unless it is in whole millimetres and its
-    source holds a plausible point beyond that. A set with no readable point is not
-    refused: there is nothing to judge, and its role is the model's.
+    A set within 10 of zero is refused only when its source holds no plausible point
+    beyond that. A set with no readable point is not refused: there is nothing to
+    judge, and its role is the model's.
     """
     xyz = _triples(points)
     if not xyz:
         return None
     if all(x == y == z for x, y, z in xyz):
         return SAME_AXES
-    if all(map(_near_origin, xyz)) and not (
-        all(v.is_integer() for p in xyz for v in p)
-        and any(plausible(*p) and not _near_origin(p) for p in _triples(source))
+    if all(map(_near_origin, xyz)) and not any(
+        plausible(*p) and not _near_origin(p) for p in _triples(source)
     ):
         return NEAR_ORIGIN
     if 2 * sum(not plausible(*p) for p in xyz) > len(xyz):
