@@ -497,14 +497,26 @@ _CAPTION_LINE = re.compile(r"^\W*(?:supplementa\w*\s+)?table\s*s?\d+", re.I)
 
 def word_captions(document) -> List[str]:
     """For each table of a Word document, in order, the nearest paragraph before it that starts
-    "Table N": Docling links no caption to a Word table (supplementary-extraction's rule)."""
-    out, last = [], ""
-    for node, _ in document.iterate_items():
+    "Table N": Docling links no caption to a Word table (supplementary-extraction's rule).
+
+    Docling reads a paragraph whose runs differ in format ("**Supplementary Table 5.**
+    Whole-brain ...") as an inline group of texts; the group's texts, joined, are the paragraph.
+    """
+    out, last, grouped = [], "", set()
+    for node, _ in document.iterate_items(with_groups=True):
         if node in document.tables:
             out.append(last)
             last = ""
             continue
-        text = _squash(getattr(node, "text", "") or "")
+        if node.self_ref in grouped:
+            continue
+        if getattr(node, "label", None) == "inline":
+            parts = [child.resolve(document) for child in node.children]
+            grouped.update(part.self_ref for part in parts)
+            text = " ".join(getattr(part, "text", "") or "" for part in parts)
+        else:
+            text = getattr(node, "text", "") or ""
+        text = _squash(text)
         if _CAPTION_LINE.match(text):
             last = text
     return out
