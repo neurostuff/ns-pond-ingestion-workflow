@@ -323,6 +323,13 @@ def test_a_review_reporting_its_own_data_is_not_marked(title, types):
      ["Journal Article", "Review"],
      "Cortical GM-CBF maps were generated using Pseudo-Continuous Arterial Spin Labeling "
      "(pCASL) for 109 participants (BD, n = 61; HC, n = 48).", False),
+    # 572qunkruled: a review that also presents a study of its own
+    ("The myth of the visual word form area", ["Journal Article", "Review"],
+     "We review the evidence for this claim and argue that neither the neuropsychological nor "
+     "neuroimaging data are consistent with a cortical region specialized for visual word form "
+     "representations. In addition, we present functional imaging data to demonstrate that the "
+     "so-called VWFA is activated by normal subjects during tasks that do not engage visual word "
+     "form processing.", False),
     # a Review type alone, with nothing in the abstract saying it reviews
     ("Amygdala responses to faces", ["Journal Article", "Review"], "", False),
 ])
