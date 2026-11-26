@@ -1,0 +1,33 @@
+{
+ "article_id": "sj3ns3tfpvk4",
+ "table_id": "hbm24870-tbl-0004",
+ "caption": "ECN components correlating with EF based on NBS",
+ "footer": "",
+ "model": "nu-v23",
+ "analyses": [
+  {
+   "name": "Connectivity measured by SIFT2",
+   "points": [
+    [
+     0.284,
+     0.054,
+     45.6,
+     "P",
+     0.003
+    ]
+   ]
+  },
+  {
+   "name": "Connectivity measured by FA",
+   "points": [
+    [
+     0.198,
+     0.026,
+     39.0,
+     "P",
+     0.016
+    ]
+   ]
+  }
+ ]
+}
