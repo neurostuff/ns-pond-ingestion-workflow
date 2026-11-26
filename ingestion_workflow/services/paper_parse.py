@@ -717,10 +717,12 @@ def _names_coordinates(texts: Sequence[str]) -> bool:
 
 #: The reason a table read for coordinates is read as holding none (`_reads_statistics`).
 STATISTICS_REASON = "its points look like statistics, not coordinates, and it names no coordinates"
-#: A cell naming one axis in words `_AXIS_CELL` does not read: `X COM`, `MeanX`, `X axis`,
-#: `MNI1`, or a stereotaxic axis (`AP`, `D-V`, `Lat`).
+#: A cell naming an axis or a position in words `_AXIS_CELL` does not read: `X COM`, `MeanX`,
+#: `X axis`, `MNI1`, a stereotaxic axis (`AP`, `D-V`, `Lat`), `Cluster Centers` or `Centroid`.
 _AXIS_NAME = re.compile(
-    r"^(?:mean\s*)?[xyz]\s*(?:axis|com|mm|\[mm\])?$|^mni\s*\d$|^(?:a[-/ ]?p|m[-/ ]?l|d[-/ ]?v|lat)$", re.I
+    r"^(?:mean\s*)?[xyz]\s*(?:axis|com|mm|\[mm\])?$|^mni\s*\d$|^(?:a[-/ ]?p|m[-/ ]?l|d[-/ ]?v|lat)$"
+    r"|^(?:cluster\s+)?cent(?:er|re)s?$|^centroids?(?:\s*\(mm\))?$",
+    re.I,
 )
 
 

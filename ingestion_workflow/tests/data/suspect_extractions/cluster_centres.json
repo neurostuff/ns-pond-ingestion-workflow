@@ -1,0 +1,112 @@
+{
+ "article_id": "ku7amj3bj54z",
+ "table_id": "table-6",
+ "caption": "TABLE 6: Meta-data cluster results.",
+ "footer": "R: right hemisphere, L: left hemisphere.",
+ "model": "nu-v23",
+ "analyses": [
+  {
+   "name": "Meta-data cluster results.",
+   "points": [
+    [
+     -9.11,
+     -14.45,
+     1.4,
+     null,
+     null
+    ],
+    [
+     -0.83,
+     -4.64,
+     0.54,
+     null,
+     null
+    ],
+    [
+     16.75,
+     -10.63,
+     -11.33,
+     null,
+     null
+    ],
+    [
+     3.48,
+     -5.52,
+     -2.15,
+     null,
+     null
+    ],
+    [
+     2.08,
+     -4.61,
+     -0.14,
+     null,
+     null
+    ],
+    [
+     0.87,
+     -7.7,
+     -0.63,
+     null,
+     null
+    ],
+    [
+     0.99,
+     -6.33,
+     2.62,
+     null,
+     null
+    ],
+    [
+     2.3,
+     -5.89,
+     0.32,
+     null,
+     null
+    ],
+    [
+     0.43,
+     -6.59,
+     0.6,
+     null,
+     null
+    ],
+    [
+     -0.18,
+     -4.99,
+     0.11,
+     null,
+     null
+    ],
+    [
+     1.69,
+     -5.25,
+     1.43,
+     null,
+     null
+    ],
+    [
+     -0.64,
+     -5.93,
+     1.77,
+     null,
+     null
+    ],
+    [
+     1.29,
+     -5.28,
+     1.23,
+     null,
+     null
+    ],
+    [
+     0.45,
+     -5.31,
+     -0.87,
+     null,
+     null
+    ]
+   ]
+  }
+ ]
+}

@@ -2584,6 +2584,9 @@ def test_statistics_read_as_points_from_a_table_naming_no_coordinates_are_left_o
         "centres_of_mass",
         # MNI peaks to three decimals in a supplement table whose headings were lost.
         "decimal_coordinates_headerless",
+        # A meta-analysis's foci clusters, centres packed under `Cluster Centers` (doi
+        # 10.1155/2018/3506794 table 6).
+        "cluster_centres",
     ],
 )
 def test_decimal_coordinates_in_a_table_naming_no_coordinates_are_kept(tmp_path, name):
