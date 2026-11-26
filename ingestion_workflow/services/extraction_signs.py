@@ -55,13 +55,20 @@ def _long(value: float) -> bool:
     return "e" in text or ("." in text and len(text.split(".")[1]) >= 3)
 
 
-def point_signs(points: Sequence[Point], rows: Iterable[str]) -> Counter:
-    """How many of `points` carry each sign, against the table's `rows` of text.
+def fractions(x: float, y: float, z: float) -> bool:
+    """Whether all three numbers are non-integers under 10."""
+    return all(_small(v) for v in (x, y, z))
 
-    Brain coordinates are mostly whole millimetres, so a point is statistic-like when all
-    three of its numbers are non-integers under 10, or two of them have three or more
-    decimals.
-    """
+
+def statistic_like(x: float, y: float, z: float) -> bool:
+    """Whether a point looks like statistics: brain coordinates are mostly whole
+    millimetres, so all three numbers non-integers under 10, or two of them with three or
+    more decimals."""
+    return fractions(x, y, z) or sum(_long(v) for v in (x, y, z)) >= 2
+
+
+def point_signs(points: Sequence[Point], rows: Iterable[str]) -> Counter:
+    """How many of `points` carry each sign, against the table's `rows` of text."""
     counts = [Counter(_key(n) for n in _NUMBER.findall(row)) for row in rows]
     anywhere = Counter(k for row in counts for k in row.elements())
 
@@ -80,7 +87,7 @@ def point_signs(points: Sequence[Point], rows: Iterable[str]) -> Counter:
             signs[UNPRINTED] += 1
         elif not found:
             signs[SCATTERED] += 1
-        if all(_small(v) for v in (x, y, z)) or sum(_long(v) for v in (x, y, z)) >= 2:
+        if statistic_like(x, y, z):
             signs[STATISTIC_LIKE] += 1
         if len(want) == 1:
             signs[REPEATED] += 1
@@ -112,4 +119,7 @@ def describe(points: Sequence[Point], rows: Iterable[str]) -> Optional[str]:
     return "suspect extraction: " + "; ".join(parts)
 
 
-__all__ = ["SIGNS", "MISPLACED", "MIN_POINTS", "point_signs", "suspect_signs", "describe"]
+__all__ = [
+    "SIGNS", "MISPLACED", "MIN_POINTS", "fractions", "statistic_like", "point_signs",
+    "suspect_signs", "describe",
+]

@@ -9,6 +9,7 @@ with a `reason`. Nothing is dropped without one.
 | `excluded_by_hand` | the person's reason and note |
 | `rejected_by_triage` | the triage route |
 | `no_coordinates` | for a rodent atlas table: "its coordinates are rodent stereotaxic positions (bregma-relative or in a rodent atlas's axes), not brain coordinates in a template space" |
+| `no_coordinates` | for a table holding statistics: "its points look like statistics, not coordinates, and it names no coordinates" |
 
 A table is a rodent atlas table when its caption, footer or column headings (never its rows)
 either name a rodent atlas ("Paxinos and Watson", "Franklin and Paxinos"), or name an animal
@@ -17,6 +18,16 @@ with bregma, "interaural", Paxinos or Franklin, or all three of the AP, ML and D
 "mouse" is not an animal here, and human atlas references ("Mai and Paxinos") do not count.
 Each analysis of such a table is omitted with the same reason; a table a person excluded or
 triage rejected keeps that reading.
+
+A table holds statistics when nothing in it names coordinates (its caption, footer and cells
+name no space, axis, peak or position: `paper_parse._names_coordinates`, nor a cell naming an axis
+or position such as `X COM`, `MeanX`, `X axis`, `MNI1`, `AP`, `D-V`, `Lat`, `Cluster Centers` or
+`Centroid`) and more than half the points read
+from it are statistic-like (below). A table whose headings were lost can print MNI peaks to three
+decimals, so there a point counts only when all three numbers are non-integers under 10. Each
+analysis of such a table is omitted with the same reason. Over the 121,553 tables uploaded by
+2026-11-25 this reads 73 as holding statistics; read by hand, all 73 were statistics or
+other measures read as x, y, z.
 
 A table read for `coordinates` whose points look invented keeps its reading and its analyses,
 and its `reason` starts `suspect extraction:` and names each sign it carries

@@ -57,7 +57,9 @@ logger = get_logger(__name__)
 #: 14: a table whose points look invented says so in its reading's `reason`.
 #: 15: points in loose cells (decimal commas, ±, pairs, spaced runs, axis-labelled rows) are placed.
 #: 16: points stacked down cells are read only in a table that names coordinates.
-PAPER_PARSE_VERSION = 16
+#: 17: a table that names no coordinates and whose points look like statistics is read as
+#:     holding none (`_reads_statistics`).
+PAPER_PARSE_VERSION = 17
 PRODUCER = "ns-pond-ingestion-workflow"
 PARSE_DIR = "parse"
 
@@ -713,6 +715,37 @@ def _names_coordinates(texts: Sequence[str]) -> bool:
             or bool(_COORDINATE_WORDS.search(" | ".join(texts))))
 
 
+#: The reason a table read for coordinates is read as holding none (`_reads_statistics`).
+STATISTICS_REASON = "its points look like statistics, not coordinates, and it names no coordinates"
+#: A cell naming an axis or a position in words `_AXIS_CELL` does not read: `X COM`, `MeanX`,
+#: `X axis`, `MNI1`, a stereotaxic axis (`AP`, `D-V`, `Lat`), `Cluster Centers` or `Centroid`.
+_AXIS_NAME = re.compile(
+    r"^(?:mean\s*)?[xyz]\s*(?:axis|com|mm|\[mm\])?$|^mni\s*\d$|^(?:a[-/ ]?p|m[-/ ]?l|d[-/ ]?v|lat)$"
+    r"|^(?:cluster\s+)?cent(?:er|re)s?$|^centroids?(?:\s*\(mm\))?$",
+    re.I,
+)
+
+
+def _reads_statistics(grid: Optional[_Table], collection: AnalysisCollection) -> bool:
+    """Whether a table read for coordinates holds statistics instead: it names no coordinates
+    or axis, and most of its points look like statistics (`extraction_signs.statistic_like`).
+
+    A table without headings (a supplement sheet that lost them) can print MNI peaks to
+    three or more decimals, so there only points of fractions under 10 count.
+    """
+    from ingestion_workflow.services import extraction_signs
+
+    points = [(c.x, c.y, c.z) for a in collection.analyses for c in a.coordinates]
+    if grid is None or grid.names_coordinates or not points:
+        return False
+    cells = [*grid.headings, *(text for row in grid.rows for text, _ in row)]
+    if any(_AXIS_NAME.match(str(c or "").strip()) for c in cells):
+        return False
+    headed = any(str(h or "").strip() for h in grid.headings)
+    looks = extraction_signs.statistic_like if headed else extraction_signs.fractions
+    return 2 * sum(looks(*p) for p in points) > len(points)
+
+
 def _grid(raw_path, context: Sequence[Optional[str]] = ()) -> _Table:
     """The table's header cells and body rows, as nspond_tables reads them. `context`
     (its caption and footer) is read with the cells for whether it names coordinates."""
@@ -982,11 +1015,17 @@ def coordinate_parse(
     analyses: List[pp.ParsedAnalysis] = []
     seen: Dict[str, pp.ParsedAnalysis] = {}
     rodent = _rodent_tables(paper)
+    # A table read as holding no coordinates, with its reason.
+    no_coordinates = dict.fromkeys(rodent, RODENT_ATLAS_REASON)
+    no_coordinates.update(
+        (tid, STATISTICS_REASON) for tid, collection in per_table.items()
+        if tid not in no_coordinates and _reads_statistics(grids.get(tid), collection)
+    )
     captioned = {t.table_id for t in paper.tables or [] if (t.caption or "").strip()}
     for table_id, collection in per_table.items():
-        if table_id in rodent:
+        if table_id in no_coordinates:
             omitted += [
-                Omitted(a.name, table_id, RODENT_ATLAS_REASON) for a in collection.analyses
+                Omitted(a.name, table_id, no_coordinates[table_id]) for a in collection.analyses
             ]
             continue
         table_analyses = []
@@ -1062,7 +1101,7 @@ def coordinate_parse(
         parse_id=parse_id,
         text_sha256=paper.text_sha256,
         analyses=analyses,
-        tables=_readings(paper, per_table, inputs, omitted, rodent, grids) or None,
+        tables=_readings(paper, per_table, inputs, omitted, no_coordinates, grids) or None,
         omitted_analyses=[
             pp.OmittedAnalysis(
                 name=o.name,
@@ -1598,13 +1637,14 @@ def _readings(
     per_table: Mapping[str, AnalysisCollection],
     inputs: ParseInputs,
     omitted: Sequence[Omitted] = (),
-    rodent: Set[str] = frozenset(),
+    no_coordinates: Mapping[str, str] = {},
     grids: Mapping[str, _Table] = {},
 ):
     """One TableReading per table of the paper whose reading is known.
 
-    A hand exclusion wins, then a triage rejection, then a rodent atlas table (read as
-    holding no coordinates, with its reason), then what the analyses stage
+    A hand exclusion wins, then a triage rejection, then a table read as holding no
+    coordinates (`no_coordinates`, a rodent atlas table or one holding statistics, each
+    with its reason), then what the analyses stage
     recorded. An article analysed before readings were recorded has them only
     for the tables it made a collection for; the rest are not recorded. A table
     some of whose analyses were left out names them in `reason`, and so does a table
@@ -1631,10 +1671,10 @@ def _readings(
                     table_id=tid, reading="rejected_by_triage", reason=table.triage.route
                 )
             )
-        elif tid in rodent:
+        elif tid in no_coordinates:
             out.append(
                 pp.TableReading(
-                    table_id=tid, reading="no_coordinates", reason=RODENT_ATLAS_REASON
+                    table_id=tid, reading="no_coordinates", reason=no_coordinates[tid]
                 )
             )
         elif inputs.readings is not None and tid in inputs.readings:

@@ -2201,9 +2201,9 @@ def test_an_analysis_whose_points_mix_t_and_z_states_no_statistic():
 def test_the_parse_is_stamped_with_the_version_that_keys_analyses_by_content(written):
     """Stored parses from before content keys carry location keys, so they must re-parse."""
     paper, parse, _ = written
-    assert paper_parse.PAPER_PARSE_VERSION == 16
+    assert paper_parse.PAPER_PARSE_VERSION == 17
     assert {paper["header"]["producer"]["version"], parse["header"]["producer"]["version"]} == {
-        "paper_parse.16"
+        "paper_parse.17"
     }
 
 
@@ -2504,9 +2504,19 @@ def _reading(tmp_path, name):
 
 
 def test_factor_loadings_read_as_points_are_flagged_as_statistics(tmp_path):
+    markup, collection, stored = _read_back("factor_loadings")
+    grid = _grid_of(tmp_path, markup)
+    reason = paper_parse._suspect(_bare_table("tbl1", stored["caption"], None, stored["footer"]),
+                                  collection, grid)
+    assert "suspect extraction: 37 of 37 points look like statistics" in reason
+    # The table names no coordinates, so it is read as holding none.
     reading = _reading(tmp_path, "factor_loadings")
-    assert reading.reading == "coordinates"
-    assert "suspect extraction: 37 of 37 points look like statistics" in reading.reason
+    assert (reading.reading, reading.reason) == ("no_coordinates", paper_parse.STATISTICS_REASON)
+
+
+def _grid_of(tmp_path, markup):
+    (tmp_path / "g.html").write_text(markup, encoding="utf-8")
+    return paper_parse._grid(tmp_path / "g.html")
 
 
 def test_placeholder_points_on_a_table_with_no_coordinates_are_flagged(tmp_path):
@@ -2525,6 +2535,64 @@ def test_statistics_moved_up_a_row_are_flagged(tmp_path):
 def test_decimal_coordinates_near_the_midline_are_not_suspect(tmp_path):
     # Read correctly: (-27.3, -1.9, -2.3) is a putamen peak, not a statistic.
     assert _reading(tmp_path, "decimal_coordinates").reason is None
+
+
+def _parse_read_back(tmp_path, name):
+    """coordinate_parse over a stored table, its grid read with its caption and footer as
+    production reads it."""
+    markup, collection, stored = _read_back(name)
+    source = next(p for p in SUSPECT.glob(f"{name}.*") if p.suffix != ".json")
+    path = tmp_path / f"t{source.suffix}"
+    path.write_text(markup, encoding="utf-8")
+    grid = paper_parse._grid(path, [stored["caption"], stored["footer"]])
+    paper = SimpleNamespace(
+        header=SimpleNamespace(identifiers=IDENTIFIERS),
+        text_sha256="0" * 64,
+        tables=[_bare_table("tbl1", stored["caption"], grid.headings, stored["footer"])],
+    )
+    return paper_parse.coordinate_parse(paper, "Results\n", {"tbl1": grid}, {"tbl1": collection},
+                                        _inputs())
+
+
+@pytest.mark.parametrize(
+    "name, sets",
+    [
+        # PMC7267982 table 4 (base study UqYRE5RtvSoD): tractography correlations, effect
+        # sizes and percentages read as x, y, z, one point per set.
+        ("dmri_tract_statistics", 2),
+        # PMC12891825 supplementary table 6 (nosQayjxXEQK): principal component scores of
+        # dogs and cats by age, in a sheet whose headings were lost.
+        ("pca_scores", 2),
+    ],
+)
+def test_statistics_read_as_points_from_a_table_naming_no_coordinates_are_left_out(
+    tmp_path, name, sets
+):
+    parse, omitted = _parse_read_back(tmp_path, name)
+    assert parse.analyses == []
+    assert [o.reason for o in omitted] == [paper_parse.STATISTICS_REASON] * sets
+    [reading] = parse.tables
+    assert (reading.reading, reading.reason) == ("no_coordinates", paper_parse.STATISTICS_REASON)
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        # Rat ROIs on AP, DV and ML axes in mm, most of them fractions.
+        "rat_stereotaxic_rois",
+        # Structures' centres of mass under `X COM`, `Y COM`, `Z COM`, to three decimals.
+        "centres_of_mass",
+        # MNI peaks to three decimals in a supplement table whose headings were lost.
+        "decimal_coordinates_headerless",
+        # A meta-analysis's foci clusters, centres packed under `Cluster Centers` (doi
+        # 10.1155/2018/3506794 table 6).
+        "cluster_centres",
+    ],
+)
+def test_decimal_coordinates_in_a_table_naming_no_coordinates_are_kept(tmp_path, name):
+    parse, _ = _parse_read_back(tmp_path, name)
+    assert parse.analyses
+    assert parse.tables[0].reading == "coordinates"
 
 
 def test_a_table_read_right_is_not_suspect(tmp_path):

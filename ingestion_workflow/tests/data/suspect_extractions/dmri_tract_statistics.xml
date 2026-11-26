@@ -1,0 +1,54 @@
+<original-table>
+  <table-wrap xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:mml="http://www.w3.org/1998/Math/MathML" id="hbm24870-tbl-0004" xml:lang="en" orientation="portrait" position="float">
+    <label>Table 4</label>
+    <caption>
+      <p>ECN components correlating with EF based on NBS</p>
+    </caption>
+    <table frame="hsides" rules="groups">
+      <col align="left" span="1"/>
+      <col align="left" span="1"/>
+      <col align="left" span="1"/>
+      <col align="left" span="1"/>
+      <col align="left" span="1"/>
+      <thead valign="bottom">
+        <tr style="border-bottom:solid 1px #000000">
+          <th align="left" valign="bottom" rowspan="1" colspan="1">Tract</th>
+          <th align="left" valign="bottom" rowspan="1" colspan="1">Correlation between the connection strength and EF</th>
+          <th align="left" valign="bottom" rowspan="1" colspan="1">Effect size Δ<italic>R</italic><sup>2</sup></th>
+          <th align="left" valign="bottom" rowspan="1" colspan="1">% of total connection strength in ECN</th>
+          <th align="left" valign="bottom" rowspan="1" colspan="1">NBS FWE corrected <italic>p</italic> value</th>
+        </tr>
+      </thead>
+      <tbody valign="top">
+        <tr>
+          <td align="left" valign="top" rowspan="1" colspan="1">Connectivity measured by SIFT2</td>
+          <td align="left" valign="top" rowspan="1" colspan="1"/>
+          <td align="left" valign="top" rowspan="1" colspan="1"/>
+          <td align="left" valign="top" rowspan="1" colspan="1"/>
+          <td align="left" valign="top" rowspan="1" colspan="1"/>
+        </tr>
+        <tr>
+          <td align="left" valign="top" rowspan="1" colspan="1">L temp. Lobe–L par. Lobe–L post. dlPFC – R post. dlPFC–R parietal lobe – R caudate</td>
+          <td align="left" valign="top" rowspan="1" colspan="1">0.284</td>
+          <td align="left" valign="top" rowspan="1" colspan="1">0.054</td>
+          <td align="left" valign="top" rowspan="1" colspan="1">45.6</td>
+          <td align="left" valign="top" rowspan="1" colspan="1">0.003</td>
+        </tr>
+        <tr>
+          <td align="left" valign="top" rowspan="1" colspan="1">Connectivity measured by FA</td>
+          <td align="left" valign="top" rowspan="1" colspan="1"/>
+          <td align="left" valign="top" rowspan="1" colspan="1"/>
+          <td align="left" valign="top" rowspan="1" colspan="1"/>
+          <td align="left" valign="top" rowspan="1" colspan="1"/>
+        </tr>
+        <tr>
+          <td align="left" valign="top" rowspan="1" colspan="1">R parietal–R post. dlPFC–R ant. dlPFC–R caudate</td>
+          <td align="left" valign="top" rowspan="1" colspan="1">0.198</td>
+          <td align="left" valign="top" rowspan="1" colspan="1">0.026</td>
+          <td align="left" valign="top" rowspan="1" colspan="1">39.0</td>
+          <td align="left" valign="top" rowspan="1" colspan="1">0.016</td>
+        </tr>
+      </tbody>
+    </table>
+  </table-wrap>
+</original-table>
