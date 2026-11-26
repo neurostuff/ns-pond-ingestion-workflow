@@ -107,6 +107,29 @@ def test_a_named_analysis_whose_every_point_is_unwritten_is_omitted_not_kept_emp
         {"name": None, "unwritten": 0, "reason": "no name and no points"}]
 
 
+# Elkins et al. 2017 (Front Behav Neurosci, PMC5625029): FSL's cluster report, each axis labelled.
+# nu-prose-v3's answer, recorded from the prose stage on 2026-11-25, was dropped as "points not
+# in passage": the locator did not read the labels between the values.
+ELKINS = (
+    "The pre- to post-treatment reduction in alcohol craving related brain activity in the "
+    "occipital cortex was statistically significant at a corrected p -value < 0.05. Cluster "
+    "Index = 1, Voxels = 439, p = 0.043, \u2212log10( P ) = 1.36, Z-MAX = 3.84, Z-Max X (mm) = 40, "
+    "Z-Max Y (mm) = \u221262, Z-MAX Z (mm) = 6, COPE-MAX = 13.2, COPE-MEAN = 7.63. Note that the X, "
+    "Y, Z coordinates are in MNI space."
+)
+
+
+def test_a_point_printed_with_each_axis_labelled_is_the_passage_s():
+    point = {"x": 40, "y": -62, "z": 6, "statistic": "Z", "value": 3.84, "cluster_size": 439}
+    name = "pre- to post-treatment reduction in alcohol craving-related brain activity"
+    answer = {"space": "MNI",
+              "analyses": [{"name": name, "measure": "voxels", "points": [point]}]}
+    got = clean_answer(answer, ELKINS)
+    kept = [(p["x"], p["y"], p["z"], a["unwritten"]) for a in got["analyses"] for p in a["points"]]
+    assert kept == [(40, -62, 6, 0)]
+    assert got["omitted"] == []
+
+
 def test_the_document_carries_the_context_asked_for():
     assert passage_body(PASSAGE, "P") == PASSAGE.text
     assert passage_body(PASSAGE, "H").startswith("Section: Results\n\n")

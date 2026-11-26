@@ -55,6 +55,20 @@ _SEPARATOR = (
 # The last value is not the head of a longer number ("6" is not "6.5" or "60").
 _END = r"(?!\.?\d)"
 
+#: After an axis letter, the unit a report prints: "X (mm) = 40". Only millimetres: FSL's
+#: cluster report prints voxel indices beside them as "X (vox) = 45".
+AXIS_UNIT = r"(?:\s*\(\s*mm\s*\))?"
+#: Before the y and z of a labelled triplet, the label the report repeats for each axis:
+#: "Z-Max X (mm) = 40, Z-Max Y (mm) = -62, Z-MAX Z (mm) = 6", "COG Y (mm) = -12".
+AXIS_LABEL = r"(?:[A-Za-z][A-Za-z-]{0,9}\s+)?"
+
+
+def _labelled(axis: str) -> str:
+    """Between two values, the next one's axis with its repeated label: ", Z-Max Y (mm) = " (longer
+    than `_SEPARATOR` reaches)."""
+    return (rf"[^\S\n]*[,;]?[^\S\n]*(?:and[^\S\n]+)?{AXIS_LABEL}(?i:{axis}){AXIS_UNIT}"
+            rf"[^\S\n]*[=:][^\S\n]*")
+
 
 def _forms(value: float, rounded: bool) -> List[str]:
     magnitude = abs(float(value))
@@ -79,7 +93,9 @@ def _number(value: float, rounded: bool) -> str:
 @lru_cache(maxsize=4096)
 def pattern(point: Triple, rounded: bool = False) -> re.Pattern:
     """The regex printing `point`'s x, y and z, in that order."""
-    return re.compile(_SEPARATOR.join(_number(v, rounded) for v in point))
+    x, y, z = (_number(v, rounded) for v in point)
+    to_y, to_z = (rf"(?:{_SEPARATOR}|{_labelled(axis)})" for axis in "yz")
+    return re.compile(f"{x}{to_y}{y}{to_z}{z}")
 
 
 def triple(point) -> Optional[Triple]:
