@@ -493,20 +493,49 @@ def _word_converter():
 
 
 _CAPTION_LINE = re.compile(r"^\W*(?:supplementa\w*\s+)?table\s*s?\d+", re.I)
+#: A caption paragraph that is only its label: "Table S6", "Supplementary Table 2.".
+_LABEL_ONLY = re.compile(r"^\W*(?:supplementa\w*\s+)?table\s*s?\d+[a-z]?\s*[.:]?$", re.I)
+
+
+def _join_runs(parts: List[str]) -> str:
+    """A paragraph's runs as one text: Docling strips each run's own spaces, so runs are
+    joined by one, except before closing punctuation or after an opening bracket."""
+    out = ""
+    for part in (p.strip() for p in parts):
+        if out and part and part[0] not in ".,;:!?)]" and out[-1] not in "([":
+            out += " "
+        out += part
+    return out
 
 
 def word_captions(document) -> List[str]:
     """For each table of a Word document, in order, the nearest paragraph before it that starts
-    "Table N": Docling links no caption to a Word table (supplementary-extraction's rule)."""
-    out, last = [], ""
-    for node, _ in document.iterate_items():
+    "Table N": Docling links no caption to a Word table (supplementary-extraction's rule).
+
+    Docling reads a paragraph whose runs differ in format ("**Supplementary Table 5.**
+    Whole-brain ...") as an inline group of texts; the group's texts, joined, are the paragraph.
+    A paragraph that is only the label ("Table S6") takes the next paragraph, its title, when
+    one comes before the table.
+    """
+    out, last, grouped, titled = [], "", set(), True
+    for node, _ in document.iterate_items(with_groups=True):
         if node in document.tables:
             out.append(last)
-            last = ""
+            last, titled = "", True
             continue
-        text = _squash(getattr(node, "text", "") or "")
+        if node.self_ref in grouped:
+            continue
+        if getattr(node, "label", None) == "inline":
+            parts = [child.resolve(document) for child in node.children]
+            grouped.update(part.self_ref for part in parts)
+            text = _join_runs([getattr(part, "text", "") or "" for part in parts])
+        else:
+            text = getattr(node, "text", "") or ""
+        text = _squash(text)
         if _CAPTION_LINE.match(text):
-            last = text
+            last, titled = text, not _LABEL_ONLY.match(text)
+        elif text and not titled:
+            last, titled = f"{last} {text}", True
     return out
 
 

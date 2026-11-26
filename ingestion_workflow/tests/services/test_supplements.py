@@ -294,6 +294,66 @@ def test_a_word_file_is_read_with_its_tables(tmp_path):
     assert read["caption"] == "Table S1. Peaks of the group difference."
 
 
+@pytest.mark.parametrize("runs, caption", [
+    # PMC13791214's supplement: "Supplementary" and "Table 5." in bold, the rest plain. Docling
+    # reads the paragraph as an inline group of three texts; the caption was "Table 5." alone.
+    ([("Supplementary", "b"), ("Table 5.", "bi"),
+      ("Whole-brain associations between gray matter volume and aggression.", "")],
+     "Supplementary Table 5. Whole-brain associations between gray matter volume and aggression."),
+    # A run that starts with its punctuation takes no space before it.
+    ([("Table S3", "b"), (". Brain areas showing gene interaction effects on ReHo", "")],
+     "Table S3. Brain areas showing gene interaction effects on ReHo"),
+])
+def test_a_word_caption_whose_runs_differ_in_format_is_read_whole(tmp_path, runs, caption):
+    import docx
+
+    document = docx.Document()
+    paragraph = document.add_paragraph()
+    for text, style in runs:
+        run = paragraph.add_run(text)
+        run.bold, run.italic = "b" in style, "i" in style
+    table = document.add_table(rows=2, cols=4)
+    for r, row in enumerate([["Region", "x", "y", "z"], ["IFG", "-39", "20", "19"]]):
+        for c, cell in enumerate(row):
+            table.cell(r, c).text = cell
+    path = tmp_path / "fcag426_supplementary_data.docx"
+    document.save(path)
+    item = sp.Supplement("pmc", "https://x/s.docx", path.name, path=str(path))
+
+    sp.read(item, tmp_path / "read")
+
+    [read] = item.tables
+    assert read["caption"] == caption
+
+
+@pytest.mark.parametrize("paragraphs, caption", [
+    # A supplement prints "Table S6" alone, its title as the next paragraph.
+    (["Voxel coordinates are in MNI space.", "Table S6",
+      "Conjunction analysis of MACM and RSFC results for left middle insula"],
+     "Table S6 Conjunction analysis of MACM and RSFC results for left middle insula"),
+    # A caption with its title keeps no later paragraph.
+    (["Table S1. Peaks of the group difference.", "Coordinates are in MNI space."],
+     "Table S1. Peaks of the group difference."),
+])
+def test_a_word_caption_that_is_only_its_label_takes_the_next_paragraph(tmp_path, paragraphs, caption):
+    import docx
+
+    document = docx.Document()
+    for text in paragraphs:
+        document.add_paragraph(text)
+    table = document.add_table(rows=2, cols=4)
+    for r, row in enumerate([["Region", "x", "y", "z"], ["Insula", "-38", "4", "2"]]):
+        for c, cell in enumerate(row):
+            table.cell(r, c).text = cell
+    path = tmp_path / "s1.docx"
+    document.save(path)
+    item = sp.Supplement("pmc", "https://x/s1.docx", path.name, path=str(path))
+
+    sp.read(item, tmp_path / "read")
+
+    assert item.tables[0]["caption"] == caption
+
+
 @pytest.mark.parametrize("item", [
     sp.Supplement("pmc", None, "s3.xlsx", reason="not in PMC's Cloud Service package"),
     sp.Supplement("publisher", "https://www.pnas.org/doi/suppl/x", "", reason="HTTP 403"),
