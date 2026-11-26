@@ -67,9 +67,70 @@ TRIAGE_VERSION = 2
 #: MeSH first: PubMed indexes the type, it is on 99.9% of articles that have a
 #: PubMed record, and it catches papers whose title never says so. The title
 #: catches the 58% of articles with no publication type at all.
-META_ANALYSIS_TYPES = frozenset({"meta-analysis", "systematic review"})
+META_ANALYSIS_TYPES = frozenset({"meta-analysis"})
+_DASH = r"[\s\-\u2010-\u2015]?"
+#: "meta-analytic" but not "meta-analytically": a primary study whose regions came from
+#: a meta-analysis is still a primary study.
 META_ANALYSIS_TITLE = re.compile(
-    r"meta[-\s]?analy[sz]|\bALE\b|activation\s+likelihood\s+estimation", re.I)
+    rf"meta{_DASH}analy(?:[sz]|tic(?:al)?\b)|\bALE\b|activation\s+likelihood\s+estimation", re.I)
+
+#: A systematic review is marked like a meta-analysis.
+REVIEW_TYPES = frozenset({"systematic review", "scoping review"})
+REVIEW_TITLE = re.compile(
+    r"\b(?:systematic|systemic|semi[\s-]?systematic|scoping|umbrella|quantitative)"
+    r"(?:\s+(?:literature|narrative|systematic))?\s+reviews?\b"
+    r"|\boverview\s+of\s+(?:\w+\s+)?reviews\b", re.I)
+
+#: A review or meta-analysis that reports data of its own is a primary study: a case
+#: report, or a title naming its own study ("... and an fMRI study", "replication in an
+#: independent cohort"). Only the MeSH Meta-Analysis type outranks it.
+OWN_DATA = re.compile(
+    r"\b(?:new|novel|original|own|independent|empirical)\s+(?:\w+\s+)?"
+    r"(?:data|evidence|results|findings|study|sample|cohort|validation|replication|experiment)\b"
+    r"|\bpreliminary\s+(?:\w+\s+)?(?:data|study|sample|experiment)\b"
+    r"|\bcase\s+(?:reports?|series)\b|\breport\s+of\s+(?:\w+\s+){0,2}cases?\b|\bcohort\s+study\b"
+    r"|\billustrative\s+cases?\b|\bcase\s+and\s+(?:\w+\s+)?review"
+    r"|\b(?:study|experiment)\s+and\s+(?:an?\s+)?(?:\w+\s+){0,2}review"
+    r"|\breview\s+and\s+an?\s+(?:[\w/-]+\s+){0,3}(?:study|experiment)\b", re.I)
+
+#: A narrative review is marked too, but its signals are weaker: PubMed's Review type sits
+#: on primary studies as well (105 of 572 synced articles that carry only that type report
+#: their own data). So it needs a title naming a review or an abstract saying it reviews,
+#: and no abstract sentence that reports the paper's own participants, cases or data.
+#: Checked against 676 read abstracts: 95% of the papers it marks are reviews, and it
+#: marks 68% of the reviews.
+NARRATIVE_TYPES = frozenset({"review"})
+NARRATIVE_TITLE = re.compile(r"(?<!peer\s)\breviews?\b|\boverview\b", re.I)
+REVIEW_STATEMENT = re.compile(
+    r"\b(?:this|the\s+present|the\s+current|our|a)\s+(?:\w+\s+){0,2}"
+    r"(?:review|overview|chapter|perspective|commentary|synthesis|opinion)\b"
+    r"|\b(?:we|i|authors)\s+(?:\w+\s+)?(?:review|summari[sz]e|discuss|overview|outline|"
+    r"synthesi[sz]e|survey|examine\s+the\s+(?:literature|evidence)|highlight|propose|consider|"
+    r"describe\s+(?:recent|current))\b"
+    r"|\b(?:is|are)\s+(?:reviewed|discussed|summari[sz]ed|outlined|considered|highlighted)\b"
+    r"|\bto\s+(?:review|summari[sz]e|overview)\b"
+    r"|\b(?:literature|studies|evidence|findings|research)\s+(?:is|are|was|were)\s+"
+    r"(?:reviewed|summari[sz]ed|discussed)\b"
+    r"|\breview(?:s|ed|ing)?\s+(?:of\s+)?(?:the\s+)?(?:\w+\s+){0,3}"
+    r"(?:literature|studies|evidence|findings|research|work|data)\b", re.I)
+_PEOPLE = (r"(?:participants|subjects|patients|volunteers|controls|adults|children|adolescents|"
+           r"individuals|women|men|infants|monkeys|macaques|rats|mice)")
+_KIND = r"(?:healthy|young(?:er)?|old(?:er)?|adult|male|female|right-handed|normal|elderly|human)"
+OWN_DATA_ABSTRACT = re.compile(
+    r"\b(?:were|was)\s+(?:scanned|recruited|enrolled|imaged|tested)\b"
+    r"|\bwe\s+(?:scanned|recruited|enrolled|imaged|tested|acquired|collected|recorded|trained)\b"
+    rf"|\b(?:\d+|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty)\s+"
+    rf"(?:{_KIND}\s+)*{_PEOPLE}\s+(?:were|underwent|performed|completed|participated|took\s+part|"
+    r"viewed|listened)\b"
+    r"|\b\d+-year-old\b"
+    r"|\bwe\s+(?:report|present|describe)\s+(?:a|the|two|three)\s+(?:\w+\s+){0,3}(?:case|patient)s?\b"
+    r"|\b(?:new|novel|original|preliminary|unpublished|additional)\s+(?:\w+\s+){0,2}"
+    r"(?:data|results|findings|experiments?|analys[ie]s|assessments?|recordings?|scans?)\b"
+    r"|\b(?:our|own)\s+(?:\w+\s+)?(?:datasets?|experiments?|participants|patients|sample|cohort)\b"
+    rf"|(?<!studies\s)(?<!total\s)(?<!of\s)\b\d{{1,3}}\s+(?:\w+\s+){{0,2}}(?:{_KIND}\s+)*{_PEOPLE}\b"
+    r"(?!\s+(?:from|across|in)\s+\d+\s+studies)"
+    r"|\b(?:existing|open|public(?:ly\s+available)?)\s+(?:\w+\s+)?datasets?\b"
+    r"|\b(?:ADNI|ABIDE|HCP|UK\s+Biobank|Human\s+Connectome\s+Project)\b", re.I)
 
 
 #: What triage reads of the article's metadata: the title and the publication types, to
@@ -83,11 +144,20 @@ def metadata_read(payload: Optional[Dict]) -> Dict:
     return read_fields(payload, METADATA_READ)
 
 
-def is_a_meta_analysis(title: str, types: Sequence[str]) -> bool:
-    """Whether this article collects other papers' coordinates."""
-    if any(t.strip().lower() in META_ANALYSIS_TYPES for t in types):
+def is_a_meta_analysis(title: str, types: Sequence[str], abstract: str = "") -> bool:
+    """Whether this article collects other papers' coordinates: a meta-analysis or a
+    review, with no data of its own."""
+    title, abstract = title or "", abstract or ""
+    types = {t.strip().lower() for t in types}
+    if types & META_ANALYSIS_TYPES:
         return True
-    return bool(META_ANALYSIS_TITLE.search(title or ""))
+    if "case reports" in types or OWN_DATA.search(title):
+        return False
+    if types & REVIEW_TYPES or META_ANALYSIS_TITLE.search(title) or REVIEW_TITLE.search(title):
+        return True
+    narrative = types & NARRATIVE_TYPES or NARRATIVE_TITLE.search(title)
+    return bool(narrative and (NARRATIVE_TITLE.search(title) or REVIEW_STATEMENT.search(abstract))
+                and not OWN_DATA_ABSTRACT.search(abstract))
 
 
 class TriageStage:
@@ -210,7 +280,7 @@ class TriageStage:
                 continue
             content = ExtractedContent.from_dict(payload)
             abstract, title, types = self._context(ctx, work.article_id)
-            meta_of[work.article_id] = (is_a_meta_analysis(title, types), types)
+            meta_of[work.article_id] = (is_a_meta_analysis(title, types, abstract), types)
             tables_of[work.article_id] = len(content.tables)
             found = ctx.catalog.artifacts([work.article_id], "extract").get(work.article_id, {})
             downloads = ctx.catalog.artifacts(

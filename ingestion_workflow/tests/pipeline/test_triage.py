@@ -249,6 +249,89 @@ def test_the_title_catches_what_mesh_does_not():
     assert not is_a_meta_analysis("Amygdala responses to faces", ["Journal Article"])
 
 
+#: Titles and publication types as the catalog holds them, by article id.
+@pytest.mark.parametrize("title, types", [
+    # sc3rgyhwjf4z: no PubMed record, so no type; uploaded at level group.
+    ("Neural correlates of hostile attribution bias - A systematic review", []),
+    # 5kbzpcmxpfos
+    ("Functional neural plasticity after compassion-based interventions: A scoping review "
+     "of longitudinal neuroimaging studies.", ["Journal Article", "Scoping Review"]),
+    # 677atmqknfye
+    ("A meta-analytic review of multisensory imagery identifies the neural correlates of "
+     "modality-specific and modality-general imagery", ["Journal Article"]),
+    # btejxlkhu34n: U+2010 hyphen
+    ("Brain activity associated with painfully hot stimuli applied to the upper limb: "
+     "A meta‐analysis", ["Journal Article"]),
+])
+def test_a_review_with_no_data_of_its_own_is_marked(title, types):
+    from ingestion_workflow.pipeline.stages.triage import is_a_meta_analysis
+
+    assert is_a_meta_analysis(title, types)
+
+
+@pytest.mark.parametrize("title, types", [
+    # hrqno4alxktt
+    ("Effects of psychosis-associated genetic markers on brain volumetry: a systematic review "
+     "of replicated findings and an independent validation", ["Journal Article", "Review"]),
+    # 7ifjvxhyeeqc
+    ("Transient global amnesia with unexpected clinical and radiological findings: "
+     "A case series and systematic review", ["Journal Article", "Systematic Review"]),
+    # lgaumcinrwzn
+    ("Mapping holmes tremor circuit using the human brain connectome",
+     ["Case Reports", "Journal Article", "Systematic Review"]),
+    # oary74h2gh4h
+    ("Long-term Progression of a Residual Cerebral Amyloidoma: An Illustrative Case and "
+     "Systematic Review.", ["Systematic Review", "Journal Article"]),
+    # lkdo6equl7ki: a meta-analysis title gives way to its own study too
+    ("Anterior temporal face patches: a meta-analysis and empirical study", ["Journal Article"]),
+    # p7bflpo7ktki
+    ("From correlational approaches to meta-analytical symptom reading in individual patients: "
+     "Bilateral lesions in the inferior frontal junction specifically cause dysexecutive "
+     "syndrome", ["Case Reports", "Research Support, Non-U.S. Gov't"]),
+    # utydctba3o54: a narrative review is not marked either way
+    ("The neural correlates of visual imagery vividness – An fMRI study and literature review",
+     ["Journal Article", "Review"]),
+    # rq4nk5soj5j3: its regions came from a meta-analysis
+    ("Meta-Analytically Informed Network Analysis of Resting State fMRI Reveals "
+     "Hyperconnectivity in an Introspective Socio-Affective Network in Depression",
+     ["Journal Article"]),
+])
+def test_a_review_reporting_its_own_data_is_not_marked(title, types):
+    from ingestion_workflow.pipeline.stages.triage import is_a_meta_analysis
+
+    assert not is_a_meta_analysis(title, types)
+
+
+#: PubMed's Review type is on primary studies too, so a narrative review is read from its
+#: title and abstract. Abstract sentences are the catalog's, cut short.
+@pytest.mark.parametrize("title, types, abstract, marked", [
+    # mat4jgz5raaj: the title names a review
+    ("Emotion processing and regulation in bipolar disorder: a review",
+     ["Journal Article", "Review"],
+     "The purpose of this paper is to review the current functional magnetic resonance "
+     "imaging (fMRI) literature on adult patients with BP.", True),
+    # b4bz4bpaz7l6: only the type and the abstract say so
+    ("The amygdala theory of autism", ["Journal Article", "Review"],
+     "In this paper we review the evidence for a social function of the amygdala.", True),
+    # c4icn7h3hbc3: tagged Review, a study of its own patients
+    ("Altered cerebellar-cerebral dynamic functional connectivity in patients with pontine "
+     "stroke: a resting-state fMRI study", ["Journal Article", "Review"],
+     "Forty-six chronic left pontine infarction (LPI), 32 chronic right pontine infarction "
+     "(RPI), and 50 healthy controls (HCs) were recruited.", False),
+    # ukv2tqlmj6ey
+    ("Altered cerebral perfusion in bipolar disorder: A pCASL MRI study",
+     ["Journal Article", "Review"],
+     "Cortical GM-CBF maps were generated using Pseudo-Continuous Arterial Spin Labeling "
+     "(pCASL) for 109 participants (BD, n = 61; HC, n = 48).", False),
+    # a Review type alone, with nothing in the abstract saying it reviews
+    ("Amygdala responses to faces", ["Journal Article", "Review"], "", False),
+])
+def test_a_narrative_review_is_marked_only_without_data_of_its_own(title, types, abstract, marked):
+    from ingestion_workflow.pipeline.stages.triage import is_a_meta_analysis
+
+    assert is_a_meta_analysis(title, types, abstract) is marked
+
+
 def test_an_article_with_no_metadata_is_not_taken_for_a_meta_analysis():
     """Attempted is the bar, so triage runs on articles with no metadata at
     all. Those must not be dropped for lacking a title."""

@@ -440,7 +440,7 @@ def parsed_paper(root: Path, bundle: ArticleExtractionBundle, inputs: ParseInput
     types = list(triage.get("publication_types") or publication_types(meta.to_dict()))
     is_meta = triage.get("is_meta_analysis")
     if is_meta is None:
-        is_meta = is_a_meta_analysis(title, types)
+        is_meta = is_a_meta_analysis(title, types, meta.abstract)
     verdicts = {str(v.get("table_id")): v for v in triage.get("tables") or [] if v.get("table_id")}
 
     grids: Dict[str, _Table] = {
@@ -483,7 +483,7 @@ def parsed_paper(root: Path, bundle: ArticleExtractionBundle, inputs: ParseInput
         text_length=len(text.text),
         bibliography=_bibliography(meta, title, types, inputs.corrections),
         is_meta_analysis=bool(is_meta),
-        is_meta_analysis_basis=_meta_basis(title, types) if is_meta else None,
+        is_meta_analysis_basis=_meta_basis(title, types, meta.abstract) if is_meta else None,
         sections=sections(text.text, content.supplements),
         supplements=[
             pp.Supplement(label=" ".join(filter(None, (s.get("label"), s.get("caption")))) or s.get("name"),
@@ -588,11 +588,11 @@ def _bibliography(meta, title: str, types: Sequence[str], corrections=None):
     )
 
 
-def _meta_basis(title: str, types: Sequence[str]) -> Optional[str]:
+def _meta_basis(title: str, types: Sequence[str], abstract: Optional[str] = "") -> Optional[str]:
     from ingestion_workflow.pipeline.stages.triage import is_a_meta_analysis
 
-    by_type = is_a_meta_analysis("", types)
-    by_title = is_a_meta_analysis(title, ())
+    by_type = is_a_meta_analysis("", types, abstract)
+    by_title = is_a_meta_analysis(title, (), abstract)
     if by_type and by_title:
         return "publication_type_and_title"
     return "publication_type" if by_type else ("title" if by_title else None)
