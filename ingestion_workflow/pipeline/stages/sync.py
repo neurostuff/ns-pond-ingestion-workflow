@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import re
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
@@ -49,6 +50,75 @@ NEW_ARTICLES = "-new"
 
 #: Why a paper is not synced: PubMed lists it as a retraction notice, not a study.
 RETRACTION_NOTICE = "retraction notice"
+
+#: Why a paper is not synced: it is a meeting's abstracts published as one item (a poster
+#: session, an abstract book), whose coordinates belong to hundreds of unrelated studies.
+COMPILATION = "conference abstract compilation"
+
+_MEETING = (r"(meeting|congress|conference|symposium|convention|workshop|festival|summit"
+            r"|forum|colloquium)")
+_COLLECTIVE = (r"(posters?|poster\s+(presentations|sessions?(\s+abstracts)?|abstracts)"
+               r"|oral\s+(presentations|sessions|abstracts)|platform\s+presentations"
+               r"|((meeting|conference|congress|symposia)\s+)?abstracts|panels|symposia|awards"
+               r"|free\s+communications|late[-\s]breaking\s+abstracts)")
+_WEEKDAY = r"(sunday|monday|tuesday|wednesday|thursday|friday|saturday)"
+#: What may follow a collective name in a compilation's title: nothing, a number or a
+#: session numeral, a code ("PP01-M01"), a weekday, or a phrase naming what it collects.
+#: Never a verb: "Posters in the waiting room increase uptake" is a study.
+_THEN = (rf"(?=\W*$|[\s,(–—-]+(\d|[IVX]+(\b|[A-Z][a-z])|[A-Z]+\d|(of|from|for|at|by|presented"
+         rf"|accepted|and|to|{_WEEKDAY})\b))")
+#: What every compilation's title names, unless it is three words or fewer ("Posters",
+#: "Poster Session II"): the meeting, its year or edition, a weekday, or its sessions.
+_MEETING_NAMED = re.compile(
+    rf"\b{_MEETING}s?\b|\b(19|20)\d\d\b|\b\d+(st|nd|rd|th)\b|\b{_WEEKDAY}\b|\bsessions?\b",
+    re.I)
+#: What in a title says the item is a whole meeting's abstracts, each by name, tried in turn.
+#: Measured on the production catalog of 2026-11-26 (PR description).
+COMPILATION_TITLES = (
+    ("a collective name alone", re.compile(rf"^{_COLLECTIVE}{_THEN}", re.I)),
+    ("a poster session", re.compile(
+        rf"\bposter\s+(sessions?(\s+abstracts)?|presentations|abstracts){_THEN}", re.I)),
+    ("a meeting's abstracts", re.compile(
+        rf"(^|[:–—]\s*)(\w+\W+){{0,2}}abstracts\s+(of|from|for|presented\s+at)\b.{{0,120}}"
+        rf"\b{_MEETING}|\b{_MEETING}\W+(late[-\s]breaking\s+)?abstracts\W*$", re.I)),
+    ("a meeting's proceedings", re.compile(
+        rf"^(\w+\W+){{0,3}}proceedings\s+(of|to|from)\b.{{0,120}}\b{_MEETING}", re.I)),
+    ("a meeting's programme", re.compile(
+        rf"^(final\s+)?program(me)?\s*(,|:|and\s+abstracts\b|of\s+the\b).{{0,80}}\b{_MEETING}",
+        re.I)),
+    ("a meeting's name alone", re.compile(
+        rf"^(\d+(st|nd|rd|th)\s+)?annual\s+{_MEETING}\s+of\s+the\b[^:]*$", re.I)),
+    ("a meeting's section", re.compile(
+        rf":\s*{_COLLECTIVE}\W*$|\b{_MEETING}\s*:\s*{_COLLECTIVE}(,|{_THEN})", re.I)),
+)
+#: One abstract's own number: "Poster 261: ...", "IC-P-088: ...", "P127: ...", "NR 5 - ...",
+#: or the number alone ("Poster 68"). Case-sensitive, so a date ("2024: Posters") is not one.
+_ABSTRACT_NUMBER = re.compile(
+    r"(\b[Pp]oster|\b[Aa]bstract)\s*(#|[Nn]o\.?|[Nn]umber\s*:)?\s*[A-Z]{0,4}\s?\d+"
+    r"\s*([:–-]\s*\w|$)"
+    r"|\b[A-Z]{1,4}(-[A-Z])?-?\d{1,4}([-.]\d{1,4}){0,3}\s*:\s*\w")
+#: Words of a paper that studies abstracts, which a compilation's title never holds:
+#: "An Analysis of the Abstracts Presented at the Annual Meetings of ...".
+_STUDY_WORDS = re.compile(
+    r"\b(analy[sz](is|es|ed|ing)|publications?|published|registration|registered|reporting"
+    r"|reported|distribution|predict\w*|reviews?|comparisons?|compared|trends?|quality|bias"
+    r"|rates?|characteristics|outcomes?|surveys?|assessments?|evaluations?|fate|become|becomes"
+    r"|cited|citations?|proportions?|accuracy|discrepanc\w*|consistency|agreement|completeness"
+    r"|adherence|transparency|reproducib\w*)\b", re.I)
+
+
+def compilation_of(title: Optional[str]) -> Optional[str]:
+    """What in `title` names a meeting's abstracts published as one item, or None.
+
+    A single abstract under its own number ("Poster 261: ...") is a study, whatever its
+    title also says of the meeting, and so is a paper about abstracts."""
+    title = re.sub(r"\s+", " ", title or "").strip(" \t.\"'“”‘’")
+    if not title or _ABSTRACT_NUMBER.search(title) or _STUDY_WORDS.search(title):
+        return None
+    if len(title.split()) > 3 and not _MEETING_NAMED.search(title):
+        return None
+    return next((why for why, pattern in COMPILATION_TITLES if pattern.search(title)), None)
+
 
 #: Why an article waits for sync: the stage roles reads took its sets back, and roles has
 #: not. Roles takes them back on its next run, unless the article was ever uploaded: that
@@ -244,6 +314,7 @@ class SyncStage:
         roled = with_roles(ctx, ids)
         _, parents = self._roles_inputs(ctx, ids)
         noticed = ctx.catalog.artifacts(ids, "notices")
+        metadata = ctx.catalog.artifacts(ids, "metadata")
         bases = known_base_study_ids(ctx, refs)
         return shared_base_studies(ctx, {
             ref.id: bases[ref.id] for ref in refs
@@ -251,7 +322,8 @@ class SyncStage:
             and not taken_back(parents.get(ref.id, {}).get(""))
             and (spaced := upstream.get(ref.id, {}).get("")) is not None
             and spaced.status is Status.OK
-            and not _retraction_notice(_answered(noticed.get(ref.id, {}).get("")))})
+            and not _retraction_notice(_answered(noticed.get(ref.id, {}).get("")))
+            and not _compilation(metadata.get(ref.id, {}).get(""))})
 
     def _roles_inputs(self, ctx: Context, ids: Sequence[str]):
         """The stage roles reads, and its artifacts for `ids`."""
@@ -303,6 +375,11 @@ class SyncStage:
             if _retraction_notice(notices):
                 # A notice can reprint the table it retracts; it is not a study.
                 _skip(plan, ref, spaced, existing, RETRACTION_NOTICE, base_study_id)
+                continue
+            why = _compilation(metadata.get(ref.id, {}).get(""))
+            if why:
+                _skip(plan, ref, spaced, existing, COMPILATION, base_study_id,
+                      f"{COMPILATION}: its title names {why}")
                 continue
             if not base_study_id and not (identifier.asking_doi or identifier.pmid
                                           or identifier.pmcid or identifier.preprint_pmids
@@ -588,6 +665,13 @@ def synced_links(links: Optional[Artifact], linkprobe: Optional[Artifact]):
 
 def _retraction_notice(notices: Optional[Artifact]) -> bool:
     return notices is not None and bool((notices.summary or {}).get("retraction_notice"))
+
+
+def _compilation(metadata: Optional[Artifact]) -> Optional[str]:
+    """`compilation_of` the title the metadata stage recorded."""
+    if metadata is None or not metadata.ok:
+        return None
+    return compilation_of((metadata.summary or {}).get("title"))
 
 
 def _answered(notices: Optional[Artifact]) -> Optional[Artifact]:

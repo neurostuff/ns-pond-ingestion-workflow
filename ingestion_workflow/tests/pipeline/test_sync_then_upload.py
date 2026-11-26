@@ -36,6 +36,7 @@ from ingestion_workflow.pipeline.stages.resolve import ResolveStage
 from ingestion_workflow.pipeline.stages.roles import RolesStage
 from ingestion_workflow.pipeline.stages.space import SpaceStage
 from ingestion_workflow.pipeline.stages.sync import (
+    COMPILATION,
     NO_IDENTIFIER,
     RETRACTION_NOTICE,
     SHARED_BASE_STUDY,
@@ -1033,6 +1034,43 @@ def test_notices_are_the_parsed_paper_s_corrections_and_a_notice_is_not_synced(
         Status.SKIPPED, RETRACTION_NOTICE, RETRACTION_NOTICE)
     plan, outcomes = _run(sync, ctx, catalog, ref)
     assert (plan.blocked, plan.reasons, outcomes) == (1, {RETRACTION_NOTICE: 1}, [])
+
+
+def _titled(catalog, ref, title, fingerprint):
+    """The article's metadata, as the metadata stage records it, under `title`."""
+    stored = catalog.artifact(ref.id, "metadata", "")
+    payload = {**catalog.payload(stored), "title": title}
+    catalog.record([Outcome(article_id=ref.id, stage="metadata", source="",
+                            fingerprint=fingerprint, payload=payload,
+                            summary={"title": title, "digests": metadata_digests(payload)})])
+
+
+@RECORDS
+def test_a_meetings_abstracts_published_as_one_item_are_not_synced_nor_sent(
+        env, monkeypatch, evidence):
+    """xxEdWaffhexX on production, uploaded 2026-11-26 and deactivated by hand: one item
+    holding 250 posters' coordinates. Sync records it skipped, once, and upload waits."""
+    settings, catalog, _ = env
+    ctx, ref = _prose_article(env, monkeypatch, "43", "BS43", evidence=evidence)
+    _titled(catalog, ref, "ACNP 62nd Annual Meeting: Poster Abstracts P1 – P250", "me-c1")
+    sync, upload = SyncStage(settings), UploadStage(settings)
+    _, (skipped,) = _run(sync, ctx, catalog, ref)
+    why = f"{COMPILATION}: its title names a poster session"
+    assert (skipped.status, skipped.error, skipped.summary) == (
+        Status.SKIPPED, why, {"reason": COMPILATION, "base_study_id": "BS43"})
+    assert not (settings.ns_pond_root / "BS43").exists()
+    plan, outcomes = _run(sync, ctx, catalog, ref)
+    assert (plan.blocked, plan.reasons, outcomes) == (1, {COMPILATION: 1}, [])
+    plan, outcomes = _run(upload, ctx, catalog, ref)
+    assert (plan.blocked, plan.pending, outcomes) == (1, [], [])
+
+    # One poster under its own number is a study.
+    poster = ("Poster 261: Increased Functional Connectivity between Pain‐Affect and "
+              "Body‐Perception Brain Regions in Fibromyalgia")
+    _titled(catalog, ref, poster, "me-c2")
+    _, (synced,) = _run(sync, ctx, catalog, ref)
+    assert synced.status is Status.OK, synced.error
+    assert (settings.ns_pond_root / "BS43" / "parse" / "coordinate_parse.json").exists()
 
 
 def _dry(settings):
