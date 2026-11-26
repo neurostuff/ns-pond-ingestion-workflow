@@ -1755,6 +1755,10 @@ def test_the_meta_analysis_basis_names_what_said_so():
     assert basis("A meta-analysis of fear", ["Journal Article"]) == "title"
     assert basis("Fear", ["Meta-Analysis"]) == "publication_type"
     assert basis("A meta-analysis of fear", ["Meta-Analysis"]) == "publication_type_and_title"
+    # a narrative review: the type says Review, and the abstract confirms it
+    assert basis("The amygdala theory of autism", ["Review"],
+                 "In this paper we review the evidence for a social function of the amygdala."
+                 ) == "publication_type"
 
 
 def test_side_by_side_contrasts_differ_by_column_group(tmp_path):

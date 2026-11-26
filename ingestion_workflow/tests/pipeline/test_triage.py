@@ -295,14 +295,41 @@ def test_a_review_with_no_data_of_its_own_is_marked(title, types):
     ("Meta-Analytically Informed Network Analysis of Resting State fMRI Reveals "
      "Hyperconnectivity in an Introspective Socio-Affective Network in Depression",
      ["Journal Article"]),
-    # mat4jgz5raaj
-    ("Emotion processing and regulation in bipolar disorder: a review",
-     ["Journal Article", "Review"]),
 ])
 def test_a_review_reporting_its_own_data_is_not_marked(title, types):
     from ingestion_workflow.pipeline.stages.triage import is_a_meta_analysis
 
     assert not is_a_meta_analysis(title, types)
+
+
+#: PubMed's Review type is on primary studies too, so a narrative review is read from its
+#: title and abstract. Abstract sentences are the catalog's, cut short.
+@pytest.mark.parametrize("title, types, abstract, marked", [
+    # mat4jgz5raaj: the title names a review
+    ("Emotion processing and regulation in bipolar disorder: a review",
+     ["Journal Article", "Review"],
+     "The purpose of this paper is to review the current functional magnetic resonance "
+     "imaging (fMRI) literature on adult patients with BP.", True),
+    # b4bz4bpaz7l6: only the type and the abstract say so
+    ("The amygdala theory of autism", ["Journal Article", "Review"],
+     "In this paper we review the evidence for a social function of the amygdala.", True),
+    # c4icn7h3hbc3: tagged Review, a study of its own patients
+    ("Altered cerebellar-cerebral dynamic functional connectivity in patients with pontine "
+     "stroke: a resting-state fMRI study", ["Journal Article", "Review"],
+     "Forty-six chronic left pontine infarction (LPI), 32 chronic right pontine infarction "
+     "(RPI), and 50 healthy controls (HCs) were recruited.", False),
+    # ukv2tqlmj6ey
+    ("Altered cerebral perfusion in bipolar disorder: A pCASL MRI study",
+     ["Journal Article", "Review"],
+     "Cortical GM-CBF maps were generated using Pseudo-Continuous Arterial Spin Labeling "
+     "(pCASL) for 109 participants (BD, n = 61; HC, n = 48).", False),
+    # a Review type alone, with nothing in the abstract saying it reviews
+    ("Amygdala responses to faces", ["Journal Article", "Review"], "", False),
+])
+def test_a_narrative_review_is_marked_only_without_data_of_its_own(title, types, abstract, marked):
+    from ingestion_workflow.pipeline.stages.triage import is_a_meta_analysis
+
+    assert is_a_meta_analysis(title, types, abstract) is marked
 
 
 def test_an_article_with_no_metadata_is_not_taken_for_a_meta_analysis():
