@@ -1,0 +1,89 @@
+{
+ "article_id": "mnylig4wqke2",
+ "table_id": "t0015",
+ "caption": "Effects of 5-HT1A receptor agonists on pERK1/2 and c-Fos expression in rat.",
+ "footer": "ERK1/2 phosphorylation (pERK) and c-Fos expression were determined in brain regions from Sprague-Dawley rats treated with 5-HT1A receptor agonists. Compounds were administered i.p. 30 min before sacrifice. pERK was determined by ELISA and c-Fos expression was determined by qPCR. Maximal stimulation (Emax) values are expressed as % of control levels determined in vehicle-treated animals. pERK increases in frontal cortex and hypothalamus, reflect activation of postsynaptic 5-HT1A receptor. pERK decreases in hippocampus reflect activation of 5-HT1A autoreceptors. The Frontal Cortex/Hippocampus Ratio (‘FrCtx/Hippo Ratio’) is calculated by dividing the MED in Frontal cortex by that in Hippocampus to give an indication of the preferential regional activity of the agonists. Data shown in bold indicate indicate distinguishing properties of the agonists (see Footnotes for details).Data are compiled from (Buritova et al., 2007; Buritova et al., 2009; Newman-Tancredi et al., 2009). nt: not tested.",
+ "model": "nu-v23",
+ "analyses": [
+  {
+   "name": "ERK1/2 phosphorylation",
+   "points": [
+    [
+     0.04,
+     0.16,
+     0.63,
+     null,
+     null
+    ],
+    [
+     0.04,
+     0.16,
+     0.63,
+     null,
+     null
+    ],
+    [
+     0.04,
+     0.16,
+     0.63,
+     null,
+     null
+    ],
+    [
+     0.16,
+     0.63,
+     2.5,
+     null,
+     null
+    ],
+    [
+     2.5,
+     10.0,
+     40.0,
+     null,
+     null
+    ]
+   ]
+  },
+  {
+   "name": "c-Fos Induction",
+   "points": [
+    [
+     0.04,
+     0.16,
+     0.63,
+     null,
+     null
+    ],
+    [
+     0.16,
+     0.63,
+     2.5,
+     null,
+     null
+    ],
+    [
+     0.04,
+     0.16,
+     0.63,
+     null,
+     null
+    ],
+    [
+     0.16,
+     0.63,
+     2.5,
+     null,
+     null
+    ],
+    [
+     2.5,
+     10.0,
+     40.0,
+     null,
+     null
+    ]
+   ]
+  }
+ ]
+}

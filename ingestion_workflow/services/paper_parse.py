@@ -125,6 +125,8 @@ class _Table:
     rows: List[List[Tuple[str, int]]]  # body rows: (cell text, resolved column)
     #: Whether its caption, footer or any cell names coordinates (`_names_coordinates`).
     names_coordinates: bool = True
+    #: The same, not counting "maximal" (`_MAXIMAL`); `_reads_statistics` reads this.
+    names_positions: bool = True
     _index: Optional[list] = field(default=None, repr=False)
 
     def index(self) -> list:
@@ -704,6 +706,9 @@ _COORDINATE_WORDS = re.compile(
     r"|\bx\s*[,/;|]?\s*y\s*[,/;|]?\s*z\b",
     re.I,
 )
+#: "Maximal stimulation (Emax)" names no position. Only `_reads_statistics` leaves it out:
+#: stacked cells are read in 9 real peak tables that name nothing else.
+_MAXIMAL = re.compile(r"\bmaximal(?:ly)?\b", re.I)
 #: A cell naming one axis: `x`, `Tal X`, `y (mm)`.
 _AXIS_CELL = re.compile(r"^(?:(?:tal|mni)\s*)?[xyz]\s*(?:\(\s*mm\s*\))?$", re.I)
 
@@ -736,7 +741,7 @@ def _reads_statistics(grid: Optional[_Table], collection: AnalysisCollection) ->
     from ingestion_workflow.services import extraction_signs
 
     points = [(c.x, c.y, c.z) for a in collection.analyses for c in a.coordinates]
-    if grid is None or grid.names_coordinates or not points:
+    if grid is None or grid.names_positions or not points:
         return False
     cells = [*grid.headings, *(text for row in grid.rows for text, _ in row)]
     if any(_AXIS_NAME.match(str(c or "").strip()) for c in cells):
@@ -769,7 +774,9 @@ def _grid(raw_path, context: Sequence[Optional[str]] = ()) -> _Table:
                 headings = [p.cell.text for p in row]
             continue
         rows.append([(p.cell.text, p.col) for p in row])
-    return _Table(headings, rows, _names_coordinates(texts))
+    names = _names_coordinates(texts)
+    positions = names and _names_coordinates([_MAXIMAL.sub("", t) for t in texts])
+    return _Table(headings, rows, names, positions)
 
 
 def _parsed_table(root: Path, index: int, table, grid: _Table, verdict, excluded, inlined):

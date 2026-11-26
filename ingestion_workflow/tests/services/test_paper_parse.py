@@ -2563,6 +2563,9 @@ def _parse_read_back(tmp_path, name):
         # PMC12891825 supplementary table 6 (nosQayjxXEQK): principal component scores of
         # dogs and cats by age, in a sheet whose headings were lost.
         ("pca_scores", 2),
+        # A review's table 3 (base study PnuahdxMtaFE): doses in mg/kg read as x, y, z. Its
+        # footer's "Maximal stimulation (Emax)" names no position.
+        ("drug_doses", 2),
     ],
 )
 def test_statistics_read_as_points_from_a_table_naming_no_coordinates_are_left_out(
@@ -2573,6 +2576,15 @@ def test_statistics_read_as_points_from_a_table_naming_no_coordinates_are_left_o
     assert [o.reason for o in omitted] == [paper_parse.STATISTICS_REASON] * sets
     [reading] = parse.tables
     assert (reading.reading, reading.reason) == ("no_coordinates", paper_parse.STATISTICS_REASON)
+
+
+def test_maximal_still_counts_as_naming_coordinates_for_stacked_cells(tmp_path):
+    # Stacked cells are read in real peak tables whose only coordinate word is "maximal".
+    _, _, stored = _read_back("drug_doses")
+    path = tmp_path / "t.xml"
+    path.write_text((SUSPECT / "drug_doses.xml").read_text(), encoding="utf-8")
+    grid = paper_parse._grid(path, [stored["caption"], stored["footer"]])
+    assert (grid.names_coordinates, grid.names_positions) == (True, False)
 
 
 @pytest.mark.parametrize(
