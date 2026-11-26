@@ -68,24 +68,29 @@ TRIAGE_VERSION = 2
 #: PubMed record, and it catches papers whose title never says so. The title
 #: catches the 58% of articles with no publication type at all.
 META_ANALYSIS_TYPES = frozenset({"meta-analysis"})
-_DASH = r"[\s\-‐-―]?"
+_DASH = r"[\s\-\u2010-\u2015]?"
 #: "meta-analytic" but not "meta-analytically": a primary study whose regions came from
 #: a meta-analysis is still a primary study.
 META_ANALYSIS_TITLE = re.compile(
     rf"meta{_DASH}analy(?:[sz]|tic(?:al)?\b)|\bALE\b|activation\s+likelihood\s+estimation", re.I)
 
-#: A systematic review is marked like a meta-analysis, unless it reports data of its own:
-#: a case report, or a title naming its own study ("... and an fMRI study"). Narrative
-#: reviews ("A review of ...") are not marked.
+#: A systematic review is marked like a meta-analysis. Narrative reviews ("A review
+#: of ...") are not.
 REVIEW_TYPES = frozenset({"systematic review", "scoping review"})
 REVIEW_TITLE = re.compile(
     r"\b(?:systematic|systemic|semi[\s-]?systematic|scoping|umbrella|quantitative)"
     r"(?:\s+(?:literature|narrative|systematic))?\s+reviews?\b"
     r"|\boverview\s+of\s+(?:\w+\s+)?reviews\b", re.I)
+
+#: A review or meta-analysis that reports data of its own is a primary study: a case
+#: report, or a title naming its own study ("... and an fMRI study", "replication in an
+#: independent cohort"). Only the MeSH Meta-Analysis type outranks it.
 OWN_DATA = re.compile(
-    r"\b(?:new|novel|original|own|preliminary|independent|empirical)\s+(?:\w+\s+)?"
+    r"\b(?:new|novel|original|own|independent|empirical)\s+(?:\w+\s+)?"
     r"(?:data|evidence|results|findings|study|sample|cohort|validation|replication|experiment)\b"
+    r"|\bpreliminary\s+(?:\w+\s+)?(?:data|study|sample|experiment)\b"
     r"|\bcase\s+(?:reports?|series)\b|\breport\s+of\s+(?:\w+\s+){0,2}cases?\b|\bcohort\s+study\b"
+    r"|\billustrative\s+cases?\b|\bcase\s+and\s+(?:\w+\s+)?review"
     r"|\b(?:study|experiment)\s+and\s+(?:an?\s+)?(?:\w+\s+){0,2}review"
     r"|\breview\s+and\s+an?\s+(?:[\w/-]+\s+){0,3}(?:study|experiment)\b", re.I)
 
@@ -103,13 +108,14 @@ def metadata_read(payload: Optional[Dict]) -> Dict:
 
 def is_a_meta_analysis(title: str, types: Sequence[str]) -> bool:
     """Whether this article collects other papers' coordinates: a meta-analysis, or a
-    systematic review with no data of its own."""
+    systematic review, with no data of its own."""
     title = title or ""
     types = {t.strip().lower() for t in types}
-    if types & META_ANALYSIS_TYPES or META_ANALYSIS_TITLE.search(title):
+    if types & META_ANALYSIS_TYPES:
         return True
-    review = bool(types & REVIEW_TYPES) or bool(REVIEW_TITLE.search(title))
-    return review and "case reports" not in types and not OWN_DATA.search(title)
+    pooled = bool(types & REVIEW_TYPES) or bool(
+        META_ANALYSIS_TITLE.search(title) or REVIEW_TITLE.search(title))
+    return pooled and "case reports" not in types and not OWN_DATA.search(title)
 
 
 class TriageStage:

@@ -279,6 +279,15 @@ def test_a_review_with_no_data_of_its_own_is_marked(title, types):
     # lgaumcinrwzn
     ("Mapping holmes tremor circuit using the human brain connectome",
      ["Case Reports", "Journal Article", "Systematic Review"]),
+    # oary74h2gh4h
+    ("Long-term Progression of a Residual Cerebral Amyloidoma: An Illustrative Case and "
+     "Systematic Review.", ["Systematic Review", "Journal Article"]),
+    # lkdo6equl7ki: a meta-analysis title gives way to its own study too
+    ("Anterior temporal face patches: a meta-analysis and empirical study", ["Journal Article"]),
+    # p7bflpo7ktki
+    ("From correlational approaches to meta-analytical symptom reading in individual patients: "
+     "Bilateral lesions in the inferior frontal junction specifically cause dysexecutive "
+     "syndrome", ["Case Reports", "Research Support, Non-U.S. Gov't"]),
     # utydctba3o54: a narrative review is not marked either way
     ("The neural correlates of visual imagery vividness – An fMRI study and literature review",
      ["Journal Article", "Review"]),
