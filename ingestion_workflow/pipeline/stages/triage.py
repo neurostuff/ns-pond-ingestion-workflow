@@ -59,15 +59,11 @@ TRIAGE_VERSION = 2
 #: marked, so a later stage can decide what to do about foci that are already
 #: in the corpus under the paper that found them.
 #:
-#: Marked, not dropped. The evidence is good but not certain: of 7,662 articles
-#: this catches, 415 are caught by MeSH alone and at least one of those reads
-#: like a PubMed indexing slip, while 6,516 are caught by the title alone.
-#: Neither is a reason to discard an article's tables outright.
-#:
-#: MeSH first: PubMed indexes the type, it is on 99.9% of articles that have a
-#: PubMed record, and it catches papers whose title never says so. The title
-#: catches the 58% of articles with no publication type at all.
-META_ANALYSIS_TYPES = frozenset({"meta-analysis"})
+#: The title decides, not PubMed's publication type. Of 279 production base studies
+#: marked by a Meta-Analysis or Systematic Review type alone, read by hand on 2026-11-26,
+#: 99 report data of their own (a meta-analysis beside the authors' own sample or a
+#: resting-state connectome, an ENIGMA mega-analysis, a primary study tagged by mistake).
+#: A primary study marked meta drops out of atlases, so the type alone marks nothing.
 _DASH = r"[\s\-\u2010-\u2015]?"
 #: "meta-analytic" but not "meta-analytically": a primary study whose regions came from
 #: a meta-analysis is still a primary study.
@@ -75,7 +71,6 @@ META_ANALYSIS_TITLE = re.compile(
     rf"meta{_DASH}analy(?:[sz]|tic(?:al)?\b)|\bALE\b|activation\s+likelihood\s+estimation", re.I)
 
 #: A systematic review is marked like a meta-analysis.
-REVIEW_TYPES = frozenset({"systematic review", "scoping review"})
 REVIEW_TITLE = re.compile(
     r"\b(?:systematic|systemic|semi[\s-]?systematic|scoping|umbrella|quantitative)"
     r"(?:\s+(?:literature|narrative|systematic))?\s+reviews?\b"
@@ -83,7 +78,7 @@ REVIEW_TITLE = re.compile(
 
 #: A review or meta-analysis that reports data of its own is a primary study: a case
 #: report, or a title naming its own study ("... and an fMRI study", "replication in an
-#: independent cohort"). Only the MeSH Meta-Analysis type outranks it.
+#: independent cohort").
 OWN_DATA = re.compile(
     r"\b(?:new|novel|original|own|independent|empirical)\s+(?:\w+\s+)?"
     r"(?:data|evidence|results|findings|study|sample|cohort|validation|replication|experiment)\b"
@@ -159,11 +154,9 @@ def is_a_meta_analysis(title: str, types: Sequence[str], abstract: str = "") -> 
     review, with no data of its own."""
     title, abstract = title or "", abstract or ""
     types = {t.strip().lower() for t in types}
-    if types & META_ANALYSIS_TYPES:
-        return True
     if "case reports" in types or OWN_DATA.search(title):
         return False
-    if types & REVIEW_TYPES or META_ANALYSIS_TITLE.search(title) or REVIEW_TITLE.search(title):
+    if META_ANALYSIS_TITLE.search(title) or REVIEW_TITLE.search(title):
         return True
     narrative = types & NARRATIVE_TYPES or NARRATIVE_TITLE.search(title)
     return bool(narrative and (NARRATIVE_TITLE.search(title) or REVIEW_STATEMENT.search(abstract))

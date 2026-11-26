@@ -219,9 +219,8 @@ def test_a_change_to_what_is_read_makes_its_readers_stale(env, path, value, stal
 
 def test_analyses_reads_nothing_but_what_it_fingerprints(env, monkeypatch, evidence):
     """Two articles alike but for every metadata field but the title and abstract, the
-    publication types included, so triage marks one a meta-analysis and its payload
-    differs: analyses makes the same of both, gives its model the same, and reads no
-    part of triage's payload."""
+    publication types included, so triage's payload differs: analyses makes the same of
+    both, gives its model the same, and reads no part of triage's payload."""
     from ingestion_workflow.catalog.blobs import BlobStore
 
     settings, catalog, tmp_path = env
@@ -238,8 +237,8 @@ def test_analyses_reads_nothing_but_what_it_fingerprints(env, monkeypatch, evide
 
     by_stage = {o.stage: o for o in made}
     by_stage_other = {o.stage: o for o in made_other}
-    assert by_stage["triage"].payload["is_meta_analysis"] is False
-    assert by_stage_other["triage"].payload["is_meta_analysis"] is True
+    assert by_stage["triage"].payload["publication_types"] != \
+        by_stage_other["triage"].payload["publication_types"]
     this, that = by_stage["analyses"], by_stage_other["analyses"]
     assert (this.fingerprint, this.payload, this.summary) == (
         that.fingerprint, that.payload, that.summary)

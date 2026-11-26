@@ -213,9 +213,9 @@ def test_a_meta_analysis_is_marked_and_its_tables_still_judged():
     assert "Status.SKIPPED" not in src
 
 
-def test_a_meta_analysis_is_recognised_by_its_mesh_type():
-    """PubMed indexes it, and it is on 99.9% of articles with a PubMed record,
-    so it catches papers whose title never says so."""
+def test_a_mesh_type_alone_marks_nothing():
+    """A third of the production papers marked by a Meta-Analysis type alone report data
+    of their own. GPpcu2fcsuLU is a mega-analysis of ENIGMA-PGC subjects' scans."""
     from ingestion_workflow.pipeline.stage import publication_types
     from ingestion_workflow.pipeline.stages.triage import is_a_meta_analysis
 
@@ -224,7 +224,11 @@ def test_a_meta_analysis_is_recognised_by_its_mesh_type():
             {"#text": "Journal Article", "@UI": "D016428"},
             {"#text": "Meta-Analysis", "@UI": "D017418"}]}}}}}}
     assert publication_types(md) == ["Journal Article", "Meta-Analysis"]
-    assert is_a_meta_analysis("Amygdala responses to faces", publication_types(md))
+    assert not is_a_meta_analysis(
+        "A whole-brain voxel-based analysis of structural abnormalities in PTSD: An ENIGMA-PGC "
+        "study", publication_types(md))
+    assert not is_a_meta_analysis("Fear", ["Systematic Review"])
+    assert not is_a_meta_analysis("Fear", ["Scoping Review"])
 
 
 def test_one_publication_type_arrives_as_a_dict_not_a_list():
