@@ -249,6 +249,53 @@ def test_the_title_catches_what_mesh_does_not():
     assert not is_a_meta_analysis("Amygdala responses to faces", ["Journal Article"])
 
 
+#: Titles and publication types as the catalog holds them, by article id.
+@pytest.mark.parametrize("title, types", [
+    # sc3rgyhwjf4z: no PubMed record, so no type; uploaded at level group.
+    ("Neural correlates of hostile attribution bias - A systematic review", []),
+    # 5kbzpcmxpfos
+    ("Functional neural plasticity after compassion-based interventions: A scoping review "
+     "of longitudinal neuroimaging studies.", ["Journal Article", "Scoping Review"]),
+    # 677atmqknfye
+    ("A meta-analytic review of multisensory imagery identifies the neural correlates of "
+     "modality-specific and modality-general imagery", ["Journal Article"]),
+    # btejxlkhu34n: U+2010 hyphen
+    ("Brain activity associated with painfully hot stimuli applied to the upper limb: "
+     "A meta‐analysis", ["Journal Article"]),
+])
+def test_a_review_with_no_data_of_its_own_is_marked(title, types):
+    from ingestion_workflow.pipeline.stages.triage import is_a_meta_analysis
+
+    assert is_a_meta_analysis(title, types)
+
+
+@pytest.mark.parametrize("title, types", [
+    # hrqno4alxktt
+    ("Effects of psychosis-associated genetic markers on brain volumetry: a systematic review "
+     "of replicated findings and an independent validation", ["Journal Article", "Review"]),
+    # 7ifjvxhyeeqc
+    ("Transient global amnesia with unexpected clinical and radiological findings: "
+     "A case series and systematic review", ["Journal Article", "Systematic Review"]),
+    # lgaumcinrwzn
+    ("Mapping holmes tremor circuit using the human brain connectome",
+     ["Case Reports", "Journal Article", "Systematic Review"]),
+    # utydctba3o54: a narrative review is not marked either way
+    ("The neural correlates of visual imagery vividness – An fMRI study and literature review",
+     ["Journal Article", "Review"]),
+    # rq4nk5soj5j3: its regions came from a meta-analysis
+    ("Meta-Analytically Informed Network Analysis of Resting State fMRI Reveals "
+     "Hyperconnectivity in an Introspective Socio-Affective Network in Depression",
+     ["Journal Article"]),
+    # mat4jgz5raaj
+    ("Emotion processing and regulation in bipolar disorder: a review",
+     ["Journal Article", "Review"]),
+])
+def test_a_review_reporting_its_own_data_is_not_marked(title, types):
+    from ingestion_workflow.pipeline.stages.triage import is_a_meta_analysis
+
+    assert not is_a_meta_analysis(title, types)
+
+
 def test_an_article_with_no_metadata_is_not_taken_for_a_meta_analysis():
     """Attempted is the bar, so triage runs on articles with no metadata at
     all. Those must not be dropped for lacking a title."""
