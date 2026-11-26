@@ -97,8 +97,9 @@ OWN_DATA = re.compile(
 #: on primary studies as well (105 of 572 synced articles that carry only that type report
 #: their own data). So it needs a title naming a review or an abstract saying it reviews,
 #: and no abstract sentence that reports the paper's own participants, cases or data.
-#: Checked against 676 read abstracts: 95% of the papers it marks are reviews, and it
-#: marks 68% of the reviews.
+#: It leans to group: a primary study marked meta drops out of atlases. Checked against 784
+#: read abstracts: 98.5% of the papers it marks are reviews (393 of 399), and it marks 63%
+#: of the reviews.
 NARRATIVE_TYPES = frozenset({"review"})
 NARRATIVE_TITLE = re.compile(r"(?<!peer\s)\breviews?\b|\boverview\b", re.I)
 REVIEW_STATEMENT = re.compile(
@@ -130,7 +131,16 @@ OWN_DATA_ABSTRACT = re.compile(
     rf"|(?<!studies\s)(?<!total\s)(?<!of\s)\b\d{{1,3}}\s+(?:\w+\s+){{0,2}}(?:{_KIND}\s+)*{_PEOPLE}\b"
     r"(?!\s+(?:from|across|in)\s+\d+\s+studies)"
     r"|\b(?:existing|open|public(?:ly\s+available)?)\s+(?:\w+\s+)?datasets?\b"
-    r"|\b(?:ADNI|ABIDE|HCP|UK\s+Biobank|Human\s+Connectome\s+Project)\b", re.I)
+    r"|\b(?:ADNI|ABIDE|HCP|UK\s+Biobank|Human\s+Connectome\s+Project|ENIGMA)\b|\bspecimens?\b"
+    r"|\b(?:is|are|was|were)\s+(?:also\s+)?(?:reported|presented)\b"
+    r"|\bwe\s+(?:also\s+)?(?:report|show|demonstrate|found|find|observed|tested|examined|investigated|"
+    r"measured|compared|assessed|conducted\s+(?:an?\s+)?(?:\w+\s+)?(?:study|experiment))\b"
+    r"|\bwe\s+(?:also\s+)?present\s+(?!(?:an?|the|our)\s+(?:\w+\s+){0,2}(?:model|framework|theory|"
+    r"hypothesis|review|overview|perspective|summary|account|view)\b)"
+    r"|\bhere\s+we\s+(?:show|report|present|test|use)\b"
+    r"|\b(?:this|the\s+present|the\s+current|our)\s+(?:\w+\s+)?(?:study|experiment|investigation)\b"
+    r"|\b(?:the|our)\s+(?:fMRI|PET|MRI|EEG|MEG|imaging|behavioral|behavioural)\s+(?:results|data|findings)\b",
+    re.I)
 
 
 #: What triage reads of the article's metadata: the title and the publication types, to
