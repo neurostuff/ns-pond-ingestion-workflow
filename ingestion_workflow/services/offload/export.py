@@ -8,7 +8,8 @@ the paper's own parse (`prompt`), the evidence request from its text in units an
 current record (`evidence`), whose full record the bundle keeps in records/ for pull to
 merge into. The text is the parse's own text file, read with universal newlines (a record
 request of a spec whose `record_text` is `trimmed-1` carries it less its copied tables and
-reference lists: `record_text`); an
+reference lists: `record_text`; `trimmed-2` also cuts a request over the spec's
+`max_input_tokens` to it, the parse unchanged); an
 article whose text no longer hashes to the parse's `text_sha256` is left out, since import
 would refuse it. Requests longer
 than the spec's `max_input_tokens` go to skipped.jsonl. The rest are sharded as
@@ -38,7 +39,19 @@ from ingestion_workflow.pipeline.stages.offloaded import (
 )
 
 from .contract import Bundle, BundleDir, InputRow, RunSpec, Shard, write_rows
-from .record_text import RECORD_TEXT, record_text
+from .record_text import (
+    RECORD_TEXT,
+    RECORD_TEXT_FIT,
+    anchors_of,
+    carve,
+    fit_text,
+    numeric_data_spans,
+    omit,
+    outside,
+    paragraph_of,
+    ranges_of,
+    record_text,
+)
 
 #: Why an article is left out of a bundle; counted, never written.
 NO_SYNC = "no sync"
@@ -112,6 +125,53 @@ def _row(job, text_sha256, parse_keys, n_in, content, kwargs, record_digest=None
                     response_schema=response_schema).model_dump()
 
 
+#: Of what a fitted request's prompt leaves of its `max_input_tokens`, the share the text is
+#: fitted to: counting the text piece by piece misses the joins and the gap lines. A request
+#: still over its limit is fitted again to `REFIT` of the last budget.
+FIT_SHARE = 0.98
+REFIT = 0.95
+
+#: Why a trimmed-2 request is not built: its reviewed range says it holds no record of its own.
+NOT_A_RECORD = "no record of its own"
+
+
+def _fitted(article_id: str, whole: str, text_sha256: str, trimmed: str, parsed: dict,
+            entries: List[dict], listed: dict, template: str, limit: int) -> str:
+    """A trimmed-2 request's text. `trimmed` (trimmed-1) when the request fits `limit`; else
+    `whole` less what is outside its reviewed ranges (`ranges_of`) and its numeric
+    supplementary data (`numeric_data_spans`), then trimmed-1; when that is still over, the
+    same fitted to what the prompt leaves of `limit` (`fit_text`)."""
+    from pondie_astra import prompt
+
+    def n_in(text):
+        return prompt.ntok(prompt.user_turn(prompt.prompt_of(text, listed), template))
+
+    if n_in(trimmed) <= limit:
+        return trimmed
+    anchors = anchors_of(whole, entries, parsed.get("tables") or [])
+    exclude = numeric_data_spans(whole, parsed, entries)
+    held = ranges_of(article_id, text_sha256)
+    if held and held.get("keep"):
+        # a reviewed range never leaves out the paragraph of an analysis the parse lists
+        exclude += carve(outside(held["keep"], len(whole)),
+                         [paragraph_of(whole, a) for a, _ in anchors])
+    if exclude:
+        trimmed, _ = record_text(omit(whole, exclude))
+        if n_in(trimmed) <= limit:
+            return trimmed
+    budget = int((limit - n_in("")) * FIT_SHARE)
+    for _ in range(3):
+        if budget <= 0:
+            break
+        fitted, _ = fit_text(whole, anchors, budget, prompt.ntok, parsed.get("sections") or [],
+                             exclude=exclude)
+        trimmed, _ = record_text(fitted)
+        if n_in(trimmed) <= limit:
+            break
+        budget = int(budget * REFIT)
+    return trimmed
+
+
 def build_record(job) -> Tuple[Optional[dict], str]:
     """A record request: the paper prompt from the paper's own parse. Runs in a worker."""
     from pondie_astra import prompt
@@ -123,12 +183,18 @@ def build_record(job) -> Tuple[Optional[dict], str]:
     entries = [e for e in parse.get("analyses") or [] if e.get("key")]
     if not entries:
         return None, NO_ANALYSES
-    if len(job) > 6 and job[6] == RECORD_TEXT:
-        text, _ = record_text(text)
+    mode = job[6] if len(job) > 6 else "full"
     caps = prompt.captions(parsed.get("tables"), entries)
     listed = {e["key"]: dict(e, **caps.get(e["key"], {})) for e in entries}
-    paper_prompt = prompt.prompt_of(text, listed)
     template = prompt.template()
+    if mode == RECORD_TEXT_FIT and (held := ranges_of(job[0], text_sha256)) and held.get("skip"):
+        return None, NOT_A_RECORD
+    if mode in (RECORD_TEXT, RECORD_TEXT_FIT):
+        whole, (text, _) = text, record_text(text)
+        if mode == RECORD_TEXT_FIT:
+            text = _fitted(job[0], whole, text_sha256, text, parsed, entries, listed, template,
+                           job[7])
+    paper_prompt = prompt.prompt_of(text, listed)
     content, kwargs = prompt.user_content(paper_prompt, template, job[3])
     n_in = prompt.ntok(prompt.user_turn(paper_prompt, template))
     schema = (prompt.record_shape(prompt.schema_index(), "schema", keys=list(listed))
@@ -236,7 +302,7 @@ def export(ctx: Context, spec: RunSpec, machine: str, *, articles: Optional[Iter
             continue
         jobs.append((article_id, str(recorded_path(catalog.root, sync.summary["path"])),
                      sync.summary.get("base_study_id"), spec.family, spec.serve.model_dump(),
-                     due[article_id], spec.record_text))
+                     due[article_id], spec.record_text, spec.max_input_tokens))
     built: List[dict] = []
     for row, why in _map(BUILDERS[spec.stage], jobs, workers):
         if row is None:
