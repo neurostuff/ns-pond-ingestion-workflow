@@ -3,7 +3,7 @@ records state, and where they state none, what its methods text names.
 
 Read for every article Neurostore knows: one sync wrote, or one held under a `neurostore`
 id. That includes papers with no coordinate tables, which never reach sync and have no
-record. The record's values are `normalization.modality`'s readings of its acquisitions;
+record. The record's values are pondie's `Modality` readings of its acquisitions;
 the text's are `services.methods_modality`'s, read from the extraction triage judges. A
 paper PubMed types as a review, and triage not as a meta-analysis, has no text reading: it
 reports no acquisition of its own. No stage reads the artifact: `ingest modality export`
@@ -20,8 +20,8 @@ from ingestion_workflow.catalog import ArticleRef, Artifact, Outcome, Status, fi
 from ..plan import StagePlan, Work
 from ..stage import Context
 
-#: Bump when what is read, or how, changes.
-MODALITY_VERSION = 1
+#: Bump when what is read, or how, changes. 2: pondie's readings, in study_schema's spelling.
+MODALITY_VERSION = 2
 
 NOT_IN_NEUROSTORE = "no neurostore base study"
 NOTHING_TO_READ = "no normalized record and no extraction text"

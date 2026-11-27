@@ -1,11 +1,11 @@
 """A group the model called healthy, on four production records' 27B groups
 (`data/healthy_groups.json`).
 
-7c47sgesb5wl (base study mSWczX8uDxiF, "Physically and psychologically healthy") and xd2xqhulniyq
-(gNwTN4t6cPre, "Neurotypical") are healthy cohorts that pondie's wellness phrases do not cover;
-uw6hfyq36rx2 (6odDzJ92sgPo) and ntuf47r2lzgf (ihRjXA2aAqD9) have a control group the model called
-healthy beside a comorbidity in some of its members. `ROWS` are the linker's rows for them, as it
-placed them against MONDO on beast (2026-11-12) with no paper text.
+7c47sgesb5wl (base study mSWczX8uDxiF, "Physically and psychologically healthy") is a healthy cohort that
+pondie's wellness phrases do not cover; xd2xqhulniyq (gNwTN4t6cPre, "Neurotypical") is one they cover since
+neurostuff/pondie#36. uw6hfyq36rx2 (6odDzJ92sgPo) and ntuf47r2lzgf (ihRjXA2aAqD9) have a control group the
+model called healthy beside a comorbidity in some of its members. `ROWS` are the linker's rows for their heads,
+as it placed them against MONDO on beast (2026-11-27, pondie#36) with no paper text.
 """
 
 import copy
@@ -29,15 +29,16 @@ ROWS = [
      "Physically and psychologically healthy", "", "rejected"),
     ("7c47sgesb5wl", "grp_monolinguals", 0, "Physically and psychologically healthy",
      "Physically and psychologically healthy", "", "rejected"),
-    ("xd2xqhulniyq", "grp_young", 0, "Neurotypical", "Neurotypical", "", "rejected"),
-    ("xd2xqhulniyq", "grp_old", 0, "Neurotypical", "Neurotypical", "", "rejected"),
-    ("uw6hfyq36rx2", "grp_cn", 0, "Hyperlipidemia in 3 participants", "Hyperlipidemia in 3",
-     "MONDO:0021187", "strip:lexical"),
-    ("uw6hfyq36rx2", "grp_cn", 1, "Hypertension in 3 participants", "Hypertension in 3", "",
-     "strip:review"),
-    ("ntuf47r2lzgf", "grp_hc", 0, "Hypertension in 1/33", "Hypertension in 1", "", "strip:review"),
-    ("ntuf47r2lzgf", "grp_hc", 0, "Hypertension in 1/33", "33", "", "rejected"),
+    # the count comes off before the split ("1/33" split on its slash) and `hypertension` is an alias of
+    # *hypertensive disorder*, which MONDO lists under no such form
+    ("uw6hfyq36rx2", "grp_cn", 0, "Hyperlipidemia in 3 participants", "Hyperlipidemia",
+     "MONDO:0021187", "lexical"),
+    ("uw6hfyq36rx2", "grp_cn", 1, "Hypertension in 3 participants", "Hypertension", "MONDO:0005044",
+     "alias"),
+    ("ntuf47r2lzgf", "grp_hc", 0, "Hypertension in 1/33", "Hypertension", "MONDO:0005044", "alias"),
 ]
+#: Healthy by pondie's wellness phrases alone.
+BY_STRING = {"xd2xqhulniyq"}
 CONTROLS = {"uw6hfyq36rx2": "grp_cn", "ntuf47r2lzgf": "grp_hc"}
 
 
@@ -61,7 +62,8 @@ def test_pondie_alone_overrules_the_model_s_healthy_answer(article):
     model = healthy({"groups": DATA[article]["groups"]})
     pondie = healthy(derived(article, pondie_apply_derived))
     overruled = {g for g, v in model.items() if v is True and pondie[g] is False}
-    assert overruled == ({CONTROLS[article]} if article in CONTROLS else set(model))
+    expected = {CONTROLS[article]} if article in CONTROLS else set() if article in BY_STRING else set(model)
+    assert overruled == expected
 
 
 @pytest.mark.parametrize("article", sorted(DATA))
@@ -71,7 +73,7 @@ def test_the_model_s_healthy_answer_is_held_for_the_medical_step(article):
     assert {g for g, v in held.items() if v} == {g for g, v in model.items() if v}
 
 
-@pytest.mark.parametrize("article", ["7c47sgesb5wl", "xd2xqhulniyq"])
+@pytest.mark.parametrize("article", ["7c47sgesb5wl"])
 def test_a_healthy_group_whose_heads_nothing_resembles_stays_healthy(article):
     record = derived(article)
     settled = medical.settle_healthy(record, rows(article))

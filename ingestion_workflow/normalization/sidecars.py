@@ -10,7 +10,8 @@ every other normalizer's alone. Where the entries go:
     groups[].medical_condition         MONDO, ONVOC (pondie's entry shape), astra medical role
     analyses[].name                    ns-pond contrast key v2, ns-pond contrast kind, ns-pond contrast measure,
                                        ns-pond contrast baseline type, ns-pond contrast manipulated
-    acquisitions[].modality            acquisition_modality
+
+`acquisitions[].modality` carries pondie's `Modality` entry, which pondie's `apply_normalized` writes.
 
 The task and family keep the inventory's id space and the names Neurostore reads. Atoms carry the condition
 vocabulary's version in `method`. An analysis's contrast is its `effect`, which is not an extracted value and so
@@ -146,24 +147,4 @@ def write_contrasts(record, identities, version):
         _sidecar.replace(analysis["name"], mapping_tool, entries)
         tally["keys"] += 1
         tally["incomplete"] += not k["complete"]
-    return tally
-
-
-def write_modalities(record, readings, version):
-    """`modality.read`'s readings onto each acquisition's `modality`."""
-    from .modality import LABELS, VOCABULARY
-
-    mapping_tool = tool("modality", version)
-    tally = {}
-    for aid, acquisition in _by_id(record.get("acquisitions")).items():
-        if not isinstance(acquisition.get("modality"), dict):
-            continue
-        r = readings.get(aid)
-        entries = [] if r is None else [_sidecar.entry(
-            VOCABULARY, r.status, mapping_tool, value=r.value, label=LABELS.get(r.value), method=r.method,
-            also_read=list(r.also_read) if r.also_read else None)]
-        _sidecar.replace(acquisition["modality"], mapping_tool, entries)
-        if r is not None:
-            key = r.value or r.status
-            tally[key] = tally.get(key, 0) + 1
     return tally

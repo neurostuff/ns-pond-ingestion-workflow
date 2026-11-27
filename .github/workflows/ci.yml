@@ -40,6 +40,18 @@ jobs:
       # roles extra runs the decision model's tests on a tiny model; CPU torch is enough.
       - run: pip install -e ".[test,roles]" --extra-index-url https://download.pytorch.org/whl/cpu
 
+      # pondie, a core dependency since the `modality` stage reads its Modality normalizer, reads
+      # the extraction schema from a study_schema checkout (`PONDIE_SCHEMA_DIR`), which a git
+      # install of pondie does not carry. Check out the commit pyproject.toml pins, read from it.
+      - name: study_schema checkout for pondie
+        run: |
+          sha=$(grep -oP 'study_schema\.git@\K[0-9a-f]{40}' pyproject.toml | sort -u)
+          test "$(printf '%s\n' "$sha" | wc -l)" -eq 1
+          git init -q "$RUNNER_TEMP/study_schema"
+          git -C "$RUNNER_TEMP/study_schema" fetch -q --depth 1 https://github.com/neurostuff/study_schema.git "$sha"
+          git -C "$RUNNER_TEMP/study_schema" checkout -q FETCH_HEAD
+          echo "PONDIE_SCHEMA_DIR=$RUNNER_TEMP/study_schema" >> "$GITHUB_ENV"
+
       - uses: actions/cache@v4
         id: weights
         with:

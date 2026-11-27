@@ -13,7 +13,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from . import design, identity, medical, modality, structure, vocabulary
+from . import design, identity, medical, structure, vocabulary
 
 HERE = Path(__file__).resolve().parent
 
@@ -101,7 +101,6 @@ def link(record, text, article_id, version, *, allow_no_parser=False):
     store = medical.abbreviations(text or "", article_id)
     links = medical.settle_healthy(r, medical.links(r, article_id, text or "", store))
     tally = {f"medical:{k}": n for k, n in sidecars.write_medical(r, links, version).items()}
-    tally.update({f"modality:{k}": n for k, n in sidecars.write_modalities(r, modality.read(r), version).items()})
     return tally
 
 

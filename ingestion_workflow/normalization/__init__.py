@@ -1,5 +1,5 @@
-"""Task, condition, contrast, medical-condition and acquisition-modality normalization of extraction records,
-one article at a time.
+"""Task, condition, contrast and medical-condition normalization of extraction records, one article at a
+time.
 
     prompts(record, text, model) -> {task id: prompt}       the task-design model's requests
     normalize_record(record, text, answers, model=..., version=..., article_id=...) -> record, sidecars written

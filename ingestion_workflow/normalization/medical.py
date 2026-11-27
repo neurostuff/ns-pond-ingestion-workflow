@@ -3,7 +3,8 @@ astra_medical.py).
 
 pondie's `medical_condition.normalize` reads a whole corpus, but nothing it decides for one paper depends on
 another: the MONDO index is a vocabulary cache, and a paper's abbreviations come from its own text. So this runs
-pondie's per-group loop on one record, then the build's two repairs for heads pondie could not place:
+pondie's per-group loop on one record (each item spelled out with the paper's abbreviations, then triaged, then
+linked), then the build's two repairs for heads pondie could not place:
 
 1. qualifier strip   a prevalence or history qualifier ("in 8 participants", "(4 patients)", "(69%)", "lifetime",
                      "history of", "comorbid") is removed from the head, which is linked again. The original
@@ -81,6 +82,7 @@ def links(record, study, text, store=None):
     from pondie.vocabularies.phrases import NO_CONDITION, NOT_READ, absent, triage
 
     vocab, cw, onvoc, index = vocabularies()
+    is_name = mc.known(vocab)
     store = store if store is not None else abbreviations(text, study)
     out, staged = [], []
     for group in record.get("groups") or []:
@@ -89,19 +91,21 @@ def links(record, study, text, store=None):
         flag = value_of(group.get("is_healthy"))
         name = str(value_of(group.get("local_id")) or "")
         for item_index, item in mc._items(group):
-            triaged = triage(item)
+            # the paper's own short forms first, so a defined compound ("AD/HD") reaches triage's splitter as the
+            # name it stands for; and a value that is one whole MONDO name stays one head
+            spelled, seen = mc._expanded(item, store, study)
+            triaged = triage(spelled, is_name)
             sentinel, by_flag = triaged.sentinel, False
-            if sentinel == NOT_READ and absent(item, flag):
+            if sentinel == NOT_READ and absent(spelled, flag):
                 sentinel, by_flag = NO_CONDITION, True
             if sentinel:
                 out.append(mc.Link(study=study, group=name, text=item, item=item_index, sentinel=sentinel,
                                    denied=triaged.denied, scope="flag" if by_flag else triaged.scope))
                 continue
             for head in triaged.heads:
-                expanded, seen = mc._expanded(head, store, study)
                 staged.append((mc.Link(study=study, group=name, text=item, item=item_index, head=head,
                                        denied=triaged.denied, scope=triaged.scope, qualifiers=triaged.qualifiers,
-                                       expansions=seen), expanded))
+                                       expansions=seen), head))
 
     def placed(row, node, method, score, others):
         oid, olab, via, path = mc.bridge(node, vocab, cw, onvoc)
