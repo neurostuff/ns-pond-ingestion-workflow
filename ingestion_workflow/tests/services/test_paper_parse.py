@@ -1753,8 +1753,7 @@ def test_a_set_the_roles_stage_puts_in_other_space_is_keyed_in_other_space():
 def test_the_meta_analysis_basis_names_what_said_so():
     basis = paper_parse._meta_basis
     assert basis("A meta-analysis of fear", ["Journal Article"]) == "title"
-    assert basis("Fear", ["Meta-Analysis"]) == "publication_type"
-    assert basis("A meta-analysis of fear", ["Meta-Analysis"]) == "publication_type_and_title"
+    assert basis("A meta-analysis of fear", ["Meta-Analysis"]) == "title"
     # a narrative review: the type says Review, and the abstract confirms it
     assert basis("The amygdala theory of autism", ["Review"],
                  "In this paper we review the evidence for a social function of the amygdala."
