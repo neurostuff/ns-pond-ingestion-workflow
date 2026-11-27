@@ -66,13 +66,12 @@ dependencies = [
   "study-schema @ git+https://github.com/neurostuff/study_schema.git@abf53f5192dc088e29c4e4cc0b82400cf9b6f8f7",
   # The astra-distill models' paper prompt, compact record format and frozen schema, which
   # `ingest offload export` builds requests with and `pull` restores records with. Pinned to
-  # neurostuff/pondie#36's head (TO REPIN to its merge commit before this merges), the same
-  # commit as the normalize extra's pondie.
-  "pondie-astra @ git+https://github.com/neurostuff/pondie.git@508d62e32b3e221ea4c02cbde6c070c8e760c86d#subdirectory=packages/pondie-astra",
+  # the merge of neurostuff/pondie#36, the same commit as the normalize extra's pondie.
+  "pondie-astra @ git+https://github.com/neurostuff/pondie.git@02ddb93a742dc9406a9537b43e02e542c27c0899#subdirectory=packages/pondie-astra",
   # pondie's `Modality` reading (pondie#35), which the `modality` stage and `ingest modality export`
   # take each record's modalities from (`normalization.modality.paper_modalities`). Its base install
   # only: the `normalize` extra adds the encoders at the same commit, which must stay equal to this one.
-  "pondie @ git+https://github.com/neurostuff/pondie.git@508d62e32b3e221ea4c02cbde6c070c8e760c86d",
+  "pondie @ git+https://github.com/neurostuff/pondie.git@02ddb93a742dc9406a9537b43e02e542c27c0899",
   # Fetches the private adapters `ingest offload push` copies to a machine.
   "huggingface_hub>=0.24",
 ]
@@ -107,12 +106,12 @@ merge-ls6 = ["torch==2.11.0", "transformers==5.17.0", "peft==0.21.0", "accelerat
 # sidecar shape, and the record's deterministic fixes (`normalize_assign.repair`), which
 # normalize gives every record and `ingest offload import` a record the schema refuses. pondie
 # reads the schema from its study_schema checkout (`PONDIE_SCHEMA_DIR`), and writes the `Modality`
-# entry on every acquisition (pondie#35). Pinned to neurostuff/pondie#36's head (TO REPIN to its
-# merge commit before this merges), which pins the same study_schema commit as above. The task-design
+# entry on every acquisition (pondie#35). Pinned to the merge of neurostuff/pondie#36, which
+# pins the same study_schema commit as above. The task-design
 # model is served by vLLM, not loaded here. spaCy's en_core_web_sm, pondie's negation parser, is a separate download:
 # python -m spacy download en_core_web_sm
 normalize = [
-  "pondie[encoders] @ git+https://github.com/neurostuff/pondie.git@508d62e32b3e221ea4c02cbde6c070c8e760c86d",
+  "pondie[encoders] @ git+https://github.com/neurostuff/pondie.git@02ddb93a742dc9406a9537b43e02e542c27c0899",
 ]
 
 [project.scripts]
