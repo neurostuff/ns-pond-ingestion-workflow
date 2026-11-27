@@ -1,6 +1,7 @@
 """One shard of a bundle, on a cluster node: merge the adapter (once per adapter revision),
-serve the model with vLLM, send each request, and write results/<shard>.jsonl as rows
-finish. A rerun keeps the rows that have an answer and sends the rest again.
+serve the model with vLLM (started again once, from empty caches, if it fails), send
+each request, and write results/<shard>.jsonl as rows finish. A rerun keeps the rows
+that have an answer and sends the rest again.
 
     python job.py BUNDLE_DIR SHARD
 
@@ -14,6 +15,7 @@ import hashlib
 import json
 import os
 import shutil
+import signal
 import subprocess
 import sys
 import threading
@@ -25,6 +27,17 @@ from pathlib import Path
 
 #: How long a shard waits for another shard's merge of the same adapter.
 MERGE_WAIT_S = 3600
+#: vLLM starts this many times before the shard gives up, each from empty caches.
+SERVE_ATTEMPTS = 2
+#: How long one start may take before it counts as failed.
+SERVE_START_S = 1800
+
+#: The compile and autotune caches vLLM, torch and FlashInfer write, by environment variable
+#: and subdirectory. Each job keeps its own on the node's disk: shared ones in $HOME (NFS)
+#: let one job read another's half-written autotune file ("Stale file handle") and its
+#: compiled graphs, which name Triton kernels in that job's /tmp.
+CACHE_DIRS = {"VLLM_CACHE_ROOT": "vllm", "TRITON_CACHE_DIR": "triton",
+              "TORCHINDUCTOR_CACHE_DIR": "inductor", "FLASHINFER_WORKSPACE_BASE": "flashinfer"}
 
 
 def sha256(path):
@@ -93,43 +106,84 @@ def main():
     t0 = time.time()
     model_dir = merged_model(cluster, spec)
     drop_page_cache(model_dir)
-    port = 8391 + int(os.environ.get("SLURM_LOCALID", "0"))
-    log = root / "logs" / f"vllm-{shard}-{os.environ.get('SLURM_JOB_ID', 'local')}.log"
-    log.parent.mkdir(exist_ok=True)
-    vllm = str(Path(sys.executable).parent / "vllm")
-    srv = subprocess.Popen(
-        [vllm, "serve", str(model_dir), "--served-model-name", "model", "--host", "127.0.0.1",
-         "--port", str(port), "--max-model-len", str(serve["max_len"]),
-         "--gpu-memory-utilization", str(serve["gpu_mem"]),
-         "--max-num-seqs", str(serve["workers"]),
-         "--language-model-only", "--tensor-parallel-size", str(serve["tp"]), *serve["vllm_args"]],
-        stdout=open(log, "w"), stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
-        start_new_session=True,
-        env=dict(os.environ, PATH=f"{Path(sys.executable).parent}:" + os.environ["PATH"]))
+    local_id = os.environ.get("SLURM_LOCALID", "0")
+    port = 8391 + int(local_id)
+    job_id = os.environ.get("SLURM_JOB_ID", "local")
+    (root / "logs").mkdir(exist_ok=True)
+    bin_dir = Path(sys.executable).parent
+    cmd = [str(bin_dir / "vllm"), "serve", str(model_dir), "--served-model-name", "model",
+           "--host", "127.0.0.1", "--port", str(port), "--max-model-len", str(serve["max_len"]),
+           "--gpu-memory-utilization", str(serve["gpu_mem"]),
+           "--max-num-seqs", str(serve["workers"]), "--language-model-only",
+           "--tensor-parallel-size", str(serve["tp"]), *serve["vllm_args"]]
+    env = dict(os.environ, PATH=f"{bin_dir}:" + os.environ["PATH"])
+    cache = Path("/tmp") / f"ns-pond-{job_id}-{local_id}"
     url = f"http://127.0.0.1:{port}/v1/chat/completions"
+    srv = None
     try:
-        for _ in range(180):
-            try:
-                urllib.request.urlopen(f"http://127.0.0.1:{port}/v1/models", timeout=3)
-                break
-            except Exception:  # noqa: BLE001 - not up yet
-                if srv.poll() is not None:
-                    break
-                time.sleep(10)
-        else:
-            srv.poll()
-        if srv.poll() is not None:
-            print(log.read_text()[-3000:])
+        srv = start_with_retry(cmd, env, port, root / "logs" / f"vllm-{shard}-{job_id}", cache)
+        if srv is None:
             sys.exit("vllm did not start")
         print(f"[{time.time() - t0:.0f}s] vllm up", flush=True)
         run(root, shard, url)
     finally:
-        if srv.poll() is None:
-            srv.terminate()
-            try:
-                srv.wait(60)
-            except Exception:  # noqa: BLE001
-                srv.kill()
+        if srv is not None:
+            stop(srv)
+        shutil.rmtree(cache, ignore_errors=True)
+
+
+def empty_caches(cache):
+    """Empty directories under `cache` for each of CACHE_DIRS, and the variables naming them."""
+    shutil.rmtree(cache, ignore_errors=True)
+    env = {}
+    for var, sub in CACHE_DIRS.items():
+        (cache / sub).mkdir(parents=True)
+        env[var] = str(cache / sub)
+    return env
+
+
+def start_with_retry(cmd, env, port, log_stem, cache):
+    """Start vLLM from empty caches, up to SERVE_ATTEMPTS times: the server, or None."""
+    for attempt in range(1, SERVE_ATTEMPTS + 1):
+        suffix = "" if attempt == 1 else f"-try{attempt}"
+        log = log_stem.with_name(f"{log_stem.name}{suffix}.log")
+        srv = start_vllm(cmd, dict(env, **empty_caches(cache)), port, log)
+        if srv is not None:
+            return srv
+        print(log.read_text()[-3000:])
+        print(f"vllm did not start (attempt {attempt} of {SERVE_ATTEMPTS})", flush=True)
+    return None
+
+
+def start_vllm(cmd, env, port, log):
+    """Start vLLM and wait until it answers: the server, or None if it died or never came up."""
+    srv = subprocess.Popen(cmd, stdout=open(log, "w"), stderr=subprocess.STDOUT,
+                           stdin=subprocess.DEVNULL, start_new_session=True, env=env)
+    deadline = time.time() + SERVE_START_S
+    while time.time() < deadline:
+        try:
+            urllib.request.urlopen(f"http://127.0.0.1:{port}/v1/models", timeout=3)
+            return srv
+        except Exception:  # noqa: BLE001 - not up yet
+            if srv.poll() is not None:
+                break
+            time.sleep(10)
+    stop(srv)
+    return None
+
+
+def stop(srv):
+    """Stop the server and its engine processes, which share its process group."""
+    for sig in (signal.SIGTERM, signal.SIGKILL):
+        try:
+            os.killpg(srv.pid, sig)
+        except ProcessLookupError:
+            return
+        try:
+            srv.wait(60)
+            return
+        except subprocess.TimeoutExpired:
+            continue
 
 
 def request_body(row, serve):

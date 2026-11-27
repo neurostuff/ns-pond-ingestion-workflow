@@ -95,8 +95,6 @@ prose_api_base: null  # Its server, apart from the table model's; defaults to ll
 #       VLLM_USE_FLASHINFER_SAMPLER: "0"
 #       VLLM_USE_DEEP_GEMM: "0"
 #       PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
-#       TRITON_CACHE_DIR: /tmp/triton-$SLURM_JOB_ID
-#       TORCHINDUCTOR_CACHE_DIR: /tmp/inductor-$SLURM_JOB_ID
 #     max_queued: 30  # gh allows 40 submitted per user, shared with other work
 #     su_per_node_hour: 1.0
 #     su_cap: 50  # `submit` needs --yes for an estimate above it
@@ -117,8 +115,6 @@ prose_api_base: null  # Its server, apart from the table model's; defaults to ll
 #       VLLM_USE_FLASHINFER_SAMPLER: "0"  # its sampler JIT needs nvcc, which compute nodes lack
 #       VLLM_USE_DEEP_GEMM: "0"
 #       PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
-#       TRITON_CACHE_DIR: /tmp/triton-$SLURM_JOB_ID
-#       TORCHINDUCTOR_CACHE_DIR: /tmp/inductor-$SLURM_JOB_ID
 #     su_per_node_hour: 3.0  # check TACC's current rate for gpu-a100
 #     su_cap: 50
 
