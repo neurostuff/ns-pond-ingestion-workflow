@@ -182,7 +182,6 @@ def sbatch_script(remote: Remote, bundle: Bundle, shard: str, *, partition: str,
     return (f"#!/bin/bash\n#SBATCH -J {bundle.bundle_id}-{shard}\n#SBATCH -p {partition}\n"
             f"#SBATCH -A {m.account}\n#SBATCH -N 1\n#SBATCH -n 1\n#SBATCH -t {time}\n"
             f"#SBATCH -o {where}/logs/%x-%j.out\nset -u\n{exports}\n"
-            'mkdir -p "${TRITON_CACHE_DIR:-/tmp}" "${TORCHINDUCTOR_CACHE_DIR:-/tmp}"\n'
             'echo "node $(hostname) job $SLURM_JOB_ID $(date)"\n'
             f"{m.serve_python} -I {where}/job.py {where} {shard}\n"
             'rc=$?; echo "job exit $rc $(date)"; exit $rc\n')

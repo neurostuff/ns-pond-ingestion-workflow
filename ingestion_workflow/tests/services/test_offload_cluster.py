@@ -424,3 +424,68 @@ def test_evidence_of_a_record_replaced_since_export_is_refused(world):
                  "record": newer}])
     pull(world["remote"], bundle, world["catalog"])
     assert world["catalog"].artifact(ARTICLE, "evidence", "ns-27b").error == RECORD_MOVED
+
+
+#: A stand-in for `vllm serve`: it records the caches it was given and that they started
+#: empty, dies on its first start as the 11-26 shards did, and on the next one serves
+#: /v1/models from `serve_dir` on the port it is given.
+FLAKY_SERVER = """#!/bin/sh
+for var in VLLM_CACHE_ROOT TRITON_CACHE_DIR TORCHINDUCTOR_CACHE_DIR FLASHINFER_WORKSPACE_BASE; do
+  eval dir=\\$$var
+  echo "$var=$dir $(ls -A "$dir" | wc -l)" >> "$CALLS"
+  touch "$dir/written"
+done
+echo start >> "$CALLS"
+if [ ! -e "$CALLS.failed" ] || [ -n "$ALWAYS_FAIL" ]; then
+  touch "$CALLS.failed"; echo "OSError: [Errno 116] Stale file handle"; exit 1
+fi
+exec python3 -m http.server "$1" --bind 127.0.0.1 --directory "$SERVE_DIR"
+"""
+
+
+@pytest.fixture
+def flaky_server(tmp_path, monkeypatch):
+    import socket
+    import time
+
+    from ingestion_workflow.services.offload.cluster import job
+
+    script = tmp_path / "vllm"
+    script.write_text(FLAKY_SERVER)
+    script.chmod(0o755)
+    (tmp_path / "serve" / "v1").mkdir(parents=True)
+    (tmp_path / "serve" / "v1" / "models").write_text("{}")
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        port = s.getsockname()[1]
+    sleep = time.sleep
+    monkeypatch.setattr(job.time, "sleep", lambda _s: sleep(0.2))
+    env = {"PATH": "/usr/bin:/bin", "CALLS": str(tmp_path / "calls"),
+           "SERVE_DIR": str(tmp_path / "serve")}
+    return job, [str(script), str(port)], env, port, tmp_path
+
+
+def test_a_server_that_fails_to_start_is_started_again_from_empty_caches(flaky_server):
+    job, cmd, env, port, tmp = flaky_server
+    srv = job.start_with_retry(cmd, env, port, tmp / "logs-vllm-s011-1172207", tmp / "cache")
+    try:
+        assert srv is not None and srv.poll() is None
+    finally:
+        job.stop(srv)
+    assert srv.poll() is not None
+    calls = (tmp / "calls").read_text().split("start\n")[:-1]
+    assert len(calls) == 2
+    for call in calls:   # every cache under the job's own directory, and empty at each start
+        given = dict(line.split("=") for line in call.splitlines())
+        assert set(given) == set(job.CACHE_DIRS)
+        assert all(v == f"{tmp / 'cache' / job.CACHE_DIRS[k]} 0" for k, v in given.items())
+    assert "Stale file handle" in (tmp / "logs-vllm-s011-1172207.log").read_text()
+    assert (tmp / "logs-vllm-s011-1172207-try2.log").exists()
+
+
+def test_a_server_that_never_starts_gives_up_after_its_attempts(flaky_server, capsys):
+    job, cmd, env, port, tmp = flaky_server
+    env["ALWAYS_FAIL"] = "1"
+    assert job.start_with_retry(cmd, env, port, tmp / "vllm-s000-1", tmp / "cache") is None
+    assert (tmp / "calls").read_text().count("start\n") == job.SERVE_ATTEMPTS
+    assert "vllm did not start (attempt 2 of 2)" in capsys.readouterr().out
