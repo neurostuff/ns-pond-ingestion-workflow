@@ -1,7 +1,8 @@
 """The `normalized` sidecars written into real records validate against the extraction record.
 
-The records are three 27B records (`data/design_records.json`), each with task-design v4's answer for its task
-as beast's server gave it (no text, so no excerpt in the prompt).
+The records are four 27B records (`data/design_records.json`), each with task-design v4's answer for
+its tasks as beast's server gave it (no text, so no excerpt in the prompt). One, xbp5wa6xqs3x, has a
+resting-state task without conditions.
 """
 
 import copy
@@ -121,3 +122,34 @@ def test_a_rerun_replaces_its_own_entries_only():
     assert "someone 1" in tools
     assert not any(VERSION in t for t in tools)
     assert sum("design-111111111111" in t for t in tools) == len(tools) - 1
+
+
+CONDLESS = "xbp5wa6xqs3x"
+
+
+def test_a_task_without_conditions_is_asked_and_labelled():
+    """xbp5wa6xqs3x's resting-state scan has no conditions; until 2026-11-27 such a task was never
+    asked, and a renormalization left it with no task (11 of 16 such tasks a blind check found)."""
+    r = written(CONDLESS)
+    (task,) = design.tasks_of(r)
+    assert not task.get("conditions")
+    got = entries(task["name"])
+    assert got["astra canonical task"]["status"] == "mapped"
+    assert got["astra canonical task"]["value"] == "hedtsk_rest"
+    assert got["ns-pond task confidence"]["value"] == "high"
+
+
+def test_the_conditions_an_answer_gives_a_task_without_them_are_written_to_none():
+    assert json.loads(answers(CONDLESS)["tsk_rest"])["conditions"]  # the model names two
+    (task,) = written(CONDLESS)["tasks"]
+    assert not task.get("conditions")
+
+
+def test_a_task_with_no_name_description_or_conditions_is_not_asked():
+    record = {"tasks": [{"local_id": {"value": "t1"}},
+                        {"local_id": {"value": "t2"}, "name": {"value": ""}},
+                        {"local_id": {"value": "t3"}, "name": {"value": "resting-state"}},
+                        {"local_id": {"value": "t4"},
+                         "description": {"value": "Eyes closed, 8 min."}}]}
+
+    assert [design.v(t["local_id"]) for t in design.tasks_of(record)] == ["t3", "t4"]
