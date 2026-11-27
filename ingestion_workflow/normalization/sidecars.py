@@ -1,108 +1,104 @@
 """Writing the normalization into the record's `normalized` sidecars (study_schema#56), with pondie's writer.
 
-Each entry names this package's module and the fit it ran under in `mapping_tool`
-(`ingestion_workflow.normalization.<module> <fit_id>`), so a rerun under any fit replaces this module's entries and
-leaves every other normalizer's alone. Where the entries go:
+Each entry names this package's module and the run version in `mapping_tool`
+(`ingestion_workflow.normalization.<module> <version>`), so a rerun replaces this module's entries and leaves
+every other normalizer's alone. Where the entries go:
 
-    tasks[].name                       astra canonical task, astra task family
-    tasks[].conditions[].name          astra condition atom: <axis> (one vocabulary per axis), astra condition phase
+    tasks[].name                       astra canonical task, astra task family, ns-pond task confidence,
+                                       ns-pond task factor, condition context: <axis>
+    tasks[].conditions[].name          ns-pond condition kind, condition atom: <axis>, ns-pond condition expansion
     groups[].medical_condition         MONDO, ONVOC (pondie's entry shape), astra medical role
-    analyses[].name                    astra contrast key, ns-pond contrast set <fit_id>,
-                                       ns-pond contrast set orientation <fit_id>
+    analyses[].name                    ns-pond contrast key v2, ns-pond contrast kind, ns-pond contrast measure,
+                                       ns-pond contrast baseline type, ns-pond contrast manipulated
 
 `acquisitions[].modality` carries pondie's `Modality` entry, which pondie's `apply_normalized` writes.
 
-An analysis's contrast is its `effect`, which is not an extracted value and so has no sidecar: the contrast
-entries sit on the analysis's `name`, with `also_read` naming `effect` and `tasks`, as an entity-level task label
-sits on the task's name.
+The task and family keep the inventory's id space and the names Neurostore reads. Atoms carry the condition
+vocabulary's version in `method`. An analysis's contrast is its `effect`, which is not an extracted value and so
+has no sidecar: the contrast entries sit on the analysis's `name`, with `also_read` naming `effect` and `tasks`, as
+an entity-level task label sits on the task's name.
 """
 from pondie.normalization import _sidecar
 from pondie.normalization import medical_condition as mc
 from pondie.normalization._records import value_of
 
 MAPPED, UNMAPPED = _sidecar.MAPPED, _sidecar.UNMAPPED
-
-#: The Task slots each `decided_by` route read besides `name` (pondie's migrate_normalized_sidecar.py). The
-#: contrast route also read contrast names, which live on another entity and have no slot to name here.
-TASK_ALSO_READ = {
-    "name": [],
-    "citation": ["references"],
-    "contrast": ["conditions"],
-    "taskcat": ["description"],
-    "rest": ["description"],
-    "gate": ["description"],
-}
-#: Which Condition slot each atom source is.
-ATOM_SLOT = {"name": None, "description": "description", "stimulus": "stimulus_content"}
+#: What the model read of a task besides its name.
+TASK_ALSO_READ = ["description", "conditions"]
+CONTRAST_ALSO_READ = ["effect", "tasks"]
 
 
-def tool(module, fit_id):
-    return f"ingestion_workflow.normalization.{module} {fit_id}"
+def tool(module, version):
+    return f"ingestion_workflow.normalization.{module} {version}"
 
 
 def _by_id(items):
     return {str(value_of(x.get("local_id")) or ""): x for x in items or [] if isinstance(x, dict)}
 
 
-def write_tasks(record, labels, fit_id):
-    mapping_tool = tool("tasks", fit_id)
-    n = 0
+def write_tasks(record, designs, model, vocabulary_version, version):
+    """Each task's design onto its name and its conditions' names. `designs`: task id -> the design
+    (`design.read`), or a str saying why the task has none."""
+    from .design import inventory
+
+    mapping_tool = tool("design", version)
+    names = inventory()
+    tally = {"tasks": 0, "no_design": 0, "conditions": 0}
     for tid, task in _by_id(record.get("tasks")).items():
-        row = labels.get(tid)
-        if row is None or not isinstance(task.get("name"), dict):
+        if not isinstance(task.get("name"), dict):
             continue
-        by = row["decided_by"]
-        common = {"method": by, "also_read": TASK_ALSO_READ.get(by),
-                  "confidence": row["routes"]["citation_conf"] if by == "citation" else
-                  row["routes"]["contrast_p"] if by == "contrast" else None}
-        if row["canonical"]:
-            canon = _sidecar.entry("astra canonical task", MAPPED, mapping_tool, value=row["canonical"],
-                                   label=row["canonical_name"],
-                                   qualifiers=[q["text"] if isinstance(q, dict) else str(q)
-                                               for q in row.get("qualifiers") or []], **common)
-        else:
-            canon = _sidecar.entry("astra canonical task", UNMAPPED, mapping_tool,
-                                   **{**common, "method": f"{by}: {row['entity_kind']}" if by == "gate" else by})
-        # a family with no task is the contrast classifier's guess from the evidence alone: its method says so, so a
-        # query can leave such families out
-        guessed = {} if row["canonical"] else {"method": f"{by}: family only, no task"}
-        fam = (_sidecar.entry("astra task family", MAPPED, mapping_tool, value=row["family"], **{**common, **guessed})
-               if row["family"] else _sidecar.entry("astra task family", UNMAPPED, mapping_tool, method=by,
-                                                    also_read=common["also_read"]))
-        _sidecar.replace(task["name"], mapping_tool, [canon, fam])
-        n += 1
-    return {"set": n}
-
-
-def write_conditions(record, conditions, fit_id):
-    mapping_tool = tool("conditions", fit_id)
-    rows = {r["condition"]: r for r in conditions}
-    n = 0
-    for task in record.get("tasks") or []:
-        for cid, cond in _by_id(task.get("conditions") if isinstance(task, dict) else None).items():
-            row = rows.get(cid)
-            if row is None or not isinstance(cond.get("name"), dict):
+        d = designs.get(tid, "no conditions")
+        tally["tasks"] += 1
+        conditions = _by_id(task.get("conditions"))
+        if isinstance(d, str):
+            tally["no_design"] += 1
+            _sidecar.replace(task["name"], mapping_tool, [
+                _sidecar.entry("astra canonical task", UNMAPPED, mapping_tool, method=d)])
+            for cond in conditions.values():
+                if isinstance(cond.get("name"), dict):
+                    _sidecar.replace(cond["name"], mapping_tool, [])
+            continue
+        common = {"method": model, "also_read": TASK_ALSO_READ}
+        entries = [
+            _sidecar.entry("astra canonical task", MAPPED, mapping_tool, value=d["task"],
+                           label=names[d["task"]]["name"], **common) if d["task"] else
+            _sidecar.entry("astra canonical task", UNMAPPED, mapping_tool, method=(
+                f"{model}: {d['task_off_inventory']!r} is not an inventory task" if d.get("task_off_inventory")
+                else f"{model}: no inventory task fits"), also_read=TASK_ALSO_READ),
+            _sidecar.entry("astra task family", MAPPED, mapping_tool, value=d["family"], **common) if d["family"]
+            else _sidecar.entry("astra task family", UNMAPPED, mapping_tool, **common)]
+        if d["task_confidence"]:
+            entries.append(_sidecar.entry("ns-pond task confidence", MAPPED, mapping_tool,
+                                          value=d["task_confidence"], **common))
+        method = f"{model}, condition vocabulary {vocabulary_version}"
+        entries += [_sidecar.entry("ns-pond task factor", MAPPED, mapping_tool, value=f["axis"], method=method + (
+            f"; from model term {f['from_term']!r}" if f.get("from_term") else "")) for f in d["factors"]]
+        entries += [_sidecar.entry(f"condition context: {x['axis']}", MAPPED, mapping_tool, value=x["value"],
+                                   method=method) for x in d["context"]]
+        _sidecar.replace(task["name"], mapping_tool, entries)
+        answered = {c["id"]: c for c in d["conditions"]}
+        for cid, cond in conditions.items():
+            if not isinstance(cond.get("name"), dict):
                 continue
-            entries = []
-            for a in row["atoms"]:
-                axis, val = a.split(":", 1)
-                src = "description" if a in row["atoms_from_description"] else \
-                    "stimulus" if a in row["atoms_from_stimulus"] else "name"
-                entries.append(_sidecar.entry(f"astra condition atom: {axis}", MAPPED, mapping_tool, value=val,
-                                              method=f"from {src}",
-                                              also_read=[ATOM_SLOT[src]] if ATOM_SLOT[src] else None))
-            for p in row["phases"]:
-                entries.append(_sidecar.entry("astra condition phase", MAPPED, mapping_tool, value=p))
-            if not entries:
-                entries.append(_sidecar.entry("astra condition atom", UNMAPPED, mapping_tool,
-                                              method=f"residue: {row['residue']}" if row["residue"] else "no atom"))
-            _sidecar.replace(cond["name"], mapping_tool, entries)
-            n += len(entries)
-    return {"set": n}
+            c = answered.get(cid)
+            if c is None:
+                _sidecar.replace(cond["name"], mapping_tool, [_sidecar.entry(
+                    "ns-pond condition kind", UNMAPPED, mapping_tool, method=f"{model}: not in the answer")])
+                continue
+            got = [_sidecar.entry("ns-pond condition kind", MAPPED if c["kind"] else UNMAPPED, mapping_tool,
+                                  value=c["kind"], label=c.get("gloss"), method=model)]
+            got += [_sidecar.entry(f"condition atom: {a['axis']}", MAPPED, mapping_tool, value=a["value"],
+                                   method=method) for a in c["atoms"]]
+            if c.get("expansion"):
+                got.append(_sidecar.entry("ns-pond condition expansion", MAPPED, mapping_tool,
+                                          value=c["expansion"], method=model))
+            _sidecar.replace(cond["name"], mapping_tool, got)
+            tally["conditions"] += 1
+    return tally
 
 
-def write_medical(record, links, fit_id):
-    mapping_tool = tool("medical", fit_id)
+def write_medical(record, links, version):
+    mapping_tool = tool("medical", version)
     from .medical import role
 
     by_group = {}
@@ -126,38 +122,29 @@ def write_medical(record, links, fit_id):
     return tally
 
 
-def write_contrasts(record, contrasts, assigned, fit_id, threshold):
-    mapping_tool = tool("contrast_sets", fit_id)
-    rows = {k["analysis"]: k for k in contrasts}
-    tally = {"keys": 0, "assigned": 0, "unassigned": 0}
+def write_contrasts(record, identities, version):
+    """Each analysis's contrast identity (`identity.identities`) onto its name."""
+    mapping_tool = tool("contrasts", version)
+    tally = {"keys": 0, "incomplete": 0}
     for aid, analysis in _by_id(record.get("analyses")).items():
         if not isinstance(analysis.get("name"), dict):
             continue
-        k = rows.get(aid)
+        k = identities.get(aid)
         if k is None:
             _sidecar.replace(analysis["name"], mapping_tool, [])
             continue
-        read = ["effect", "tasks"]
-        entries = [_sidecar.entry("astra contrast key", MAPPED, mapping_tool, value=k["key"],
-                                  method=f"{k['shape']}; sign {k['sign']:+d}", also_read=read)]
-        tally["keys"] += 1
-        doc_id = f"{k['study']}/{aid}"
-        if doc_id in assigned:
-            a = assigned[doc_id]
-            vocab = f"ns-pond contrast set {fit_id}"
-            if a is None:
-                entries.append(_sidecar.entry(vocab, UNMAPPED, mapping_tool, also_read=read,
-                                              method=f"no same-family set at average similarity >= {threshold}"))
-                tally["unassigned"] += 1
-            else:
-                how = f"average similarity to its {a['n_members']} members"
-                entries.append(_sidecar.entry(vocab, MAPPED, mapping_tool, value=a["set"], label=a["label"],
-                                              confidence=min(1.0, max(0.0, a["similarity"])), method=how,
-                                              also_read=read))
-                entries.append(_sidecar.entry(f"ns-pond contrast set orientation {fit_id}", MAPPED, mapping_tool,
-                                              value="same" if a["orient"] == 1 else "reversed",
-                                              method="against the set's medoid, the set stated in its majority "
-                                                     "direction", also_read=read))
-                tally["assigned"] += 1
+        how = "assembled from the record and its task's design" + ("" if k["complete"] else
+                                                                     "; some conditions have no atoms")
+        common = {"also_read": CONTRAST_ALSO_READ}
+        entries = [_sidecar.entry("ns-pond contrast key v2", MAPPED, mapping_tool, value=k["key"],
+                                  label=k["canonical"], method=how, **common),
+                   _sidecar.entry("ns-pond contrast kind", MAPPED, mapping_tool, value=k["kind"], **common),
+                   _sidecar.entry("ns-pond contrast measure", MAPPED, mapping_tool, value=k["measure"], **common),
+                   _sidecar.entry("ns-pond contrast baseline type", MAPPED, mapping_tool, value=k["baseline_type"],
+                                  **common)]
+        entries += [_sidecar.entry("ns-pond contrast manipulated", MAPPED, mapping_tool, value=a, **common)
+                    for a in k["manipulated"]]
         _sidecar.replace(analysis["name"], mapping_tool, entries)
+        tally["keys"] += 1
+        tally["incomplete"] += not k["complete"]
     return tally

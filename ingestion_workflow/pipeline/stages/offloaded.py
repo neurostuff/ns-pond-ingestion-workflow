@@ -2,8 +2,8 @@
 
 Each holds, per article and extractor family (the source), what a run made on a cluster or
 on beast, imported by `ingest offload import`. `record` and `evidence` never run here, so
-their plans never have work. `normalize` runs in-process once `normalize_fit_dir` names a
-saved fit; without one it too waits for an import.
+their plans never have work. `normalize` runs in-process once `normalize_model` names the
+task-design model; without one it too waits for an import.
 
     record      run identity + text_sha256 + the parse keys the record points at
     evidence    run identity + text_sha256 + the record's fingerprint and content, same source
@@ -36,6 +36,8 @@ from ..stage import Context, recorded_path
 AWAITS_IMPORT = "waits for an offload import"
 NO_NORMALIZE_INPUT = "waits for an evidence record (or a skipped evidence run's record)"
 NO_PARSE = "no coordinate parse"
+#: Why a normalize fails when an answer is missing and nothing serves the model.
+NO_SERVER = "{} task(s) have no stored answer and normalize_model has no url to ask"
 NO_RECORD = "no record of this source"
 #: The reason of a skip for want of a usable answer: cut short, or not JSON (pull writes it).
 NO_ANSWER = "no prediction: {}"
@@ -338,16 +340,24 @@ def normalize_input(evidence: Optional[Artifact],
 
 
 class NormalizeStage(_OffloadedStage):
-    """The record's terms mapped to vocabularies, for the same source, by the fit
-    `normalize_fit_dir` names (`ingestion_workflow.normalization`), one article at a time.
-    Its artifact is the whole record, its `normalized` sidecars written.
+    """The record's tasks, conditions and contrasts normalized, for the same source: each task's
+    design from the task-design model `normalize_model` names, each analysis's structure and
+    contrast identity assembled from the record and that design, and the medical conditions and
+    modalities linked (`ingestion_workflow.normalization`). Its artifact is the whole record,
+    its `normalized` sidecars written.
 
-    With a fit named, freshness is against the run that fit makes (`normalize_assign`): a
-    new fit, or new assign code, makes every earlier normalization stale. Without one, the
-    stage only holds imports, as `record` and `evidence` do."""
+    With a model named, freshness is against the run it makes (`normalize_assign.run_for`): a new
+    model, or new normalization code, makes every earlier normalization stale. The answers are kept
+    in the answer store, so a rerun under new code asks the model only what it was never asked.
+    Without a model, the stage only holds imports, as `record` and `evidence` do."""
 
     name = "normalize"
     requires = "evidence"
+    #: Articles prepared ahead of the one whose answers are awaited, per request in flight.
+    AHEAD = 2
+    #: Articles a batch holds: the server idles while a batch's last answers finish and the next
+    #: batch's first article is prepared, so batches are long.
+    batch_size = 2000
 
     def __init__(self, settings) -> None:
         super().__init__(settings)
@@ -355,22 +365,21 @@ class NormalizeStage(_OffloadedStage):
         self._about: Optional[Dict[str, Any]] = None
 
     @property
-    def fit_dir(self) -> Optional[Path]:
-        held = getattr(self.settings, "normalize_fit_dir", None)
-        return Path(held) if held else None
+    def model(self):
+        return getattr(self.settings, "normalize_model", None)
 
     def configured_run(self, source: str) -> Optional[Run]:
-        """The run the named fit makes for `source`, or None when no fit is named."""
-        if self.fit_dir is None:
+        """The run the named model makes for `source`, or None when no model is named."""
+        if self.model is None:
             return None
         if source not in self._configured:
             from ingestion_workflow.services import normalize_assign
             from ingestion_workflow.services.offload.export import ns_pond_commit
 
             if self._about is None:
-                self._about = normalize_assign.describe(self.fit_dir)
+                self._about = normalize_assign.describe(self.model.name)
             self._configured[source] = normalize_assign.run_for(
-                source, self.fit_dir, ns_pond_commit(), self._about)
+                source, self.model.name, ns_pond_commit(), self._about)
         return self._configured[source]
 
     def inputs(self, ctx, ids, upstream):
@@ -401,7 +410,7 @@ class NormalizeStage(_OffloadedStage):
         return normalize_fingerprint(run, read, run.config.get("vocabulary"))
 
     def plan(self, ctx, refs, artifacts, upstream):
-        if self.fit_dir is None:
+        if self.model is None:
             return super().plan(ctx, refs, artifacts, upstream)
         plan = StagePlan(stage=self.name)
         ids = [ref.id for ref in refs]
@@ -433,20 +442,49 @@ class NormalizeStage(_OffloadedStage):
                 plan.pending.append(Work(ref=ref, source=source, fingerprint=fp, upstream=read))
         return plan
 
+    def answer_store(self, ctx):
+        from ingestion_workflow.services.normalize_assign import AnswerStore
+
+        return AnswerStore(self.model.answers
+                           or Path(ctx.catalog.root) / "task_design_answers.sqlite")
+
     def execute(self, ctx: Context, works: List[Work]) -> Iterator[Outcome]:
-        """Each work's input assigned against the fit, `normalize_workers` at once: forked
-        processes, which share the fit once it is loaded here."""
-        if self.fit_dir is None or not works:
+        """Each work's record renormalized and linked in `normalize_workers` forked processes, its
+        tasks' prompts answered from the store or by the server (`concurrency` at once), then its
+        designs and contrast identities written. A server that is down or serves another model
+        stops the stage (`ModelUnavailable`): no article's failure."""
+        if self.model is None or not works:
             return
+        from collections import deque
+        from concurrent.futures import ThreadPoolExecutor
+
+        from ingestion_workflow.clients.model_server import ModelUnavailable
+        from ingestion_workflow.normalization import api, design
         from ingestion_workflow.services import normalize_assign as na
 
-        synced = ctx.catalog.artifacts(sorted({w.article_id for w in works}), "sync")
+        model = self.model
         kept: Dict[str, Run] = {}
         for work in works:
             if work.source not in kept:
                 run = self.configured_run(work.source)
                 # A rerun of a kept run is that run, as it was first kept.
                 kept[work.source] = ctx.catalog.record_run(ctx.catalog.run_like(run) or run)
+        version = self._about["version"]
+
+        def failed(work, error):
+            out = Outcome.failure(work.article_id, self.name, work.source, error,
+                                  fingerprint=work.fingerprint)
+            out.run_id = kept[work.source].run_id
+            return out
+
+        client = na.Client(model.url, model.name, model.timeout_s) if model.url else None
+        if client is not None:
+            served = client.served()
+            if model.name not in served:
+                raise ModelUnavailable(f"{model.url} serves {served}, not {model.name}")
+
+        synced = ctx.catalog.artifacts(sorted({w.article_id for w in works}), "sync")
+        parses: Dict[str, Optional[Path]] = {}
 
         def jobs():
             for work in works:
@@ -454,28 +492,67 @@ class NormalizeStage(_OffloadedStage):
                 if sync is None or not sync.ok:
                     yield work, None
                     continue
+                parses[work.article_id] = na.parse_of(ctx.catalog.root, sync)
                 yield work, (ctx.catalog.payload(work.upstream),
-                             na.text_of(ctx.catalog.root, sync),
-                             na.bibliography_of(ctx.catalog, work.article_id,
-                                                na.text_source(ctx.catalog.root, sync)),
-                             str(self.fit_dir), work.article_id,
-                             na.parse_of(ctx.catalog.root, sync))
+                             na.text_of(ctx.catalog.root, sync), work.article_id,
+                             parses[work.article_id], model.name, version)
+
+        store = self.answer_store(ctx)
+
+        def finish(work, record, answers, asked):
+            for tid, (key, future) in asked.items():
+                try:
+                    reason, content, usage = future.result()
+                except na.RequestFailed as exc:
+                    return failed(work, f"task {tid}: {exc}")
+                store.put(key, model.name, reason, content, usage.get("prompt_tokens"),
+                          usage.get("completion_tokens"), source=work.article_id)
+                answers[tid] = na.answer_of(reason, content)
+            try:
+                tally = api.finish(record, answers, na.load_parse(parses.get(work.article_id)),
+                                   model.name, version)
+            except Exception as exc:  # noqa: BLE001 - this article's failure
+                return failed(work, f"{type(exc).__name__}: {exc}")
+            return Outcome(work.article_id, self.name, work.source, Status.OK,
+                           fingerprint=work.fingerprint, payload=record,
+                           summary={"record_digest": work.upstream.summary.get("record_digest"),
+                                    "read": work.upstream.stage, "model": model.name,
+                                    "version": version,
+                                    "vocabulary": kept[work.source].config.get("vocabulary"),
+                                    "tasks": len(answers), "asked": len(asked),
+                                    **{k: n for k, n in tally.items() if n}},
+                           run_id=kept[work.source].run_id)
 
         workers = max(1, int(getattr(self.settings, "normalize_workers", 1) or 1))
-        for work, (normalized, error) in na.assign_all(jobs(), workers, NO_PARSE):
-            run = kept[work.source]
-            if error is not None:
-                failed = Outcome.failure(work.article_id, self.name, work.source, error,
-                                         fingerprint=work.fingerprint)
-                failed.run_id = run.run_id
-                yield failed
-                continue
-            yield Outcome(work.article_id, self.name, work.source, Status.OK,
-                          fingerprint=work.fingerprint, payload=normalized,
-                          summary={"record_digest": work.upstream.summary.get("record_digest"),
-                                   "read": work.upstream.stage, "fit": run.fit,
-                                   "vocabulary": run.config.get("vocabulary")},
-                          run_id=run.run_id)
+        try:
+            with ThreadPoolExecutor(model.concurrency) as pool:
+                waiting: deque = deque()
+                for work, (prepared, error) in na.prepare_all(jobs(), workers, NO_PARSE):
+                    if error is not None:
+                        yield failed(work, error)
+                        continue
+                    record, prompts = prepared
+                    answers, asked, missing = {}, {}, 0
+                    for tid, prompt in prompts.items():
+                        key = design.key_of(prompt, model.name)
+                        held = store.get(key)
+                        if held is not None:
+                            answers[tid] = na.answer_of(*held)
+                        elif client is not None:
+                            asked[tid] = (key, pool.submit(client.ask, prompt))
+                        else:
+                            missing += 1
+                    if missing:
+                        yield failed(work, NO_SERVER.format(missing))
+                        continue
+                    waiting.append((work, record, answers, asked))
+                    while waiting and (len(waiting) > self.AHEAD * model.concurrency or all(
+                            f.done() for _, f in waiting[0][3].values())):
+                        yield finish(*waiting.popleft())
+                while waiting:
+                    yield finish(*waiting.popleft())
+        finally:
+            store.close()
 
 
 def parse_check(parse: Optional[Parse], text_sha256: Optional[str],
@@ -497,6 +574,7 @@ __all__ = [
     "EvidenceStage",
     "NO_PARSE",
     "NO_NORMALIZE_INPUT",
+    "NO_SERVER",
     "NO_RECORD",
     "NormalizeStage",
     "OFFLOADED_STAGES",

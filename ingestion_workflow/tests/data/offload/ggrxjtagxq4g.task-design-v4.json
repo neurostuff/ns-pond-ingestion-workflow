@@ -1,0 +1,57 @@
+{
+ "model": "task-design-v4",
+ "served": "http://localhost:8410/v1",
+ "note": "beast vLLM, greedy, 2026-11-26; answers for the ev1 evidence record, record_answers for the record (read when evidence is skipped)",
+ "answers": {
+  "tsk_emotion": {
+   "prompt_sha256": "8a6244d1d9b14f0163a2c9e130cebfecc819f1acce093993f575f2484da1f650",
+   "finish": "stop",
+   "content": "{\"factors\": [{\"from_term\": \"condition\", \"axis\": \"emotion\", \"levels\": [{\"level\": \"EmoFH\", \"value\": \"happy\"}, {\"level\": \"EmoFN\", \"value\": \"neutral\"}]}], \"context\": [{\"axis\": \"stimulus\", \"value\": \"faces\"}, {\"axis\": \"modality\", \"value\": \"visual\"}], \"conditions\": [{\"id\": \"cond_emofh\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"emotion\", \"value\": \"happy\"}], \"expansion\": null, \"gloss\": \"happy face discrimination\"}, {\"id\": \"cond_emofn\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"emotion\", \"value\": \"neutral\"}], \"expansion\": null, \"gloss\": \"neutral face discrimination\"}], \"task\": \"hedtsk_facial_emotion_recognition\", \"family\": \"emotion\", \"task_confidence\": \"high\"}",
+   "usage": {
+    "prompt_tokens": 25185,
+    "total_tokens": 25392,
+    "completion_tokens": 207,
+    "prompt_tokens_details": null,
+    "completion_tokens_details": null
+   }
+  },
+  "tsk_categorization": {
+   "prompt_sha256": "690ce80cd4034871a42368d9314322a77f1525f487f5c7080bfc7db3370c717e",
+   "finish": "stop",
+   "content": "{\"factors\": [{\"from_term\": \"condition\", \"axis\": \"stimulus\", \"levels\": [{\"level\": \"CatFH\", \"value\": \"faces\"}, {\"level\": \"CatHG\", \"value\": \"bodies\"}]}], \"context\": [{\"axis\": \"modality\", \"value\": \"visual\"}], \"conditions\": [{\"id\": \"cond_catfh\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"stimulus\", \"value\": \"faces\"}], \"expansion\": \"Categorization Faces\", \"gloss\": \"happy faces\"}, {\"id\": \"cond_catgh\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"stimulus\", \"value\": \"bodies\"}], \"expansion\": \"Categorization Hands\", \"gloss\": \"hand postures\"}], \"task\": \"tct_categorization\", \"family\": \"perceptual_judgment\", \"task_confidence\": \"high\"}",
+   "usage": {
+    "prompt_tokens": 25186,
+    "total_tokens": 25389,
+    "completion_tokens": 203,
+    "prompt_tokens_details": null,
+    "completion_tokens_details": null
+   }
+  }
+ },
+ "record_answers": {
+  "tsk_emotion": {
+   "prompt_sha256": "c74c9bdc56368e1376b326567e18bac7d4f9dbb1196da2ff632da4133dbd25d3",
+   "finish": "stop",
+   "content": "{\"factors\": [{\"from_term\": \"condition\", \"axis\": \"emotion\", \"levels\": [{\"level\": \"EmoFH\", \"value\": \"happy\"}, {\"level\": \"EmoFN\", \"value\": \"neutral\"}]}], \"context\": [{\"axis\": \"stimulus\", \"value\": \"faces\"}, {\"axis\": \"modality\", \"value\": \"visual\"}], \"conditions\": [{\"id\": \"cond_emofh\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"emotion\", \"value\": \"happy\"}], \"expansion\": null, \"gloss\": \"happy face recognition\"}, {\"id\": \"cond_emofn\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"emotion\", \"value\": \"neutral\"}], \"expansion\": null, \"gloss\": \"neutral face recognition\"}], \"task\": \"hedtsk_facial_emotion_recognition\", \"family\": \"emotion\", \"task_confidence\": \"high\"}",
+   "usage": {
+    "prompt_tokens": 24870,
+    "total_tokens": 25077,
+    "completion_tokens": 207,
+    "prompt_tokens_details": null,
+    "completion_tokens_details": null
+   }
+  },
+  "tsk_categorization": {
+   "prompt_sha256": "5b9147e6209fc2c302d9749157a16f74506fe10b3467ecd054df2ae5d62fec97",
+   "finish": "stop",
+   "content": "{\"factors\": [{\"from_term\": \"condition\", \"axis\": \"stimulus\", \"levels\": [{\"level\": \"CatFH\", \"value\": \"faces\"}, {\"level\": \"CatHG\", \"value\": \"bodies\"}]}], \"context\": [{\"axis\": \"emotion\", \"value\": \"happy\"}, {\"axis\": \"modality\", \"value\": \"visual\"}], \"conditions\": [{\"id\": \"cond_catfh\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"stimulus\", \"value\": \"faces\"}], \"expansion\": \"Categorization Happy Faces\", \"gloss\": \"happy faces categorization\"}, {\"id\": \"cond_catgh\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"stimulus\", \"value\": \"bodies\"}], \"expansion\": \"Categorization Hand Gestures\", \"gloss\": \"hand postures categorization\"}], \"task\": \"tct_categorization\", \"family\": \"perceptual_judgment\", \"task_confidence\": \"high\"}",
+   "usage": {
+    "prompt_tokens": 24889,
+    "total_tokens": 25111,
+    "completion_tokens": 222,
+    "prompt_tokens_details": null,
+    "completion_tokens_details": null
+   }
+  }
+ }
+}

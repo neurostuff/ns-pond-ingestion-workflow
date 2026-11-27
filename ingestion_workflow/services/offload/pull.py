@@ -4,12 +4,13 @@ A shard is imported once, whole: every input row must have a result. A record an
 restored to an extraction record with the schema the model was trained on
 (pondie_astra.compact.from_compact); an evidence answer is merged into the record its
 request was built from (records/<shard>.jsonl), over the paper's text as the parse holds it
-now, and the importer refuses it when that text or the article's record has moved since.
-A row with no answer (cut at the length limit, or
-not JSON) is skipped, which counts as done; a request that failed is recorded failed and
-blocks upload until the shard is submitted again (`submit --again`, which resumes it). A
-shard whose job ended any other way is reported and left for that resubmit.
-"""
+now, and the importer refuses it when that text or the article's record has moved since. A
+normalize shard's answers go to the answer store, not the catalog
+(`offload.normalize.answers`): the normalize stage then reads them. A row with no answer
+(cut at the length limit, or not JSON) is skipped, which counts as done; a request that
+failed is recorded failed and blocks upload until the shard is submitted again
+(`submit --again`, which resumes it). A shard whose job ended any other way is reported
+and left for that resubmit."""
 
 from __future__ import annotations
 
@@ -103,11 +104,18 @@ def _context(held: BundleDir, shard: str, stage: str, catalog: Catalog,
     return records, papers
 
 
-def pull(remote: Remote, root, catalog: Catalog) -> List[str]:
+def pull(remote: Remote, root, catalog: Catalog, answer_store=None) -> List[str]:
+    """`answer_store` (an `AnswerStore`) receives a normalize bundle's answers."""
     held = BundleDir(root)
     bundle, state = held.bundle(), held.state()
     run = run_of(bundle)
     said: List[str] = []
+    normalize = bundle.spec.stage == "normalize"
+    if normalize and answer_store is None:
+        raise ValueError("a normalize bundle's answers go to the answer store: pass one")
+    if not state.skipped_imported and normalize:
+        state.skipped_imported = True
+        held.save(state)
     if not state.skipped_imported:
         rows = list(read_rows([held.skipped]))
         report = import_run(catalog, run, rows)
@@ -126,11 +134,21 @@ def pull(remote: Remote, root, catalog: Catalog) -> List[str]:
         results = {}
         for row in read_rows([held.results(shard)]):
             res = ResultRow(**row)
-            results[res.article_id] = res
-        missing = [r["article_id"] for r in inputs if r["article_id"] not in results]
+            results[res.key or res.article_id] = res
+        missing = [r for r in inputs if (r.get("key") or r["article_id"]) not in results]
         if missing:
             said.append(f"{shard}: {len(missing)} of {len(inputs)} rows have no result; "
                         f"`submit --again {shard}` resumes it")
+            continue
+        if normalize:
+            from .normalize import answers
+
+            got = answers([results[r["key"]] for r in inputs], answer_store, bundle.spec.version,
+                          bundle.bundle_id)
+            state.imported[shard] = {**got, "elapsed_s": elapsed_s(job["elapsed"])}
+            held.save(state)
+            said.append(f"{shard}: {got['answers']:,} answers stored, {got['failed']:,} failed"
+                        + (f"; `submit --again {shard}` asks them again" if got["failed"] else ""))
             continue
         rows = ROWS[bundle.spec.stage]([results[r["article_id"]] for r in inputs], inputs,
                                        _context(held, shard, bundle.spec.stage, catalog, inputs))

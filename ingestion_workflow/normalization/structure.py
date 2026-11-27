@@ -6,7 +6,10 @@ covariates and a correlation's sign. Nothing is inferred from wording, and the
 sides are never turned round: the extraction already orders them by the sign of the reported statistics.
 `statistics` reports that sign (the parse's t/z values) for consumers that check it.
 
-    assemble(record, parse=None) -> [structure, ...], one per analysis
+    assemble(record, parse=None, kinds=None) -> [structure, ...], one per analysis
+
+`kinds` (condition id -> kind) overrides the record's `condition_kind`, for the conditions the task-design model
+read again.
 
 Cells are resolved cell -> ModelTerm -> FactorLevel (by level label) -> the entities the level carries.
 """
@@ -199,11 +202,14 @@ def analysis_structure(analysis, terms, conditions, groups, parse=None, regions=
             "statistics": statistics_sign(parse, v(analysis.get("source_table_analysis")))}
 
 
-def assemble(record, parse=None):
+def assemble(record, parse=None, kinds=None):
     """One structure per analysis of `record` (a study_schema extraction record), in record order."""
     terms = terms_of(record)
-    conditions = {c.get("local_id"): c for t in record.get("tasks") or [] for c in t.get("conditions") or []
-                  if isinstance(c, dict)}
+    conditions = {c.get("local_id"): c for t in record.get("tasks") or [] if isinstance(t, dict)
+                  for c in t.get("conditions") or [] if isinstance(c, dict)}
+    for cid, kind in (kinds or {}).items():
+        if cid in conditions and kind:
+            conditions[cid] = {**conditions[cid], "condition_kind": kind}
     groups = {g.get("local_id"): g for g in record.get("groups") or [] if isinstance(g, dict)}
     regions = {r.get("local_id"): r for r in record.get("regions") or [] if isinstance(r, dict)}
     return [analysis_structure(a, terms, conditions, groups, parse, regions)

@@ -123,9 +123,14 @@ prose_api_base: null  # Its server, apart from the table model's; defaults to ll
 #     su_cap: 50
 
 # ===== Normalization =====
-normalize_fit_dir: null  # The saved normalization fit the normalize stage assigns with (`ingest normalize fit` prints it). Unset, normalize waits for an import
-normalize_workers: 1  # Processes the normalize stage assigns articles in (forked; ~5 s each)
-normalize_fixed_dir: null  # A local copy of the fixed fits `ingest normalize fit` builds on. Unset, the pinned Hub revision is fetched, with HF_TOKEN. Also NORMALIZE_FIXED_DIR
+normalize_model: null  # The task-design model the normalize stage asks about each task. Unset, normalize waits for an import
+# normalize_model:
+#   name: task-design-v4  # The served name, which names the version (`task-design-v4`); the prompt is the one it was trained on
+#   url: http://localhost:8410/v1  # The OpenAI-compatible base URL serving it. Unset, only answers already in the answer store are read: an offload pull fills it
+#   concurrency: 16  # Requests in flight at once
+#   timeout_s: 1800  # How long one request may take
+#   answers: null  # The answer store (sqlite), keyed by served name, template and prompt. Unset, <catalog_root>/task_design_answers.sqlite
+normalize_workers: 1  # Processes the normalize stage prepares articles in (forked; the medical linking, ~5 s each)
 
 # ===== Parallelism =====
 max_workers: 4  # Maximum number of parallel workers for concurrent operations
