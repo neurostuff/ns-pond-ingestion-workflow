@@ -16,6 +16,7 @@ from functools import partial
 from typing import List, Optional, Tuple
 
 from ingestion_workflow.services import offsets
+from ingestion_workflow.services.coordinate_text import AXIS_LABEL, AXIS_UNIT
 
 MINUS = "−–—‐‑‒﹣－"
 #: The space after a sign only: a space before one is left to the patterns,
@@ -29,18 +30,14 @@ SEP = rf"\s*[,;/]\s*(?:and\s+)?|\s+|(?=[{MINUS}-])"
 #: hundreds of them between a bare "x" and the next number.
 SPACES = re.compile(r"[ \t\u00a0]{2,}")
 
-#: After an axis letter, the unit a report prints: "X (mm) = 40". Only millimetres: FSL's
-#: cluster report prints voxel indices beside them as "X (vox) = 45".
-_UNIT = r"(?:\s*\(\s*mm\s*\))?"
-#: Before the y and z of a labelled triplet, the label the report repeats for each axis:
-#: "Z-Max X (mm) = 40, Z-Max Y (mm) = -62, Z-MAX Z (mm) = 6", "COG Y (mm) = -12".
-#: The same label also names statistics per axis ("FWHM x = 6.66, FWHM y = 6.88, FWHM z = 6.79",
-#: head motion "P X = 0.161, P Y = 0.107"): a triplet read with it is dropped when every value
-#: is a fraction under 10 (`_axis_statistics`).
-_REPEATED = r"(?:[A-Za-z][A-Za-z-]{0,9}\s+)?"
+#: A labelled triplet's unit and repeated label are `coordinate_text`'s, so the finder and the
+#: locator read one form. The same label also names statistics per axis ("FWHM x = 6.66, FWHM
+#: y = 6.88, FWHM z = 6.79", head motion "P X = 0.161, P Y = 0.107"): a triplet read with it is
+#: dropped when every value is a fraction under 10 (`_axis_statistics`).
 LABELLED = re.compile(
-    rf"\bx{_UNIT}\s*(?:[=:]\s*)?(?P<x>{NUM})\s*(?:[,;]\s*)?(?:and\s+)?(?P<ly>{_REPEATED})\by{_UNIT}\s*(?:[=:]\s*)?"
-    rf"(?P<y>{NUM})\s*(?:[,;]\s*)?(?:and\s+)?(?P<lz>{_REPEATED})\bz{_UNIT}\s*(?:[=:]\s*)?(?P<z>{NUM})",
+    rf"\bx{AXIS_UNIT}\s*(?:[=:]\s*)?(?P<x>{NUM})\s*(?:[,;]\s*)?(?:and\s+)?"
+    rf"(?P<ly>{AXIS_LABEL})\by{AXIS_UNIT}\s*(?:[=:]\s*)?(?P<y>{NUM})\s*(?:[,;]\s*)?(?:and\s+)?"
+    rf"(?P<lz>{AXIS_LABEL})\bz{AXIS_UNIT}\s*(?:[=:]\s*)?(?P<z>{NUM})",
     re.I,
 )
 

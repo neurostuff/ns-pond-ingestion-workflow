@@ -135,3 +135,22 @@ def test_a_set_s_repeated_point_goes_to_its_next_copy():
     text = "Seed (1, 2, 3); peak (1, 2, 3)."
     points = [{"x": 1, "y": 2, "z": 3}, {"x": 1, "y": 2, "z": 3}, {"x": 9}]
     assert find_points(points, text) == [(6, 13), (22, 29), None]
+
+
+# FSL's cluster report labels each axis and repeats the label: Elkins et al. 2017 (PMC5625029).
+@pytest.mark.parametrize("text, point, printed", [
+    ("Z-MAX = 3.84, Z-Max X (mm) = 40, Z-Max Y (mm) = \u221262, Z-MAX Z (mm) = 6, COPE-MAX = 13.2",
+     (40, -62, 6), "40, Z-Max Y (mm) = \u221262, Z-MAX Z (mm) = 6"),
+    ("its centre of gravity, COG X (mm) = 30, COG Y (mm) = \u221212, COG Z (mm) = 52",
+     (30, -12, 52), "30, COG Y (mm) = \u221212, COG Z (mm) = 52"),
+    ("the peak (MNI x (mm) = \u221222, y (mm) = \u22124, z (mm) = \u221218)", (-22, -4, -18),
+     "\u221222, y (mm) = \u22124, z (mm) = \u221218"),
+])
+def test_a_point_with_each_axis_labelled(text, point, printed):
+    assert _printed(point, text) == [printed]
+
+
+def test_voxel_indices_beside_the_millimetres_are_not_the_point():
+    text = ("Z-MAX X (vox) = 45, Z-MAX Y (vox) = 32, Z-MAX Z (vox) = 40, "
+            "Z-Max X (mm) = 40, Z-Max Y (mm) = -62")
+    assert find_all((45, 32, 40), text) == []
