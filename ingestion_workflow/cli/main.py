@@ -1369,45 +1369,6 @@ def runs_list(
         typer.echo("no runs kept.")
 
 
-# -- normalize ---------------------------------------------------------------
-
-normalize_app = typer.Typer(help="The normalization fit the normalize stage assigns with.",
-                            no_args_is_help=True)
-app.add_typer(normalize_app, name="normalize")
-
-
-@normalize_app.command("fit")
-def normalize_fit(
-    out: Path = typer.Option(..., "--out", help="Where the fit is saved, as <out>/<fit_id>/."),
-    source: str = typer.Option("ns-27b", "--source", help="The records' extractor family."),
-    refit_of: Optional[str] = typer.Option(
-        None, "--refit-of", help="The fit this one replaces; recorded in its manifest."),
-    workers: int = typer.Option(1, "--workers", help="Processes for the per-article passes."),
-    config: Optional[Path] = ConfigOption,
-) -> None:
-    """Fit task labels, the citation index and contrast sets over every article's
-    normalize input (its evidence record, or its record when evidence was skipped), and
-    save the fit. Prints its id; set normalize_fit_dir to <out>/<fit_id> to assign with it.
-    Reads the catalog only. A fit of the same corpus and code is the same fit."""
-    from ingestion_workflow.pipeline.stages.offloaded import normalize_input
-    from ingestion_workflow.services.normalize_assign import fit_corpus
-
-    settings = _settings(config)
-    with _catalog(settings) as held:
-        ids = sorted(held.article_ids_where_summary("record", "analyses"))
-        records, evidence = held.artifacts(ids, "record"), held.artifacts(ids, "evidence")
-        inputs = {}
-        for article_id in ids:
-            read = normalize_input(evidence.get(article_id, {}).get(source),
-                                   records.get(article_id, {}).get(source))
-            if read is not None:
-                inputs[article_id] = read
-        typer.echo(f"fitting over {len(inputs):,} articles of {source}")
-        fit_id = fit_corpus(held, inputs, out, fixed_dir=settings.normalize_fixed_dir,
-                            previous=refit_of, workers=workers, log=typer.echo)
-    typer.echo(f"{fit_id}  {Path(out) / fit_id}")
-
-
 # -- offload -----------------------------------------------------------------
 
 offload_app = typer.Typer(help="Stages run away from ns-pond: record, evidence, normalize.",
@@ -1485,7 +1446,9 @@ def offload_export(
     limit: int = typer.Option(0, "--limit", help="At most this many articles (0: all)."),
     config: Optional[Path] = ConfigOption,
 ) -> None:
-    """Write a bundle of the articles whose record of the spec's source is not fresh."""
+    """Write a bundle of the articles whose artifact of the spec's stage and source is not fresh:
+    for normalize, the task prompts of those articles the answer store has no answer for."""
+    from ingestion_workflow.services.offload import normalize
     from ingestion_workflow.services.offload.contract import load_spec
     from ingestion_workflow.services.offload.export import export
 
@@ -1494,9 +1457,13 @@ def offload_export(
     spec = load_spec(spec_file)
     wanted = None if articles is None else articles.read_text("utf-8").split()
     with _catalog(settings) as catalog:
-        report = _offload(lambda: export(_context(settings, catalog, []), spec, machine,
-                                         articles=wanted, limit=limit,
-                                         workers=settings.max_workers))
+        ctx = _context(settings, catalog, [])
+        if spec.stage == "normalize":
+            report = _offload(lambda: normalize.export(ctx, spec, machine, articles=wanted,
+                                                       limit=limit))
+        else:
+            report = _offload(lambda: export(ctx, spec, machine, articles=wanted, limit=limit,
+                                             workers=settings.max_workers))
     _say(report.lines())
 
 
@@ -1569,14 +1536,26 @@ def offload_status(bundle: Path = BundleArgument, config: Optional[Path] = Confi
 
 @offload_app.command("pull")
 def offload_pull(bundle: Path = BundleArgument, config: Optional[Path] = ConfigOption) -> None:
-    """Fetch and import each shard whose job completed; writes the coverage JSON after."""
+    """Fetch and import each shard whose job completed (a normalize bundle's answers go to the
+    answer store); writes the coverage JSON after."""
+    from ingestion_workflow.pipeline.stages.offloaded import NormalizeStage
     from ingestion_workflow.services import coverage
+    from ingestion_workflow.services.offload.contract import BundleDir
     from ingestion_workflow.services.offload.pull import pull
 
     settings = _settings(config)
     remote = _bundle_remote(settings, bundle)
     with _catalog(settings) as catalog:
-        _say(_offload(lambda: pull(remote, bundle, catalog)))
+        store = None
+        if BundleDir(bundle).bundle().spec.stage == "normalize":
+            if settings.normalize_model is None:
+                raise typer.BadParameter("a normalize bundle needs normalize_model for its answer store")
+            store = NormalizeStage(settings).answer_store(_context(settings, catalog, []))
+        try:
+            _say(_offload(lambda: pull(remote, bundle, catalog, store)))
+        finally:
+            if store is not None:
+                store.close()
     root = settings.catalog_root
     written = coverage.write_json(coverage.coverage(root), coverage.default_json(root))
     typer.echo(f"coverage -> {written}")

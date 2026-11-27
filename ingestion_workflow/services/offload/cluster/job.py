@@ -36,8 +36,15 @@ def sha256(path):
 
 
 def merged_model(cluster, spec):
-    """The merged model's directory: merged here, or by another shard that got there first."""
+    """The merged model's directory: the spec's merged weights, checked; or merged here, or by
+    another shard that got there first."""
     merged, adapter = Path(cluster["merged_dir"]), Path(cluster["adapter_dir"])
+    if spec.get("weights"):
+        found = sha256(merged / "model.safetensors.index.json")
+        if found != spec["weights_sha256"]:
+            sys.exit(f"weights {merged}: index sha256 {found}, "
+                     f"the bundle names {spec['weights_sha256']}")
+        return merged
     ok = merged / ".ok"
     if ok.exists() and ok.read_text().strip() == spec["adapter_sha256"]:
         return merged
@@ -136,14 +143,15 @@ def request_body(row, serve):
     """The chat request for one input row: greedy unless the spec samples, and decoded
     against the row's schema when it has one."""
     schema = row.get("response_schema")
-    response_format = ({"type": "json_schema", "json_schema": {"name": "compact-record",
-                                                               "schema": schema}}
-                       if schema else {"type": "json_object"})
     body = {"model": "model", "temperature": serve.get("temperature", 0.0),
             "max_tokens": row["max_tokens"],
             "messages": [{"role": "user", "content": row["content"]}],
-            "chat_template_kwargs": row["chat_template_kwargs"],
-            "response_format": response_format}
+            "chat_template_kwargs": row["chat_template_kwargs"]}
+    if schema:
+        body["response_format"] = {"type": "json_schema",
+                                   "json_schema": {"name": "compact-record", "schema": schema}}
+    elif serve.get("response_format", "json_object") == "json_object":
+        body["response_format"] = {"type": "json_object"}
     if serve.get("seed") is not None:
         body["seed"] = serve["seed"]
     return body
@@ -157,9 +165,9 @@ def run(root, shard, url):
     if out.exists():   # a rerun keeps the answered rows and sends the rest again
         keep = [line for line in open(out)
                 if line.strip() and json.loads(line).get("finish_reason")]
-        have = {json.loads(line)["article_id"] for line in keep}
+        have = {json.loads(line).get("key") or json.loads(line)["article_id"] for line in keep}
         out.write_text("".join(keep))
-    rows = [r for r in rows if r["article_id"] not in have]
+    rows = [r for r in rows if (r.get("key") or r["article_id"]) not in have]
     serve = json.loads((root / "bundle.json").read_text())["spec"]["serve"]
     workers = serve["workers"]
     print(f"resume: have {len(have)}, todo {len(rows)}", flush=True)
@@ -168,9 +176,9 @@ def run(root, shard, url):
 
     def one(r):
         t = time.time()
-        res = {"article_id": r["article_id"], "text_sha256": r["text_sha256"], "prediction": None,
-               "finish_reason": None, "error": None, "prompt_tokens": None,
-               "completion_tokens": None}
+        res = {"article_id": r["article_id"], "key": r.get("key"), "text_sha256": r["text_sha256"],
+               "prediction": None, "content": None, "finish_reason": None, "error": None,
+               "prompt_tokens": None, "completion_tokens": None}
         body = request_body(r, serve)
         try:
             q = urllib.request.Request(url, json.dumps(body).encode(),
@@ -180,7 +188,7 @@ def run(root, shard, url):
             res.update(finish_reason=choice.get("finish_reason"),
                        prompt_tokens=j["usage"]["prompt_tokens"],
                        completion_tokens=j["usage"]["completion_tokens"])
-            text = choice["message"].get("content")
+            text = res["content"] = choice["message"].get("content")
             try:
                 res["prediction"] = json.loads(text)
             except Exception as e:  # noqa: BLE001

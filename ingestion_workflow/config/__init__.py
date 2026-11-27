@@ -108,6 +108,24 @@ class Machine(BaseModel):
     su_cap: float = Field(description="`submit` needs --yes for an estimate above this")
 
 
+class TaskDesignModel(BaseModel):
+    """The task-design model the normalize stage asks about each task (`normalization.design`)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(description=(
+        "The served name, which names the version (`task-design-v4`); the prompt is the one "
+        "it was trained on"))
+    url: Optional[str] = Field(default=None, description=(
+        "The OpenAI-compatible base URL serving it (`http://localhost:8410/v1`). Unset, only "
+        "answers already in the answer store are read: an offload pull fills it"))
+    concurrency: int = Field(default=16, ge=1, description="Requests in flight at once")
+    timeout_s: int = Field(default=1800, ge=1, description="How long one request may take")
+    answers: Optional[Path] = Field(default=None, description=(
+        "The answer store (sqlite), keyed by served name, template and prompt. Unset, "
+        "<catalog_root>/task_design_answers.sqlite"))
+
+
 class Settings(BaseSettings):
     """
     Application configuration with support for:
@@ -389,20 +407,15 @@ class Settings(BaseSettings):
         default_factory=dict,
         description="The clusters offloaded stages run on, by name (`ingest offload --machine`)",
     )
-    normalize_fit_dir: Optional[Path] = Field(
+    normalize_model: Optional[TaskDesignModel] = Field(
         default=None,
-        description=("The saved normalization fit the normalize stage assigns with "
-                     "(`ingest normalize fit` prints it). Unset, normalize waits for an import"),
+        description=("The task-design model the normalize stage asks about each task. Unset, "
+                     "normalize waits for an import"),
     )
     normalize_workers: int = Field(
         default=1,
-        description="Processes the normalize stage assigns articles in (forked; ~5 s each)",
-    )
-    normalize_fixed_dir: Optional[Path] = Field(
-        default=None,
-        validation_alias=AliasChoices("normalize_fixed_dir", "NORMALIZE_FIXED_DIR"),
-        description=("A local copy of the fixed fits `ingest normalize fit` builds on. Unset, "
-                     "the pinned Hub revision is fetched, with HF_TOKEN"),
+        description=("Processes the normalize stage prepares articles in (forked; the medical "
+                     "linking, ~5 s each)"),
     )
 
     sync_overwrite: bool = Field(

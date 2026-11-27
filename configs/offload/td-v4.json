@@ -1,0 +1,26 @@
+{
+ "stage": "normalize",
+ "source": "ns-27b",
+ "family": "nu",
+ "pipeline": "ns-pond offload",
+ "version": "task-design-v4",
+ "model": "numind/NuExtract3",
+ "model_revision": "c99dc8f5641b866aa0192b6ea78f84bf9f3535f1",
+ "weights": "/scratch/07723/jdk3232/task-design/merged/td-v4-final",
+ "weights_sha256": "cd67b86e2cd9d329167224ac0026be69b39e078ad3056fc59339ba0a19fe4845",
+ "prompt_version": "task-design v4 prefix c64f1e567547 (normalization.design)",
+ "schema_version": "task design (normalization.design.template)",
+ "serve": {
+  "max_len": 32768,
+  "max_tokens": 4096,
+  "workers": 32,
+  "gpu_mem": 0.85,
+  "tp": 1,
+  "vllm_args": ["--enable-prefix-caching"],
+  "reserve": 0,
+  "response_format": "none"
+ },
+ "shard_size": 4000,
+ "max_input_tokens": 28672,
+ "time": "03:00:00"
+}

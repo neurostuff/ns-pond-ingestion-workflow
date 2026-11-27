@@ -21,7 +21,7 @@ import json
 from pathlib import Path
 from typing import Any, Dict, Iterable, Iterator, List, Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 #: Bumped when a field changes meaning; a bundle of another version is refused.
 CONTRACT_VERSION = 1
@@ -47,6 +47,8 @@ class Serve(BaseModel):
     #: parse keys enumerated (vLLM guided decoding), for a retry of refused answers. Compact,
     #: not extraction-record: the model writes the compact form, which pull expands.
     guided: bool = False
+    #: The answer's response_format: JSON mode, or none, as a model trained without it was run.
+    response_format: Literal["json_object", "none"] = "json_object"
 
 
 class RunSpec(BaseModel):
@@ -63,9 +65,13 @@ class RunSpec(BaseModel):
     model: str
     #: The base model's Hub revision, as the machine's HF_HOME holds it.
     model_revision: str
-    #: `repo@commit` on the Hub.
-    adapter: str
-    adapter_sha256: str
+    #: `repo@commit` on the Hub, merged into the base model by the first shard that needs it.
+    adapter: Optional[str] = None
+    adapter_sha256: Optional[str] = None
+    #: Instead of an adapter: a merged model directory on the machine, served as it is, and the
+    #: sha256 of its `model.safetensors.index.json`.
+    weights: Optional[str] = None
+    weights_sha256: Optional[str] = None
     prompt_version: str
     schema_version: str
     #: The paper text a record request carries: "full", the parse's text, or "trimmed-1",
@@ -78,6 +84,15 @@ class RunSpec(BaseModel):
     max_input_tokens: int
     #: Each shard's job time limit.
     time: str
+
+    @model_validator(mode="after")
+    def _one_model(self):
+        if bool(self.adapter) == bool(self.weights):
+            raise ValueError("a spec names an adapter or merged weights, not both or neither")
+        if (bool(self.adapter) != bool(self.adapter_sha256)
+                or bool(self.weights) != bool(self.weights_sha256)):
+            raise ValueError("an adapter or merged weights needs its sha256")
+        return self
 
 
 class Shard(BaseModel):
@@ -104,6 +119,8 @@ class Bundle(BaseModel):
 
 class InputRow(BaseModel):
     article_id: str
+    #: The row's own key, where an article has several rows (normalize: one per task prompt).
+    key: Optional[str] = None
     base_study_id: Optional[str] = None
     text_sha256: str
     #: The parse keys the prompt listed (record), or the record names (evidence).
@@ -121,9 +138,12 @@ class InputRow(BaseModel):
 
 class ResultRow(BaseModel):
     article_id: str
+    key: Optional[str] = None
     text_sha256: str
     #: The model's answer, parsed: a compact record. None when there is no answer.
     prediction: Optional[Any] = None
+    #: The answer as the model wrote it.
+    content: Optional[str] = None
     finish_reason: Optional[str] = None
     error: Optional[str] = None
     prompt_tokens: Optional[int] = None
