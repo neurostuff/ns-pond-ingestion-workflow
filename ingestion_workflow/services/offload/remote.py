@@ -121,30 +121,44 @@ def fetch_adapter(adapter: str, expected_sha256: str, cache: Path) -> Path:
     return local
 
 
+def _push_adapter(remote: Remote, root: Path, spec, target: str, hf_cache: Path) -> List[str]:
+    """The adapter on the machine, once per commit."""
+    there = remote.run(f"sha256sum {shlex.quote(target)}/adapter_model.safetensors "
+                       f"2>/dev/null || true").split()
+    if there[:1] == [spec.adapter_sha256]:
+        return []
+    local = fetch_adapter(spec.adapter, spec.adapter_sha256, hf_cache)
+    staged = root / ".adapter"
+    staged.mkdir(exist_ok=True)
+    for name in ADAPTER_FILES:   # the Hub cache holds symlinks; rsync copies files
+        shutil.copyfile(local / name, staged / name)
+    remote.run(f"mkdir -p {shlex.quote(target)}")
+    remote.put(staged, target)
+    shutil.rmtree(staged)
+    return [f"adapter {spec.adapter} -> {target}"]
+
+
 def push(remote: Remote, root: Path, *, hf_cache: Path) -> List[str]:
-    """Copy the bundle, its job scripts and (once per commit) its adapter to the machine."""
+    """Copy the bundle, its job scripts and (once per commit) its adapter to the machine; or
+    check that the spec's merged weights are there."""
     held = BundleDir(root)
     bundle = held.bundle()
     spec, said = bundle.spec, []
-    target = remote.adapter_dir(spec.adapter)
-    there = remote.run(f"sha256sum {shlex.quote(target)}/adapter_model.safetensors "
-                       f"2>/dev/null || true").split()
-    if there[:1] != [spec.adapter_sha256]:
-        local = fetch_adapter(spec.adapter, spec.adapter_sha256, hf_cache)
-        staged = root / ".adapter"
-        staged.mkdir(exist_ok=True)
-        for name in ADAPTER_FILES:   # the Hub cache holds symlinks; rsync copies files
-            shutil.copyfile(local / name, staged / name)
-        remote.run(f"mkdir -p {shlex.quote(target)}")
-        remote.put(staged, target)
-        shutil.rmtree(staged)
-        said.append(f"adapter {spec.adapter} -> {target}")
+    if spec.weights:
+        index = f"{spec.weights}/model.safetensors.index.json"
+        there = remote.run(f"sha256sum {shlex.quote(index)} 2>/dev/null || true").split()
+        if there[:1] != [spec.weights_sha256]:
+            raise RemoteError(f"no merged weights at {spec.weights} with the spec's index sha256")
+        target = merged = spec.weights
+    else:
+        target, merged = remote.adapter_dir(spec.adapter), remote.merged_dir(spec.adapter)
+        said += _push_adapter(remote, root, spec, target, hf_cache)
     base = remote.base_dir(bundle)
     remote.run(f"test -f {shlex.quote(base)}/config.json || "
                f"{{ echo 'no base model at {base}' >&2; exit 1; }}")
     for script in ("job.py", "merge.py"):
         shutil.copyfile(CLUSTER / script, root / script)
-    cluster = {"adapter_dir": target, "merged_dir": remote.merged_dir(spec.adapter),
+    cluster = {"adapter_dir": target, "merged_dir": merged,
                "base_dir": base, "train_python": remote.machine.train_python,
                "merge_script": f"{remote.bundle_dir(bundle)}/merge.py"}
     (root / "cluster.json").write_text(json.dumps(cluster, indent=1), "utf-8")

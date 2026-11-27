@@ -1,31 +1,34 @@
-"""What the normalize stage hands `ingestion_workflow.normalization`, and the run it records.
+"""What the normalize stage hands `ingestion_workflow.normalization`, the run it records, the
+task-design model's answers and the store that keeps them.
 
-A fit is made once over the corpus (`fit_corpus`, `ingest normalize fit`) and saved; the
-stage then assigns each article against it (`assign`). The run is the fit and the code that
-assigns: `fit` is the fit's id, which is its fingerprint, and `version` hashes the assign
-code, the vocabularies and pondie's commit, so a new fit or new assign code is a new run and
-every normalization made under the old one is stale.
+The run is the model and the code: `version` hashes the served name, this package's
+normalization code and data (the prompt's prefix among them), the vocabularies and pondie's
+commit, so a new model or new code is a new run and every normalization made under the old
+one is stale. Answers are stored by served name, template and prompt (`design.key_of`), so a
+rerun under new assembly code asks the model nothing it was asked before.
 
-Before assigning, what code decides is decided again (`renormalize`): the siblings
+Before the model is asked, what code decides is decided again (`renormalize`): the siblings
 study_schema#56 removed (`age_unit_normalized`, `category_normalized`) are dropped; pondie's
 deterministic fixes (`repair`) make the record's references and shapes agree with its schema
 and its parse; pondie's `apply_derived` fills the derived slots, replacing what the model
 answered there (`groups[].is_healthy` among them, but for the model's `true` that pondie
-would make `false`, which the fit's medical step settles); and its `apply_normalized` writes
-each field's `normalized` sidecar. The record then holds to the schema pondie and this
-package pin, and the fit's medical step reads the derived `is_healthy`.
-"""
+would make `false`, which the medical step settles); and its `apply_normalized` writes each
+field's `normalized` sidecar. The record then holds to the schema pondie and this package
+pin, and the medical step reads the derived `is_healthy`."""
 
 from __future__ import annotations
 
 import functools
 import json
 import socket
-from collections.abc import Mapping
+import sqlite3
+import urllib.error
+import urllib.request
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple
 
-from ingestion_workflow.catalog import Artifact, Catalog, Run, RunKind
+from ingestion_workflow.catalog import Artifact, Run, RunKind
 from ingestion_workflow.pipeline.stage import recorded_path
 from ingestion_workflow.pipeline.stages.offloaded import drop_siblings
 
@@ -33,6 +36,8 @@ from ingestion_workflow.pipeline.stages.offloaded import drop_siblings
 PIPELINE = "ns-pond normalize"
 #: Bumped when `renormalize` changes what it does; part of the run's version.
 RENORMALIZE_VERSION = 5
+#: How an answer that is not the model's last word is kept: the finish reason.
+CUT, OVER = "length", "over_context"
 
 #: pondie's fixes that `repair` leaves out, because they change what the record says rather
 #: than how it says it: `mirrored` writes a sign-reversed copy of an analysis the paper
@@ -41,31 +46,28 @@ RENORMALIZE_VERSION = 5
 SKIPPED_REPAIRS = frozenset({"mirrored", "unreachable"})
 
 
-def describe(fit_dir: Path) -> Dict[str, Any]:
-    """The fit's id and model, and a digest of what assigns with it."""
-    from ingestion_workflow.normalization import api
+def describe(model: str) -> Dict[str, Any]:
+    """The run version for served model `model`, and what it hashes."""
+    from ingestion_workflow.normalization import api, design
 
-    manifest = json.loads((Path(fit_dir) / "manifest.json").read_text("utf-8"))
     vocabulary = api.vocab_versions()
-    assigner = {"assign_code_sha256": api.digest(api.code_hashes()), "vocab": vocabulary,
+    assigner = {"model": model, "prefix_sha256": design.MODELS[model][1],
+                "code_sha256": api.digest(api.code_hashes()), "vocab": vocabulary,
                 "pondie_commit": api.pondie_commit(), "renormalize": RENORMALIZE_VERSION}
-    embedding = manifest["models"]["embedding"]
-    return {"fit_id": manifest["fit_id"], "vocabulary": vocabulary,
-            "version": "assign-" + api.digest(assigner)[:12],
-            "model": f"taskcat + {embedding['name']}@{embedding['revision']}",
-            "assigner": assigner}
+    return {"version": "design-" + api.digest(assigner)[:12], "model": model,
+            "vocabulary": vocabulary, "assigner": assigner}
 
 
-def run_for(source: str, fit_dir: Path, code_commit: str,
+def run_for(source: str, model: str, code_commit: str,
             about: Optional[Dict[str, Any]] = None) -> Run:
-    """The run a normalize stage makes for `source` against the fit at `fit_dir`."""
-    about = about or describe(fit_dir)
+    """The run a normalize stage makes for `source` with served model `model`."""
+    about = about or describe(model)
     made = Run("", RunKind.MODEL, "normalize", source, pipeline=PIPELINE,
-               version=about["version"], model=about["model"],
-               schema_version="extraction-record", fit=about["fit_id"],
-               code_commit=code_commit, machine=socket.gethostname(),
-               config={"fit_dir": str(fit_dir), "vocabulary": about["vocabulary"],
-                       **about["assigner"]})
+               version=about["version"], model=model,
+               prompt_version=about["assigner"]["prefix_sha256"],
+               schema_version="extraction-record", code_commit=code_commit,
+               machine=socket.gethostname(),
+               config={"vocabulary": about["vocabulary"], **about["assigner"]})
     return Run(**{**made.__dict__, "run_id": made.minted_id})
 
 
@@ -81,29 +83,6 @@ def parse_of(catalog_root: Path, sync: Artifact) -> Optional[Path]:
     """The paper's coordinate parse, which the record's `source_table_analysis` keys name."""
     parse = recorded_path(catalog_root, sync.summary["path"]) / "parse" / "coordinate_parse.json"
     return parse if parse.is_file() else None
-
-
-def text_source(catalog_root: Path, sync: Artifact) -> Optional[str]:
-    """The extraction source the parse was read from: whose `references` list it names."""
-    study = recorded_path(catalog_root, sync.summary["path"])
-    paper = json.loads((study / "parse" / "parsed_paper.json").read_text("utf-8"))
-    return paper.get("source")
-
-
-def bibliography_of(catalog: Catalog, article_id: str, source: Optional[str]) -> Optional[dict]:
-    """The `references` payload of the parse's source, or None when it has none."""
-    if not source:
-        return None
-    listed = catalog.artifact(article_id, "references", source)
-    return catalog.payload(listed) if listed is not None and listed.ok else None
-
-
-def assign(record: Dict[str, Any], text: str, bibliography: Optional[dict], fit_dir: Path,
-           article_id: str) -> Dict[str, Any]:
-    """`record` with its `normalized` sidecars, against the fit at `fit_dir`."""
-    from ingestion_workflow.normalization import normalize_record
-
-    return normalize_record(record, text, bibliography, str(fit_dir), article_id=article_id)
 
 
 def _skipped(body: Dict[str, Any], ctx: Any) -> list:
@@ -179,81 +158,148 @@ def renormalize(record: Dict[str, Any], parse: Optional[Path] = None,
     return record
 
 
-def _assign_one(job) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
-    """(the normalized record, None), or (None, why it failed): a worker's whole answer."""
-    record, text, bibliography, fit_dir, article_id, parse = job
+def _prepare_one(job) -> Tuple[Optional[Tuple[Dict[str, Any], Dict[str, str]]], Optional[str]]:
+    """((the record, renormalized and linked, {task id: prompt}), None), or (None, why it
+    failed)."""
+    from ingestion_workflow.normalization import api
+
+    record, text, article_id, parse, model, version = job
     try:
         record = renormalize(record, Path(parse) if parse else None, text)
-        return assign(record, text, bibliography, Path(fit_dir), article_id), None
+        api.link(record, text, article_id, version)
+        return (record, api.prompts(record, text, model)), None
     except Exception as exc:  # noqa: BLE001 - this article's failure
         return None, f"{type(exc).__name__}: {exc}"
 
 
-def assign_all(jobs: Iterable[Tuple[Any, Optional[tuple]]], workers: int,
-               no_input: str) -> Iterator[Tuple[Any, Tuple[Optional[dict], Optional[str]]]]:
-    """(key, (record, error)) for each (key, job) of `jobs`, in order; a job of None fails
-    with `no_input`. `workers` > 1 assigns in forked processes: each inherits the fit the
-    first job loaded here, rather than loading its own (spawn would, per process)."""
+def prepare_all(jobs: Iterable[Tuple[Any, Optional[tuple]]], workers: int,
+                no_input: str) -> Iterator[Tuple[Any, Tuple[Optional[tuple], Optional[str]]]]:
+    """(key, (prepared, error)) for each (key, job) of `jobs`, in order; a job of None fails
+    with `no_input`. `workers` > 1 prepares in forked processes: each inherits the vocabularies
+    the first job loaded here, rather than loading its own (spawn would, per process)."""
     import multiprocessing
 
     held = iter(jobs)
     if workers <= 1:
         for key, job in held:
-            yield key, ((None, no_input) if job is None else _assign_one(job))
+            yield key, ((None, no_input) if job is None else _prepare_one(job))
         return
-    for key, job in held:  # the first one here, so the forked workers share its loaded fit
-        yield key, ((None, no_input) if job is None else _assign_one(job))
+    for key, job in held:  # the first one here, so the forked workers share what it loaded
+        yield key, ((None, no_input) if job is None else _prepare_one(job))
         break
     pending = list(held)
     with multiprocessing.get_context("fork").Pool(workers) as pool:
-        answers = pool.imap(_assign_one, [job for _, job in pending if job is not None],
+        answers = pool.imap(_prepare_one, [job for _, job in pending if job is not None],
                             chunksize=4)
         for key, job in pending:
             yield key, ((None, no_input) if job is None else next(answers))
 
 
-class _Lazy(Mapping):
-    """article -> a value read on access, so a corpus of 65k records is never all held."""
+def no_answer(finish: str) -> str:
+    said = {CUT: "no answer: cut at the length limit",
+            OVER: "no answer: the prompt is over the model's context"}
+    return said.get(finish, f"no answer: {finish}")
 
-    def __init__(self, ids: Sequence[str], read: Callable[[str], Any]) -> None:
-        self._ids, self._read = list(ids), read
 
-    def __getitem__(self, article_id: str) -> Any:
-        return self._read(article_id)
+class AnswerStore:
+    """The model's answers by `design.key_of`: what it was asked once is never asked again.
+    Only final answers are kept (finished, cut at the length limit, over the context); a
+    request that failed is not."""
 
-    def __iter__(self) -> Iterator[str]:
-        return iter(self._ids)
+    def __init__(self, path: Path) -> None:
+        self.path = Path(path)
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self._db = sqlite3.connect(str(self.path), timeout=60)
+        self._db.execute("pragma journal_mode=wal")
+        self._db.execute("""create table if not exists answers (key text primary key,
+                            model text not null, finish text not null, content text,
+                            prompt_tokens integer, completion_tokens integer,
+                            made_at text not null, source text)""")
+        self._db.commit()
+
+    def get(self, key: str) -> Optional[Tuple[str, Optional[str]]]:
+        """(finish reason, content), or None when the prompt was never answered."""
+        row = self._db.execute("select finish, content from answers where key=?",
+                               (key,)).fetchone()
+        return (row[0], row[1]) if row else None
+
+    def put(self, key: str, model: str, finish: str, content: Optional[str], prompt_tokens=None,
+            completion_tokens=None, source: Optional[str] = None) -> None:
+        made = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        self._db.execute("insert or replace into answers values (?, ?, ?, ?, ?, ?, ?, ?)",
+                         (key, model, finish, content, prompt_tokens, completion_tokens, made,
+                          source))
+        self._db.commit()
 
     def __len__(self) -> int:
-        return len(self._ids)
+        return self._db.execute("select count(*) from answers").fetchone()[0]
+
+    def close(self) -> None:
+        self._db.close()
 
 
-def fit_corpus(catalog: Catalog, inputs: Dict[str, Artifact], out_dir: Path, *,
-               fixed_dir: Optional[Path], previous: Optional[str] = None,
-               workers: int = 1, log=print) -> str:
-    """Fit over each article's normalize input (`inputs`: article -> the artifact normalize
-    reads) and save it under `out_dir`; the fit's id. `previous` makes it a refit of that fit."""
-    from ingestion_workflow.normalization import fit, refit
-
-    ids = sorted(inputs)
-    synced = catalog.artifacts(ids, "sync")
-    syncs = {a: synced[a][""] for a in ids if synced.get(a, {}).get("")}
-    ids = [a for a in ids if a in syncs]
-    records = _Lazy(ids, lambda a: catalog.payload(inputs[a]))
-    texts = _Lazy(ids, lambda a: text_of(catalog.root, syncs[a]))
-    bibliographies = _Lazy(ids, lambda a: bibliography_of(
-        catalog, a, text_source(catalog.root, syncs[a])))
-    # Each paper's own PMID and DOI, so a corpus paper another one cites lends it its task
-    # labels: the fit keys papers by article id, and the fixed manifest knows only Neurostore ids.
-    identifiers = {a: {"pmid": i.pmid, "doi": i.doi}
-                   for a, i in catalog.identifiers(ids).items() if i.pmid or i.doi}
-    kw = dict(fixed_dir=str(fixed_dir) if fixed_dir else None, identifiers=identifiers,
-              workers=workers, log=log)
-    if previous:
-        return refit(records, texts, bibliographies, str(out_dir), previous=previous, **kw)
-    return fit(records, texts, bibliographies, str(out_dir), **kw)
+class RequestFailed(RuntimeError):
+    """A request that may succeed when asked again: the server down, an error of its own."""
 
 
-__all__ = ["PIPELINE", "SKIPPED_REPAIRS", "assign", "assign_all", "bibliography_of", "describe",
-           "drop_siblings", "fit_corpus", "parse_of", "renormalize", "repair", "run_for",
-           "text_of", "text_source"]
+class Client:
+    """The served task-design model, asked one prompt at a time (`design.request`)."""
+
+    def __init__(self, url: str, model: str, timeout_s: int = 1800) -> None:
+        self.url, self.model, self.timeout_s = url.rstrip("/"), model, timeout_s
+
+    def served(self) -> List[str]:
+        """The served names, from GET /models. Raises ModelUnavailable when nothing answers."""
+        from ingestion_workflow.clients.model_server import ModelUnavailable
+
+        try:
+            with urllib.request.urlopen(self.url + "/models", timeout=30) as handle:
+                return [m.get("id") for m in json.load(handle).get("data") or []]
+        except (OSError, ValueError) as exc:
+            raise ModelUnavailable(f"{self.url} does not answer: {exc}") from exc
+
+    def ask(self, prompt: str) -> Tuple[str, Optional[str], Dict[str, Any]]:
+        """(finish reason, content, usage). Raises RequestFailed when the server answers with
+        an error of its own, and ModelUnavailable when it does not answer."""
+        from ingestion_workflow.clients.model_server import ModelUnavailable
+        from ingestion_workflow.normalization import design
+
+        body = json.dumps(design.request(prompt, self.model)).encode("utf-8")
+        q = urllib.request.Request(self.url + "/chat/completions", data=body,
+                                   headers={"Content-Type": "application/json"})
+        try:
+            with urllib.request.urlopen(q, timeout=self.timeout_s) as handle:
+                got = json.load(handle)
+        except urllib.error.HTTPError as exc:
+            said = exc.read().decode("utf-8", "replace")[:600]
+            if exc.code == 400 and any(w in said.lower()
+                                       for w in ("context length", "maximum context")):
+                return OVER, None, {}
+            raise RequestFailed(f"http {exc.code}: {said[:300]}") from exc
+        except OSError as exc:
+            raise ModelUnavailable(f"{self.url} stopped answering: {exc}"[:300]) from exc
+        except ValueError as exc:
+            raise RequestFailed(f"not JSON: {exc}"[:300]) from exc
+        choice = got["choices"][0]
+        return (choice.get("finish_reason") or "stop", choice["message"].get("content"),
+                got.get("usage") or {})
+
+
+def answer_of(finish: str, content: Optional[str]):
+    """What `normalization.api.finish` reads for one task: the content, or why there is none."""
+    from ingestion_workflow.normalization.api import NoAnswer
+
+    return content if finish == "stop" and content is not None else NoAnswer(no_answer(finish))
+
+
+def load_parse(parse: Optional[Path]) -> Optional[dict]:
+    try:
+        return json.loads(Path(parse).read_text("utf-8")) if parse else None
+    except (OSError, ValueError):
+        return None
+
+
+__all__ = ["AnswerStore", "CUT", "Client", "OVER", "PIPELINE", "RequestFailed", "SKIPPED_REPAIRS",
+           "answer_of", "apply_derived", "apply_normalized", "describe", "drop_siblings",
+           "load_parse", "no_answer", "parse_of", "prepare_all", "renormalize", "repair",
+           "run_for", "text_of"]

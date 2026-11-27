@@ -1,0 +1,1633 @@
+{
+  "header": {
+    "artifact_kind": "parsed_paper",
+    "schema_version": "0.11.0",
+    "article_id": "ggrxjtagxq4g",
+    "identifiers": {
+      "pmid": "24520407",
+      "pmcid": "PMC3919788",
+      "doi": "10.1371/journal.pone.0088628",
+      "alternative_pmids": null,
+      "alternative_pmcids": null,
+      "alternative_dois": null,
+      "preprint_dois": null,
+      "preprint_pmids": null,
+      "preprint_pmcids": null,
+      "publication_status": "published"
+    },
+    "producer": {
+      "name": "ns-pond-ingestion-workflow",
+      "version": "paper_parse.13",
+      "stage": "sync",
+      "model": null,
+      "prompt_version": null
+    },
+    "inputs": [
+      {
+        "artifact_kind": "extraction",
+        "fingerprint": "e7f0f8012bc7bbcc1d5b8eb2ca1f0aae",
+        "producer_version": null
+      },
+      {
+        "artifact_kind": "metadata",
+        "fingerprint": "c81b416bc0c5dfd252fc0fe541a276cc",
+        "producer_version": null
+      },
+      {
+        "artifact_kind": "triage",
+        "fingerprint": "5c509718b1fc86f375d7cf8ce80edd26",
+        "producer_version": null
+      },
+      {
+        "artifact_kind": "references",
+        "fingerprint": "b5519a07c8d66cbe63e2e86497b32d44",
+        "producer_version": null
+      },
+      {
+        "artifact_kind": "links",
+        "fingerprint": "4c82553f5c25df3fca63edfeae5dd738",
+        "producer_version": null
+      },
+      {
+        "artifact_kind": "linkprobe",
+        "fingerprint": "1afd7175912411a921a6011e6e552fd1",
+        "producer_version": null
+      }
+    ],
+    "created_at": null,
+    "neurostore_base_study_id": "HHQLir9yUauj"
+  },
+  "source": "pubget",
+  "source_reason": null,
+  "text_copy": {
+    "route": "pmc",
+    "version": "vor",
+    "license": {
+      "license_id": "cc_by",
+      "determination": "stated",
+      "stated_by": "jats",
+      "stated_as": "http://creativecommons.org/licenses/by/4.0/"
+    },
+    "url": null,
+    "preprint_server": null,
+    "access": "public"
+  },
+  "reported_copies": [
+    {
+      "route": "publisher",
+      "version": "vor",
+      "license": {
+        "license_id": "cc_by",
+        "determination": "stated",
+        "stated_by": "openalex",
+        "stated_as": "cc-by"
+      },
+      "url": "https://doi.org/10.1371/journal.pone.0088628",
+      "preprint_server": null,
+      "reported_by": "openalex"
+    },
+    {
+      "route": "unrecorded",
+      "version": "submitted",
+      "license": {
+        "license_id": "all_rights_reserved",
+        "determination": "assumed",
+        "stated_by": null,
+        "stated_as": null
+      },
+      "url": "http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.803.2550",
+      "preprint_server": null,
+      "reported_by": "openalex"
+    },
+    {
+      "route": "repository",
+      "version": "submitted",
+      "license": {
+        "license_id": "all_rights_reserved",
+        "determination": "assumed",
+        "stated_by": null,
+        "stated_as": null
+      },
+      "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0088628",
+      "preprint_server": null,
+      "reported_by": "openalex"
+    },
+    {
+      "route": "repository",
+      "version": "submitted",
+      "license": {
+        "license_id": "cc_by_sa",
+        "determination": "stated",
+        "stated_by": "openalex",
+        "stated_as": "cc-by-sa"
+      },
+      "url": "https://doaj.org/article/ff5dbd3199894384a72699252670082d",
+      "preprint_server": null,
+      "reported_by": "openalex"
+    },
+    {
+      "route": "repository",
+      "version": "submitted",
+      "license": {
+        "license_id": "other",
+        "determination": "stated",
+        "stated_by": "openalex",
+        "stated_as": "other-oa"
+      },
+      "url": "http://hdl.handle.net/11858/00-001M-0000-0014-F5A5-1",
+      "preprint_server": null,
+      "reported_by": "openalex"
+    },
+    {
+      "route": "unrecorded",
+      "version": null,
+      "license": {
+        "license_id": "cc_by",
+        "determination": "stated",
+        "stated_by": "semantic_scholar",
+        "stated_as": "CCBY"
+      },
+      "url": "https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0088628&type=printable",
+      "preprint_server": null,
+      "reported_by": "semantic_scholar"
+    }
+  ],
+  "text_path": "processed/pubget/text.txt",
+  "text_sha256": "3c1cb7eddf3286d810904c3add554b02c7992fb321e06daa82b977af8c96e63b",
+  "text_length": 36438,
+  "bibliography": {
+    "title": "Different Hemispheric Roles in Recognition of Happy Expressions",
+    "authors": [
+      {
+        "name": "Akinori Nakamura",
+        "orcid": "0000-0002-4259-1297",
+        "openalex_id": "A5008975500",
+        "affiliations": [
+          {
+            "text": "Department of Clinical and Experimental Neuroimaging, National Center for Geriatrics and Gerontology, Obu, Japan ; Method and Developmental Group \"MEG and EEG: Signal Analysis and Modelling\", Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germany",
+            "institutions": [
+              {
+                "ror": "0387jng26",
+                "name": "Max Planck Institute for Human Cognitive and Brain Sciences",
+                "country": "DE"
+              },
+              {
+                "ror": "05h0rw812",
+                "name": "National Center for Geriatrics and Gerontology",
+                "country": "JP"
+              }
+            ]
+          },
+          {
+            "text": "Department of Clinical and Experimental Neuroimaging, National Center for Geriatrics and Gerontology, Obu, Japan",
+            "institutions": [
+              {
+                "ror": "05h0rw812",
+                "name": "National Center for Geriatrics and Gerontology",
+                "country": "JP"
+              }
+            ]
+          },
+          {
+            "text": "Method and Developmental Group “MEG and EEG: Signal Analysis and Modelling”, Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germany",
+            "institutions": [
+              {
+                "ror": "0387jng26",
+                "name": "Max Planck Institute for Human Cognitive and Brain Sciences",
+                "country": "DE"
+              }
+            ]
+          }
+        ],
+        "corresponding": true,
+        "emails": [
+          "nakamura@ncgg.go.jp"
+        ]
+      },
+      {
+        "name": "Burkhard Maess",
+        "orcid": "0000-0002-7857-291X",
+        "openalex_id": "A5014140604",
+        "affiliations": [
+          {
+            "text": "Method and Developmental Group \"MEG and EEG: Signal Analysis and Modelling\", Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germany",
+            "institutions": [
+              {
+                "ror": "0387jng26",
+                "name": "Max Planck Institute for Human Cognitive and Brain Sciences",
+                "country": "DE"
+              }
+            ]
+          },
+          {
+            "text": "Method and Developmental Group “MEG and EEG: Signal Analysis and Modelling”, Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germany",
+            "institutions": [
+              {
+                "ror": "0387jng26",
+                "name": "Max Planck Institute for Human Cognitive and Brain Sciences",
+                "country": "DE"
+              }
+            ]
+          }
+        ],
+        "corresponding": false,
+        "emails": null
+      },
+      {
+        "name": "Thomas R. Knösche",
+        "orcid": "0000-0001-9668-3261",
+        "openalex_id": "A5008548871",
+        "affiliations": [
+          {
+            "text": "Method and Developmental Group \"Cortical Networks and Cognitive Functions\", Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germany",
+            "institutions": [
+              {
+                "ror": "0387jng26",
+                "name": "Max Planck Institute for Human Cognitive and Brain Sciences",
+                "country": "DE"
+              }
+            ]
+          },
+          {
+            "text": "Method and Developmental Group “Cortical Networks and Cognitive Functions”, Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germany",
+            "institutions": [
+              {
+                "ror": "0387jng26",
+                "name": "Max Planck Institute for Human Cognitive and Brain Sciences",
+                "country": "DE"
+              }
+            ]
+          }
+        ],
+        "corresponding": false,
+        "emails": null
+      },
+      {
+        "name": "Angela D. Friederici",
+        "orcid": "0000-0002-6328-865X",
+        "openalex_id": "A5066819954",
+        "affiliations": [
+          {
+            "text": "Department of Neuropsychology, Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germany",
+            "institutions": [
+              {
+                "ror": "0387jng26",
+                "name": "Max Planck Institute for Human Cognitive and Brain Sciences",
+                "country": "DE"
+              }
+            ]
+          }
+        ],
+        "corresponding": false,
+        "emails": null
+      }
+    ],
+    "authors_provider": "openalex",
+    "correspondence_emails": null,
+    "journal": "PLoS ONE",
+    "venue": {
+      "openalex_id": "S202381698",
+      "match": "doi",
+      "score": null
+    },
+    "publication_year": 2014,
+    "volume": null,
+    "issue": null,
+    "pages": null,
+    "abstract": "The emotional expression of the face provides an important social signal that allows humans to make inferences about other people's state of mind. However, the underlying brain mechanisms are complex and still not completely understood. Using magnetoencephalography (MEG), we analyzed the spatiotemporal structure of regional electrical brain activity in human adults during a categorization task (faces or hands) and an emotion discrimination task (happy faces or neutral faces). Brain regions that are specifically important for different aspects of processing emotional facial expressions showed interesting hemispheric dominance patterns. The dorsal brain regions showed a right predominance when participants paid attention to facial expressions: The right parietofrontal regions, including the somatosensory, motor/premotor, and inferior frontal cortices showed significantly increased activation in the emotion discrimination task, compared to in the categorization task, in latencies of 350 to 550 ms, while no activation was found in their left hemispheric counterparts. Furthermore, a left predominance of the ventral brain regions was shown for happy faces, compared to neutral faces, in latencies of 350 to 550 ms within the emotion discrimination task. Thus, the present data suggest that the right and left hemispheres play different roles in the recognition of facial expressions depending on cognitive context.",
+    "abstract_provider": "semantic_scholar",
+    "language": [
+      "eng"
+    ],
+    "publication_types": [
+      "Journal Article"
+    ],
+    "keywords": null,
+    "license": {
+      "license_id": "cc_by",
+      "determination": "stated",
+      "stated_by": "jats",
+      "stated_as": "http://creativecommons.org/licenses/by/4.0/"
+    },
+    "oa_status": "gold",
+    "corrections": [],
+    "provider": "semantic_scholar"
+  },
+  "is_meta_analysis": false,
+  "is_meta_analysis_basis": null,
+  "sections": [
+    {
+      "kind": "other",
+      "heading": null,
+      "start_char": 0,
+      "end_char": 1501
+    },
+    {
+      "kind": "introduction",
+      "heading": null,
+      "start_char": 1501,
+      "end_char": 7677
+    },
+    {
+      "kind": "methods",
+      "heading": null,
+      "start_char": 7677,
+      "end_char": 18509
+    },
+    {
+      "kind": "results",
+      "heading": null,
+      "start_char": 18509,
+      "end_char": 24437
+    },
+    {
+      "kind": "discussion",
+      "heading": null,
+      "start_char": 24437,
+      "end_char": 33938
+    },
+    {
+      "kind": "discussion",
+      "heading": null,
+      "start_char": 33938,
+      "end_char": 36438
+    }
+  ],
+  "supplements": null,
+  "links": [],
+  "references": [
+    {
+      "id": "pone.0088628-Ekman1",
+      "position": 1,
+      "provider": "source_xml",
+      "label": "1",
+      "text": "EkmanP, FriesenWV (1971) Constants across cultures in the face and emotion. J Pers Soc Psychol 17: 124–129.5542557",
+      "doi": null,
+      "pmid": "5542557",
+      "title": "Constants across cultures in the face and emotion",
+      "year": 1971
+    },
+    {
+      "id": "pone.0088628-Ekman2",
+      "position": 2,
+      "provider": "source_xml",
+      "label": "2",
+      "text": "EkmanP (1993) Facial expression and emotion. Am Psychol 48: 384–392.8512154",
+      "doi": null,
+      "pmid": "8512154",
+      "title": "Facial expression and emotion",
+      "year": 1993
+    },
+    {
+      "id": "pone.0088628-Posamentier1",
+      "position": 3,
+      "provider": "source_xml",
+      "label": "3",
+      "text": "PosamentierMT, AbdiH (2003) Processing faces and facial expressions. Neuropsychol Rev 13: 113–143.14584908",
+      "doi": null,
+      "pmid": "14584908",
+      "title": "Processing faces and facial expressions",
+      "year": 2003
+    },
+    {
+      "id": "pone.0088628-Hasselmo1",
+      "position": 4,
+      "provider": "source_xml",
+      "label": "4",
+      "text": "HasselmoME, RollsET, BaylisGC (1989) The role of expression and identity in the face-selective responses of neurons in the temporal visual cortex of the monkey. Behav Brain Res 32: 203–218.2713076",
+      "doi": null,
+      "pmid": "2713076",
+      "title": "The role of expression and identity in the face-selective responses of neurons in the temporal visual cortex of the monkey",
+      "year": 1989
+    },
+    {
+      "id": "pone.0088628-Rolls1",
+      "position": 5,
+      "provider": "source_xml",
+      "label": "5",
+      "text": "RollsET (1984) Neurons in the cortex of the temporal lobe and in the amygdala of the monkey with responses selective for faces. Hum Neurobiol 3: 209–222.6526707",
+      "doi": null,
+      "pmid": "6526707",
+      "title": "Neurons in the cortex of the temporal lobe and in the amygdala of the monkey with responses selective for faces",
+      "year": 1984
+    },
+    {
+      "id": "pone.0088628-Etcoff1",
+      "position": 6,
+      "provider": "source_xml",
+      "label": "6",
+      "text": "EtcoffNL (1984) Selective attention to facial identity and facial emotion. Neuropsychologia 22: 281–295.6462422",
+      "doi": null,
+      "pmid": "6462422",
+      "title": "Selective attention to facial identity and facial emotion",
+      "year": 1984
+    },
+    {
+      "id": "pone.0088628-Tranel1",
+      "position": 7,
+      "provider": "source_xml",
+      "label": "7",
+      "text": "TranelD, DamasioAR, DamasioH (1988) Intact recognition of facial expression, gender, and age in patients with impaired recognition of face identity. Neurology 38: 690–696.3362363",
+      "doi": null,
+      "pmid": "3362363",
+      "title": "Intact recognition of facial expression, gender, and age in patients with impaired recognition of face identity",
+      "year": 1988
+    },
+    {
+      "id": "pone.0088628-Bowers1",
+      "position": 8,
+      "provider": "source_xml",
+      "label": "8",
+      "text": "BowersD, BauerRM, CoslettHB, HeilmanKM (1985) Processing of Faces by Patients with Unilateral Hemisphere Lesions 1. Dissociation between Judgments of Facial Affect and Facial Identity. Brain Cogn 4: 258–272.4027060",
+      "doi": null,
+      "pmid": "4027060",
+      "title": "Processing of Faces by Patients with Unilateral Hemisphere Lesions 1. Dissociation between Judgments of Facial Affect and Facial Identity",
+      "year": 1985
+    },
+    {
+      "id": "pone.0088628-DeKosky1",
+      "position": 9,
+      "provider": "source_xml",
+      "label": "9",
+      "text": "DeKoskyST, HeilmanKM, BowersD, ValensteinE (1980) Recognition and discrimination of emotional faces and pictures. Brain Lang 9: 206–214.7363065",
+      "doi": null,
+      "pmid": "7363065",
+      "title": "Recognition and discrimination of emotional faces and pictures",
+      "year": 1980
+    },
+    {
+      "id": "pone.0088628-Ellis1",
+      "position": 10,
+      "provider": "source_xml",
+      "label": "10",
+      "text": "EllisAW, YoungAW, FludeBM (1990) Repetition priming and face processing: Priming occurs within the system that responds to the identity of a face. Quarterly Journal of Experimental Psychology Section A 42: 495–512.",
+      "doi": null,
+      "pmid": null,
+      "title": "Repetition priming and face processing: Priming occurs within the system that responds to the identity of a face",
+      "year": 1990
+    },
+    {
+      "id": "pone.0088628-Young1",
+      "position": 11,
+      "provider": "source_xml",
+      "label": "11",
+      "text": "YoungAW, McWeenyKH, HayDC, EllisAW (1986) Matching familiar and unfamiliar faces on identity and expression. Psychol Res 48: 63–68.3774919",
+      "doi": null,
+      "pmid": "3774919",
+      "title": "Matching familiar and unfamiliar faces on identity and expression",
+      "year": 1986
+    },
+    {
+      "id": "pone.0088628-Bruce1",
+      "position": 12,
+      "provider": "source_xml",
+      "label": "12",
+      "text": "BruceV, YoungA (1986) Understanding face recognition [see comments]. Br J Psychol 77: 305–327.3756376",
+      "doi": null,
+      "pmid": "3756376",
+      "title": "Understanding face recognition [see comments]",
+      "year": 1986
+    },
+    {
+      "id": "pone.0088628-Haxby1",
+      "position": 13,
+      "provider": "source_xml",
+      "label": "13",
+      "text": "HaxbyJV, HoffmanEA, GobbiniMI (2000) The distributed human neural system for face perception. Trends Cogn Sci 4: 223–233.10827445",
+      "doi": null,
+      "pmid": "10827445",
+      "title": "The distributed human neural system for face perception",
+      "year": 2000
+    },
+    {
+      "id": "pone.0088628-Haxby2",
+      "position": 14,
+      "provider": "source_xml",
+      "label": "14",
+      "text": "HaxbyJV, HoffmanEA, GobbiniMI (2002) Human neural systems for face recognition and social communication. Biol Psychiatry 51: 59–67.11801231",
+      "doi": null,
+      "pmid": "11801231",
+      "title": "Human neural systems for face recognition and social communication",
+      "year": 2002
+    },
+    {
+      "id": "pone.0088628-Clark1",
+      "position": 15,
+      "provider": "source_xml",
+      "label": "15",
+      "text": "ClarkVP, KeilK, MaisogJM, CourtneyS, UngerleiderLG, et al (1996) Functional magnetic resonance imaging of human visual cortex during face matching: a comparison with positron emission tomography. Neuroimage 4: 1–15.9345493",
+      "doi": null,
+      "pmid": "9345493",
+      "title": "Functional magnetic resonance imaging of human visual cortex during face matching: a comparison with positron emission tomography",
+      "year": 1996
+    },
+    {
+      "id": "pone.0088628-Haxby3",
+      "position": 16,
+      "provider": "source_xml",
+      "label": "16",
+      "text": "HaxbyJV, HorwitzB, UngerleiderLG, MaisogJM, PietriniP, et al (1994) The functional organization of human extrastriate cortex: a PET-rCBF study of selective attention to faces and locations. J Neurosci 14: 6336–6353.7965040",
+      "doi": null,
+      "pmid": "7965040",
+      "title": "The functional organization of human extrastriate cortex: a PET-rCBF study of selective attention to faces and locations",
+      "year": 1994
+    },
+    {
+      "id": "pone.0088628-Kanwisher1",
+      "position": 17,
+      "provider": "source_xml",
+      "label": "17",
+      "text": "KanwisherN, McDermottJ, ChunMM (1997) The fusiform face area: a module in human extrastriate cortex specialized for face perception. J Neurosci 17: 4302–4311.9151747",
+      "doi": null,
+      "pmid": "9151747",
+      "title": "The fusiform face area: a module in human extrastriate cortex specialized for face perception",
+      "year": 1997
+    },
+    {
+      "id": "pone.0088628-McCarthy1",
+      "position": 18,
+      "provider": "source_xml",
+      "label": "18",
+      "text": "McCarthyG, PuceA, GoreJC, AllisonT (1997) Face-specific processing in the human fusiform gyrus. J Cogn Neurosci 9: 605–610.23965119",
+      "doi": null,
+      "pmid": "23965119",
+      "title": "Face-specific processing in the human fusiform gyrus",
+      "year": 1997
+    },
+    {
+      "id": "pone.0088628-Nakamura1",
+      "position": 19,
+      "provider": "source_xml",
+      "label": "19",
+      "text": "NakamuraK, KawashimaR, SatoN, NakamuraA, SugiuraM, et al (2000) Functional delineation of the human occipito-temporal areas related to face and scene processing. A PET study. Brain 123 (Pt 9): 1903–1912.",
+      "doi": null,
+      "pmid": null,
+      "title": "Functional delineation of the human occipito-temporal areas related to face and scene processing. A PET study",
+      "year": 2000
+    },
+    {
+      "id": "pone.0088628-Sergent1",
+      "position": 20,
+      "provider": "source_xml",
+      "label": "20",
+      "text": "SergentJ, OhtaS, MacDonaldB (1992) Functional neuroanatomy of face and object processing. A positron emission tomography study. Brain 115: 15–36.1559150",
+      "doi": null,
+      "pmid": "1559150",
+      "title": "Functional neuroanatomy of face and object processing. A positron emission tomography study",
+      "year": 1992
+    },
+    {
+      "id": "pone.0088628-Adolphs1",
+      "position": 21,
+      "provider": "source_xml",
+      "label": "21",
+      "text": "AdolphsR, TranelD, DamasioH, DamasioA (1994) Impaired recognition of emotion in facial expressions following bilateral damage to the human amygdala. Nature 372: 669–672.7990957",
+      "doi": null,
+      "pmid": "7990957",
+      "title": "Impaired recognition of emotion in facial expressions following bilateral damage to the human amygdala",
+      "year": 1994
+    },
+    {
+      "id": "pone.0088628-Calder1",
+      "position": 22,
+      "provider": "source_xml",
+      "label": "22",
+      "text": "CalderAJ, YoungAW, RowlandD, PerrettDI, HodgesJR, et al (1996) Facial emotion recognition after bilateral amygdala damage: Differentially severe impairment of fear. cognitive neuropsychology 13: 699–745.",
+      "doi": null,
+      "pmid": null,
+      "title": "Facial emotion recognition after bilateral amygdala damage: Differentially severe impairment of fear",
+      "year": 1996
+    },
+    {
+      "id": "pone.0088628-Breiter1",
+      "position": 23,
+      "provider": "source_xml",
+      "label": "23",
+      "text": "BreiterHC, EtcoffNL, WhalenPJ, KennedyWA, RauchSL, et al (1996) Response and habituation of the human amygdala during visual processing of facial expression. Neuron 17: 875–887.8938120",
+      "doi": null,
+      "pmid": "8938120",
+      "title": "Response and habituation of the human amygdala during visual processing of facial expression",
+      "year": 1996
+    },
+    {
+      "id": "pone.0088628-Morris1",
+      "position": 24,
+      "provider": "source_xml",
+      "label": "24",
+      "text": "MorrisJS, FristonKJ, BuchelC, FrithCD, YoungAW, et al (1998) A neuromodulatory role for the human amygdala in processing emotional facial expressions. Brain 121 (Pt 1): 47–57.",
+      "doi": null,
+      "pmid": null,
+      "title": "A neuromodulatory role for the human amygdala in processing emotional facial expressions",
+      "year": 1998
+    },
+    {
+      "id": "pone.0088628-Morris2",
+      "position": 25,
+      "provider": "source_xml",
+      "label": "25",
+      "text": "MorrisJS, FrithCD, PerrettDI, RowlandD, YoungAW, et al (1996) A differential neural response in the human amygdala to fearful and happy facial expressions. Nature 383: 812–815.8893004",
+      "doi": null,
+      "pmid": "8893004",
+      "title": "A differential neural response in the human amygdala to fearful and happy facial expressions",
+      "year": 1996
+    },
+    {
+      "id": "pone.0088628-Phillips1",
+      "position": 26,
+      "provider": "source_xml",
+      "label": "26",
+      "text": "PhillipsML, YoungAW, SeniorC, BrammerM, AndrewC, et al (1997) A specific neural substrate for perceiving facial expressions of disgust. Nature 389: 495–498.9333238",
+      "doi": null,
+      "pmid": "9333238",
+      "title": "A specific neural substrate for perceiving facial expressions of disgust",
+      "year": 1997
+    },
+    {
+      "id": "pone.0088628-Sprengelmeyer1",
+      "position": 27,
+      "provider": "source_xml",
+      "label": "27",
+      "text": "SprengelmeyerR, RauschM, EyselUT, PrzuntekH (1998) Neural structures associated with recognition of facial expressions of basic emotions. Proc Biol Sci 265: 1927–1931.9821359",
+      "doi": null,
+      "pmid": "9821359",
+      "title": "Neural structures associated with recognition of facial expressions of basic emotions",
+      "year": 1998
+    },
+    {
+      "id": "pone.0088628-Adolphs2",
+      "position": 28,
+      "provider": "source_xml",
+      "label": "28",
+      "text": "AdolphsR, DamasioH, TranelD, CooperG, DamasioAR (2000) A role for somatosensory cortices in the visual recognition of emotion as revealed by three-dimensional lesion mapping. J Neurosci 20: 2683–2690.10729349",
+      "doi": null,
+      "pmid": "10729349",
+      "title": "A role for somatosensory cortices in the visual recognition of emotion as revealed by three-dimensional lesion mapping",
+      "year": 2000
+    },
+    {
+      "id": "pone.0088628-Adolphs3",
+      "position": 29,
+      "provider": "source_xml",
+      "label": "29",
+      "text": "AdolphsR, DamasioH, TranelD, DamasioAR (1996) Cortical systems for the recognition of emotion in facial expressions. J Neurosci 16: 7678–7687.8922424",
+      "doi": null,
+      "pmid": "8922424",
+      "title": "Cortical systems for the recognition of emotion in facial expressions",
+      "year": 1996
+    },
+    {
+      "id": "pone.0088628-Leslie1",
+      "position": 30,
+      "provider": "source_xml",
+      "label": "30",
+      "text": "LeslieKR, Johnson-FreySH, GraftonST (2004) Functional imaging of face and hand imitation: towards a motor theory of empathy. Neuroimage 21: 601–607.14980562",
+      "doi": null,
+      "pmid": "14980562",
+      "title": "Functional imaging of face and hand imitation: towards a motor theory of empathy",
+      "year": 2004
+    },
+    {
+      "id": "pone.0088628-Nakamura2",
+      "position": 31,
+      "provider": "source_xml",
+      "label": "31",
+      "text": "NakamuraK, KawashimaR, ItoK, SugiuraM, KatoT, et al (1999) Activation of the right inferior frontal cortex during assessment of facial emotion. J Neurophysiol 82: 1610–1614.10482774",
+      "doi": null,
+      "pmid": "10482774",
+      "title": "Activation of the right inferior frontal cortex during assessment of facial emotion",
+      "year": 1999
+    },
+    {
+      "id": "pone.0088628-Hornak1",
+      "position": 32,
+      "provider": "source_xml",
+      "label": "32",
+      "text": "HornakJ, RollsET, WadeD (1996) Face and voice expression identification inpatients with emotional and behavioural changes following ventral frontal lobe damage. Neuropsychologia 34: 247–261.8657356",
+      "doi": null,
+      "pmid": "8657356",
+      "title": "Face and voice expression identification inpatients with emotional and behavioural changes following ventral frontal lobe damage",
+      "year": 1996
+    },
+    {
+      "id": "pone.0088628-Vuilleumier1",
+      "position": 33,
+      "provider": "source_xml",
+      "label": "33",
+      "text": "VuilleumierP, ArmonyJL, DriverJ, DolanRJ (2001) Effects of attention and emotion on face processing in the human brain: an event-related fMRI study. Neuron 30: 829–841.11430815",
+      "doi": null,
+      "pmid": "11430815",
+      "title": "Effects of attention and emotion on face processing in the human brain: an event-related fMRI study",
+      "year": 2001
+    },
+    {
+      "id": "pone.0088628-Calvert1",
+      "position": 34,
+      "provider": "source_xml",
+      "label": "34",
+      "text": "CalvertGA, BullmoreET, BrammerMJ, CampbellR, WilliamsSC, et al (1997) Activation of auditory cortex during silent lipreading. Science 276: 593–596.9110978",
+      "doi": null,
+      "pmid": "9110978",
+      "title": "Activation of auditory cortex during silent lipreading",
+      "year": 1997
+    },
+    {
+      "id": "pone.0088628-Hoffman1",
+      "position": 35,
+      "provider": "source_xml",
+      "label": "35",
+      "text": "HoffmanEA, HaxbyJV (2000) Distinct representations of eye gaze and identity in the distributed human neural system for face perception. Nat Neurosci 3: 80–84.10607399",
+      "doi": null,
+      "pmid": "10607399",
+      "title": "Distinct representations of eye gaze and identity in the distributed human neural system for face perception",
+      "year": 2000
+    },
+    {
+      "id": "pone.0088628-Nakamura3",
+      "position": 36,
+      "provider": "source_xml",
+      "label": "36",
+      "text": "NakamuraA, MaessB, KnoscheTR, GunterTC, BachP, et al (2004) Cooperation of different neuronal systems during hand sign recognition. Neuroimage 23: 25–34.15325349",
+      "doi": null,
+      "pmid": "15325349",
+      "title": "Cooperation of different neuronal systems during hand sign recognition",
+      "year": 2004
+    },
+    {
+      "id": "pone.0088628-Nishitani1",
+      "position": 37,
+      "provider": "source_xml",
+      "label": "37",
+      "text": "NishitaniN, HariR (2002) Viewing lip forms: cortical dynamics. Neuron 36: 1211–1220.12495633",
+      "doi": null,
+      "pmid": "12495633",
+      "title": "Viewing lip forms: cortical dynamics",
+      "year": 2002
+    },
+    {
+      "id": "pone.0088628-Perrett1",
+      "position": 38,
+      "provider": "source_xml",
+      "label": "38",
+      "text": "PerrettDI, SmithPA, PotterDD, MistlinAJ, HeadAS, et al (1985) Visual cells in the temporal cortex sensitive to face view and gaze direction. Proc R Soc Lond B Biol Sci 223: 293–317.2858100",
+      "doi": null,
+      "pmid": "2858100",
+      "title": "Visual cells in the temporal cortex sensitive to face view and gaze direction",
+      "year": 1985
+    },
+    {
+      "id": "pone.0088628-Puce1",
+      "position": 39,
+      "provider": "source_xml",
+      "label": "39",
+      "text": "PuceA, AllisonT, BentinS, GoreJC, McCarthyG (1998) Temporal cortex activation in humans viewing eye and mouth movements. J Neurosci 18: 2188–2199.9482803",
+      "doi": null,
+      "pmid": "9482803",
+      "title": "Temporal cortex activation in humans viewing eye and mouth movements",
+      "year": 1998
+    },
+    {
+      "id": "pone.0088628-Wicker1",
+      "position": 40,
+      "provider": "source_xml",
+      "label": "40",
+      "text": "WickerB, MichelF, HenaffMA, DecetyJ (1998) Brain regions involved in the perception of gaze: a PET study. Neuroimage 8: 221–227.9740764",
+      "doi": null,
+      "pmid": "9740764",
+      "title": "Brain regions involved in the perception of gaze: a PET study",
+      "year": 1998
+    },
+    {
+      "id": "pone.0088628-Allison1",
+      "position": 41,
+      "provider": "source_xml",
+      "label": "41",
+      "text": "AllisonT, PuceA, McCarthyG (2000) Social perception from visual cues: role of the STS region. Trends Cogn Sci 4: 267–278.10859571",
+      "doi": null,
+      "pmid": "10859571",
+      "title": "Social perception from visual cues: role of the STS region",
+      "year": 2000
+    },
+    {
+      "id": "pone.0088628-FusarPoli1",
+      "position": 42,
+      "provider": "source_xml",
+      "label": "42",
+      "text": "Fusar-PoliP, PlacentinoA, CarlettiF, LandiP, AllenP, et al (2009) Functional atlas of emotional faces processing: a voxel-based meta-analysis of 105 functional magnetic resonance imaging studies. J Psychiatry Neurosci 34: 418–432.19949718",
+      "doi": null,
+      "pmid": "19949718",
+      "title": "Functional atlas of emotional faces processing: a voxel-based meta-analysis of 105 functional magnetic resonance imaging studies",
+      "year": 2009
+    },
+    {
+      "id": "pone.0088628-Allison2",
+      "position": 43,
+      "provider": "source_xml",
+      "label": "43",
+      "text": "AllisonT, GinterH, McCarthyG, NobreAC, PuceA, et al (1994) Face recognition in human extrastriate cortex. J Neurophysiol 71: 821–825.8176446",
+      "doi": null,
+      "pmid": "8176446",
+      "title": "Face recognition in human extrastriate cortex",
+      "year": 1994
+    },
+    {
+      "id": "pone.0088628-Botzel1",
+      "position": 44,
+      "provider": "source_xml",
+      "label": "44",
+      "text": "BotzelK, SchulzeS, StodieckSR (1995) Scalp topography and analysis of intracranial sources of face-evoked potentials. Exp Brain Res 104: 135–143.7621932",
+      "doi": null,
+      "pmid": "7621932",
+      "title": "Scalp topography and analysis of intracranial sources of face-evoked potentials",
+      "year": 1995
+    },
+    {
+      "id": "pone.0088628-Nakamura4",
+      "position": 45,
+      "provider": "source_xml",
+      "label": "45",
+      "text": "NakamuraA, YamadaT, AbeY, NakamuraK, SatoN, et al (2001) Age-related changes in brain neuromagnetic responses to face perception in humans. Neurosci Lett 312: 13–16.11578834",
+      "doi": null,
+      "pmid": "11578834",
+      "title": "Age-related changes in brain neuromagnetic responses to face perception in humans",
+      "year": 2001
+    },
+    {
+      "id": "pone.0088628-Sams1",
+      "position": 46,
+      "provider": "source_xml",
+      "label": "46",
+      "text": "SamsM, HietanenJK, HariR, IlmoniemiRJ, LounasmaaOV (1997) Face-specific responses from the human inferior occipito-temporal cortex. Neuroscience 77: 49–55.9044373",
+      "doi": null,
+      "pmid": "9044373",
+      "title": "Face-specific responses from the human inferior occipito-temporal cortex",
+      "year": 1997
+    },
+    {
+      "id": "pone.0088628-Sato1",
+      "position": 47,
+      "provider": "source_xml",
+      "label": "47",
+      "text": "SatoN, NakamuraK, NakamuraA, SugiuraM, ItoK, et al (1999) Different time course between scene processing and face processing: a MEG study. Neuroreport 10: 3633–3637.10619657",
+      "doi": null,
+      "pmid": "10619657",
+      "title": "Different time course between scene processing and face processing: a MEG study",
+      "year": 1999
+    },
+    {
+      "id": "pone.0088628-Watanabe1",
+      "position": 48,
+      "provider": "source_xml",
+      "label": "48",
+      "text": "WatanabeS, KakigiR, KoyamaS, KirinoE (1999) Human face perception traced by magneto- and electro-encephalography. Brain Res Cogn Brain Res 8: 125–142.10407202",
+      "doi": null,
+      "pmid": "10407202",
+      "title": "Human face perception traced by magneto- and electro-encephalography",
+      "year": 1999
+    },
+    {
+      "id": "pone.0088628-Eimer1",
+      "position": 49,
+      "provider": "source_xml",
+      "label": "49",
+      "text": "EimerM, HolmesA (2002) An ERP study on the time course of emotional face processing. Neuroreport 13: 427–431.11930154",
+      "doi": null,
+      "pmid": "11930154",
+      "title": "An ERP study on the time course of emotional face processing",
+      "year": 2002
+    },
+    {
+      "id": "pone.0088628-Herrmann1",
+      "position": 50,
+      "provider": "source_xml",
+      "label": "50",
+      "text": "HerrmannMJ, ArandaD, EllgringH, MuellerTJ, StrikWK, et al (2002) Face-specific event-related potential in humans is independent from facial expression. Int J Psychophysiol 45: 241–244.12208530",
+      "doi": null,
+      "pmid": "12208530",
+      "title": "Face-specific event-related potential in humans is independent from facial expression",
+      "year": 2002
+    },
+    {
+      "id": "pone.0088628-Holmes1",
+      "position": 51,
+      "provider": "source_xml",
+      "label": "51",
+      "text": "HolmesA, VuilleumierP, EimerM (2003) The processing of emotional facial expression is gated by spatial attention: evidence from event-related brain potentials. cognitive brain research 16: 174–184.12668225",
+      "doi": null,
+      "pmid": "12668225",
+      "title": "The processing of emotional facial expression is gated by spatial attention: evidence from event-related brain potentials",
+      "year": 2003
+    },
+    {
+      "id": "pone.0088628-KrolakSalmon1",
+      "position": 52,
+      "provider": "source_xml",
+      "label": "52",
+      "text": "Krolak-SalmonP, FischerC, VighettoA, MauguiereF (2001) Processing of facial emotional expression: spatio-temporal data as assessed by scalp event-related potentials. Eur J Neurosci 13: 987–994.11264671",
+      "doi": null,
+      "pmid": "11264671",
+      "title": "Processing of facial emotional expression: spatio-temporal data as assessed by scalp event-related potentials",
+      "year": 2001
+    },
+    {
+      "id": "pone.0088628-Munte1",
+      "position": 53,
+      "provider": "source_xml",
+      "label": "53",
+      "text": "MunteTF, BrackM, GrootheerO, WieringaBM, MatzkeM, et al (1998) Brain potentials reveal the timing of face identity and expression judgments. Neurosci Res 30: 25–34.9572577",
+      "doi": null,
+      "pmid": "9572577",
+      "title": "Brain potentials reveal the timing of face identity and expression judgments",
+      "year": 1998
+    },
+    {
+      "id": "pone.0088628-Streit1",
+      "position": 54,
+      "provider": "source_xml",
+      "label": "54",
+      "text": "StreitM, WolwerW, BrinkmeyerJ, IhlR, GaebelW (2000) Electrophysiological correlates of emotional and structural face processing in humans. Neurosci Lett 278: 13–16.10643789",
+      "doi": null,
+      "pmid": "10643789",
+      "title": "Electrophysiological correlates of emotional and structural face processing in humans",
+      "year": 2000
+    },
+    {
+      "id": "pone.0088628-Ioannides1",
+      "position": 55,
+      "provider": "source_xml",
+      "label": "55",
+      "text": "IoannidesAA, LiuLC, KwapienJ, DrozdzS, StreitM (2000) Coupling of regional activations in a human brain during an object and face affect recognition task. Hum Brain Mapp 11: 77–92.11061335",
+      "doi": null,
+      "pmid": "11061335",
+      "title": "Coupling of regional activations in a human brain during an object and face affect recognition task",
+      "year": 2000
+    },
+    {
+      "id": "pone.0088628-Ioannides2",
+      "position": 56,
+      "provider": "source_xml",
+      "label": "56",
+      "text": "IoannidesAA, PoghosyanV, DammersJ, StreitM (2004) Real-time neural activity and connectivity in healthy individuals and schizophrenia patients. Neuroimage 23: 473–482.15488397",
+      "doi": null,
+      "pmid": "15488397",
+      "title": "Real-time neural activity and connectivity in healthy individuals and schizophrenia patients",
+      "year": 2004
+    },
+    {
+      "id": "pone.0088628-Liu1",
+      "position": 57,
+      "provider": "source_xml",
+      "label": "57",
+      "text": "LiuL, IoannidesAA, StreitM (1999) Single trial analysis of neurophysiological correlates of the recognition of complex objects and facial expressions of emotion. Brain Topogr 11: 291–303.10449260",
+      "doi": null,
+      "pmid": "10449260",
+      "title": "Single trial analysis of neurophysiological correlates of the recognition of complex objects and facial expressions of emotion",
+      "year": 1999
+    },
+    {
+      "id": "pone.0088628-Streit2",
+      "position": 58,
+      "provider": "source_xml",
+      "label": "58",
+      "text": "StreitM, DammersJ, Simsek-KrauesS, BrinkmeyerJ, WolwerW, et al (2003) Time course of regional brain activations during facial emotion recognition in humans. Neurosci Lett 342: 101–104.12727328",
+      "doi": null,
+      "pmid": "12727328",
+      "title": "Time course of regional brain activations during facial emotion recognition in humans",
+      "year": 2003
+    },
+    {
+      "id": "pone.0088628-Kujala1",
+      "position": 59,
+      "provider": "source_xml",
+      "label": "59",
+      "text": "KujalaMV, TanskanenT, ParkkonenL, HariR (2009) Facial expressions of pain modulate observer's long-latency responses in superior temporal sulcus. Hum Brain Mapp 30: 3910–3923.19479731",
+      "doi": null,
+      "pmid": "19479731",
+      "title": "Facial expressions of pain modulate observer's long-latency responses in superior temporal sulcus",
+      "year": 2009
+    },
+    {
+      "id": "pone.0088628-Borod1",
+      "position": 60,
+      "provider": "source_xml",
+      "label": "60",
+      "text": "BorodJC, CiceroBA, OblerLK, WelkowitzJ, ErhanHM, et al (1998) Right hemisphere emotional perception: evidence across multiple channels. Neuropsychology 12: 446–458.9673999",
+      "doi": null,
+      "pmid": "9673999",
+      "title": "Right hemisphere emotional perception: evidence across multiple channels",
+      "year": 1998
+    },
+    {
+      "id": "pone.0088628-Ahern1",
+      "position": 61,
+      "provider": "source_xml",
+      "label": "61",
+      "text": "AhernGL, SchwartzGE (1979) Differential lateralization for positive versus negative emotion. Neuropsychologia 17: 693–698.522984",
+      "doi": null,
+      "pmid": "522984",
+      "title": "Differential lateralization for positive versus negative emotion",
+      "year": 1979
+    },
+    {
+      "id": "pone.0088628-Wedding1",
+      "position": 62,
+      "provider": "source_xml",
+      "label": "62",
+      "text": "WeddingD, StalansL (1985) Hemispheric differences in the perception of positive and negative faces. Int J Neurosci 27: 277–281.4044136",
+      "doi": null,
+      "pmid": "4044136",
+      "title": "Hemispheric differences in the perception of positive and negative faces",
+      "year": 1985
+    },
+    {
+      "id": "pone.0088628-Canli1",
+      "position": 63,
+      "provider": "source_xml",
+      "label": "63",
+      "text": "CanliT, DesmondJE, ZhaoZ, GloverG, GabrieliJD (1998) Hemispheric asymmetry for emotional stimuli detected with fMRI. Neuroreport 9: 3233–3239.9831457",
+      "doi": null,
+      "pmid": "9831457",
+      "title": "Hemispheric asymmetry for emotional stimuli detected with fMRI",
+      "year": 1998
+    },
+    {
+      "id": "pone.0088628-Graham1",
+      "position": 64,
+      "provider": "source_xml",
+      "label": "64",
+      "text": "GrahamR, CabezaR (2001) Event-related potentials of recognizing happy and neutral faces. Neuroreport 12: 245–248.11209928",
+      "doi": null,
+      "pmid": "11209928",
+      "title": "Event-related potentials of recognizing happy and neutral faces",
+      "year": 2001
+    },
+    {
+      "id": "pone.0088628-Martinez1",
+      "position": 65,
+      "provider": "source_xml",
+      "label": "65",
+      "text": "Martinez AM, Benavente R (1998) The AR Face Database. CVC Technical Report No.24.",
+      "doi": null,
+      "pmid": null,
+      "title": null,
+      "year": null
+    },
+    {
+      "id": "pone.0088628-Fuchs1",
+      "position": 66,
+      "provider": "source_xml",
+      "label": "66",
+      "text": "FuchsM, WagnerM, KohlerT, WischmannHA (1999) Linear and nonlinear current density reconstructions. J Clin Neurophysiol 16: 267–295.10426408",
+      "doi": null,
+      "pmid": "10426408",
+      "title": "Linear and nonlinear current density reconstructions",
+      "year": 1999
+    },
+    {
+      "id": "pone.0088628-Hamalainen1",
+      "position": 67,
+      "provider": "source_xml",
+      "label": "67",
+      "text": "HamalainenMS, IlmoniemiRJ (1994) Interpreting magnetic fields of the brain: minimum norm estimates. Med Biol Eng Comput 32: 35–42.8182960",
+      "doi": null,
+      "pmid": "8182960",
+      "title": "Interpreting magnetic fields of the brain: minimum norm estimates",
+      "year": 1994
+    },
+    {
+      "id": "pone.0088628-Knosche1",
+      "position": 68,
+      "provider": "source_xml",
+      "label": "68",
+      "text": "KnoscheT, PraamstraP, StegemanD, PetersM (1996) Linear estimation discriminates midline sources and a motor cortex contribution to the readiness potential. Electroencephalogr Clin Neurophysiol 99: 183–190.8761054",
+      "doi": null,
+      "pmid": "8761054",
+      "title": "Linear estimation discriminates midline sources and a motor cortex contribution to the readiness potential",
+      "year": 1996
+    },
+    {
+      "id": "pone.0088628-Knsche1",
+      "position": 69,
+      "provider": "source_xml",
+      "label": "69",
+      "text": "Knösche TR (1997) Solutions of the Neuroelectromagnetic Inverse Problem: An Evaluation Study.",
+      "doi": null,
+      "pmid": null,
+      "title": null,
+      "year": null
+    },
+    {
+      "id": "pone.0088628-Talairach1",
+      "position": 70,
+      "provider": "source_xml",
+      "label": "70",
+      "text": "Talairach J, Tournoux P (1988) Co-planar Stereotaxic Atlas of the Human Brain: 3-Dimentional Proportional System: An Approach to Cerebral Imaging: Thime, Stuttgart.",
+      "doi": null,
+      "pmid": null,
+      "title": null,
+      "year": null
+    },
+    {
+      "id": "pone.0088628-Dien1",
+      "position": 71,
+      "provider": "source_xml",
+      "label": "71",
+      "text": "DienJ (1998) Addressing misallocation of variance in principal components analysis of event-related potentials. Brain Topogr 11: 43–55.9758391",
+      "doi": null,
+      "pmid": "9758391",
+      "title": "Addressing misallocation of variance in principal components analysis of event-related potentials",
+      "year": 1998
+    },
+    {
+      "id": "pone.0088628-Maess1",
+      "position": 72,
+      "provider": "source_xml",
+      "label": "72",
+      "text": "MaessB, FriedericiAD, DamianM, MeyerAS, LeveltWJ (2002) Semantic category interference in overt picture naming: sharpening current density localization by PCA. J Cogn Neurosci 14: 455–462.11970804",
+      "doi": null,
+      "pmid": "11970804",
+      "title": "Semantic category interference in overt picture naming: sharpening current density localization by PCA",
+      "year": 2002
+    },
+    {
+      "id": "pone.0088628-Kaiser1",
+      "position": 73,
+      "provider": "source_xml",
+      "label": "73",
+      "text": "KaiserHF (1958) The varimax criterion for analytic rotation in factor analysis. Psychometrika 23: 187–200.",
+      "doi": null,
+      "pmid": null,
+      "title": "The varimax criterion for analytic rotation in factor analysis",
+      "year": 1958
+    },
+    {
+      "id": "pone.0088628-Ahlfors1",
+      "position": 74,
+      "provider": "source_xml",
+      "label": "74",
+      "text": "AhlforsSP, HanJ, BelliveauJW, HamalainenMS (2010) Sensitivity of MEG and EEG to source orientation. Brain Topogr 23: 227–232.20640882",
+      "doi": null,
+      "pmid": "20640882",
+      "title": "Sensitivity of MEG and EEG to source orientation",
+      "year": 2010
+    },
+    {
+      "id": "pone.0088628-Hamalainen2",
+      "position": 75,
+      "provider": "source_xml",
+      "label": "75",
+      "text": "HamalainenM, HariR, IlmoniemiRJ, KnuutilaJ, LounasmaaOV (1993) Magnetoencephalography - Theory, Instrumentation, and Applications to Noninvasive Studies of the Working Human Brain. Reviews of modern physics 65: 413–497.",
+      "doi": null,
+      "pmid": null,
+      "title": "Magnetoencephalography - Theory, Instrumentation, and Applications to Noninvasive Studies of the Working Human Brain",
+      "year": 1993
+    },
+    {
+      "id": "pone.0088628-Hillebrand1",
+      "position": 76,
+      "provider": "source_xml",
+      "label": "76",
+      "text": "HillebrandA, BarnesGR (2002) A quantitative assessment of the sensitivity of whole-head MEG to activity in the adult human cortex. Neuroimage 16: 638–650.12169249",
+      "doi": null,
+      "pmid": "12169249",
+      "title": "A quantitative assessment of the sensitivity of whole-head MEG to activity in the adult human cortex",
+      "year": 2002
+    },
+    {
+      "id": "pone.0088628-Streit3",
+      "position": 77,
+      "provider": "source_xml",
+      "label": "77",
+      "text": "StreitM, IoannidesAA, LiuL, WolwerW, DammersJ, et al (1999) Neurophysiological correlates of the recognition of facial expressions of emotion as revealed by magnetoencephalography. cognitive brain research 7: 481–491.10076093",
+      "doi": null,
+      "pmid": "10076093",
+      "title": "Neurophysiological correlates of the recognition of facial expressions of emotion as revealed by magnetoencephalography",
+      "year": 1999
+    },
+    {
+      "id": "pone.0088628-Klopp1",
+      "position": 78,
+      "provider": "source_xml",
+      "label": "78",
+      "text": "KloppJ, MarinkovicK, ChauvelP, NenovV, HalgrenE (2000) Early widespread cortical distribution of coherent fusiform face selective activity. Hum Brain Mapp 11: 286–293.11144757",
+      "doi": null,
+      "pmid": "11144757",
+      "title": "Early widespread cortical distribution of coherent fusiform face selective activity",
+      "year": 2000
+    },
+    {
+      "id": "pone.0088628-Adolphs4",
+      "position": 79,
+      "provider": "source_xml",
+      "label": "79",
+      "text": "AdolphsR (1999) Social cognition and the human brain. Trends Cogn Sci 3: 469–479.10562726",
+      "doi": null,
+      "pmid": "10562726",
+      "title": "Social cognition and the human brain",
+      "year": 1999
+    },
+    {
+      "id": "pone.0088628-Decety1",
+      "position": 80,
+      "provider": "source_xml",
+      "label": "80",
+      "text": "DecetyJ, GrezesJ (1999) Neural mechanisms subserving the perception of human actions. Trends Cogn Sci 3: 172–178.10322473",
+      "doi": null,
+      "pmid": "10322473",
+      "title": "Neural mechanisms subserving the perception of human actions",
+      "year": 1999
+    },
+    {
+      "id": "pone.0088628-Rizzolatti1",
+      "position": 81,
+      "provider": "source_xml",
+      "label": "81",
+      "text": "RizzolattiG, FadigaL, GalleseV, FogassiL (1996) Premotor cortex and the recognition of motor actions. Brain Res Cogn Brain Res 3: 131–141.8713554",
+      "doi": null,
+      "pmid": "8713554",
+      "title": "Premotor cortex and the recognition of motor actions",
+      "year": 1996
+    },
+    {
+      "id": "pone.0088628-Rizzolatti2",
+      "position": 82,
+      "provider": "source_xml",
+      "label": "82",
+      "text": "RizzolattiG, FogassiL, GalleseV (2001) Neurophysiological mechanisms underlying the understanding and imitation of action. Nat Rev Neurosci 2: 661–670.11533734",
+      "doi": null,
+      "pmid": "11533734",
+      "title": "Neurophysiological mechanisms underlying the understanding and imitation of action",
+      "year": 2001
+    },
+    {
+      "id": "pone.0088628-Decety2",
+      "position": 83,
+      "provider": "source_xml",
+      "label": "83",
+      "text": "DecetyJ, GrezesJ, CostesN, PeraniD, JeannerodM, et al (1997) Brain activity during observation of actions. Influence of action content and subject's strategy. Brain 120 (Pt 10): 1763–1777.",
+      "doi": null,
+      "pmid": null,
+      "title": "Brain activity during observation of actions. Influence of action content and subject's strategy",
+      "year": 1997
+    },
+    {
+      "id": "pone.0088628-Iacoboni1",
+      "position": 84,
+      "provider": "source_xml",
+      "label": "84",
+      "text": "IacoboniM, KoskiLM, BrassM, BekkeringH, WoodsRP, et al (2001) Reafferent copies of imitated actions in the right superior temporal cortex. Proc Natl Acad Sci U S A 98: 13995–13999.11717457",
+      "doi": null,
+      "pmid": "11717457",
+      "title": "Reafferent copies of imitated actions in the right superior temporal cortex",
+      "year": 2001
+    },
+    {
+      "id": "pone.0088628-Monroe1",
+      "position": 85,
+      "provider": "source_xml",
+      "label": "85",
+      "text": "MonroeJF, GriffinM, PinkhamA, LougheadJ, GurRC, et al (2013) The fusiform response to faces: explicit versus implicit processing of emotion. Hum Brain Mapp 34: 1–11.21932258",
+      "doi": null,
+      "pmid": "21932258",
+      "title": "The fusiform response to faces: explicit versus implicit processing of emotion",
+      "year": 2013
+    },
+    {
+      "id": "pone.0088628-Yang1",
+      "position": 86,
+      "provider": "source_xml",
+      "label": "86",
+      "text": "YangTT, MenonV, EliezS, BlaseyC, WhiteCD, et al (2002) Amygdalar activation associated with positive and negative facial expressions. Neuroreport 13: 1737–1741.12395114",
+      "doi": null,
+      "pmid": "12395114",
+      "title": "Amygdalar activation associated with positive and negative facial expressions",
+      "year": 2002
+    },
+    {
+      "id": "pone.0088628-Dolan1",
+      "position": 87,
+      "provider": "source_xml",
+      "label": "87",
+      "text": "DolanRJ, FletcherP, MorrisJ, KapurN, DeakinJF, et al (1996) Neural activation during covert processing of positive emotional facial expressions. Neuroimage 4: 194–200.9345509",
+      "doi": null,
+      "pmid": "9345509",
+      "title": "Neural activation during covert processing of positive emotional facial expressions",
+      "year": 1996
+    }
+  ],
+  "citations": null,
+  "tables": [
+    {
+      "table_id": "pone-0088628-t001",
+      "label": null,
+      "number": "1",
+      "caption": "Detailed information for 14 ROIs.",
+      "footer": "Note. Lt.  =  left; Rt.  =  right; STS  =  superior temporal sulcus; Ind-act  =  number of subjects who showed significant activation in each ROI in the 16 subjects; 2-way ANOVA column indicates the ROIs that showed significant interaction (cond x TW) or main effects of condition (cond); onset  =  latencies of activation in the time course of the EmoFH condition; peak  =  the peak latencies of activation in the time course of the EmoFH condition.#these ROIs can detect electric activity from other brain regions (see Method, spatial accuracy).*p<0.05, N.S.  =  not significant.",
+      "raw_path": "source/pubget/tables/pone-0088628-t001.xml",
+      "column_headings": null,
+      "rows": [
+        {
+          "row": 0,
+          "cells": [
+            "PCA",
+            "",
+            "",
+            "Talairach",
+            "Ind-",
+            "",
+            "",
+            ""
+          ],
+          "text_span": {
+            "start_char": 21692,
+            "end_char": 21711,
+            "text": null
+          }
+        },
+        {
+          "row": 1,
+          "cells": [
+            "Factor",
+            "ROI",
+            "Brain Region",
+            "coordinates",
+            "act.",
+            "ANOVA",
+            "onset",
+            "peak"
+          ],
+          "text_span": {
+            "start_char": 21716,
+            "end_char": 21773,
+            "text": null
+          }
+        },
+        {
+          "row": 2,
+          "cells": [
+            "A",
+            "A1",
+            "Rt. inferior parietal",
+            "48, -45, 26",
+            "16",
+            "N.S.",
+            "74",
+            "162"
+          ],
+          "text_span": {
+            "start_char": 21774,
+            "end_char": 21827,
+            "text": null
+          }
+        },
+        {
+          "row": 3,
+          "cells": [
+            "",
+            "A2",
+            "Rt. central",
+            "49, -15, 30",
+            "16",
+            "*cond x TW",
+            "70",
+            "320"
+          ],
+          "text_span": {
+            "start_char": 21829,
+            "end_char": 21878,
+            "text": null
+          }
+        },
+        {
+          "row": 4,
+          "cells": [
+            "B",
+            "B",
+            "Rt. inferior frontal#",
+            "40, 26, -5",
+            "16",
+            "*cond x TW",
+            "78",
+            "304"
+          ],
+          "text_span": {
+            "start_char": 21879,
+            "end_char": 21940,
+            "text": null
+          }
+        },
+        {
+          "row": 5,
+          "cells": [
+            "C",
+            "C1",
+            "Lt. inferior temporal",
+            "-48, -9, -25",
+            "13",
+            "*cond",
+            "94",
+            "182"
+          ],
+          "text_span": {
+            "start_char": 21941,
+            "end_char": 21998,
+            "text": null
+          }
+        },
+        {
+          "row": 6,
+          "cells": [
+            "",
+            "C2",
+            "Lt. medial temporal#",
+            "-19, -6, -31",
+            "14",
+            "*cond",
+            "92",
+            "178"
+          ],
+          "text_span": {
+            "start_char": 22000,
+            "end_char": 22056,
+            "text": null
+          }
+        },
+        {
+          "row": 7,
+          "cells": [
+            "D",
+            "D1",
+            "Rt. inferior temporal",
+            "45, -10, -25",
+            "12",
+            "*cond x TW",
+            "84",
+            "164"
+          ],
+          "text_span": {
+            "start_char": 22057,
+            "end_char": 22119,
+            "text": null
+          }
+        },
+        {
+          "row": 8,
+          "cells": [
+            "",
+            "D2",
+            "Rt. medial temoral#",
+            "12, -10, -31",
+            "13",
+            "*cond x TW",
+            "84",
+            "166"
+          ],
+          "text_span": {
+            "start_char": 22121,
+            "end_char": 22181,
+            "text": null
+          }
+        },
+        {
+          "row": 9,
+          "cells": [
+            "E",
+            "E",
+            "Primary visual",
+            "16, -88, 16",
+            "16",
+            "N.S.",
+            "56",
+            "132"
+          ],
+          "text_span": {
+            "start_char": 22182,
+            "end_char": 22227,
+            "text": null
+          }
+        },
+        {
+          "row": 10,
+          "cells": [
+            "F",
+            "F",
+            "Lt. middle occipital",
+            "-32, -79, 5",
+            "16",
+            "N.S.",
+            "74",
+            "178"
+          ],
+          "text_span": {
+            "start_char": 22228,
+            "end_char": 22279,
+            "text": null
+          }
+        },
+        {
+          "row": 11,
+          "cells": [
+            "G",
+            "G1",
+            "Lt. STS",
+            "-52, -43, 1",
+            "15",
+            "N.S",
+            "82",
+            "226"
+          ],
+          "text_span": {
+            "start_char": 22280,
+            "end_char": 22318,
+            "text": null
+          }
+        },
+        {
+          "row": 12,
+          "cells": [
+            "",
+            "G2",
+            "Lt. inferior parietal",
+            "-52, -31, 27",
+            "15",
+            "N.S",
+            "62",
+            "310"
+          ],
+          "text_span": {
+            "start_char": 22320,
+            "end_char": 22371,
+            "text": null
+          }
+        },
+        {
+          "row": 13,
+          "cells": [
+            "H",
+            "H",
+            "Lt. intraparietal sulcus",
+            "-12, -48, 56",
+            "16",
+            "N.S",
+            "64",
+            "186"
+          ],
+          "text_span": {
+            "start_char": 22372,
+            "end_char": 22427,
+            "text": null
+          }
+        },
+        {
+          "row": 14,
+          "cells": [
+            "I",
+            "I1",
+            "Rt. inferior prefrontal",
+            "21, 50, 1",
+            "14",
+            "N.S",
+            "88",
+            "408"
+          ],
+          "text_span": {
+            "start_char": 22428,
+            "end_char": 22480,
+            "text": null
+          }
+        },
+        {
+          "row": 15,
+          "cells": [
+            "",
+            "I2",
+            "Lt. inferior prefrontal",
+            "-15, 54, -3",
+            "13",
+            "N.S",
+            "88",
+            "400"
+          ],
+          "text_span": {
+            "start_char": 22482,
+            "end_char": 22534,
+            "text": null
+          }
+        }
+      ],
+      "text_span": {
+        "start_char": 21692,
+        "end_char": 22534,
+        "text": null
+      },
+      "coordinate_space_hint": "TAL",
+      "triage": {
+        "passes": true,
+        "score": 0.9688,
+        "route": "candidates",
+        "located_by": "packed cell",
+        "excluded_by_hand": null,
+        "exclusion_reason": null
+      }
+    }
+  ]
+}

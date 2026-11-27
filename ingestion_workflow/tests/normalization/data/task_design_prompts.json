@@ -1,0 +1,2404 @@
+{
+"source": "round4 ft-v4/val_ft.jsonl (task-design v4 val)",
+"template": "{\"factors\": [{\"from_term\": \"verbatim-string\", \"axis\": \"string\", \"levels\": [{\"level\": \"verbatim-string\", \"value\": \"string\"}]}], \"context\": [{\"axis\": \"string\", \"value\": \"string\"}], \"conditions\": [{\"id\": \"verbatim-string\", \"kind\": [\"task_state\", \"rest\", \"fixation\", \"control_state\", \"implicit_baseline\"], \"atoms\": [{\"axis\": \"string\", \"value\": \"string\"}], \"expansion\": \"string\", \"gloss\": \"string\"}], \"task\": \"string\", \"family\": [\"animal_behavior\", \"attentional_cueing\", \"auditory_perception\", \"bodily_sensation\", \"chemosensation\", \"conditioning_and_reinforcement\", \"conflict_and_interference\", \"dyadic_interaction_observation\", \"emotion\", \"executive_and_reasoning\", \"information_evaluation_and_belief\", \"language\", \"memory_control\", \"metacognition_and_interoception\", \"motor_performance\", \"oddball_and_vigilance\", \"perceptual_judgment\", \"pseudo_tasks\", \"recall_and_recognition\", \"response_inhibition\", \"reward_and_value_choice\", \"social_cognition_and_games\", \"spatial_navigation\", \"visual_perception\", \"visual_search_and_tracking\", \"working_memory_span\"], \"task_confidence\": [\"high\", \"medium\", \"low\"]}",
+"rows": [
+{
+"id": "23zh4y7skigc:tsk_anticipation",
+"features": [
+"analyses",
+"excerpt",
+"stimulus list",
+"terms"
+],
+"item": {
+"name": "emotional anticipation task",
+"paradigm": null,
+"description": "Four approximately 12-minute runs, each with eight aversive, eight neutral, and eight uncertain trials. Cues lasted 2 s, followed by a 2–8 s anticipatory ISI, a 1 s picture, a 5–9 s ISI, and a 6 s mood or picture-valence rating. Six trials per cue type required anxiety ratings without a picture; six aversive and six neutral pictures were presented without a preceding cue.",
+"conditions": [
+{
+"id": "cond_aversive",
+"name": "Aversive",
+"kind": "task_state",
+"description": "X cue predicts an aversive picture.",
+"stimulus": [
+"aversive pictures"
+]
+},
+{
+"id": "cond_neutral",
+"name": "Neutral",
+"kind": "task_state",
+"description": "O cue predicts a neutral picture.",
+"stimulus": [
+"neutral pictures"
+]
+},
+{
+"id": "cond_uncertain",
+"name": "Uncertain",
+"kind": "task_state",
+"description": "? cue predicts either an aversive or neutral picture.",
+"stimulus": [
+"aversive or neutral pictures"
+]
+}
+],
+"terms": [
+{
+"name": "Valence",
+"type": "categorical",
+"variation_level": "within_subject",
+"levels": [
+{
+"level": "Aversive",
+"conditions": [
+"cond_aversive"
+],
+"groups": [],
+"timepoints": []
+},
+{
+"level": "Neutral",
+"conditions": [
+"cond_neutral"
+],
+"groups": [],
+"timepoints": []
+},
+{
+"level": "Uncertain",
+"conditions": [
+"cond_uncertain"
+],
+"groups": [],
+"timepoints": []
+}
+]
+},
+{
+"name": "anticipation condition",
+"type": "categorical",
+"variation_level": "within_subject",
+"levels": [
+{
+"level": "Aversive",
+"conditions": [
+"cond_aversive"
+],
+"groups": [],
+"timepoints": []
+},
+{
+"level": "Neutral",
+"conditions": [
+"cond_neutral"
+],
+"groups": [],
+"timepoints": []
+}
+]
+}
+],
+"analyses": [
+"aversive > neutral anticipation, phasic pACC",
+"aversive > neutral anticipation, sustained aMCC",
+"positive coupling with the aMCC during aversive versus neutral anticipation"
+],
+"excerpt": "imental Paradigm\n\nfMRI data were collected during an emotional anticipation task using aversive and neutral pictures from the International Affective Picture System (IAPS; Lang et al. 2008) (Fig. 1). One of 3 visual cues informed participants that the following picture would be aversive (“X”), neutral (“O”), or either aversive or neutral (“?”). Each cue was presented for 2 s, followed by a 2- to 8-s jittered inter-stimulus interval (ISI), a 1-s picture presentation, an additional 5- to 9-s ISI, and a 6-s period during which participants rated either their current mood or the valence of the previous picture on a Likert scale from -4 (unpleasant/negative) to +4 (pleasant/happy). These 2 types of ratings were counterbalanced across conditi […] ve Picture System (IAPS; Lang et al. 2008) (Fig. 1). One of 3 visual cues informed participants that the following picture would be aversive (“X”), neutral (“O”), or either aversive or neutral (“?”). Each cue was presented for 2 s, followed by a 2- to 8-s jittered inter-stimulus interval (ISI), a 1-s picture presentation, an additional 5- to 9-s ISI, and a 6-s period during which participants rated either their current mood or the valence of the previous picture on a Likert scale from -4 (unpleasant/negative) to +4 (pleasant/happy). These 2 types of ratings were counterbalanced across conditions. A 1- to 5-s jittered inter-trial interval preceded the onset of the next trial. Each of 4 experimental runs (∼12:00 each) consisted of 8 aversive trials, 8 neutral trials, and 8 uncertain trials, which were presented in a pseudorandom order, for a total of 32 trials of each condition type over the course of the experiment. In additi"
+},
+"document": "Task: emotional anticipation task\nDescription: Four approximately 12-minute runs, each with eight aversive, eight neutral, and eight uncertain trials. Cues lasted 2 s, followed by a 2–8 s anticipatory ISI, a 1 s picture, a 5–9 s ISI, and a 6 s mood or picture-valence rating. Six trials per cue type required anxiety ratings without a picture; six aversive and six neutral pictures were presented without a preceding cue.\nConditions:\n- cond_aversive | Aversive | kind: task_state | X cue predicts an aversive picture. | stimulus: aversive pictures\n- cond_neutral | Neutral | kind: task_state | O cue predicts a neutral picture. | stimulus: neutral pictures\n- cond_uncertain | Uncertain | kind: task_state | ? cue predicts either an aversive or neutral picture. | stimulus: aversive or neutral pictures\nModel terms:\n- Valence (categorical, within_subject): Aversive -> cond_aversive; Neutral -> cond_neutral; Uncertain -> cond_uncertain\n- anticipation condition (categorical, within_subject): Aversive -> cond_aversive; Neutral -> cond_neutral\nAnalyses: aversive > neutral anticipation, phasic pACC | aversive > neutral anticipation, sustained aMCC | positive coupling with the aMCC during aversive versus neutral anticipation\nExcerpt: imental Paradigm\n\nfMRI data were collected during an emotional anticipation task using aversive and neutral pictures from the International Affective Picture System (IAPS; Lang et al. 2008) (Fig. 1). One of 3 visual cues informed participants that the following picture would be aversive (“X”), neutral (“O”), or either aversive or neutral (“?”). Each cue was presented for 2 s, followed by a 2- to 8-s jittered inter-stimulus interval (ISI), a 1-s picture presentation, an additional 5- to 9-s ISI, and a 6-s period during which participants rated either their current mood or the valence of the previous picture on a Likert scale from -4 (unpleasant/negative) to +4 (pleasant/happy). These 2 types of ratings were counterbalanced across conditi […] ve Picture System (IAPS; Lang et al. 2008) (Fig. 1). One of 3 visual cues informed participants that the following picture would be aversive (“X”), neutral (“O”), or either aversive or neutral (“?”). Each cue was presented for 2 s, followed by a 2- to 8-s jittered inter-stimulus interval (ISI), a 1-s picture presentation, an additional 5- to 9-s ISI, and a 6-s period during which participants rated either their current mood or the valence of the previous picture on a Likert scale from -4 (unpleasant/negative) to +4 (pleasant/happy). These 2 types of ratings were counterbalanced across conditions. A 1- to 5-s jittered inter-trial interval preceded the onset of the next trial. Each of 4 experimental runs (∼12:00 each) consisted of 8 aversive trials, 8 neutral trials, and 8 uncertain trials, which were presented in a pseudorandom order, for a total of 32 trials of each condition type over the course of the experiment. In additi",
+"record": {
+"tasks": [
+{
+"local_id": "tsk_anticipation",
+"name": {
+"value": "emotional anticipation task"
+},
+"paradigm": null,
+"description": {
+"evidence": {
+"sets": [
+{
+"source": "retriever",
+"spans": [
+{
+"end_char": 10766,
+"start_char": 10620,
+"text": "One of 3 visual cues informed participants that the following picture would be aversive (“X”), neutral (“O”), or either aversive or neutral (“?”)."
+},
+{
+"end_char": 11105,
+"start_char": 10767,
+"text": "Each cue was presented for 2 s, followed by a 2- to 8-s jittered inter-stimulus interval (ISI), a 1-s picture presentation, an additional 5- to 9-s ISI, and a 6-s period during which participants rated either their current mood or the valence of the previous picture on a Likert scale from -4 (unpleasant/negative) to +4 (pleasant/happy)."
+},
+{
+"end_char": 11495,
+"start_char": 11251,
+"text": "Each of 4 experimental runs (∼12:00 each) consisted of 8 aversive trials, 8 neutral trials, and 8 uncertain trials, which were presented in a pseudorandom order, for a total of 32 trials of each condition type over the course of the experiment."
+},
+{
+"end_char": 11876,
+"start_char": 11601,
+"text": "First, there were a total of 6 presentations of each of the 3 cues that were not followed by a picture stimulus; instead, immediately following the 5- to 9-s ISI, participants rated their current anxiety on a Likert scale from 0 (not at all anxious) to 8 (extremely anxious)."
+},
+{
+"end_char": 12125,
+"start_char": 11877,
+"text": "Secondly, there were a total of 6 aversive and 6 neutral pictures that were not preceded by a cue stimulus; instead, these trials began with a picture presentation followed by the 5- to 9-s ISI and the mood or valence rating scales described above."
+}
+]
+}
+],
+"status": "present"
+},
+"extraction_status": "extracted",
+"value": "Four approximately 12-minute runs, each with eight aversive, eight neutral, and eight uncertain trials. Cues lasted 2 s, followed by a 2–8 s anticipatory ISI, a 1 s picture, a 5–9 s ISI, and a 6 s mood or picture-valence rating. Six trials per cue type required anxiety ratings without a picture; six aversive and six neutral pictures were presented without a preceding cue.",
+"value_source": "generated"
+},
+"conditions": [
+{
+"local_id": "cond_aversive",
+"name": {
+"value": "Aversive"
+},
+"condition_kind": {
+"value": "task_state"
+},
+"description": {
+"value": "X cue predicts an aversive picture."
+},
+"stimulus_content": {
+"value": [
+"aversive pictures"
+]
+}
+},
+{
+"local_id": "cond_neutral",
+"name": {
+"value": "Neutral"
+},
+"condition_kind": {
+"value": "task_state"
+},
+"description": {
+"value": "O cue predicts a neutral picture."
+},
+"stimulus_content": {
+"value": [
+"neutral pictures"
+]
+}
+},
+{
+"local_id": "cond_uncertain",
+"name": {
+"value": "Uncertain"
+},
+"condition_kind": {
+"value": "task_state"
+},
+"description": {
+"value": "? cue predicts either an aversive or neutral picture."
+},
+"stimulus_content": {
+"value": [
+"aversive or neutral pictures"
+]
+}
+}
+]
+}
+],
+"model_estimations": [
+{
+"terms": [
+{
+"functional_form": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"levels": [
+{
+"conditions": [
+"cond_aversive"
+],
+"level": {
+"value": "Aversive"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"conditions": [
+"cond_neutral"
+],
+"level": {
+"value": "Neutral"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"conditions": [
+"cond_uncertain"
+],
+"level": {
+"value": "Uncertain"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"local_id": "trm_valence",
+"name": {
+"value": "Valence"
+},
+"source_definition": {
+"value": "Aversive and neutral conditions during the anticipatory epoch."
+},
+"type": {
+"value": "categorical"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"variation_level": {
+"value": "within_subject"
+}
+},
+{
+"functional_form": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"levels": [
+{
+"conditions": [
+"cond_aversive"
+],
+"level": {
+"value": "Aversive"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"conditions": [
+"cond_neutral"
+],
+"level": {
+"value": "Neutral"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"local_id": "trm_ppi_condition",
+"name": {
+"value": "anticipation condition"
+},
+"source_definition": {
+"value": "Aversive versus neutral anticipation during the 2- to 8-s anticipatory ISI."
+},
+"type": {
+"value": "categorical"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"variation_level": {
+"value": "within_subject"
+}
+}
+]
+}
+],
+"analyses": [
+{
+"name": {
+"value": "aversive > neutral anticipation, phasic pACC"
+},
+"tasks": [
+"tsk_anticipation"
+]
+},
+{
+"name": {
+"value": "aversive > neutral anticipation, sustained aMCC"
+},
+"tasks": [
+"tsk_anticipation"
+]
+},
+{
+"name": {
+"value": "positive coupling with the aMCC during aversive versus neutral anticipation"
+},
+"tasks": [
+"tsk_anticipation"
+]
+}
+]
+},
+"text": {
+"length": 80569,
+"windows": [
+[
+10420,
+"imental Paradigm\n\nfMRI data were collected during an emotional anticipation task using aversive and neutral pictures from the International Affective Picture System (IAPS; Lang et al. 2008) (Fig. 1). One of 3 visual cues informed participants that the following picture would be aversive (“X”), neutral (“O”), or either aversive or neutral (“?”). Each cue was presented for 2 s, followed by a 2- to 8-s jittered inter-stimulus interval (ISI), a 1-s picture presentation, an additional 5- to 9-s ISI, and a 6-s period during which participants rated either their current mood or the valence of the previous picture on a Likert scale from -4 (unpleasant/negative) to +4 (pleasant/happy). These 2 types of ratings were counterbalanced across conditions. A 1- to 5-s jittered inter-trial interval preceded the onset of the next trial. Each of 4 experimental runs (∼12:00 each) consisted of 8 aversive trials, 8 neutral trials, and 8 uncertain trials, which were presented in a pseudorandom order, for a total of 32 trials of each condition type over the course of the experiment. In additi"
+]
+]
+},
+"answer": "{\"factors\": [{\"from_term\": \"anticipation condition\", \"axis\": \"valence\", \"levels\": [{\"level\": \"Aversive\", \"value\": \"negative\"}, {\"level\": \"Neutral\", \"value\": \"neutral\"}, {\"level\": \"Uncertain\", \"value\": \"ambiguity\"}]}, {\"from_term\": \"anticipation condition\", \"axis\": \"uncertainty\", \"levels\": [{\"level\": \"Aversive\", \"value\": \"certain\"}, {\"level\": \"Neutral\", \"value\": \"certain\"}, {\"level\": \"Uncertain\", \"value\": \"ambiguity\"}]}], \"context\": [{\"axis\": \"stimulus\", \"value\": \"pictures\"}, {\"axis\": \"modality\", \"value\": \"visual\"}], \"conditions\": [{\"id\": \"cond_aversive\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"valence\", \"value\": \"negative\"}, {\"axis\": \"uncertainty\", \"value\": \"certain\"}], \"expansion\": null, \"gloss\": \"negative picture cue\"}, {\"id\": \"cond_neutral\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"valence\", \"value\": \"neutral\"}, {\"axis\": \"uncertainty\", \"value\": \"certain\"}], \"expansion\": null, \"gloss\": \"neutral picture cue\"}, {\"id\": \"cond_uncertain\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"valence\", \"value\": \"ambiguity\"}, {\"axis\": \"uncertainty\", \"value\": \"ambiguity\"}], \"expansion\": null, \"gloss\": \"uncertain picture cue\"}], \"task\": \"tct_affective_anticipation\", \"family\": \"emotion\", \"task_confidence\": \"high\"}",
+"scored": {
+"item": null,
+"task": "tct_affective_anticipation",
+"family": "emotion",
+"task_confidence": "high",
+"note": null,
+"factors": [
+{
+"from_term": "anticipation condition",
+"axis": "valence",
+"levels": {
+"Aversive": "negative",
+"Neutral": "neutral",
+"Uncertain": "ambiguity"
+}
+},
+{
+"from_term": "anticipation condition",
+"axis": "uncertainty",
+"levels": {
+"Aversive": "certain",
+"Neutral": "certain",
+"Uncertain": "ambiguity"
+}
+}
+],
+"context": [
+{
+"axis": "stimulus",
+"value": "pictures"
+},
+{
+"axis": "modality",
+"value": "visual"
+}
+],
+"conditions": [
+{
+"id": "cond_aversive",
+"kind": "task_state",
+"atoms": [
+{
+"axis": "valence",
+"value": "negative"
+},
+{
+"axis": "uncertainty",
+"value": "certain"
+}
+],
+"expansion": null,
+"gloss": "negative picture cue"
+},
+{
+"id": "cond_neutral",
+"kind": "task_state",
+"atoms": [
+{
+"axis": "valence",
+"value": "neutral"
+},
+{
+"axis": "uncertainty",
+"value": "certain"
+}
+],
+"expansion": null,
+"gloss": "neutral picture cue"
+},
+{
+"id": "cond_uncertain",
+"kind": "task_state",
+"atoms": [
+{
+"axis": "valence",
+"value": "ambiguity"
+},
+{
+"axis": "uncertainty",
+"value": "ambiguity"
+}
+],
+"expansion": null,
+"gloss": "uncertain picture cue"
+}
+]
+}
+},
+{
+"id": "25tlw4xcrmmm:tsk_exp2",
+"features": [
+"excerpt",
+"no terms",
+"stimulus list"
+],
+"item": {
+"name": "Experiment 2",
+"paradigm": null,
+"description": "Four bimodal conditions crossed auditory–visual congruency with biological versus scrambled visual motion. Each experimental condition was presented 16 times per scan, with 12 presentations of each of two no-motion control conditions and 22 null events. Two approximately seven-minute scans were acquired.",
+"conditions": [
+{
+"id": "cond_cong_bio",
+"name": "CONG_BIO",
+"kind": "task_state",
+"description": "Auditory and visual motion both receding, with biological visual motion.",
+"stimulus": [
+"footsteps",
+"point-light walkers"
+]
+},
+{
+"id": "cond_cong_scr",
+"name": "CONG_SCR",
+"kind": "task_state",
+"description": "Auditory and visual motion both receding, with scrambled visual motion.",
+"stimulus": [
+"footsteps",
+"scrambled point-light walkers"
+]
+},
+{
+"id": "cond_incong_bio",
+"name": "INCONG_BIO",
+"kind": "task_state",
+"description": "Auditory looming and visual receding motion, with biological visual motion.",
+"stimulus": [
+"footsteps",
+"point-light walkers"
+]
+},
+{
+"id": "cond_incong_scr",
+"name": "INCONG_SCR",
+"kind": "task_state",
+"description": "Auditory looming and visual receding motion, with scrambled visual motion.",
+"stimulus": [
+"footsteps",
+"scrambled point-light walkers"
+]
+},
+{
+"id": "cond_bio_control",
+"name": "BIO control",
+"kind": "control_state",
+"description": "Bimodal no-motion biological stimulus; press a button when no motion is present.",
+"stimulus": [
+"footsteps",
+"point-light walkers"
+]
+},
+{
+"id": "cond_scr_control",
+"name": "SCR control",
+"kind": "control_state",
+"description": "Bimodal no-motion scrambled stimulus; press a button when no motion is present.",
+"stimulus": [
+"footsteps",
+"scrambled point-light walkers"
+]
+}
+],
+"terms": [],
+"analyses": [],
+"excerpt": ".8 sec and the average times between stimuli was 3 sec with a randomized jitter between -0.5 and +0.5 sec. Altogether, each scan of experiment 1 consisted of 100 trials and lasted just under 7 min. \n\nIn the main experiment (experiment 2), we tested whether auditory-visual congruency has a differential effect for biological motion (BIO) compared to scrambled motion (SCR). In the four experimental conditions, auditory and visual motion could either move in the same direction (both receding: CONG_BIO, CONG_SRC) or in different directions (auditory looming and visual receding: INCONG_BIO, INCONG_SCR). Within a single scan, each of the experimental stimuli was presented 16 times. We included a control condition of no interest, consisting of bimodal ‘no motion’ stimuli […] asted just under 7 min. \n\nIn the main experiment (experiment 2), we tested whether auditory-visual congruency has a differential effect for biological motion (BIO) compared to scrambled motion (SCR). In the four experimental conditions, auditory and visual motion could either move in the same direction (both receding: CONG_BIO, CONG_SRC) or in different directions (auditory looming and visual receding: INCONG_BIO, INCONG_SCR). Within a single scan, each of the experimental stimuli was presented 16 times. We included a control condition of no interest, consisting of bimodal ‘no motion’ stimuli and each of the two control stimuli (BIO, SCR) was presented 12 times. 22 null events were included and all stimuli were presented in a randomized order. Altogether, each scan of experiment 2 consisted of 110 trials and lasted sli"
+},
+"document": "Task: Experiment 2\nDescription: Four bimodal conditions crossed auditory–visual congruency with biological versus scrambled visual motion. Each experimental condition was presented 16 times per scan, with 12 presentations of each of two no-motion control conditions and 22 null events. Two approximately seven-minute scans were acquired.\nConditions:\n- cond_cong_bio | CONG_BIO | kind: task_state | Auditory and visual motion both receding, with biological visual motion. | stimulus: footsteps, point-light walkers\n- cond_cong_scr | CONG_SCR | kind: task_state | Auditory and visual motion both receding, with scrambled visual motion. | stimulus: footsteps, scrambled point-light walkers\n- cond_incong_bio | INCONG_BIO | kind: task_state | Auditory looming and visual receding motion, with biological visual motion. | stimulus: footsteps, point-light walkers\n- cond_incong_scr | INCONG_SCR | kind: task_state | Auditory looming and visual receding motion, with scrambled visual motion. | stimulus: footsteps, scrambled point-light walkers\n- cond_bio_control | BIO control | kind: control_state | Bimodal no-motion biological stimulus; press a button when no motion is present. | stimulus: footsteps, point-light walkers\n- cond_scr_control | SCR control | kind: control_state | Bimodal no-motion scrambled stimulus; press a button when no motion is present. | stimulus: footsteps, scrambled point-light walkers\nExcerpt: .8 sec and the average times between stimuli was 3 sec with a randomized jitter between -0.5 and +0.5 sec. Altogether, each scan of experiment 1 consisted of 100 trials and lasted just under 7 min. \n\nIn the main experiment (experiment 2), we tested whether auditory-visual congruency has a differential effect for biological motion (BIO) compared to scrambled motion (SCR). In the four experimental conditions, auditory and visual motion could either move in the same direction (both receding: CONG_BIO, CONG_SRC) or in different directions (auditory looming and visual receding: INCONG_BIO, INCONG_SCR). Within a single scan, each of the experimental stimuli was presented 16 times. We included a control condition of no interest, consisting of bimodal ‘no motion’ stimuli […] asted just under 7 min. \n\nIn the main experiment (experiment 2), we tested whether auditory-visual congruency has a differential effect for biological motion (BIO) compared to scrambled motion (SCR). In the four experimental conditions, auditory and visual motion could either move in the same direction (both receding: CONG_BIO, CONG_SRC) or in different directions (auditory looming and visual receding: INCONG_BIO, INCONG_SCR). Within a single scan, each of the experimental stimuli was presented 16 times. We included a control condition of no interest, consisting of bimodal ‘no motion’ stimuli and each of the two control stimuli (BIO, SCR) was presented 12 times. 22 null events were included and all stimuli were presented in a randomized order. Altogether, each scan of experiment 2 consisted of 110 trials and lasted sli",
+"record": {
+"tasks": [
+{
+"local_id": "tsk_exp2",
+"name": {
+"value": "Experiment 2"
+},
+"paradigm": null,
+"description": {
+"evidence": {
+"sets": [
+{
+"source": "retriever",
+"spans": [
+{
+"end_char": 14137,
+"start_char": 13964,
+"text": "In the main experiment (experiment 2), we tested whether auditory-visual congruency has a differential effect for biological motion (BIO) compared to scrambled motion (SCR)."
+},
+{
+"end_char": 14368,
+"start_char": 14138,
+"text": "In the four experimental conditions, auditory and visual motion could either move in the same direction (both receding: CONG_BIO, CONG_SRC) or in different directions (auditory looming and visual receding: INCONG_BIO, INCONG_SCR)."
+},
+{
+"end_char": 14447,
+"start_char": 14369,
+"text": "Within a single scan, each of the experimental stimuli was presented 16 times."
+},
+{
+"end_char": 14608,
+"start_char": 14448,
+"text": "We included a control condition of no interest, consisting of bimodal ‘no motion’ stimuli and each of the two control stimuli (BIO, SCR) was presented 12 times."
+},
+{
+"end_char": 14691,
+"start_char": 14609,
+"text": "22 null events were included and all stimuli were presented in a randomized order."
+},
+{
+"end_char": 14793,
+"start_char": 14692,
+"text": "Altogether, each scan of experiment 2 consisted of 110 trials and lasted slightly longer than 7 min. "
+},
+{
+"end_char": 15150,
+"start_char": 14851,
+"text": "First the participant performed a short practice experiment (less than 5 min) to familiarize herself/himself with the task again; then two scan sessions of experiment 1 were run (each about 7 minutes) followed by a structural scan (12 min) and by two sessions of experiment 2 (each about 7 minutes)."
+}
+]
+}
+],
+"status": "present"
+},
+"extraction_status": "extracted",
+"value": "Four bimodal conditions crossed auditory–visual congruency with biological versus scrambled visual motion. Each experimental condition was presented 16 times per scan, with 12 presentations of each of two no-motion control conditions and 22 null events. Two approximately seven-minute scans were acquired.",
+"value_source": "generated"
+},
+"conditions": [
+{
+"local_id": "cond_cong_bio",
+"name": {
+"value": "CONG_BIO"
+},
+"condition_kind": {
+"value": "task_state"
+},
+"description": {
+"value": "Auditory and visual motion both receding, with biological visual motion."
+},
+"stimulus_content": {
+"value": [
+"footsteps",
+"point-light walkers"
+]
+}
+},
+{
+"local_id": "cond_cong_scr",
+"name": {
+"value": "CONG_SCR"
+},
+"condition_kind": {
+"value": "task_state"
+},
+"description": {
+"value": "Auditory and visual motion both receding, with scrambled visual motion."
+},
+"stimulus_content": {
+"value": [
+"footsteps",
+"scrambled point-light walkers"
+]
+}
+},
+{
+"local_id": "cond_incong_bio",
+"name": {
+"value": "INCONG_BIO"
+},
+"condition_kind": {
+"value": "task_state"
+},
+"description": {
+"value": "Auditory looming and visual receding motion, with biological visual motion."
+},
+"stimulus_content": {
+"value": [
+"footsteps",
+"point-light walkers"
+]
+}
+},
+{
+"local_id": "cond_incong_scr",
+"name": {
+"value": "INCONG_SCR"
+},
+"condition_kind": {
+"value": "task_state"
+},
+"description": {
+"value": "Auditory looming and visual receding motion, with scrambled visual motion."
+},
+"stimulus_content": {
+"value": [
+"footsteps",
+"scrambled point-light walkers"
+]
+}
+},
+{
+"local_id": "cond_bio_control",
+"name": {
+"value": "BIO control"
+},
+"condition_kind": {
+"value": "control_state"
+},
+"description": {
+"value": "Bimodal no-motion biological stimulus; press a button when no motion is present."
+},
+"stimulus_content": {
+"value": [
+"footsteps",
+"point-light walkers"
+]
+}
+},
+{
+"local_id": "cond_scr_control",
+"name": {
+"value": "SCR control"
+},
+"condition_kind": {
+"value": "control_state"
+},
+"description": {
+"value": "Bimodal no-motion scrambled stimulus; press a button when no motion is present."
+},
+"stimulus_content": {
+"value": [
+"footsteps",
+"scrambled point-light walkers"
+]
+}
+}
+]
+}
+],
+"model_estimations": [
+{
+"terms": []
+}
+],
+"analyses": [
+{
+"name": {
+"value": "A ∩ VBIO"
+},
+"tasks": [
+"tsk_exp1"
+]
+},
+{
+"name": {
+"value": "A ∩ VSCR"
+},
+"tasks": [
+"tsk_exp1"
+]
+}
+]
+},
+"text": {
+"length": 51577,
+"windows": [
+[
+13764,
+".8 sec and the average times between stimuli was 3 sec with a randomized jitter between -0.5 and +0.5 sec. Altogether, each scan of experiment 1 consisted of 100 trials and lasted just under 7 min. \n\nIn the main experiment (experiment 2), we tested whether auditory-visual congruency has a differential effect for biological motion (BIO) compared to scrambled motion (SCR). In the four experimental conditions, auditory and visual motion could either move in the same direction (both receding: CONG_BIO, CONG_SRC) or in different directions (auditory looming and visual receding: INCONG_BIO, INCONG_SCR). Within a single scan, each of the experimental stimuli was presented 16 times. We included a control condition of no interest, consisting of bimodal ‘no motion’ stimuli and each of the two control stimuli (BIO, SCR) was presented 12 times. 22 null events were included and all stimuli were presented in a randomized order. Altogether, each scan of experiment 2 consisted of 110 trials and lasted sli"
+]
+]
+},
+"answer": "{\"factors\": [{\"from_term\": null, \"axis\": \"motion\", \"levels\": [{\"level\": \"motion\", \"value\": \"moving\"}, {\"level\": \"no motion\", \"value\": \"static\"}]}, {\"from_term\": null, \"axis\": \"congruency\", \"levels\": [{\"level\": \"CONG\", \"value\": \"congruent\"}, {\"level\": \"INCONG\", \"value\": \"incongruent\"}]}, {\"from_term\": null, \"axis\": \"stimulus\", \"levels\": [{\"level\": \"BIO\", \"value\": \"bodies\"}, {\"level\": \"SCR\", \"value\": \"scrambled\"}]}], \"context\": [{\"axis\": \"modality\", \"value\": \"audiovisual\"}], \"conditions\": [{\"id\": \"cond_cong_bio\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"motion\", \"value\": \"moving\"}, {\"axis\": \"congruency\", \"value\": \"congruent\"}, {\"axis\": \"stimulus\", \"value\": \"bodies\"}], \"expansion\": null, \"gloss\": \"congruent motion biological\"}, {\"id\": \"cond_cong_scr\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"motion\", \"value\": \"moving\"}, {\"axis\": \"congruency\", \"value\": \"congruent\"}, {\"axis\": \"stimulus\", \"value\": \"scrambled\"}], \"expansion\": null, \"gloss\": \"congruent motion scrambled\"}, {\"id\": \"cond_incong_bio\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"motion\", \"value\": \"moving\"}, {\"axis\": \"congruency\", \"value\": \"incongruent\"}, {\"axis\": \"stimulus\", \"value\": \"bodies\"}], \"expansion\": null, \"gloss\": \"incongruent motion biological\"}, {\"id\": \"cond_incong_scr\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"motion\", \"value\": \"moving\"}, {\"axis\": \"congruency\", \"value\": \"incongruent\"}, {\"axis\": \"stimulus\", \"value\": \"scrambled\"}], \"expansion\": null, \"gloss\": \"incongruent motion scrambled\"}, {\"id\": \"cond_bio_control\", \"kind\": \"control_state\", \"atoms\": [{\"axis\": \"motion\", \"value\": \"static\"}, {\"axis\": \"stimulus\", \"value\": \"bodies\"}], \"expansion\": null, \"gloss\": \"static motion biological\"}, {\"id\": \"cond_scr_control\", \"kind\": \"control_state\", \"atoms\": [{\"axis\": \"motion\", \"value\": \"static\"}, {\"axis\": \"stimulus\", \"value\": \"scrambled\"}], \"expansion\": null, \"gloss\": \"static motion scrambled\"}], \"task\": \"tct_audiovisual_integration\", \"family\": \"perceptual_judgment\", \"task_confidence\": \"high\"}",
+"scored": {
+"item": null,
+"task": "tct_audiovisual_integration",
+"family": "perceptual_judgment",
+"task_confidence": "high",
+"note": null,
+"factors": [
+{
+"from_term": null,
+"axis": "motion",
+"levels": {
+"motion": "moving",
+"no motion": "static"
+}
+},
+{
+"from_term": null,
+"axis": "congruency",
+"levels": {
+"CONG": "congruent",
+"INCONG": "incongruent"
+}
+},
+{
+"from_term": null,
+"axis": "stimulus",
+"levels": {
+"BIO": "bodies",
+"SCR": "scrambled"
+}
+}
+],
+"context": [
+{
+"axis": "modality",
+"value": "audiovisual"
+}
+],
+"conditions": [
+{
+"id": "cond_cong_bio",
+"kind": "task_state",
+"atoms": [
+{
+"axis": "motion",
+"value": "moving"
+},
+{
+"axis": "congruency",
+"value": "congruent"
+},
+{
+"axis": "stimulus",
+"value": "bodies"
+}
+],
+"expansion": null,
+"gloss": "congruent motion biological"
+},
+{
+"id": "cond_cong_scr",
+"kind": "task_state",
+"atoms": [
+{
+"axis": "motion",
+"value": "moving"
+},
+{
+"axis": "congruency",
+"value": "congruent"
+},
+{
+"axis": "stimulus",
+"value": "scrambled"
+}
+],
+"expansion": null,
+"gloss": "congruent motion scrambled"
+},
+{
+"id": "cond_incong_bio",
+"kind": "task_state",
+"atoms": [
+{
+"axis": "motion",
+"value": "moving"
+},
+{
+"axis": "congruency",
+"value": "incongruent"
+},
+{
+"axis": "stimulus",
+"value": "bodies"
+}
+],
+"expansion": null,
+"gloss": "incongruent motion biological"
+},
+{
+"id": "cond_incong_scr",
+"kind": "task_state",
+"atoms": [
+{
+"axis": "motion",
+"value": "moving"
+},
+{
+"axis": "congruency",
+"value": "incongruent"
+},
+{
+"axis": "stimulus",
+"value": "scrambled"
+}
+],
+"expansion": null,
+"gloss": "incongruent motion scrambled"
+},
+{
+"id": "cond_bio_control",
+"kind": "control_state",
+"atoms": [
+{
+"axis": "motion",
+"value": "static"
+},
+{
+"axis": "stimulus",
+"value": "bodies"
+}
+],
+"expansion": null,
+"gloss": "static motion biological"
+},
+{
+"id": "cond_scr_control",
+"kind": "control_state",
+"atoms": [
+{
+"axis": "motion",
+"value": "static"
+},
+{
+"axis": "stimulus",
+"value": "scrambled"
+}
+],
+"expansion": null,
+"gloss": "static motion scrambled"
+}
+]
+}
+},
+{
+"id": "26jh3zmrzeff:tsk_recall",
+"features": [
+"analyses",
+"excerpt",
+"no terms"
+],
+"item": {
+"name": "free recall",
+"paradigm": null,
+"description": "Twelve trials across two scanning sessions, six per session. Each trial presented 24 words for size or animacy judgments, followed by either free recall or source recognition. Only free-recall trials were analyzed. Recall lasted 75 seconds.",
+"conditions": [
+{
+"id": "cond_recall",
+"name": "free recall",
+"kind": "task_state",
+"description": "Recall as many items as possible from the most recent list, in any order.",
+"stimulus": null
+},
+{
+"id": "cond_source",
+"name": "source recognition",
+"kind": "task_state",
+"description": "Source recognition trials were collected but not examined in this report.",
+"stimulus": null
+}
+],
+"terms": [],
+"analyses": [
+"TR",
+"RS",
+"Joint"
+],
+"excerpt": " University Institutional Review Board, after giving informed consent. Participants received compensation of \\$20/h, with the opportunity to additionally earn up to \\$10 based upon task performance.\n\nEach participant performed 12 trials, spread across two scanning sessions, with 6 trials per session. On each trial, a list of 24 words was presented serially. On half of the trials, list learning was followed by a free-recall test. On the remainder of trials, a source recognition task was used to test memory. The order of the trials was determined pseudorandomly within each session. In the present work, we examine only the free-recall trials. As each word was presented, the participant performed […] ion of \\$20/h, with the opportunity to additionally earn up to \\$10 based upon task performance.\n\nEach participant performed 12 trials, spread across two scanning sessions, with 6 trials per session. On each trial, a list of 24 words was presented serially. On half of the trials, list learning was followed by a free-recall test. On the remainder of trials, a source recognition task was used to test memory. The order of the trials was determined pseudorandomly within each session. In the present work, we examine only the free-recall trials. As each word was presented, the participant performed an orienting task, in which they made a button press indi"
+},
+"document": "Task: free recall\nDescription: Twelve trials across two scanning sessions, six per session. Each trial presented 24 words for size or animacy judgments, followed by either free recall or source recognition. Only free-recall trials were analyzed. Recall lasted 75 seconds.\nConditions:\n- cond_recall | free recall | kind: task_state | Recall as many items as possible from the most recent list, in any order.\n- cond_source | source recognition | kind: task_state | Source recognition trials were collected but not examined in this report.\nAnalyses: TR | RS | Joint\nExcerpt:  University Institutional Review Board, after giving informed consent. Participants received compensation of \\$20/h, with the opportunity to additionally earn up to \\$10 based upon task performance.\n\nEach participant performed 12 trials, spread across two scanning sessions, with 6 trials per session. On each trial, a list of 24 words was presented serially. On half of the trials, list learning was followed by a free-recall test. On the remainder of trials, a source recognition task was used to test memory. The order of the trials was determined pseudorandomly within each session. In the present work, we examine only the free-recall trials. As each word was presented, the participant performed […] ion of \\$20/h, with the opportunity to additionally earn up to \\$10 based upon task performance.\n\nEach participant performed 12 trials, spread across two scanning sessions, with 6 trials per session. On each trial, a list of 24 words was presented serially. On half of the trials, list learning was followed by a free-recall test. On the remainder of trials, a source recognition task was used to test memory. The order of the trials was determined pseudorandomly within each session. In the present work, we examine only the free-recall trials. As each word was presented, the participant performed an orienting task, in which they made a button press indi",
+"record": {
+"tasks": [
+{
+"local_id": "tsk_recall",
+"name": {
+"value": "free recall"
+},
+"paradigm": null,
+"description": {
+"evidence": {
+"sets": [
+{
+"source": "retriever",
+"spans": [
+{
+"end_char": 7183,
+"start_char": 7082,
+"text": "Each participant performed 12 trials, spread across two scanning sessions, with 6 trials per session."
+},
+{
+"end_char": 7241,
+"start_char": 7184,
+"text": "On each trial, a list of 24 words was presented serially."
+},
+{
+"end_char": 7314,
+"start_char": 7242,
+"text": "On half of the trials, list learning was followed by a free-recall test."
+},
+{
+"end_char": 7393,
+"start_char": 7315,
+"text": "On the remainder of trials, a source recognition task was used to test memory."
+},
+{
+"end_char": 7529,
+"start_char": 7469,
+"text": "In the present work, we examine only the free-recall trials."
+},
+{
+"end_char": 8575,
+"start_char": 8450,
+"text": "Finally, a row of asterisks and an auditory tone (duration, 0.5 s) indicated the start of the recall period (duration, 75 s)."
+},
+{
+"end_char": 8697,
+"start_char": 8576,
+"text": "During this time, subjects were instructed to recall as many items as they could from the most recent list, in any order."
+}
+]
+}
+],
+"status": "present"
+},
+"extraction_status": "extracted",
+"value": "Twelve trials across two scanning sessions, six per session. Each trial presented 24 words for size or animacy judgments, followed by either free recall or source recognition. Only free-recall trials were analyzed. Recall lasted 75 seconds.",
+"value_source": "generated"
+},
+"conditions": [
+{
+"local_id": "cond_recall",
+"name": {
+"value": "free recall"
+},
+"condition_kind": {
+"value": "task_state"
+},
+"description": {
+"value": "Recall as many items as possible from the most recent list, in any order."
+},
+"stimulus_content": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"local_id": "cond_source",
+"name": {
+"value": "source recognition"
+},
+"condition_kind": {
+"value": "task_state"
+},
+"description": {
+"value": "Source recognition trials were collected but not examined in this report."
+},
+"stimulus_content": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+]
+}
+],
+"model_estimations": [
+{
+"terms": []
+}
+],
+"analyses": [
+{
+"name": {
+"value": "TR"
+},
+"tasks": [
+"tsk_recall"
+]
+},
+{
+"name": {
+"value": "RS"
+},
+"tasks": [
+"tsk_recall"
+]
+},
+{
+"name": {
+"value": "Joint"
+},
+"tasks": [
+"tsk_recall"
+]
+}
+]
+},
+"text": {
+"length": 83373,
+"windows": [
+[
+6882,
+" University Institutional Review Board, after giving informed consent. Participants received compensation of \\$20/h, with the opportunity to additionally earn up to \\$10 based upon task performance.\n\nEach participant performed 12 trials, spread across two scanning sessions, with 6 trials per session. On each trial, a list of 24 words was presented serially. On half of the trials, list learning was followed by a free-recall test. On the remainder of trials, a source recognition task was used to test memory. The order of the trials was determined pseudorandomly within each session. In the present work, we examine only the free-recall trials. As each word was presented, the participant performed an orienting task, in which they made a button press indi"
+]
+]
+},
+"answer": "{\"factors\": [], \"context\": [{\"axis\": \"stimulus\", \"value\": \"words\"}, {\"axis\": \"phase\", \"value\": \"retrieval\"}], \"conditions\": [{\"id\": \"cond_recall\", \"kind\": \"task_state\", \"atoms\": [], \"expansion\": null, \"gloss\": \"free recall of word list\"}], \"task\": \"hedtsk_free_recall\", \"family\": \"recall_and_recognition\", \"task_confidence\": \"high\"}",
+"scored": {
+"item": null,
+"task": "hedtsk_free_recall",
+"family": "recall_and_recognition",
+"task_confidence": "high",
+"note": null,
+"factors": [],
+"context": [
+{
+"axis": "stimulus",
+"value": "words"
+},
+{
+"axis": "phase",
+"value": "retrieval"
+}
+],
+"conditions": [
+{
+"id": "cond_recall",
+"kind": "task_state",
+"atoms": [],
+"expansion": null,
+"gloss": "free recall of word list"
+}
+]
+}
+},
+{
+"id": "2akiz54qox5z:tsk_appeal",
+"features": [
+"analyses",
+"excerpt",
+"stimulus list",
+"terms"
+],
+"item": {
+"name": "Affective evaluation of body representations",
+"paradigm": null,
+"description": "Four blocks per condition, each containing three pictures. Each picture appeared for 3500 ms followed by a 1000 ms black screen for a yes/no appeal judgment. Each picture was presented three times, with the question varied to refer to appeal to oneself, others or the person herself/himself. A fixation asterisk appeared for 6000 ms after each block.",
+"conditions": [
+{
+"id": "cond_art",
+"name": "art",
+"kind": "task_state",
+"description": "Viewing artworks and judging the appeal of the portrayed person.",
+"stimulus": [
+"Paintings of human bodies"
+]
+},
+{
+"id": "cond_photography",
+"name": "photography",
+"kind": "task_state",
+"description": "Viewing non-artistic photographs and judging the appeal of the portrayed person.",
+"stimulus": [
+"Photographs of human bodies"
+]
+},
+{
+"id": "cond_control",
+"name": "control",
+"kind": "control_state",
+"description": "Homogenous rectangular color-fields served as control stimuli.",
+"stimulus": [
+"Homogenous, rectangular color-fields"
+]
+}
+],
+"terms": [
+{
+"name": "condition",
+"type": "categorical",
+"variation_level": "within_subject",
+"levels": [
+{
+"level": "art",
+"conditions": [
+"cond_art"
+],
+"groups": [],
+"timepoints": []
+},
+{
+"level": "photography",
+"conditions": [
+"cond_photography"
+],
+"groups": [],
+"timepoints": []
+},
+{
+"level": "control",
+"conditions": [
+"cond_control"
+],
+"groups": [],
+"timepoints": []
+}
+]
+}
+],
+"analyses": [
+"Brain regions with higher activation to artworks than photographs.",
+"Brain regions with higher activation to photographs than artworks."
+],
+"excerpt": ".103, p > .05, arousal: t (11) = 0.654, p > .05). Homogenous, rectangular color-fields served as control stimuli. All pictures had the same image area and were equalized in luminance.\n\n### Procedure\n\nA block design was used with four blocks per condition (artworks/photographs/control stimuli), each block comprising three pictures, each presented against a black background. The order of stimuli and blocks was pseudo-randomized and each picture was presented three times (Presentation, Neurobehavioral Systems, USA). All pictures were framed with a black background. Subjects viewed the images via a mirror attached to the head-coil on a screen in front of the scanner. Stimuli were presented for 3500 ms, followed by 1000 ms displaying a black screen while subjects had to […] inance.\n\n### Procedure\n\nA block design was used with four blocks per condition (artworks/photographs/control stimuli), each block comprising three pictures, each presented against a black background. The order of stimuli and blocks was pseudo-randomized and each picture was presented three times (Presentation, Neurobehavioral Systems, USA). All pictures were framed with a black background. Subjects viewed the images via a mirror attached to the head-coil on a screen in front of the scanner. Stimuli were presented for 3500 ms, followed by 1000 ms displaying a black screen while subjects had to decide about the appeal of the person in the picture by pressing either yes or no with a button (LUMItouch, Photon Control Inc., Canada). For "
+},
+"document": "Task: Affective evaluation of body representations\nDescription: Four blocks per condition, each containing three pictures. Each picture appeared for 3500 ms followed by a 1000 ms black screen for a yes/no appeal judgment. Each picture was presented three times, with the question varied to refer to appeal to oneself, others or the person herself/himself. A fixation asterisk appeared for 6000 ms after each block.\nConditions:\n- cond_art | art | kind: task_state | Viewing artworks and judging the appeal of the portrayed person. | stimulus: Paintings of human bodies\n- cond_photography | photography | kind: task_state | Viewing non-artistic photographs and judging the appeal of the portrayed person. | stimulus: Photographs of human bodies\n- cond_control | control | kind: control_state | Homogenous rectangular color-fields served as control stimuli. | stimulus: Homogenous, rectangular color-fields\nModel terms:\n- condition (categorical, within_subject): art -> cond_art; photography -> cond_photography; control -> cond_control\nAnalyses: Brain regions with higher activation to artworks than photographs. | Brain regions with higher activation to photographs than artworks.\nExcerpt: .103, p > .05, arousal: t (11) = 0.654, p > .05). Homogenous, rectangular color-fields served as control stimuli. All pictures had the same image area and were equalized in luminance.\n\n### Procedure\n\nA block design was used with four blocks per condition (artworks/photographs/control stimuli), each block comprising three pictures, each presented against a black background. The order of stimuli and blocks was pseudo-randomized and each picture was presented three times (Presentation, Neurobehavioral Systems, USA). All pictures were framed with a black background. Subjects viewed the images via a mirror attached to the head-coil on a screen in front of the scanner. Stimuli were presented for 3500 ms, followed by 1000 ms displaying a black screen while subjects had to […] inance.\n\n### Procedure\n\nA block design was used with four blocks per condition (artworks/photographs/control stimuli), each block comprising three pictures, each presented against a black background. The order of stimuli and blocks was pseudo-randomized and each picture was presented three times (Presentation, Neurobehavioral Systems, USA). All pictures were framed with a black background. Subjects viewed the images via a mirror attached to the head-coil on a screen in front of the scanner. Stimuli were presented for 3500 ms, followed by 1000 ms displaying a black screen while subjects had to decide about the appeal of the person in the picture by pressing either yes or no with a button (LUMItouch, Photon Control Inc., Canada). For ",
+"record": {
+"tasks": [
+{
+"local_id": "tsk_appeal",
+"name": {
+"value": "Affective evaluation of body representations"
+},
+"paradigm": null,
+"description": {
+"evidence": {
+"sets": [
+{
+"source": "retriever",
+"spans": [
+{
+"end_char": 12284,
+"start_char": 12109,
+"text": "A block design was used with four blocks per condition (artworks/photographs/control stimuli), each block comprising three pictures, each presented against a black background."
+},
+{
+"end_char": 12427,
+"start_char": 12285,
+"text": "The order of stimuli and blocks was pseudo-randomized and each picture was presented three times (Presentation, Neurobehavioral Systems, USA)."
+},
+{
+"end_char": 12822,
+"start_char": 12581,
+"text": "Stimuli were presented for 3500 ms, followed by 1000 ms displaying a black screen while subjects had to decide about the appeal of the person in the picture by pressing either yes or no with a button (LUMItouch, Photon Control Inc., Canada)."
+},
+{
+"end_char": 13054,
+"start_char": 12823,
+"text": "For each of the three trials the question was slightly modified to encourage the study participants' concentration: the participants had to decide whether the person in the picture appealed to them, to others or to herself/himself."
+},
+{
+"end_char": 13240,
+"start_char": 13164,
+"text": "Subsequent to each block a fixation asterisk appeared on screen for 6000 ms."
+},
+{
+"end_char": 13377,
+"start_char": 13241,
+"text": "Practice trials were run prior to data collection and extensive instructions were given to ensure that participants engaged in the task."
+}
+]
+}
+],
+"status": "present"
+},
+"extraction_status": "extracted",
+"value": "Four blocks per condition, each containing three pictures. Each picture appeared for 3500 ms followed by a 1000 ms black screen for a yes/no appeal judgment. Each picture was presented three times, with the question varied to refer to appeal to oneself, others or the person herself/himself. A fixation asterisk appeared for 6000 ms after each block.",
+"value_source": "generated"
+},
+"conditions": [
+{
+"local_id": "cond_art",
+"name": {
+"value": "art"
+},
+"condition_kind": {
+"value": "task_state"
+},
+"description": {
+"value": "Viewing artworks and judging the appeal of the portrayed person."
+},
+"stimulus_content": {
+"value": [
+"Paintings of human bodies"
+]
+}
+},
+{
+"local_id": "cond_photography",
+"name": {
+"value": "photography"
+},
+"condition_kind": {
+"value": "task_state"
+},
+"description": {
+"value": "Viewing non-artistic photographs and judging the appeal of the portrayed person."
+},
+"stimulus_content": {
+"value": [
+"Photographs of human bodies"
+]
+}
+},
+{
+"local_id": "cond_control",
+"name": {
+"value": "control"
+},
+"condition_kind": {
+"value": "control_state"
+},
+"description": {
+"value": "Homogenous rectangular color-fields served as control stimuli."
+},
+"stimulus_content": {
+"value": [
+"Homogenous, rectangular color-fields"
+]
+}
+}
+]
+}
+],
+"model_estimations": [
+{
+"terms": [
+{
+"functional_form": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"levels": [
+{
+"conditions": [
+"cond_art"
+],
+"level": {
+"value": "art"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"conditions": [
+"cond_photography"
+],
+"level": {
+"value": "photography"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"conditions": [
+"cond_control"
+],
+"level": {
+"value": "control"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"local_id": "trm_condition",
+"name": {
+"value": "condition"
+},
+"source_definition": {
+"value": "Each condition was modeled by a boxcar function convolved with the canonical hemodynamic response function."
+},
+"type": {
+"value": "categorical"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"variation_level": {
+"value": "within_subject"
+}
+}
+]
+}
+],
+"analyses": [
+{
+"name": {
+"value": "Brain regions with higher activation to artworks than photographs."
+},
+"tasks": [
+"tsk_appeal"
+]
+},
+{
+"name": {
+"value": "Brain regions with higher activation to photographs than artworks."
+},
+"tasks": [
+"tsk_appeal"
+]
+}
+]
+},
+"text": {
+"length": 29602,
+"windows": [
+[
+11909,
+".103, p > .05, arousal: t (11) = 0.654, p > .05). Homogenous, rectangular color-fields served as control stimuli. All pictures had the same image area and were equalized in luminance.\n\n### Procedure\n\nA block design was used with four blocks per condition (artworks/photographs/control stimuli), each block comprising three pictures, each presented against a black background. The order of stimuli and blocks was pseudo-randomized and each picture was presented three times (Presentation, Neurobehavioral Systems, USA). All pictures were framed with a black background. Subjects viewed the images via a mirror attached to the head-coil on a screen in front of the scanner. Stimuli were presented for 3500 ms, followed by 1000 ms displaying a black screen while subjects had to decide about the appeal of the person in the picture by pressing either yes or no with a button (LUMItouch, Photon Control Inc., Canada). For "
+]
+]
+},
+"answer": "{\"factors\": [{\"from_term\": \"condition\", \"axis\": \"stimulus\", \"levels\": [{\"level\": \"art\", \"value\": \"pictures\"}, {\"level\": \"photography\", \"value\": \"pictures\"}, {\"level\": \"control\", \"value\": \"shapes\"}]}, {\"from_term\": \"condition\", \"axis\": \"content\", \"levels\": [{\"level\": \"art\", \"value\": \"art\"}, {\"level\": \"photography\", \"value\": \"photography\"}]}], \"context\": [{\"axis\": \"modality\", \"value\": \"visual\"}, {\"axis\": \"judgment\", \"value\": \"appeal\"}], \"conditions\": [{\"id\": \"cond_art\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"stimulus\", \"value\": \"pictures\"}, {\"axis\": \"content\", \"value\": \"art\"}], \"expansion\": null, \"gloss\": \"artworks of bodies appeal judgment\"}, {\"id\": \"cond_photography\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"stimulus\", \"value\": \"pictures\"}, {\"axis\": \"content\", \"value\": \"photography\"}], \"expansion\": null, \"gloss\": \"photographs of bodies appeal judgment\"}, {\"id\": \"cond_control\", \"kind\": \"control_state\", \"atoms\": [{\"axis\": \"stimulus\", \"value\": \"shapes\"}], \"expansion\": null, \"gloss\": \"color fields control\"}], \"task\": \"tct_aesthetic_judgment\", \"family\": \"reward_and_value_choice\", \"task_confidence\": \"high\"}",
+"scored": {
+"item": null,
+"task": "tct_aesthetic_judgment",
+"family": "reward_and_value_choice",
+"task_confidence": "high",
+"note": null,
+"factors": [
+{
+"from_term": "condition",
+"axis": "stimulus",
+"levels": {
+"art": "pictures",
+"photography": "pictures",
+"control": "shapes"
+}
+},
+{
+"from_term": "condition",
+"axis": "content",
+"levels": {
+"art": "art",
+"photography": "photography"
+}
+}
+],
+"context": [
+{
+"axis": "modality",
+"value": "visual"
+},
+{
+"axis": "judgment",
+"value": "appeal"
+}
+],
+"conditions": [
+{
+"id": "cond_art",
+"kind": "task_state",
+"atoms": [
+{
+"axis": "stimulus",
+"value": "pictures"
+},
+{
+"axis": "content",
+"value": "art"
+}
+],
+"expansion": null,
+"gloss": "artworks of bodies appeal judgment"
+},
+{
+"id": "cond_photography",
+"kind": "task_state",
+"atoms": [
+{
+"axis": "stimulus",
+"value": "pictures"
+},
+{
+"axis": "content",
+"value": "photography"
+}
+],
+"expansion": null,
+"gloss": "photographs of bodies appeal judgment"
+},
+{
+"id": "cond_control",
+"kind": "control_state",
+"atoms": [
+{
+"axis": "stimulus",
+"value": "shapes"
+}
+],
+"expansion": null,
+"gloss": "color fields control"
+}
+]
+}
+},
+{
+"id": "2basd3bnmedw:tsk_rivalry",
+"features": [
+"analyses",
+"excerpt",
+"stimulus list",
+"terms"
+],
+"item": {
+"name": "Binocular rivalry",
+"paradigm": null,
+"description": "Thirty-two 60.9-second trials in two sessions, each using one rivalry type. A 2 × 2 × 2 repeated-measures design crossed rivalry type, rivalry/replay, and active report/passive viewing. Each of eight conditions occurred four times. Replay alternations were based on button presses from the preceding active-report rivalry trial. Trial sequence was active report rivalry, active report replay, passive viewing rivalry, passive viewing replay; rivalry-type order was balanced.",
+"conditions": [
+{
+"id": "cond_okn_active_rivalry",
+"name": "OKN active report rivalry",
+"kind": "task_state",
+"description": "Report dominance of the leftward green or rightward red grating.",
+"stimulus": [
+"Oppositely moving red and green gratings"
+]
+},
+{
+"id": "cond_okn_active_replay",
+"name": "OKN active report replay",
+"kind": "task_state",
+"description": "Report dominance during physically changing, nonambiguous stimuli.",
+"stimulus": [
+"Oppositely moving red and green gratings"
+]
+},
+{
+"id": "cond_okn_passive_rivalry",
+"name": "OKN passive viewing rivalry",
+"kind": "task_state",
+"description": "Passively experience rivalry without reporting the percept.",
+"stimulus": [
+"Oppositely moving red and green gratings"
+]
+},
+{
+"id": "cond_okn_passive_replay",
+"name": "OKN passive viewing replay",
+"kind": "control_state",
+"description": "Passively view physically changing, nonambiguous stimuli.",
+"stimulus": [
+"Oppositely moving red and green gratings"
+]
+},
+{
+"id": "cond_pupil_active_rivalry",
+"name": "pupil active report rivalry",
+"kind": "task_state",
+"description": "Report dominance of the stationary gratings.",
+"stimulus": [
+"Stationary red and green gratings differing in orientation and luminance"
+]
+},
+{
+"id": "cond_pupil_active_replay",
+"name": "pupil active report replay",
+"kind": "task_state",
+"description": "Report dominance during physically changing, nonambiguous stimuli.",
+"stimulus": [
+"Stationary red and green gratings differing in orientation and luminance"
+]
+},
+{
+"id": "cond_pupil_passive_rivalry",
+"name": "pupil passive viewing rivalry",
+"kind": "task_state",
+"description": "Passively experience rivalry without reporting the percept.",
+"stimulus": [
+"Stationary red and green gratings differing in orientation and luminance"
+]
+},
+{
+"id": "cond_pupil_passive_replay",
+"name": "pupil passive viewing replay",
+"kind": "control_state",
+"description": "Passively view physically changing, nonambiguous stimuli.",
+"stimulus": [
+"Stationary red and green gratings differing in orientation and luminance"
+]
+}
+],
+"terms": [
+{
+"name": "button-press condition",
+"type": "categorical",
+"variation_level": "within_subject",
+"levels": [
+{
+"level": "rivalry",
+"conditions": [
+"cond_okn_active_rivalry",
+"cond_pupil_active_rivalry"
+],
+"groups": [],
+"timepoints": []
+},
+{
+"level": "replay",
+"conditions": [
+"cond_okn_active_replay",
+"cond_pupil_active_replay"
+],
+"groups": [],
+"timepoints": []
+}
+]
+},
+{
+"name": "continuous objective condition",
+"type": "categorical",
+"variation_level": "within_subject",
+"levels": [
+{
+"level": "rivalry",
+"conditions": [
+"cond_okn_active_rivalry",
+"cond_pupil_active_rivalry"
+],
+"groups": [],
+"timepoints": []
+},
+{
+"level": "replay",
+"conditions": [
+"cond_okn_active_replay",
+"cond_pupil_active_replay"
+],
+"groups": [],
+"timepoints": []
+}
+]
+},
+{
+"name": "REPORT",
+"type": "categorical",
+"variation_level": "within_subject",
+"levels": [
+{
+"level": "active report",
+"conditions": [
+"cond_okn_active_rivalry",
+"cond_okn_active_replay",
+"cond_pupil_active_rivalry",
+"cond_pupil_active_replay"
+],
+"groups": [],
+"timepoints": []
+},
+{
+"level": "passive viewing",
+"conditions": [
+"cond_okn_passive_rivalry",
+"cond_okn_passive_replay",
+"cond_pupil_passive_rivalry",
+"cond_pupil_passive_replay"
+],
+"groups": [],
+"timepoints": []
+}
+]
+},
+{
+"name": "RIVAL",
+"type": "categorical",
+"variation_level": "within_subject",
+"levels": [
+{
+"level": "rivalry",
+"conditions": [
+"cond_okn_active_rivalry",
+"cond_okn_active_replay",
+"cond_okn_passive_rivalry",
+"cond_okn_passive_replay",
+"cond_pupil_active_rivalry",
+"cond_pupil_active_replay",
+"cond_pupil_passive_rivalry",
+"cond_pupil_passive_replay"
+],
+"groups": [],
+"timepoints": []
+},
+{
+"level": "replay",
+"conditions": [
+"cond_okn_active_rivalry",
+"cond_okn_active_replay",
+"cond_okn_passive_rivalry",
+"cond_okn_passive_replay",
+"cond_pupil_active_rivalry",
+"cond_pupil_active_replay",
+"cond_pupil_passive_rivalry",
+"cond_pupil_passive_replay"
+],
+"groups": [],
+"timepoints": []
+}
+]
+}
+],
+"analyses": [
+"Rivalry > replay (button presses)",
+"Active > passive (continuous objective analysis)"
+],
+"excerpt": " high-luminance percept.\n\nAll stimuli were presented via MRI-compatible goggles (VisualSystem; Nordic NeuroLab) attached to the MR head coil using a custom-made mounting system.\n\nExperimental design. The experiment consisted of 32 trials lasting 60.9 s each (corresponding to 42 functional whole brain scans). To avoid fatigue, the experiment was split into two sessions of 16 trials. Sessions were interleaved with a 15 min break during which structural scans were acquired. Each session used one rivalry type (OKN/pupil). For each rivalry type, there were four conditions: a rivalry stimulus (rivalry trials) or a matched physically changing stimulus (replay trials), and observers either actively reported  […] ) attached to the MR head coil using a custom-made mounting system.\n\nExperimental design. The experiment consisted of 32 trials lasting 60.9 s each (corresponding to 42 functional whole brain scans). To avoid fatigue, the experiment was split into two sessions of 16 trials. Sessions were interleaved with a 15 min break during which structural scans were acquired. Each session used one rivalry type (OKN/pupil). For each rivalry type, there were four conditions: a rivalry stimulus (rivalry trials) or a matched physically changing stimulus (replay trials), and observers either actively reported visual perception (active-report trials) or just passively experienced ongo"
+},
+"document": "Task: Binocular rivalry\nDescription: Thirty-two 60.9-second trials in two sessions, each using one rivalry type. A 2 × 2 × 2 repeated-measures design crossed rivalry type, rivalry/replay, and active report/passive viewing. Each of eight conditions occurred four times. Replay alternations were based on button presses from the preceding active-report rivalry trial. Trial sequence was active report rivalry, active report replay, passive viewing rivalry, passive viewing replay; rivalry-type order was balanced.\nConditions:\n- cond_okn_active_rivalry | OKN active report rivalry | kind: task_state | Report dominance of the leftward green or rightward red grating. | stimulus: Oppositely moving red and green gratings\n- cond_okn_active_replay | OKN active report replay | kind: task_state | Report dominance during physically changing, nonambiguous stimuli. | stimulus: Oppositely moving red and green gratings\n- cond_okn_passive_rivalry | OKN passive viewing rivalry | kind: task_state | Passively experience rivalry without reporting the percept. | stimulus: Oppositely moving red and green gratings\n- cond_okn_passive_replay | OKN passive viewing replay | kind: control_state | Passively view physically changing, nonambiguous stimuli. | stimulus: Oppositely moving red and green gratings\n- cond_pupil_active_rivalry | pupil active report rivalry | kind: task_state | Report dominance of the stationary gratings. | stimulus: Stationary red and green gratings differing in orientation and luminance\n- cond_pupil_active_replay | pupil active report replay | kind: task_state | Report dominance during physically changing, nonambiguous stimuli. | stimulus: Stationary red and green gratings differing in orientation and luminance\n- cond_pupil_passive_rivalry | pupil passive viewing rivalry | kind: task_state | Passively experience rivalry without reporting the percept. | stimulus: Stationary red and green gratings differing in orientation and luminance\n- cond_pupil_passive_replay | pupil passive viewing replay | kind: control_state | Passively view physically changing, nonambiguous stimuli. | stimulus: Stationary red and green gratings differing in orientation and luminance\nModel terms:\n- button-press condition (categorical, within_subject): rivalry -> cond_okn_active_rivalry, cond_pupil_active_rivalry; replay -> cond_okn_active_replay, cond_pupil_active_replay\n- continuous objective condition (categorical, within_subject): rivalry -> cond_okn_active_rivalry, cond_pupil_active_rivalry; replay -> cond_okn_active_replay, cond_pupil_active_replay\n- REPORT (categorical, within_subject): active report -> cond_okn_active_rivalry, cond_okn_active_replay, cond_pupil_active_rivalry, cond_pupil_active_replay; passive viewing -> cond_okn_passive_rivalry, cond_okn_passive_replay, cond_pupil_passive_rivalry, cond_pupil_passive_replay\n- RIVAL (categorical, within_subject): rivalry -> cond_okn_active_rivalry, cond_okn_active_replay, cond_okn_passive_rivalry, cond_okn_passive_replay, cond_pupil_active_rivalry, cond_pupil_active_replay, cond_pupil_passive_rivalry, cond_pupil_passive_replay; replay -> cond_okn_active_rivalry, cond_okn_active_replay, cond_okn_passive_rivalry, cond_okn_passive_replay, cond_pupil_active_rivalry, cond_pupil_active_replay, cond_pupil_passive_rivalry, cond_pupil_passive_replay\nAnalyses: Rivalry > replay (button presses) | Active > passive (continuous objective analysis)\nExcerpt:  high-luminance percept.\n\nAll stimuli were presented via MRI-compatible goggles (VisualSystem; Nordic NeuroLab) attached to the MR head coil using a custom-made mounting system.\n\nExperimental design. The experiment consisted of 32 trials lasting 60.9 s each (corresponding to 42 functional whole brain scans). To avoid fatigue, the experiment was split into two sessions of 16 trials. Sessions were interleaved with a 15 min break during which structural scans were acquired. Each session used one rivalry type (OKN/pupil). For each rivalry type, there were four conditions: a rivalry stimulus (rivalry trials) or a matched physically changing stimulus (replay trials), and observers either actively reported  […] ) attached to the MR head coil using a custom-made mounting system.\n\nExperimental design. The experiment consisted of 32 trials lasting 60.9 s each (corresponding to 42 functional whole brain scans). To avoid fatigue, the experiment was split into two sessions of 16 trials. Sessions were interleaved with a 15 min break during which structural scans were acquired. Each session used one rivalry type (OKN/pupil). For each rivalry type, there were four conditions: a rivalry stimulus (rivalry trials) or a matched physically changing stimulus (replay trials), and observers either actively reported visual perception (active-report trials) or just passively experienced ongo",
+"record": {
+"tasks": [
+{
+"local_id": "tsk_rivalry",
+"name": {
+"value": "Binocular rivalry"
+},
+"paradigm": null,
+"description": {
+"evidence": {
+"sets": [
+{
+"source": "retriever",
+"spans": [
+{
+"end_char": 11780,
+"start_char": 11671,
+"text": "The experiment consisted of 32 trials lasting 60.9 s each (corresponding to 42 functional whole brain scans)."
+},
+{
+"end_char": 11855,
+"start_char": 11781,
+"text": "To avoid fatigue, the experiment was split into two sessions of 16 trials."
+},
+{
+"end_char": 11994,
+"start_char": 11947,
+"text": "Each session used one rivalry type (OKN/pupil)."
+},
+{
+"end_char": 12301,
+"start_char": 11995,
+"text": "For each rivalry type, there were four conditions: a rivalry stimulus (rivalry trials) or a matched physically changing stimulus (replay trials), and observers either actively reported visual perception (active-report trials) or just passively experienced ongoing rivalry dynamics (passive-viewing trials)."
+},
+{
+"end_char": 12430,
+"start_char": 12302,
+"text": "Together with the two rivalry types, the experimental design therefore was a three-way repeated measures within-subjects design."
+},
+{
+"end_char": 12667,
+"start_char": 12431,
+"text": "Each of the three factors had two levels (TYPE: OKN/pupil; RIVAL: rivalry/replay; REPORT: active report/passive viewing), resulting in a total of eight different conditions; each condition was performed four times during the experiment."
+},
+{
+"end_char": 15410,
+"start_char": 15130,
+"text": "To allow matching the temporal statistics of the simulated switches in replay trials closely to the endogenous switches in awareness in rivalry trials, the trial sequence was as follows: active report rivalry, active report replay, passive viewing rivalry, passive viewing replay."
+},
+{
+"end_char": 15471,
+"start_char": 15411,
+"text": "This sequence was repeated four times for each rivalry type."
+},
+{
+"end_char": 15601,
+"start_char": 15472,
+"text": "Both replay conditions simulated switches based on the timing of the button presses in the preceding active-report rivalry trial."
+},
+{
+"end_char": 15671,
+"start_char": 15602,
+"text": "The order of rivalry types (OKN/pupil) was balanced across observers."
+}
+]
+}
+],
+"status": "present"
+},
+"extraction_status": "extracted",
+"value": "Thirty-two 60.9-second trials in two sessions, each using one rivalry type. A 2 × 2 × 2 repeated-measures design crossed rivalry type, rivalry/replay, and active report/passive viewing. Each of eight conditions occurred four times. Replay alternations were based on button presses from the preceding active-report rivalry trial. Trial sequence was active report rivalry, active report replay, passive viewing rivalry, passive viewing replay; rivalry-type order was balanced.",
+"value_source": "generated"
+},
+"conditions": [
+{
+"local_id": "cond_okn_active_rivalry",
+"name": {
+"value": "OKN active report rivalry"
+},
+"condition_kind": {
+"value": "task_state"
+},
+"description": {
+"value": "Report dominance of the leftward green or rightward red grating."
+},
+"stimulus_content": {
+"value": [
+"Oppositely moving red and green gratings"
+]
+}
+},
+{
+"local_id": "cond_okn_active_replay",
+"name": {
+"value": "OKN active report replay"
+},
+"condition_kind": {
+"value": "task_state"
+},
+"description": {
+"value": "Report dominance during physically changing, nonambiguous stimuli."
+},
+"stimulus_content": {
+"value": [
+"Oppositely moving red and green gratings"
+]
+}
+},
+{
+"local_id": "cond_okn_passive_rivalry",
+"name": {
+"value": "OKN passive viewing rivalry"
+},
+"condition_kind": {
+"value": "task_state"
+},
+"description": {
+"value": "Passively experience rivalry without reporting the percept."
+},
+"stimulus_content": {
+"value": [
+"Oppositely moving red and green gratings"
+]
+}
+},
+{
+"local_id": "cond_okn_passive_replay",
+"name": {
+"value": "OKN passive viewing replay"
+},
+"condition_kind": {
+"value": "control_state"
+},
+"description": {
+"value": "Passively view physically changing, nonambiguous stimuli."
+},
+"stimulus_content": {
+"value": [
+"Oppositely moving red and green gratings"
+]
+}
+},
+{
+"local_id": "cond_pupil_active_rivalry",
+"name": {
+"value": "pupil active report rivalry"
+},
+"condition_kind": {
+"value": "task_state"
+},
+"description": {
+"value": "Report dominance of the stationary gratings."
+},
+"stimulus_content": {
+"value": [
+"Stationary red and green gratings differing in orientation and luminance"
+]
+}
+},
+{
+"local_id": "cond_pupil_active_replay",
+"name": {
+"value": "pupil active report replay"
+},
+"condition_kind": {
+"value": "task_state"
+},
+"description": {
+"value": "Report dominance during physically changing, nonambiguous stimuli."
+},
+"stimulus_content": {
+"value": [
+"Stationary red and green gratings differing in orientation and luminance"
+]
+}
+},
+{
+"local_id": "cond_pupil_passive_rivalry",
+"name": {
+"value": "pupil passive viewing rivalry"
+},
+"condition_kind": {
+"value": "task_state"
+},
+"description": {
+"value": "Passively experience rivalry without reporting the percept."
+},
+"stimulus_content": {
+"value": [
+"Stationary red and green gratings differing in orientation and luminance"
+]
+}
+},
+{
+"local_id": "cond_pupil_passive_replay",
+"name": {
+"value": "pupil passive viewing replay"
+},
+"condition_kind": {
+"value": "control_state"
+},
+"description": {
+"value": "Passively view physically changing, nonambiguous stimuli."
+},
+"stimulus_content": {
+"value": [
+"Stationary red and green gratings differing in orientation and luminance"
+]
+}
+}
+]
+}
+],
+"model_estimations": [
+{
+"terms": [
+{
+"functional_form": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"levels": [
+{
+"conditions": [
+"cond_okn_active_rivalry",
+"cond_pupil_active_rivalry"
+],
+"level": {
+"value": "rivalry"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"conditions": [
+"cond_okn_active_replay",
+"cond_pupil_active_replay"
+],
+"level": {
+"value": "replay"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"local_id": "trm_discrete_subjective",
+"name": {
+"value": "button-press condition"
+},
+"source_definition": {
+"value": "Discrete onsets at button presses during active-report trials."
+},
+"type": {
+"value": "categorical"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"variation_level": {
+"value": "within_subject"
+}
+},
+{
+"functional_form": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"levels": [
+{
+"conditions": [
+"cond_okn_active_rivalry",
+"cond_pupil_active_rivalry"
+],
+"level": {
+"value": "rivalry"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"conditions": [
+"cond_okn_active_replay",
+"cond_pupil_active_replay"
+],
+"level": {
+"value": "replay"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"local_id": "trm_continuous",
+"name": {
+"value": "continuous objective condition"
+},
+"source_definition": {
+"value": "Rivalry and replay regressors formed from absolute, flipped OKN or pupil traces."
+},
+"type": {
+"value": "categorical"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"variation_level": {
+"value": "within_subject"
+}
+},
+{
+"functional_form": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"levels": [
+{
+"conditions": [
+"cond_okn_active_rivalry",
+"cond_okn_active_replay",
+"cond_pupil_active_rivalry",
+"cond_pupil_active_replay"
+],
+"level": {
+"value": "active report"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"conditions": [
+"cond_okn_passive_rivalry",
+"cond_okn_passive_replay",
+"cond_pupil_passive_rivalry",
+"cond_pupil_passive_replay"
+],
+"level": {
+"value": "passive viewing"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"local_id": "trm_report",
+"name": {
+"value": "REPORT"
+},
+"source_definition": {
+"value": "Observers either actively reported visual perception (active-report trials) or just passively experienced ongoing rivalry dynamics (passive-viewing trials)."
+},
+"type": {
+"value": "categorical"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"variation_level": {
+"value": "within_subject"
+}
+},
+{
+"functional_form": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"levels": [
+{
+"conditions": [
+"cond_okn_active_rivalry",
+"cond_okn_active_replay",
+"cond_okn_passive_rivalry",
+"cond_okn_passive_replay",
+"cond_pupil_active_rivalry",
+"cond_pupil_active_replay",
+"cond_pupil_passive_rivalry",
+"cond_pupil_passive_replay"
+],
+"level": {
+"value": "rivalry"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"conditions": [
+"cond_okn_active_rivalry",
+"cond_okn_active_replay",
+"cond_okn_passive_rivalry",
+"cond_okn_passive_replay",
+"cond_pupil_active_rivalry",
+"cond_pupil_active_replay",
+"cond_pupil_passive_rivalry",
+"cond_pupil_passive_replay"
+],
+"level": {
+"value": "replay"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"local_id": "trm_rival",
+"name": {
+"value": "RIVAL"
+},
+"source_definition": {
+"value": "Rivalry trials presented different stimuli to each eye; replay trials presented the same stimuli to both eyes, physically changing both gratings to simulate rivalry."
+},
+"type": {
+"value": "categorical"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"variation_level": {
+"value": "within_subject"
+}
+}
+]
+}
+],
+"analyses": [
+{
+"name": {
+"value": "Rivalry > replay (button presses)"
+},
+"tasks": [
+"tsk_rivalry"
+]
+},
+{
+"name": {
+"value": "Active > passive (continuous objective analysis)"
+},
+"tasks": [
+"tsk_rivalry"
+]
+}
+]
+},
+"text": {
+"length": 70380,
+"windows": [
+[
+11471,
+" high-luminance percept.\n\nAll stimuli were presented via MRI-compatible goggles (VisualSystem; Nordic NeuroLab) attached to the MR head coil using a custom-made mounting system.\n\nExperimental design. The experiment consisted of 32 trials lasting 60.9 s each (corresponding to 42 functional whole brain scans). To avoid fatigue, the experiment was split into two sessions of 16 trials. Sessions were interleaved with a 15 min break during which structural scans were acquired. Each session used one rivalry type (OKN/pupil). For each rivalry type, there were four conditions: a rivalry stimulus (rivalry trials) or a matched physically changing stimulus (replay trials), and observers either actively reported visual perception (active-report trials) or just passively experienced ongo"
+]
+]
+},
+"answer": "{\"factors\": [{\"from_term\": \"REPORT\", \"axis\": \"engagement\", \"levels\": [{\"level\": \"active report\", \"value\": \"active\"}, {\"level\": \"passive viewing\", \"value\": \"passive\"}]}, {\"from_term\": \"RIVAL\", \"axis\": \"motion\", \"levels\": [{\"level\": \"rivalry\", \"value\": \"moving\"}, {\"level\": \"replay\", \"value\": \"moving\"}]}, {\"from_term\": \"RIVAL\", \"axis\": \"stimulus\", \"levels\": [{\"level\": \"rivalry\", \"value\": \"gratings\"}, {\"level\": \"replay\", \"value\": \"gratings\"}]}], \"context\": [{\"axis\": \"modality\", \"value\": \"visual\"}], \"conditions\": [{\"id\": \"cond_okn_active_rivalry\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"engagement\", \"value\": \"active\"}, {\"axis\": \"motion\", \"value\": \"moving\"}, {\"axis\": \"stimulus\", \"value\": \"gratings\"}], \"expansion\": null, \"gloss\": \"active report binocular rivalry moving gratings\"}, {\"id\": \"cond_okn_active_replay\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"engagement\", \"value\": \"active\"}, {\"axis\": \"motion\", \"value\": \"moving\"}, {\"axis\": \"stimulus\", \"value\": \"gratings\"}], \"expansion\": null, \"gloss\": \"active report physically changing gratings\"}, {\"id\": \"cond_okn_passive_rivalry\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"engagement\", \"value\": \"passive\"}, {\"axis\": \"motion\", \"value\": \"moving\"}, {\"axis\": \"stimulus\", \"value\": \"gratings\"}], \"expansion\": null, \"gloss\": \"passive viewing binocular rivalry moving gratings\"}, {\"id\": \"cond_okn_passive_replay\", \"kind\": \"control_state\", \"atoms\": [{\"axis\": \"engagement\", \"value\": \"passive\"}, {\"axis\": \"motion\", \"value\": \"moving\"}, {\"axis\": \"stimulus\", \"value\": \"gratings\"}], \"expansion\": null, \"gloss\": \"passive viewing physically changing gratings\"}, {\"id\": \"cond_pupil_active_rivalry\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"engagement\", \"value\": \"active\"}, {\"axis\": \"motion\", \"value\": \"moving\"}, {\"axis\": \"stimulus\", \"value\": \"gratings\"}], \"expansion\": null, \"gloss\": \"active report binocular rivalry stationary gratings\"}, {\"id\": \"cond_pupil_active_replay\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"engagement\", \"value\": \"active\"}, {\"axis\": \"motion\", \"value\": \"moving\"}, {\"axis\": \"stimulus\", \"value\": \"gratings\"}], \"expansion\": null, \"gloss\": \"active report physically changing stationary gratings\"}, {\"id\": \"cond_pupil_passive_rivalry\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"engagement\", \"value\": \"passive\"}, {\"axis\": \"motion\", \"value\": \"moving\"}, {\"axis\": \"stimulus\", \"value\": \"gratings\"}], \"expansion\": null, \"gloss\": \"passive viewing binocular rivalry stationary gratings\"}, {\"id\": \"cond_pupil_passive_replay\", \"kind\": \"control_state\", \"atoms\": [{\"axis\": \"engagement\", \"value\": \"passive\"}, {\"axis\": \"motion\", \"value\": \"moving\"}, {\"axis\": \"stimulus\", \"value\": \"gratings\"}], \"expansion\": null, \"gloss\": \"passive viewing physically changing stationary gratings\"}], \"task\": null, \"family\": \"visual_perception\", \"task_confidence\": \"high\"}",
+"scored": {
+"item": null,
+"task": null,
+"family": "visual_perception",
+"task_confidence": "high",
+"note": null,
+"factors": [
+{
+"from_term": "REPORT",
+"axis": "engagement",
+"levels": {
+"active report": "active",
+"passive viewing": "passive"
+}
+},
+{
+"from_term": "RIVAL",
+"axis": "motion",
+"levels": {
+"rivalry": "moving",
+"replay": "moving"
+}
+},
+{
+"from_term": "RIVAL",
+"axis": "stimulus",
+"levels": {
+"rivalry": "gratings",
+"replay": "gratings"
+}
+}
+],
+"context": [
+{
+"axis": "modality",
+"value": "visual"
+}
+],
+"conditions": [
+{
+"id": "cond_okn_active_rivalry",
+"kind": "task_state",
+"atoms": [
+{
+"axis": "engagement",
+"value": "active"
+},
+{
+"axis": "motion",
+"value": "moving"
+},
+{
+"axis": "stimulus",
+"value": "gratings"
+}
+],
+"expansion": null,
+"gloss": "active report binocular rivalry moving gratings"
+},
+{
+"id": "cond_okn_active_replay",
+"kind": "task_state",
+"atoms": [
+{
+"axis": "engagement",
+"value": "active"
+},
+{
+"axis": "motion",
+"value": "moving"
+},
+{
+"axis": "stimulus",
+"value": "gratings"
+}
+],
+"expansion": null,
+"gloss": "active report physically changing gratings"
+},
+{
+"id": "cond_okn_passive_rivalry",
+"kind": "task_state",
+"atoms": [
+{
+"axis": "engagement",
+"value": "passive"
+},
+{
+"axis": "motion",
+"value": "moving"
+},
+{
+"axis": "stimulus",
+"value": "gratings"
+}
+],
+"expansion": null,
+"gloss": "passive viewing binocular rivalry moving gratings"
+},
+{
+"id": "cond_okn_passive_replay",
+"kind": "control_state",
+"atoms": [
+{
+"axis": "engagement",
+"value": "passive"
+},
+{
+"axis": "motion",
+"value": "moving"
+},
+{
+"axis": "stimulus",
+"value": "gratings"
+}
+],
+"expansion": null,
+"gloss": "passive viewing physically changing gratings"
+},
+{
+"id": "cond_pupil_active_rivalry",
+"kind": "task_state",
+"atoms": [
+{
+"axis": "engagement",
+"value": "active"
+},
+{
+"axis": "motion",
+"value": "moving"
+},
+{
+"axis": "stimulus",
+"value": "gratings"
+}
+],
+"expansion": null,
+"gloss": "active report binocular rivalry stationary gratings"
+},
+{
+"id": "cond_pupil_active_replay",
+"kind": "task_state",
+"atoms": [
+{
+"axis": "engagement",
+"value": "active"
+},
+{
+"axis": "motion",
+"value": "moving"
+},
+{
+"axis": "stimulus",
+"value": "gratings"
+}
+],
+"expansion": null,
+"gloss": "active report physically changing stationary gratings"
+},
+{
+"id": "cond_pupil_passive_rivalry",
+"kind": "task_state",
+"atoms": [
+{
+"axis": "engagement",
+"value": "passive"
+},
+{
+"axis": "motion",
+"value": "moving"
+},
+{
+"axis": "stimulus",
+"value": "gratings"
+}
+],
+"expansion": null,
+"gloss": "passive viewing binocular rivalry stationary gratings"
+},
+{
+"id": "cond_pupil_passive_replay",
+"kind": "control_state",
+"atoms": [
+{
+"axis": "engagement",
+"value": "passive"
+},
+{
+"axis": "motion",
+"value": "moving"
+},
+{
+"axis": "stimulus",
+"value": "gratings"
+}
+],
+"expansion": null,
+"gloss": "passive viewing physically changing stationary gratings"
+}
+]
+}
+}
+]
+}

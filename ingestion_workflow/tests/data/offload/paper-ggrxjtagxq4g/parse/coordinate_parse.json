@@ -1,0 +1,583 @@
+{
+  "header": {
+    "artifact_kind": "coordinate_parse",
+    "schema_version": "0.11.0",
+    "article_id": "ggrxjtagxq4g",
+    "identifiers": {
+      "pmid": "24520407",
+      "pmcid": "PMC3919788",
+      "doi": "10.1371/journal.pone.0088628",
+      "alternative_pmids": null,
+      "alternative_pmcids": null,
+      "alternative_dois": null,
+      "preprint_dois": null,
+      "preprint_pmids": null,
+      "preprint_pmcids": null,
+      "publication_status": "published"
+    },
+    "producer": {
+      "name": "ns-pond-ingestion-workflow",
+      "version": "paper_parse.13",
+      "stage": "sync",
+      "model": null,
+      "prompt_version": null
+    },
+    "inputs": [
+      {
+        "artifact_kind": "parsed_paper",
+        "fingerprint": "3c1cb7eddf3286d810904c3add554b02c7992fb321e06daa82b977af8c96e63b",
+        "producer_version": null
+      },
+      {
+        "artifact_kind": "analyses",
+        "fingerprint": "b5b40e1ba39fb6eec24d5560e56a61d5",
+        "producer_version": null
+      }
+    ],
+    "created_at": null,
+    "neurostore_base_study_id": "HHQLir9yUauj"
+  },
+  "parse_id": "6974a63b5e5ca9804fd39f054263307db19161264e15d9e60264267c469848ff",
+  "text_sha256": "3c1cb7eddf3286d810904c3add554b02c7992fb321e06daa82b977af8c96e63b",
+  "revision_of": null,
+  "analyses": [
+    {
+      "key": "analysis#318cf31dea75bc80",
+      "cells": [
+        {
+          "row": 2,
+          "column_group": 0
+        },
+        {
+          "row": 3,
+          "column_group": 0
+        }
+      ],
+      "text_spans": null,
+      "origin": "table",
+      "table_id": "pone-0088628-t001",
+      "name": "A",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "TAL",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "anchor",
+      "anchor_kind": "roi",
+      "from_prior_study": false,
+      "prior_study_evidence": null,
+      "role_confidence": 0.9970683455467224,
+      "role_source": "role-decision@v1+eb7ad21cbdab",
+      "split": null,
+      "derived_from": null,
+      "statistic": null,
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            48.0,
+            -45.0,
+            26.0
+          ],
+          "space": null,
+          "row": 2,
+          "column_group": 0,
+          "text_span": null,
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            49.0,
+            -15.0,
+            30.0
+          ],
+          "space": null,
+          "row": 3,
+          "column_group": 0,
+          "text_span": null,
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    },
+    {
+      "key": "analysis#5eb1b54f9adaf451",
+      "cells": [
+        {
+          "row": 4,
+          "column_group": 0
+        }
+      ],
+      "text_spans": null,
+      "origin": "table",
+      "table_id": "pone-0088628-t001",
+      "name": "B",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "TAL",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "anchor",
+      "anchor_kind": "roi",
+      "from_prior_study": false,
+      "prior_study_evidence": null,
+      "role_confidence": 0.994746744632721,
+      "role_source": "role-decision@v1+eb7ad21cbdab",
+      "split": null,
+      "derived_from": null,
+      "statistic": null,
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            40.0,
+            26.0,
+            -5.0
+          ],
+          "space": null,
+          "row": 4,
+          "column_group": 0,
+          "text_span": null,
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    },
+    {
+      "key": "analysis#f7d0275eb898e0b8",
+      "cells": [
+        {
+          "row": 5,
+          "column_group": 0
+        },
+        {
+          "row": 6,
+          "column_group": 0
+        }
+      ],
+      "text_spans": null,
+      "origin": "table",
+      "table_id": "pone-0088628-t001",
+      "name": "C",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "TAL",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "anchor",
+      "anchor_kind": "roi",
+      "from_prior_study": false,
+      "prior_study_evidence": null,
+      "role_confidence": 0.9971319437026978,
+      "role_source": "role-decision@v1+eb7ad21cbdab",
+      "split": null,
+      "derived_from": null,
+      "statistic": null,
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            -48.0,
+            -9.0,
+            -25.0
+          ],
+          "space": null,
+          "row": 5,
+          "column_group": 0,
+          "text_span": null,
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            -19.0,
+            -6.0,
+            -31.0
+          ],
+          "space": null,
+          "row": 6,
+          "column_group": 0,
+          "text_span": null,
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    },
+    {
+      "key": "analysis#949bcb8f90c58826",
+      "cells": [
+        {
+          "row": 7,
+          "column_group": 0
+        },
+        {
+          "row": 8,
+          "column_group": 0
+        }
+      ],
+      "text_spans": null,
+      "origin": "table",
+      "table_id": "pone-0088628-t001",
+      "name": "D",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "TAL",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "anchor",
+      "anchor_kind": "roi",
+      "from_prior_study": false,
+      "prior_study_evidence": null,
+      "role_confidence": 0.9958964586257935,
+      "role_source": "role-decision@v1+eb7ad21cbdab",
+      "split": null,
+      "derived_from": null,
+      "statistic": null,
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            45.0,
+            -10.0,
+            -25.0
+          ],
+          "space": null,
+          "row": 7,
+          "column_group": 0,
+          "text_span": null,
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            12.0,
+            -10.0,
+            -31.0
+          ],
+          "space": null,
+          "row": 8,
+          "column_group": 0,
+          "text_span": null,
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    },
+    {
+      "key": "analysis#89933e26b7902505",
+      "cells": [
+        {
+          "row": 9,
+          "column_group": 0
+        }
+      ],
+      "text_spans": null,
+      "origin": "table",
+      "table_id": "pone-0088628-t001",
+      "name": "E",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "TAL",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "anchor",
+      "anchor_kind": "roi",
+      "from_prior_study": false,
+      "prior_study_evidence": null,
+      "role_confidence": 0.997018575668335,
+      "role_source": "role-decision@v1+eb7ad21cbdab",
+      "split": null,
+      "derived_from": null,
+      "statistic": null,
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            16.0,
+            -88.0,
+            16.0
+          ],
+          "space": null,
+          "row": 9,
+          "column_group": 0,
+          "text_span": null,
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    },
+    {
+      "key": "analysis#42104432e0b23572",
+      "cells": [
+        {
+          "row": 10,
+          "column_group": 0
+        }
+      ],
+      "text_spans": null,
+      "origin": "table",
+      "table_id": "pone-0088628-t001",
+      "name": "F",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "TAL",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "anchor",
+      "anchor_kind": "roi",
+      "from_prior_study": false,
+      "prior_study_evidence": null,
+      "role_confidence": 0.9979883432388306,
+      "role_source": "role-decision@v1+eb7ad21cbdab",
+      "split": null,
+      "derived_from": null,
+      "statistic": null,
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            -32.0,
+            -79.0,
+            5.0
+          ],
+          "space": null,
+          "row": 10,
+          "column_group": 0,
+          "text_span": null,
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    },
+    {
+      "key": "analysis#bb630e505addb8ce",
+      "cells": [
+        {
+          "row": 11,
+          "column_group": 0
+        },
+        {
+          "row": 12,
+          "column_group": 0
+        }
+      ],
+      "text_spans": null,
+      "origin": "table",
+      "table_id": "pone-0088628-t001",
+      "name": "G",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "TAL",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "anchor",
+      "anchor_kind": "roi",
+      "from_prior_study": false,
+      "prior_study_evidence": null,
+      "role_confidence": 0.9986883997917175,
+      "role_source": "role-decision@v1+eb7ad21cbdab",
+      "split": null,
+      "derived_from": null,
+      "statistic": null,
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            -52.0,
+            -43.0,
+            1.0
+          ],
+          "space": null,
+          "row": 11,
+          "column_group": 0,
+          "text_span": null,
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            -52.0,
+            -31.0,
+            27.0
+          ],
+          "space": null,
+          "row": 12,
+          "column_group": 0,
+          "text_span": null,
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    },
+    {
+      "key": "analysis#e969a9b62cfc4ee9",
+      "cells": [
+        {
+          "row": 13,
+          "column_group": 0
+        }
+      ],
+      "text_spans": null,
+      "origin": "table",
+      "table_id": "pone-0088628-t001",
+      "name": "H",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "TAL",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "anchor",
+      "anchor_kind": "roi",
+      "from_prior_study": false,
+      "prior_study_evidence": null,
+      "role_confidence": 0.9984139204025269,
+      "role_source": "role-decision@v1+eb7ad21cbdab",
+      "split": null,
+      "derived_from": null,
+      "statistic": null,
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            -12.0,
+            -48.0,
+            56.0
+          ],
+          "space": null,
+          "row": 13,
+          "column_group": 0,
+          "text_span": null,
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    },
+    {
+      "key": "analysis#0923a3308752ddac",
+      "cells": [
+        {
+          "row": 14,
+          "column_group": 0
+        },
+        {
+          "row": 15,
+          "column_group": 0
+        }
+      ],
+      "text_spans": null,
+      "origin": "table",
+      "table_id": "pone-0088628-t001",
+      "name": "I",
+      "name_is_printed": null,
+      "description": null,
+      "coordinate_space": "TAL",
+      "space_as_printed": null,
+      "space_basis": null,
+      "role": "anchor",
+      "anchor_kind": "roi",
+      "from_prior_study": false,
+      "prior_study_evidence": null,
+      "role_confidence": 0.9980138540267944,
+      "role_source": "role-decision@v1+eb7ad21cbdab",
+      "split": null,
+      "derived_from": null,
+      "statistic": null,
+      "statistic_df": null,
+      "thresholds": null,
+      "points": [
+        {
+          "coordinates": [
+            21.0,
+            50.0,
+            1.0
+          ],
+          "space": null,
+          "row": 14,
+          "column_group": 0,
+          "text_span": null,
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        },
+        {
+          "coordinates": [
+            -15.0,
+            54.0,
+            -3.0
+          ],
+          "space": null,
+          "row": 15,
+          "column_group": 0,
+          "text_span": null,
+          "values": null,
+          "cluster_size": null,
+          "cluster_measure": null,
+          "is_subpeak": false,
+          "label": null
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "table_id": "pone-0088628-t001",
+      "reading": "coordinates",
+      "reason": null
+    }
+  ],
+  "omitted_analyses": null,
+  "text_sweep": {
+    "passages_found": 0,
+    "passages_read": 0,
+    "truncated": false,
+    "points_dropped_as_table_restatements": 0
+  },
+  "verdicts": null
+}
