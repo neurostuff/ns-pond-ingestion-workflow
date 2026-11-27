@@ -69,6 +69,10 @@ dependencies = [
   # neurostuff/pondie#36's head (TO REPIN to its merge commit before this merges), the same
   # commit as the normalize extra's pondie.
   "pondie-astra @ git+https://github.com/neurostuff/pondie.git@508d62e32b3e221ea4c02cbde6c070c8e760c86d#subdirectory=packages/pondie-astra",
+  # pondie's `Modality` reading (pondie#35), which the `modality` stage and `ingest modality export`
+  # take each record's modalities from (`normalization.modality.paper_modalities`). Its base install
+  # only: the `normalize` extra adds the encoders at the same commit, which must stay equal to this one.
+  "pondie @ git+https://github.com/neurostuff/pondie.git@508d62e32b3e221ea4c02cbde6c070c8e760c86d",
   # Fetches the private adapters `ingest offload push` copies to a machine.
   "huggingface_hub>=0.24",
 ]
