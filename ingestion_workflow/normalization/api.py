@@ -25,7 +25,7 @@ from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
-from . import citations, contrasts, labels, medical, modality, records, sidecars
+from . import citations, contrasts, labels, medical, records, sidecars
 from .taskcat.identity import CardBuilder
 
 HERE = Path(__file__).resolve().parent
@@ -351,7 +351,6 @@ def _normalize(record, text, bibliography, fit_dir, article_id, allow_no_parser)
                     ("tasks", sidecars.write_tasks(r, {t: x for (_s, t), x in got["labels"].items()}, f.fit_id)),
                     ("conditions", sidecars.write_conditions(r, got["conditions"], f.fit_id)),
                     ("contrast_sets", sidecars.write_contrasts(r, got["contrasts"], got["assigned"], f.fit_id,
-                                                               f.sets.T)),
-                    ("modality", sidecars.write_modalities(r, modality.read(r), f.fit_id))):
+                                                               f.sets.T))):
         tally.update({f"{name}:{k}": v for k, v in t.items()})
     return tally

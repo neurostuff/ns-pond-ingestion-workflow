@@ -82,7 +82,7 @@ def test_the_record_states_the_modality(env, evidence, tmp_path):
     ref = _article(catalog, evidence, tmp_path, "BSrecord")
     _normalized(catalog, ref, RECORDS["cbf"]["record"])
     outcome = _run(ctx, catalog, [ref])[ref.id]
-    assert outcome.summary == {"base_study_id": "BSrecord", "modalities": ["fmri", "smri"],
+    assert outcome.summary == {"base_study_id": "BSrecord", "modalities": ["fMRI", "sMRI"],
                                "source": "record"}
     assert _plan(ctx, catalog, [ref])[1].fresh == 1
     _normalized(catalog, ref, RECORDS["mrs"]["record"], fp="norm-2")   # a new record
@@ -93,7 +93,7 @@ def test_without_a_record_the_methods_text_is_read(env, evidence, tmp_path):
     _, catalog, ctx = env
     ref = _article(catalog, evidence, tmp_path, "BStext")
     outcome = _run(ctx, catalog, [ref])[ref.id]
-    assert outcome.summary == {"base_study_id": "BStext", "modalities": ["dmri", "fmri"],
+    assert outcome.summary == {"base_study_id": "BStext", "modalities": ["dMRI", "fMRI"],
                                "source": "methods"}
     assert outcome.payload["text_source"] == "pubget"
 
@@ -140,5 +140,5 @@ def test_export_takes_the_record_over_the_text_for_a_shared_base_study(env, evid
     assert export(catalog, tmp_path / "out" / "modalities.tsv") == 1
     with open(tmp_path / "out" / "modalities.tsv", newline="") as f:
         (row,) = csv.DictReader(f, delimiter="\t")
-    assert row == {"base_study_id": "BSshared", "modalities": "ieeg", "source": "record",
+    assert row == {"base_study_id": "BSshared", "modalities": "iEEG", "source": "record",
                    "papers": by_record.id}

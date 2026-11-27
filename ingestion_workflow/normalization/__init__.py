@@ -1,4 +1,4 @@
-"""Task, condition, medical-condition, contrast-set and acquisition-modality normalization of extraction records.
+"""Task, condition, medical-condition and contrast-set normalization of extraction records.
 
 The Astra build's normalization (taskcat + the astra_* scripts), split so that what needs a corpus is fitted once
 and saved, and everything else runs one article at a time against the saved fit:
