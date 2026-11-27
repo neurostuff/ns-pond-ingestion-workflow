@@ -1,0 +1,281 @@
+sid	stratum	article	group	item	text	is_healthy	mondo_ids	mondo_labels	mondo_method	onvoc_ids	onvoc_labels	mondo_grade	onvoc_grade	failure_class	note
+0	common	375quyu7lgcy	grp_lean_bed	0	Binge eating disorder	False	MONDO:0005582	binge eating disorder	lexical			E	Um	onvoc-bridge	ONVOC Eating Disorders not reached
+1	common	7q5wmfpccqwh	grp_cet	3	Alcohol abuse	False	MONDO:0002046	alcohol abuse	lexical	ONVOC:0000017	Alcohol Abuse	E	E		
+2	common	bgezavztgrab	grp_placebo	3	Agoraphobia	False	MONDO:0003709	agoraphobia	lexical	ONVOC:0000205	Phobia	E	E		Phobia is ONVOC's finest
+3	common	sfoyj7olhmer	grp_dyslexia	0	Developmental dyslexia	False	MONDO:0005489	dyslexia	review-contained	ONVOC:0000185	Dyslexia	E	E		MONDO has no developmental dyslexia
+4	common	tr44zxhvkamm	grp_bd	2	Anxiety disorder	False	MONDO:0005618	anxiety disorder	lexical			E	Um	onvoc-bridge	ONVOC Anxiety Disorders not reached
+5	common	ffxhw727a4v2	grp_cm	0	chronic migraine	False	MONDO:0005277	migraine disorder	lexical	ONVOC:0000174	Migraine	E	E		
+6	common	7afp7kvfs3m7	grp_dre	0	drug-resistant epilepsy	False			rejected			Um	Um	qualifier	drug-resistant not stripped; epilepsy exists
+7	common	roqfcjoveesh	grp_lps	0	Chronic schizophrenia	False	MONDO:0005090	schizophrenia	lexical	ONVOC:0000217	Schizophrenia	E	E		
+8	common	6et3jxkn4rba	grp_lower_sod	1	Dysthymic disorder	False	MONDO:0001442	dysthymic disorder	lexical	https://w3id.org/onvoc/ONVOC_0000243	Mood Disorder	E	A		Mood Disorder where Depressive Disorder exists
+9	common	3vsurl4uoli6	grp_sp	5	Coronary Artery Disease	False	MONDO:0005010	coronary artery disorder	lexical	ONVOC:0000147	Coronary Artery Disease	E	E		
+10	common	hcgssxsk3yjt	grp_autism	0	autistic disorder	False	MONDO:0005258	autism spectrum disorder	retrieval	ONVOC:0000215	Autism Spectrum Disorder	A	E		autism exists; ASD broader
+11	common	zvhyo7yl6jmg	grp_ftd	0	frontotemporal dementia	False	MONDO:0017276	frontotemporal dementia	lexical	ONVOC:0000190	Dementia	E	E		
+12	common	2eqq65l4merb	grp_sp	0	Ischemic stroke	False	MONDO:1060198	ischemic stroke	lexical	ONVOC:0000175	Stroke	E	E		
+13	common	u2smu5wkggha	grp_depressed	6	Anxiety disorders	False	MONDO:0005618	anxiety disorder	lexical			E	Um	onvoc-bridge	
+14	common	qh6bjhmdvo6p	grp_csvd_ci	3	Diabetes mellitus	False	MONDO:0005015	diabetes mellitus	lexical			E	Uc		ONVOC has only T1/T2 diabetes
+15	common	kctgnutvoscg	grp_hc	1	Diabetes	False	MONDO:0005015	diabetes mellitus	lexical			E	Uc		
+16	common	wsqcxvwhmwy4	grp_fog_plus	1	Freezing of gait	False			rejected			Uc	Um	onvoc-only	ONVOC Gait Disturbances
+17	common	elhrdgcamcg6	grp_ep_ds	1	Depressive symptoms	False			review			Uc	Um	onvoc-only	ONVOC Depressed Mood
+18	common	sg7adeazkk3u	grp_asd	0	Asperger's syndrome	False	MONDO:0100610	autism spectrum disorder 1	retrieval	ONVOC:0000215	Autism Spectrum Disorder	W	E	locus	Asperger -> autism spectrum disorder 1 (OMIM locus)
+19	common	qe5wjfym7k5a	grp_uninhibited_not_expected	0	Post Traumatic Stress Disorder	False	MONDO:0005146	post-traumatic stress disorder	lexical	https://w3id.org/onvoc/ONVOC_0000211	Post-Traumatic Stress Disorder	E	E		
+20	common	ht5ba5utgpn7	grp_patients	0	Fibromyalgia	False	MONDO:0005546	fibromyalgia	lexical	ONVOC:0000189	Fibromyalgia	E	E		
+21	common	svhmzf3zrb7r	grp_g	1	Major depressive episode	False			review			Um	Um	review-band	MDD top candidate 0.936
+22	common	vu7oykdn6gpq	grp_responders	0	Unipolar depression	False	MONDO:0002009	major depressive disorder	lexical	ONVOC:0000207	Depressive Disorder	E	E		
+23	common	x2xb4mkkd7db	grp_iot_r	2	Stroke	False	MONDO:0005098	stroke disorder	lexical	ONVOC:0000175	Stroke	E	E		
+24	common	fagb2bd22y44	grp_cbs_pca	1	Posterior cortical atrophy	False	MONDO:0018899	posterior cortical atrophy	lexical	ONVOC:0000190	Dementia	E	E		
+25	common	llhm2fwu2hko	grp_bpd	5	Antisocial Personality Disorder	False	MONDO:0001164	antisocial personality disorder	lexical	ONVOC:0000214	Personality Disorders	E	E		
+26	common	zmxd523c6yjn	grp_chr_poor	0	Clinical high risk for psychosis	False			rejected			Uc	Uc	risk	
+27	common	u7d42p22uvpk	grp_ms	0	multiple sclerosis	False	MONDO:0005301	multiple sclerosis	lexical	ONVOC:0000179	Multiple Sclerosis	E	E		
+28	common	ncvqit5pgzxk	grp_gsad	0	Generalized social anxiety disorder	False			review			Um	Um	review-band	social phobia top candidate 0.908
+29	common	kzzgpduiaoaq	grp_schizophrenia	0	paranoid schizophrenia	False	MONDO:0001484	paranoid schizophrenia	lexical	ONVOC:0000217	Schizophrenia	E	E		
+30	rare	53uueoufgaoz	grp_pca	1	simultanagnosia	False	MONDO:0000678	simultanagnosia	lexical			E	Uc		
+31	rare	anuqszcmvpl7	grp_bh13948_1	0	Mendelian disorder	False			rejected			Uc	Uc		
+32	rare	wtriitn56uwf	grp_resp	4	hysterectomy in 14 participants	False			strip:rejected			Uc	Uc	not-condition	procedure
+33	rare	m4u3jwllwa3n	grp_cg	0	Non-binge drinkers	False			rejected			Uc	Uc	negation	should be absent
+34	rare	lgvekjz77msr	grp_phobia	1	Specific snake phobia	False			rejected			Um	Um	qualifier	specific phobia exists
+35	rare	fndxa6dqjusd	grp_y38jfc	0	familial spontaneous epilepsy	False			rejected			Um	Um	qualifier	
+36	rare	ovg2nhs44dbv	grp_ill	0	High familial risk of schizophrenia at scanning	False			rejected			Uc	Uc	risk	
+37	rare	akhfcrlvewbp	grp_p2	0	Chronic hemorrhagic stroke	False	MONDO:1060199	hemorrhagic stroke	lexical	ONVOC:0000175	Stroke	E	E		
+38	rare	tmub7nexhikj	grp_nc	0	Diabetes mellitus: 9 (23.7%)	False			strip:review			Um	Uc	count-strip	': 9 (23.7%)' not stripped
+39	rare	a2tz5bo6vg45	grp_hcp	0	Alcohol use disorder in 27.0% of participants	False			strip:review			Um	Um	mondo-gap	alcohol use disorder not in MONDO; ONVOC Alcohol Use/SUD
+40	rare	es4eebk4fues	grp_ibs	6	Barrett’s esophagus	False	MONDO:0013662	Barrett esophagus	lexical			E	Um	onvoc-bridge	ONVOC Gastrointestinal Disorder
+41	rare	p3wgue57qrfj	grp_sporadic	0	Isolated laryngeal dystonia	False			review			Um	Um	qualifier	spasmodic dystonia has synonym laryngeal dystonia
+42	rare	vp5tke25ycfl	grp_scd_plus	1	Plasma p-tau217 positivity	False			rejected			Uc	Uc	not-condition	biomarker
+43	rare	n5vvaqmutg6k	grp_ptsd	6	Current agoraphobia	False	MONDO:0003709	agoraphobia	lexical	ONVOC:0000205	Phobia	E	E		
+44	rare	pihp2iloz4q7	grp_nonsmoker	0	Liver masses	False			rejected			Um	Um	vague	liver neoplasm / Liver Disease
+45	rare	5dfognotdims	grp_syn2	3	Active major depressive disorder in three patients	False			strip:rejected			Um	Um	qualifier	'Active' not stripped
+46	rare	6wwsrueii7q5	grp_pc	2	Current panic disorder in 2	False	MONDO:0011924	panic disorder 2	retrieval	ONVOC:0000206	Panic Disorder	W	E	locus	'panic disorder in 2' -> panic disorder 2 (OMIM locus)
+47	rare	pitad424epdt	grp_control	2	Ischemic lesions	False			review			Um	Um	vague	
+48	rare	lfqtpcqvmpmd	grp_right	1	Right anterior temporal resection including the amygdala	False			rejected			Uc	Uc	not-condition	procedure
+49	rare	k44phah4emxf	grp_older	2	High cholesterol in two participants	False			strip:rejected			Um	Um	review-band	hyperlipidemia candidate
+50	rare	7ft4z5nhnqq2	grp_left_mtle	0	Pharmacologically intractable left medial-temporal lobe epilepsy	False			rejected			Um	Um	qualifier	temporal lobe epilepsy exists
+51	rare	owhrimfwnwjs	grp_no_prior	1	Additional chronic pain in 6 patients	False			strip:rejected			Um	Um	qualifier	chronic pain syndrome / Chronic Pain
+52	rare	xangcts6t4hm	grp_children	0	Preschool anxiety disorders in 44 children	False			strip:rejected			Um	Um	qualifier	
+53	rare	jlmssdvyb77d	grp_otavhs	0	Own thought auditory verbal hallucinations	False			rejected			Uc	Um	onvoc-only	ONVOC Hallucinations
+54	rare	ph7oqhvj2ibu	grp_snipers	0	Previous concussion in 13 participants	False			strip:rejected			Um	Um	mondo-gap	concussion not in MONDO; ONVOC Concussion
+55	rare	chq2npv6v4wy	grp_ptsd	4	Past alcohol abuse in 4 participants	False	MONDO:0002046	alcohol abuse	strip:lexical	ONVOC:0000017	Alcohol Abuse	E	E		
+56	rare	dkqeuo23z4y2	grp_females	4	Possible stroke	False	MONDO:0005098	stroke disorder	lexical	ONVOC:0000175	Stroke	E	E		
+57	rare	vjg7trxgl4dw	grp_nonob	0	Non-obesity	False			rejected			Uc	Uc	negation	should be absent
+58	rare	yvzuepqnqj6v	grp_mdd	2	Borderline personality disorder in four patients	False	MONDO:0001156	borderline personality disorder	strip:lexical	ONVOC:0000209	Borderline Personality Disorder	E	E		
+59	rare	ls6pcdqxvkbp	grp_offenders	0	Psychopathy in 43 participants meeting PCL-R total score ≥30	False	MONDO:0001164	antisocial personality disorder	strip:lexical	ONVOC:0000214	Personality Disorders	E	E		MONDO psychopathy is an ASPD synonym
+60	healthy_control	nq5wozo56wip	grp_td	0	Typically developing; no axis-I disorder	True			absent by string			X	X		
+61	healthy_control	hg4m7klwn2vo	grp_hc	0	Healthy controls	True			absent by string			X	X		
+62	healthy_control	hctvsus2rofv	grp_hc	0	Healthy controls with no history of psychiatric illness	False			rejected			Xm	Xm	healthy-miss	healthy group read as a condition head
+63	healthy_control	7sgqu62wwpdg	grp_hc	0	Healthy controls	True			absent by string			X	X		
+64	healthy_control	lw33iyv4n3xy	grp_placebo	0	Healthy	True			absent by string			X	X		
+65	healthy_control	pxvcrw6n3pf5	grp_td	0	Typically developing; no current DSM-IV-TR Axis-I disorder	True			absent by string			X	X		
+66	healthy_control	jzmfovkwbssv	grp_phoneme	0	Healthy	True			absent by string			X	X		
+67	healthy_control	mkhzjdchqwcx	grp_normal	0	Healthy	True			absent by string			X	X		
+68	healthy_control	dve5mg5issgu	grp_hc	0	Healthy controls	True			absent by string			X	X		
+69	healthy_control	zbkvnbh7tqvh	grp_subjects	0	Neurologically healthy	True			absent by string			X	X		
+70	healthy_control	c3r4gdl6z264	grp_scanned	0	Healthy normal	True			absent by string			X	X		
+71	healthy_control	is75ryjbaerk	grp_control	0	healthy	True			absent by string			X	X		
+72	healthy_control	5qpvdarvg6ve	grp_students	0	Free of neurological or psychiatric disorders	True			absent by string			X	X		
+73	healthy_control	b545jumq2gmf	grp_hcp	0	No psychiatric or neurological conditions	True			absent by string			X	X		
+74	healthy_control	pk6aglwjwjtc	grp_healthy	0	Healthy	True			absent by string			X	X		
+75	healthy_control	6g4vbwjou4o7	grp_nonlearners	0	Healthy	True			absent by string			X	X		
+76	healthy_control	5tow3icp2nye	grp_low	0	Cognitively normal	True			absent by string			X	X		
+77	healthy_control	w3hjjzeeopow	grp_healthy	0	Healthy	True			absent by string			X	X		
+78	healthy_control	xjtddt7br2n2	grp_nw	0	normal weight	True			absent by string			X	X		
+79	healthy_control	az4ykapo6ngt	grp_practitioners	0	No psychological illness	True			absent by string			X	X		
+80	healthy_control	y2uu5l7nz7ve	grp_ra_plus_replication	0	No psychiatric disorders	True			absent by string			X	X		
+81	healthy_control	g6sbh7ejyorv	grp_hc	0	healthy controls	True			absent by string			X	X		
+82	healthy_control	xcpfyqbzlmsn	grp_creb1_gg	0	No current or past psychiatric disorders	True			absent by string			X	X		
+83	healthy_control	zd3fgnh2uwvz	grp_adni_nc	0	normal controls	True			absent by string			X	X		
+84	healthy_control	yaafjr6bn626	grp_controls	0	Cognitively normal	True			absent by string			X	X		
+85	healthy_control	kqo6via5ffay	grp_controls	0	Healthy controls	True			absent by string			X	X		
+86	healthy_control	pwjroysk3ujn	grp_healthy	0	Healthy	True			absent by string			X	X		
+87	healthy_control	cxocrgirvsmi	grp_healthy	0	Healthy; no mental disorders or substance abuse	True			absent by string			X	X		
+88	healthy_control	bgq4dxxltec6	grp_2	0	No mental or neurological disorder	True			absent by string			X	X		
+89	healthy_control	dtyptevk5yjv	grp_hc	0	Healthy	True			absent by string			X	X		
+90	composite	y57lwch7jcgp	grp_coc	6	Lifetime cannabis dependence in six participants and cannabis abuse in four	False	MONDO:0005689	cannabis dependence	strip:lexical	ONVOC:0000021	Substance Dependence	P	A	composite	cannabis abuse lost; ONVOC Cannabis Use Disorder exists
+91	composite	qurdxmj5hwaw	grp_ptsd	8	Lifetime alcohol abuse or dependence	False	MONDO:0002046;MONDO:0004938	alcohol abuse;substance dependence	lexical;lexical	ONVOC:0000017;ONVOC:0000021	Alcohol Abuse;Substance Dependence	P	P	composite	'dependence' alone -> substance dependence
+92	composite	5wx54ohvhg2x	grp_flashback	6	past alcohol abuse/dependence	False	MONDO:0002046;MONDO:0004938	alcohol abuse;substance dependence	lexical;lexical	ONVOC:0000017;ONVOC:0000021	Alcohol Abuse;Substance Dependence	P	P	composite	
+93	composite	7wkhxkabqvjm	grp_cg	0	idiopathic developmental delays and intellectual disability	False			rejected			Um	Um	composite	'and' not split; intellectual disability exists
+94	composite	3ednfpwtnikz	grp_smd	2	Oppositional defiant disorder or conduct disorder	False	MONDO:0000495;MONDO:0005352	oppositional defiant disorder;conduct disorder	lexical;lexical	ONVOC:0000224;https://w3id.org/onvoc/ONVOC_0000240	Oppositional Defiant Disorder;Conduct Disorders	E	E		
+95	composite	p2p5chvol5dw	grp_arms_p	2	Depression with psychotic symptoms in one participant	False			strip:rejected			Um	Um	qualifier	
+96	composite	67ywxgecluhx	grp_high_risk	0	Attention-deficit/hyperactivity disorder in 1 participant	False	MONDO:0005302	attention deficit hyperactivity disorder, inattentive type	retrieval;strip:review	ONVOC:0000210	Attention-Deficit Hyperactivity Disorder	W	E	slash-split	ADHD -> inattentive type
+97	composite	ag4fuxpw6za5	grp_pr	2	Comorbid anxiety and depression in seven participants	False			strip:rejected			Um	Um	composite	
+98	composite	lg7kg7xkfcsz	grp_mdd	1	Comorbid anxiety disorder in eight participants	False	MONDO:0005618	anxiety disorder	strip:lexical			E	Um	onvoc-bridge	
+99	composite	dqvy25o6jlji	grp_dlb	0	Dementia with Lewy bodies	False	MONDO:0007488	Lewy body dementia	lexical	ONVOC:0000190	Dementia	E	E		
+100	composite	zhspszjdwqdr	grp_pt	0	Chronic prostatitis/chronic pelvic pain syndrome	False	MONDO:0005280	prostatitis	lexical;rejected			A	Uc		CP/CPPS -> prostatitis
+101	composite	dwnovhiqko77	grp_mdd	1	History of at least one comorbid anxiety disorder in 21 participants	False	MONDO:0005618	anxiety disorder	review-contained			E	Um	onvoc-bridge	
+102	composite	w7syk7dqvmjt	grp_gad	3	Comorbid social anxiety disorder	False	MONDO:0001247	social phobia	lexical	ONVOC:0000225	Social Phobia	E	E		
+103	composite	b22hno6gltiq	grp_sud	0	Alcohol and/or substance use disorder	False			rejected;rejected			Um	Um	slash-split	'and/or' split leaves 'Alcohol and'
+104	composite	kyyqfo7m73be	grp_participants	0	Axis I internalizing and/or externalizing disorders in six participants	False			rejected;strip:rejected			Uc	Uc	vague	
+105	composite	pjlwi7kr2p5w	grp_ptsd	1	Comorbid anxiety disorder	False	MONDO:0005618	anxiety disorder	lexical			E	Um	onvoc-bridge	
+106	composite	v4u3hkow2zma	grp_affected	5	Attention-deficit/hyperactivity disorder	False	MONDO:0005302	attention deficit hyperactivity disorder, inattentive type	retrieval;review	ONVOC:0000210	Attention-Deficit Hyperactivity Disorder	W	E	slash-split	
+107	composite	4bswrghetlmb	grp_fmri_males	0	Obesity/overweight in 3 of 20 retained participants	False	MONDO:0011122	obesity disorder	lexical;strip:review	ONVOC:0000142	Obesity	P	E	composite	overweight lost
+108	composite	4v5bbdjwu54l	grp_asd_only	1	Attention-deficit/hyperactivity disorder	False	MONDO:0005302	attention deficit hyperactivity disorder, inattentive type	retrieval;review	ONVOC:0000210	Attention-Deficit Hyperactivity Disorder	W	E	slash-split	
+109	composite	mydagzxwondc	grp_b	1	relatives of subjects with schizophrenia	False			rejected			Uc	Uc	risk	
+110	composite	gdopbyiuon2r	grp_arfid	0	Full or subthreshold avoidant/restrictive food intake disorder	False			rejected;rejected;review			Um	Um	slash-split	MONDO has avoidant/restrictive food intake disorder
+111	composite	zdwe7ecze5cm	grp_mdd	0	Major depressive disorder with melancholic features	False	MONDO:0002444	melancholia	retrieval	ONVOC:0000207	Depressive Disorder	A	E		melancholia
+112	composite	kfpmjwahi32k	grp_cg	1	Hemiplegia and sensory impairment	False			rejected			Um	Um	composite	hemiplegia exists
+113	composite	ozyhfqpu52ap	grp_tf	1	Right thalamic infarct with possible left thalamic involvement	False			rejected			Um	Um	qualifier	
+114	composite	aeonhwpoa3ot	grp_adhd_fmri	0	Attention-deficit/hyperactivity disorder	False	MONDO:0005302	attention deficit hyperactivity disorder, inattentive type	retrieval;review	ONVOC:0000210	Attention-Deficit Hyperactivity Disorder	W	E	slash-split	
+115	composite	vtnjinwye3zh	grp_rls	0	Idiopathic restless legs syndrome/Willis–Ekbom disease	False	MONDO:0005391	restless legs syndrome	review-contained;rejected			E	Uc		
+116	composite	m2ovbjlot7ws	grp_sham	2	Comorbid benzodiazepine dependence in one patient	False			strip:rejected			Um	Um	qualifier	drug dependence / Substance Dependence
+117	composite	uvpz6e5c6jmb	grp_adhd	0	Attention deficit/hyperactivity disorder	False	MONDO:0005302	attention deficit hyperactivity disorder, inattentive type	retrieval;review	ONVOC:0000210	Attention-Deficit Hyperactivity Disorder	W	E	slash-split	
+118	composite	6iqf6vxyivto	grp_ii	3	Receptive and expressive language impairment	False			review			Um	Um	review-band	mixed receptive-expressive language disorder exists
+119	composite	zorqr5la34us	grp_dns	0	Past or present psychiatric diagnosis in 17% of the final sample	False			strip:rejected			Um	Uc	vague	psychiatric disorder exists
+120	subtype	5joi32xyvzoz	grp_mci_gg	0	Mild cognitive impairment	False			review			Um	Uc	mci	MCI not in MONDO; cognitive disorder broader
+121	subtype	b72ev54sovbr	grp_4	2	Bilateral acoustic neuromas	False			review			Um	Um	qualifier	acoustic neuroma exists
+122	subtype	gfe53zrtasoh	grp_real	0	Mild cognitive impairment	False			review			Um	Uc	mci	
+123	subtype	36usnctrhfdt	grp_mci	0	End-stage renal disease	False	MONDO:0004375	end stage renal failure	lexical	ONVOC:0000144	Kidney Disease	E	E		
+124	subtype	aqd55roa3gqe	grp_older	0	Stage I hypertension in two participants	False			strip:rejected			Um	Um	hypertension	
+125	subtype	ncxkivmdxgc6	grp_nf1	0	Neurofibromatosis type 1	False	MONDO:0018975	neurofibromatosis type 1	lexical			E	Uc		
+126	subtype	odt56v5ca442	grp_schizophrenia	0	First episode schizophrenia	False	MONDO:0005090	schizophrenia	lexical	ONVOC:0000217	Schizophrenia	E	E		
+127	subtype	y2kylzl3ucer	grp_patients	0	First-episode psychosis	False	MONDO:0005485	psychotic disorder	lexical	ONVOC:0000219	Psychotic Disorder	E	E		
+128	subtype	mfv6kbxwstkl	grp_aphasia	3	Broca’s aphasia	False	MONDO:0000598	aphasia	review-contained	https://w3id.org/onvoc/ONVOC_0000199	Aphasia	E	E		MONDO has no Broca aphasia
+129	subtype	dtd3pqyvinmv	grp_load	0	Late-onset Alzheimer's disease	False	MONDO:0004975	Alzheimer disease	lexical	ONVOC:0000176	Alzheimer's Disease	E	E		
+130	subtype	pnwjsigzuozd	grp_mci	0	Mild cognitive impairment	False			review			Um	Uc	mci	
+131	subtype	swdy7gbdi3fz	grp_stroke	1	Unilateral motor impairment	False			rejected			Uc	Uc	vague	
+132	subtype	2pamy2hmomw7	grp_community	0	Mild cognitive impairment	False			review			Um	Uc	mci	
+133	subtype	b47naii2mevb	grp_sleepwalking	1	bilateral deafness	False			rejected			Um	Um	qualifier	hearing loss disorder / Deafness
+134	subtype	x6wkxrzxjuwu	grp_t2dm	0	type 2 diabetes mellitus	False	MONDO:0005148	type 2 diabetes mellitus	lexical	https://w3id.org/onvoc/ONVOC_0000141	Type 2 Diabetes Mellitus	E	E		
+135	subtype	grnjpqnpptli	grp_mdd	1	Treatment-resistant depression	False	MONDO:0002050	depressive disorder	lexical	ONVOC:0000207	Depressive Disorder	E	E		
+136	subtype	rpbtmhuey2wb	grp_trd	0	treatment resistant depression	False	MONDO:0002050	depressive disorder	lexical	ONVOC:0000207	Depressive Disorder	E	E		
+137	subtype	v7rmqgwa3nbc	grp_t2dm	0	type 2 diabetes mellitus	False	MONDO:0005148	type 2 diabetes mellitus	lexical	https://w3id.org/onvoc/ONVOC_0000141	Type 2 Diabetes Mellitus	E	E		
+138	subtype	3rodo5k3yzak	grp_t2dm_mci	1	Mild cognitive impairment	False			review			Um	Uc	mci	
+139	subtype	ihxyn6hh6i65	grp_no_ohe	0	End-stage cirrhosis	False			review			Um	Um	review-band	cirrhosis of liver
+140	subtype	3vivbliff4tu	grp_msa_c	0	multiple system atrophy with predominant cerebellar ataxia	False			review			Um	Um	review-band	MSA cerebellar type exists
+141	subtype	vsipex6lgkqx	grp_new_hgg	0	newly diagnosed high-grade glioma	False			rejected			Um	Um	qualifier	high grade glioma is a MONDO synonym
+142	subtype	tdodtlktsnde	grp_aos	0	Adolescent-onset schizophrenia	False			review			Um	Um	qualifier	'Adolescent-onset' split at hyphen
+143	subtype	pu6hrbxjqnhf	grp_t2dm	0	Type 2 diabetes mellitus	False	MONDO:0005148	type 2 diabetes mellitus	lexical	https://w3id.org/onvoc/ONVOC_0000141	Type 2 Diabetes Mellitus	E	E		
+144	subtype	x655g7wqm3ru	grp_ron	0	relapsing optic neuritis	False			review			Um	Uc	review-band	relapsing isolated optic neuritis 0.94
+145	subtype	z6k7z5c4p7bu	grp_mdd	0	First-episode unipolar major depressive disorder	False	MONDO:0002009	major depressive disorder	review-contained	ONVOC:0000207	Depressive Disorder	E	E		
+146	subtype	2gnqd4ao2fco	grp_pacg	0	primary angle-closure glaucoma	False	MONDO:0001868	primary angle-closure glaucoma	lexical	https://w3id.org/onvoc/ONVOC_0000170	Glaucoma	E	E		
+147	subtype	filnchv6fmak	grp_psp	0	progressive supranuclear palsy	False	MONDO:0019037	progressive supranuclear palsy	lexical			E	Um	onvoc-bridge	PSP: ONVOC Neurodegeneration
+148	subtype	s7zbsasawqiv	grp_no_tinnitus	0	Bilateral, mild to moderately severe sloping sensorineural hearing loss	False			rejected			Um	Um	qualifier	
+149	subtype	gya5xyiwmno3	grp_tth	0	tension-type headache	False			rejected			Um	Um	mondo-gap	no tension-type headache; headache disorder / Headache
+150	abbreviation	mpkzvxm2645u	grp_osuch2009	0	PTSD	False	MONDO:0005146	post-traumatic stress disorder	lexical	https://w3id.org/onvoc/ONVOC_0000211	Post-Traumatic Stress Disorder	E	E		
+151	abbreviation	sdybxxruxgii	grp_ptsd	0	Combat-related PTSD	False			rejected			Um	Um	qualifier	
+152	abbreviation	jkvpbtc5dyzt	grp_ptsd	1	MDD	False	MONDO:0002009	major depressive disorder	lexical	ONVOC:0000207	Depressive Disorder	E	E		
+153	abbreviation	pnnotj3f7quu	grp_ca	5	ODD/CD/Other disruptive behaviors	False			review;rejected;rejected			Um	Um	abbreviation	
+154	abbreviation	3liwpkni4sez	grp_nf1	1	ADHD in 8 children (32%)	False			strip:review			Um	Um	abbreviation	ADHD
+155	abbreviation	6et3jxkn4rba	grp_higher_sod	3	Bipolar II disorder	False	MONDO:0000693	bipolar II disorder	lexical	ONVOC:0000208	Bipolar Disorder	E	E		
+156	abbreviation	b6knbvgjy6no	grp_adhd_c	0	ADHD combined presentation	False			rejected			Um	Um	abbreviation	ADHD
+157	abbreviation	vdg5cn3mhcfj	grp_abused	8	PTSD	False			review			Um	Um	expansion	PTSD expanded to 'posttraumatic stress disorder' (0.92)
+158	abbreviation	puf6lyytihky	grp_huc	0	HIV uninfected	False			rejected			Uc	Uc	negation	should be absent
+159	abbreviation	iavw4te7yxez	grp_ptsd	0	PTSD	False	MONDO:0005146	post-traumatic stress disorder	lexical	https://w3id.org/onvoc/ONVOC_0000211	Post-Traumatic Stress Disorder	E	E		
+160	abbreviation	rt5n7np4ue2d	grp_sham	4	MINI comorbidity in 6 participants	False			strip:rejected			Uc	Uc	vague	
+161	abbreviation	mru5d4bbssn7	grp_cd	1	ADHD	False			review			Um	Um	abbreviation	ADHD
+162	abbreviation	df7yqc7zs6g5	grp_agrn	0	Asymptomatic GRN mutation carrier	False			rejected			Uc	Uc	risk	
+163	abbreviation	7bgcpopay6dz	grp_arfid_fear	1	ARFID-fear phenotype	False			rejected			Um	Um	abbreviation	
+164	abbreviation	2afja2yxt473	grp_hsv1_pos	1	HSV-1 seropositivity	False			rejected			Uc	Uc	vague	
+165	abbreviation	xfeqqf5ufpqs	grp_ptsd	4	OCD in 3 participants	False	MONDO:0001158	obsessive-compulsive personality disorder	strip:lexical	ONVOC:0000214	Personality Disorders	W	W	ocd-synonym	OCD -> obsessive-compulsive personality disorder
+166	abbreviation	iawmuvkkanqu	grp_nssi	4	Depressive Disorder–NOS	False	MONDO:0002050	depressive disorder	retrieval	ONVOC:0000207	Depressive Disorder	E	E		
+167	abbreviation	5h2mdw2cbusu	grp_nssi	2	PTSD	False	MONDO:0005146	post-traumatic stress disorder	lexical	https://w3id.org/onvoc/ONVOC_0000211	Post-Traumatic Stress Disorder	E	E		
+168	abbreviation	67v2epr46h6t	grp_hr	0	ADHD	False			review			Um	Um	abbreviation	ADHD
+169	abbreviation	v2enkkidpdtn	grp_adhd	0	ADHD	False	MONDO:0007743	attention deficit-hyperactivity disorder	lexical	ONVOC:0000210	Attention-Deficit Hyperactivity Disorder	E	E		
+170	abbreviation	cbqova4guogg	grp_elevated	2	ADHD	False	MONDO:0007743	attention deficit-hyperactivity disorder	lexical	ONVOC:0000210	Attention-Deficit Hyperactivity Disorder	E	E		
+171	abbreviation	ar5ilnxtipfe	grp_ptsd	0	PTSD	False			review			Um	Um	expansion	
+172	abbreviation	mfa2jbtbx3lp	grp_4	0	Psychotic dis NOS	False	MONDO:0005485	psychotic disorder	retrieval	ONVOC:0000219	Psychotic Disorder	E	E		
+173	abbreviation	r4pfwad7lv67	grp_tlos_minus	0	AD-related PPA	False			review			Um	Um	abbreviation	
+174	abbreviation	mskjdqunx7p6	grp_hand	0	HIV infection	False	MONDO:0005109	HIV infectious disease	lexical	https://w3id.org/onvoc/ONVOC_0000168	Infectious Disease	E	A		ONVOC Human Immunodeficiency Virus exists
+175	abbreviation	bzm4u22ie2uu	grp_ms	3	primary progressive MS	False	MONDO:0000451	primary progressive multiple sclerosis	lexical	ONVOC:0000179	Multiple Sclerosis	E	E		
+176	abbreviation	jppoeyiksln2	grp_stable_low	9	CD	False	MONDO:0005352	conduct disorder	lexical	https://w3id.org/onvoc/ONVOC_0000240	Conduct Disorders	E	E		
+177	abbreviation	xwj53uejkiym	grp_irbd	0	isolated REM sleep behavior disorder	False			review			Um	Um	qualifier	REM sleep behavior disorder exists
+178	abbreviation	cbrmx37w6prh	grp_clinical	3	PTSD	False			review			Um	Um	expansion	
+179	abbreviation	ad5thwch7m5u	grp_hru	3	Anxiety NOS	False	MONDO:0011918	anxiety	retrieval	ONVOC:0000694	Anxiety	E	E		
+180	random	xk67stwje7sy	grp_n	4	Hypertension	False			review			Um	Um	hypertension	
+181	random	467bmgbyi3pj	grp_vs	7	Occipital contusion	False			rejected			Um	Um	qualifier	
+182	random	hdvtlnidvtik	grp_controls	0	Hypertension	False			review			Um	Um	hypertension	
+183	random	ego24zlcntu7	grp_pfx_plus	1	Fragile X-associated tremor/ataxia syndrome	False	MONDO:0000437	cerebellar ataxia	review;lexical	ONVOC:0000203	Ataxia	A	A		FXTAS -> cerebellar ataxia
+184	random	vp6ct3isgzcj	grp_nhs	0	Normal hearing	False			rejected			Xm	Xm	healthy-miss	Normal hearing
+185	random	6vvvpqaxwhfv	grp_hc	0	healthy	True			absent by string			X	X		
+186	random	myln3xamtby6	grp_mci	2	Diabetes	False	MONDO:0005015	diabetes mellitus	lexical			E	Uc		
+187	random	bvjkmnknrfze	grp_hc	0	No current or past psychiatric diagnosis	True			absent by string			X	X		
+188	random	mehsh3liv2ob	grp_healthy	0	Healthy; free from neurological/psychiatric disease and cognitive complaints	True			absent by string			X	X		
+189	random	rnhxl2rdlpsw	grp_females	0	Healthy; no mental or neurological disorders	True			absent by string			X	X		
+190	random	dnzte4er35yo	grp_no_onset	0	No first lifetime internalizing disorder at follow-up	True			absent by string			X	X		
+191	random	mzemwk3dcgcs	grp_relatives	0	No personal lifetime history of any psychiatric disorder	True			absent by string			X	X		
+192	random	efpyejbabtx2	grp_healthy	0	Healthy	True			absent by string			X	X		
+193	random	3fk42dbzkt2c	grp_obese	0	obesity	False	MONDO:0011122	obesity disorder	lexical	ONVOC:0000142	Obesity	E	E		
+194	random	wh2cgbigne7s	grp_aphasia	1	Left-hemispheric stroke	False			rejected			Um	Um	qualifier	
+195	random	cowxfo4ahs5k	grp_hc	0	No SAD	True			absent by string			X	X		
+196	random	khqxxwofiz45	grp_ecog	0	intractable epilepsy	False			rejected			Um	Um	qualifier	
+197	random	nspf2i2i257a	grp_healthy	0	Healthy	True			absent by string			X	X		
+198	random	2dkwkpca7lqs	grp_a	0	Healthy	True			absent by string			X	X		
+199	random	rgoquukvxwuy	grp_cog	1	Cognitive impairment	False			review			Um	Uc	mci	cognitive disorder 0.88
+200	random	hvzjciw5umse	grp_control	0	OCD	False	MONDO:0001158	obsessive-compulsive personality disorder	lexical	ONVOC:0000214	Personality Disorders	W	W	ocd-synonym	
+201	random	fjn5knjlbgxs	grp_dyslexics	0	dyslexia	False	MONDO:0005489	dyslexia	lexical	ONVOC:0000185	Dyslexia	E	E		
+202	random	dpmotsngck53	grp_children	1	Major Depressive Disorder (past)	False	MONDO:0002009	major depressive disorder	lexical	ONVOC:0000207	Depressive Disorder	E	E		
+203	random	ba3pojn3o3qe	grp_healthy	0	Healthy; no self-reported history of neurological or psychiatric illness	True			absent by string			X	X		
+204	random	sdvo5rryl6zr	grp_fhr	0	Familial high risk for schizophrenia	False			rejected			Uc	Uc	risk	
+205	random	dqqzibxzvdg2	grp_controls	0	Healthy; no history of neurological or psychiatric disorders	True			absent by string			X	X		
+206	random	gzgmy6htxe3d	grp_deteriorated	5	Hypercholesterinemia	False			rejected			Um	Um	review-band	
+207	random	36usnctrhfdt	grp_mci	1	Mild cognitive impairment	False			review			Um	Uc	mci	
+208	random	t72tipbm64i6	grp_healthy	0	Healthy volunteers	True			absent by string			X	X		
+209	random	wdsp5dywzrys	grp_psych	2	Panic	False			review			Um	Um	review-band	panic disorder 0.898
+210	random	ymxp5dxsx2iz	grp_asdcc2	0	Autism spectrum disorder	False	MONDO:0005258	autism spectrum disorder	lexical	ONVOC:0000215	Autism Spectrum Disorder	E	E		
+211	random	ucdqp4heuoo4	grp_dataset1	0	Healthy	True			absent by string			X	X		
+212	random	xfnfmnx3jlg7	grp_bpd_m	4	Alcohol use disorder	False			review			Um	Um	mondo-gap	
+213	random	nctk2jzmdvio	grp_nc	0	healthy controls	True			absent by string			X	X		
+214	random	tkecrtsigfmq	grp_musician	0	Healthy controls	True			absent by string			X	X		
+215	random	ykrjvk6ufirw	grp_multi_mci	0	amnestic or amnestic plus MCI	False			review;rejected			Um	Uc	mci	
+216	random	2hizubkw3nyj	grp_epilepsy	0	intractable epilepsy	False			rejected			Um	Um	qualifier	
+217	random	drr5x2ptou2x	grp_placebo	0	Healthy	True			absent by string			X	X		
+218	random	zideisirsbdq	grp_ylp	0	No documented neurological or psychiatric disease	True			absent by string			X	X		
+219	random	skbwqa42u2vr	grp_control	0	Healthy volunteers	True			absent by string			X	X		
+220	random	z323hd765x7n	grp_fep	0	First-episode psychosis	False	MONDO:0005485	psychotic disorder	lexical	ONVOC:0000219	Psychotic Disorder	E	E		
+221	random	6xawgc6jabu4	grp_control	9	Adjustment disorder	False	MONDO:0003265	adjustment disorder	lexical			E	Uc		
+222	random	lfpz3zgepwfg	grp_ca	1	ADHD	False	MONDO:0007743	attention deficit-hyperactivity disorder	lexical	ONVOC:0000210	Attention-Deficit Hyperactivity Disorder	E	E		
+223	random	sjczgyuurngi	grp_lesions	4	Tremor	False			rejected			Uc	Um	onvoc-only	ONVOC Tremors
+224	random	iukjkozwufoo	grp_abi	0	Anoxic brain injury from drowning	False			rejected			Um	Uc	qualifier	
+225	random	aji7ycqujyjs	grp_hipp_pcc	0	Alzheimer's disease	False	MONDO:0004975	Alzheimer disease	lexical	ONVOC:0000176	Alzheimer's Disease	E	E		
+226	random	lmwktghmhshk	grp_students	0	healthy	True			absent by string			X	X		
+227	random	vo6gypckozkt	grp_participants	0	No reported major neurological, psychiatric, or medical conditions	True			absent by string			X	X		
+228	random	zpejv2jr4lri	grp_medium	0	Prodromal Huntington disease	False			rejected			Um	Um	risk	prodromal HD
+229	random	u6m6qthtv7hz	grp_active	1	Attention-Deficit/Hyperactivity Disorder in 7 participants	False	MONDO:0005302	attention deficit hyperactivity disorder, inattentive type	retrieval;strip:review	ONVOC:0000210	Attention-Deficit Hyperactivity Disorder	W	E	slash-split	
+230	random	vydb5ppaylfs	grp_dep	0	Depression	False	MONDO:0002050	depressive disorder	lexical	ONVOC:0000207	Depressive Disorder	E	E		
+231	random	jwmgzm5e6c2v	grp_mdd	3	Panic disorder with agoraphobia	False	MONDO:0044144	panic disorder with agoraphobia	lexical	ONVOC:0000206	Panic Disorder	E	E		
+232	random	ddweadipghze	grp_cbf_laterality	2	Multiple system atrophy	False	MONDO:0007803	multiple system atrophy	lexical			E	Um	onvoc-bridge	MSA: ONVOC Neurodegeneration
+233	random	xtnr6cez5pzr	grp_pw	0	pneumoconiosis	False	MONDO:0015926	pneumoconiosis	lexical			E	Uc		
+234	random	24hv25vgfwuy	grp_control	1	No major medical or neurological illness	True			absent by string			X	X		
+235	random	gggg2nn75jfi	grp_agcc	12	Tremor	False			rejected			Uc	Um	onvoc-only	
+236	random	dzd74wscjm4h	grp_pd	0	Idiopathic Parkinson's disease	False	MONDO:0005180	Parkinson disease	review-contained	ONVOC:0000178	Parkinson's Disease	E	E		
+237	random	7usglblmorlq	grp_mci	0	Mild cognitive impairment	False			review			Um	Uc	mci	
+238	random	ohvsu6siqezd	grp_hc	0	healthy controls	True			absent by string			X	X		
+239	random	qsx6kdi5fpjf	grp_healthy	0	Healthy	True			absent by string			X	X		
+240	random	e5woe2wctx5b	grp_men	0	Healthy	True			absent by string			X	X		
+241	random	d2ys4oicuuxm	grp_healthy	0	Healthy	True			absent by string			X	X		
+242	random	6gniwyuxpnrk	grp_jiw	0	Lexical-gustatory synaesthesia	False			rejected			Uc	Uc		
+243	random	rltb6ij4gwqt	grp_healthy	0	Healthy; no history of neurological or psychiatric illnesses	True			absent by string			X	X		
+244	random	ndfu3i3w37p3	grp_patients	0	schizophrenia	False	MONDO:0005090	schizophrenia	lexical	ONVOC:0000217	Schizophrenia	E	E		
+245	random	3yj5rhg7p7r2	grp_training	0	No history of neurological or psychiatric diseases	True			absent by string			X	X		
+246	random	g6m5ulkxfsqb	grp_healthy	0	Healthy	True			absent by string			X	X		
+247	random	rsj7ikxfokz4	grp_stimulus	0	Healthy	True			absent by string			X	X		
+248	random	a2igu6f3f2ft	grp_fmri	0	Healthy	True			absent by string			X	X		
+249	random	2pfkww3hgai4	grp_ad	0	Alzheimer's disease	False	MONDO:0004975	Alzheimer disease	lexical	ONVOC:0000176	Alzheimer's Disease	E	E		
+250	random	kvqa3wy7blnd	grp_normal	0	No history of neurological and psychiatric disorders	True			absent by string			X	X		
+251	random	6iqf6vxyivto	grp_ii	1	Severe childhood apraxia of speech	False	MONDO:0000665	apraxia	review-contained	https://w3id.org/onvoc/ONVOC_0000200	Apraxia	A	E		childhood apraxia of speech exists
+252	random	kzi6g342ljym	grp_chronological	0	Healthy controls	True			absent by string			X	X		
+253	random	wna5mxiqcbhg	grp_hc	0	Healthy controls	True			absent by string			X	X		
+254	random	mis4nyv2ij5d	grp_patient	2	Right hemiplegia	False			rejected			Um	Um	qualifier	
+255	random	q3toedqht3hs	grp_i	0	Bipolar I disorder	False	MONDO:0001866	bipolar I disorder	lexical	ONVOC:0000208	Bipolar Disorder	E	E		
+256	random	6y5mnynlrhxh	grp_avm	0	Cerebral arteriovenous malformations	False	MONDO:0007154	arteriovenous malformations of the brain	lexical	ONVOC:0000152	Cardiovascular Disease	E	E		
+257	random	ahjthpk3ydmp	grp_ctrls	0	Healthy	True			absent by string			X	X		
+258	random	bzrgpmwntgtv	grp_mci	0	Mild cognitive impairment	False			review			Um	Uc	mci	
+259	random	rtx7h5igtxco	grp_adhd	0	Attention-deficit/hyperactivity disorder	False	MONDO:0005302	attention deficit hyperactivity disorder, inattentive type	retrieval;review	ONVOC:0000210	Attention-Deficit Hyperactivity Disorder	W	E	slash-split	
+260	random	omgejmtik656	grp_healthy	0	Healthy	True			absent by string			X	X		
+261	random	oxdsdxgo2jfp	grp_e	0	Refractory mesial temporal lobe epilepsy	False			review			Um	Um	review-band	
+262	random	npenzhq7v7ec	grp_methylphenidate	1	Oppositional defiant disorder in 7 participants (35%)	False	MONDO:0000495	oppositional defiant disorder	strip:lexical	ONVOC:0000224	Oppositional Defiant Disorder	E	E		
+263	random	jqfdkexblwrj	grp_mci	0	mild cognitive impairment	False			review			Um	Uc	mci	
+264	random	sw3eqnusrkzk	grp_ptsd_plus	6	Sleep Apnea	False	MONDO:0005296	sleep apnea syndrome	lexical	ONVOC:0000660	Sleep Disturbances	E	A		Sleep Disorder finer than Sleep Disturbances
+265	random	bhr4ymbnkayd	grp_an	1	Atypical anorexia nervosa	False	MONDO:0005351	anorexia nervosa	review-contained			E	Um	onvoc-bridge	Eating Disorders
+266	random	hjkbcwdb2qa3	grp_ptsd_dep	1	Major depression	False	MONDO:0002009	major depressive disorder	lexical	ONVOC:0000207	Depressive Disorder	E	E		
+267	random	eogqjunzodnf	grp_controls	0	Healthy controls without chronic pain	True			absent by string			X	X		
+268	random	s3v2yrlm2vhp	grp_young	0	Healthy	True			absent by string			X	X		
+269	random	6ueuycqonc32	grp_brainmap_sma	0	Healthy humans	False			rejected			Xm	Xm	healthy-miss	Healthy humans, is_healthy false
+270	random	wqudn3mmgcbp	grp_tc_active	1	Hypertension	False			review			Um	Um	hypertension	
+271	random	adv5u2mgtglq	grp_nssi	7	Panic Disorder	False	MONDO:0005383	panic disorder	lexical	ONVOC:0000206	Panic Disorder	E	E		
+272	random	4qihxvc3kbbf	grp_participants	0	No reported history of neurologic or psychiatric disorders	True			absent by string			X	X		
+273	random	gxlnibzl3azj	grp_patients	0	Pilocytic astrocytoma	False	MONDO:0016691	pilocytic astrocytoma	lexical			E	Um	onvoc-bridge	Brain Tumor
+274	random	3drqftvtk4tl	grp_lfs	0	No history of psychological or neurological disorder	True			absent by string			X	X		
+275	random	5wz2exxc4ld6	grp_fmri	0	No reported hearing impairments or history of neurological disorders	True			absent by string			X	X		
+276	random	sxqzqjxspqp4	grp_action_representational	0	Healthy individuals	True			absent by string			X	X		
+277	random	cisag2jb62ng	grp_stroke	1	Aphasia in 85 of 115 patients	False	MONDO:0000598	aphasia	strip:lexical	https://w3id.org/onvoc/ONVOC_0000199	Aphasia	E	E		
+278	random	j6yrcysdkovn	grp_control	0	Healthy controls	True			absent by string			X	X		
+279	random	lp3mvmth7n62	grp_9	0	Nicotine dependence	False	MONDO:0008575	nicotine dependence	lexical	ONVOC:0000021	Substance Dependence	E	A		Tobacco Use Disorder exists
