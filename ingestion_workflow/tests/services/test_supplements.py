@@ -303,15 +303,29 @@ def test_a_word_file_is_read_with_its_tables(tmp_path):
     # A run that starts with its punctuation takes no space before it.
     ([("Table S3", "b"), (". Brain areas showing gene interaction effects on ReHo", "")],
      "Table S3. Brain areas showing gene interaction effects on ReHo"),
+    # r5i3sldauyg4's supplement: a figure's note, a page break, then the next table's caption,
+    # all one paragraph. The caption starts at its own run.
+    ([("Abbreviations", "bi"), (": B=Baclofen; P=Placebo; 1=time point 1; 2=time point 2", "i"),
+      ("", "bp"), ("Supplementary Table 3: Analyses of reaction times and misses in the baclofen group", "b")],
+     "Supplementary Table 3: Analyses of reaction times and misses in the baclofen group"),
+    # A paragraph citing a table in another format is no caption.
+    ([("Details of the sample are given in ", ""), ("Table S1", "i"), (" for more information.", "")], ""),
+    ([("Coupling rose in the high-load condition (", ""), ("Table 2", "i"), (") in the PLV comparison.", "")], ""),
+    # i4kcc33wifzz's supplement: a citation the next sentence follows.
+    ([("Significant clusters are listed in ", ""), ("Supplemental Table 3", "i"),
+      (". The most significant cluster remained.", "")], ""),
 ])
 def test_a_word_caption_whose_runs_differ_in_format_is_read_whole(tmp_path, runs, caption):
     import docx
+    from docx.enum.text import WD_BREAK
 
     document = docx.Document()
     paragraph = document.add_paragraph()
     for text, style in runs:
         run = paragraph.add_run(text)
         run.bold, run.italic = "b" in style, "i" in style
+        if "p" in style:
+            run.add_break(WD_BREAK.PAGE)
     table = document.add_table(rows=2, cols=4)
     for r, row in enumerate([["Region", "x", "y", "z"], ["IFG", "-39", "20", "19"]]):
         for c, cell in enumerate(row):
@@ -323,7 +337,7 @@ def test_a_word_caption_whose_runs_differ_in_format_is_read_whole(tmp_path, runs
     sp.read(item, tmp_path / "read")
 
     [read] = item.tables
-    assert read["caption"] == caption
+    assert (read.get("caption") or "") == caption
 
 
 @pytest.mark.parametrize("paragraphs, caption", [

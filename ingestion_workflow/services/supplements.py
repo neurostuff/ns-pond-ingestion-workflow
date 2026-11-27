@@ -495,6 +495,12 @@ def _word_converter():
 _CAPTION_LINE = re.compile(r"^\W*(?:supplementa\w*\s+)?table\s*s?\d+", re.I)
 #: A caption paragraph that is only its label: "Table S6", "Supplementary Table 2.".
 _LABEL_ONLY = re.compile(r"^\W*(?:supplementa\w*\s+)?table\s*s?\d+[a-z]?\s*[.:]?$", re.I)
+#: A caption begun mid-paragraph: the label, then "." or ":", a capitalised title, or nothing.
+#: "Table S1 for more information." and "Table 2) found in" are the text citing a table.
+_CAPTION_START = re.compile(
+    r"^\W*(?:supplementa\w*\s+)?table\s*s?\d+[a-z]?(?:\s*[.:]|\s*$|\s+(?-i:[A-Z\[(]))", re.I)
+#: Text that reads on into what follows it ("... are listed in", "(see"): a table it names is cited.
+_READS_ON = re.compile(r"[a-z(\[,;]$")
 
 
 def _join_runs(parts: List[str]) -> str:
@@ -514,6 +520,8 @@ def word_captions(document) -> List[str]:
 
     Docling reads a paragraph whose runs differ in format ("**Supplementary Table 5.**
     Whole-brain ...") as an inline group of texts; the group's texts, joined, are the paragraph.
+    When the paragraph doesn't start a caption, the caption starts at the first text that begins
+    one (a figure's note, a page break, then "Supplementary Table 3: ..."), not at a citation.
     A paragraph that is only the label ("Table S6") takes the next paragraph, its title, when
     one comes before the table.
     """
@@ -528,7 +536,13 @@ def word_captions(document) -> List[str]:
         if getattr(node, "label", None) == "inline":
             parts = [child.resolve(document) for child in node.children]
             grouped.update(part.self_ref for part in parts)
-            text = _join_runs([getattr(part, "text", "") or "" for part in parts])
+            runs = [getattr(part, "text", "") or "" for part in parts]
+            text = _join_runs(runs)
+            if not _CAPTION_LINE.match(_squash(text)):
+                begun = (_squash(_join_runs(runs[i:])) for i, run in enumerate(runs)
+                         if _CAPTION_LINE.match(_squash(run))
+                         and not _READS_ON.search(_squash(_join_runs(runs[:i]))))
+                text = next((t for t in begun if _CAPTION_START.match(t)), text)
         else:
             text = getattr(node, "text", "") or ""
         text = _squash(text)
