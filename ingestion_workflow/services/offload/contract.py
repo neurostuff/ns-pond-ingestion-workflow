@@ -74,10 +74,13 @@ class RunSpec(BaseModel):
     weights_sha256: Optional[str] = None
     prompt_version: str
     schema_version: str
-    #: The paper text a record request carries: "full", the parse's text, or "trimmed-1",
-    #: that text less its copied tables and reference lists (`record_text`). A spec that
-    #: trims names it in its `prompt_version`, which the run's identity holds.
-    record_text: Literal["full", "trimmed-1"] = "full"
+    #: The paper text a record request carries: "full", the parse's text; "trimmed-1", that
+    #: text less its copied tables and reference lists (`record_text`); or "trimmed-2",
+    #: trimmed-1, and a request still over `max_input_tokens` cut to it (reviewed ranges,
+    #: numeric supplementary data, then the paragraphs farthest from its analyses:
+    #: `record_text`). A spec that trims names it in its `prompt_version`, which the run's
+    #: identity holds.
+    record_text: Literal["full", "trimmed-1", "trimmed-2"] = "full"
     serve: Serve
     shard_size: int = 500
     #: Papers whose request is longer are left out, as skipped.

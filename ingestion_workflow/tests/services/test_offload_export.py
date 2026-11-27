@@ -17,7 +17,14 @@ from ingestion_workflow.config import Settings
 from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.stages.offloaded import RecordStage
 from ingestion_workflow.services.offload.contract import BundleDir, load_spec
-from ingestion_workflow.services.offload.export import NO_ANALYSES, OVER, TEXT_MOVED, export, shard
+from ingestion_workflow.services.offload.export import (
+    NO_ANALYSES,
+    NOT_A_RECORD,
+    OVER,
+    TEXT_MOVED,
+    export,
+    shard,
+)
 from ingestion_workflow.services.offload.importer import import_run
 from pondie_astra import prompt
 
@@ -320,3 +327,88 @@ def test_a_long_spec_asks_again_what_the_trimmed_spec_skipped_and_not_its_own_sk
     assert export(ctx, TRIMMED, "vista", workers=1, now=NOW).fresh == 1
     assert len(export(ctx, LONG, "vista", workers=1, now=NOW).shards) == 1
     assert LONG.serve.max_len > LONG.max_input_tokens + LONG.serve.max_tokens - 1
+
+
+FIT = TRIMMED.model_copy(update={"version": "ns-27b-f-t9", "record_text": "trimmed-2"})
+
+
+def test_a_fitting_spec_sends_what_trimmed_1_sends_when_that_fits(ctx, tmp_path, fake_tokens):
+    _synced(ctx, ARTICLE, _paper(tmp_path / "pond", ARTICLE))
+    (one,) = _rows(export(ctx, TRIMMED, "vista", workers=1, now=NOW).bundle)
+
+    (two,) = _rows(export(ctx, FIT, "vista", workers=1, now=NOW + timedelta(minutes=1)).bundle)
+
+    assert two["content"] == one["content"] and two["n_input_tokens"] == one["n_input_tokens"]
+
+
+def test_a_fitting_spec_cuts_a_text_over_its_limit_to_fit_and_keeps_the_analysis(
+        ctx, tmp_path, fake_tokens):
+    """26klegjq7mhi's one analysis is three text spans; its trimmed-1 request is 8,416 fake tokens,
+    3,356 of them the prompt around the text. A limit of 5,000 leaves the text 1,644."""
+    paper = _paper(tmp_path / "pond", ARTICLE)
+    _synced(ctx, ARTICLE, paper)
+    (one,) = _rows(export(ctx, TRIMMED, "vista", workers=1, now=NOW).bundle)
+    parse = json.loads((paper / "parse" / "coordinate_parse.json").read_text())
+    text = (paper / json.loads((paper / "parse" / "parsed_paper.json").read_text())["text_path"]
+            ).read_text()
+    cited = [text[sp["start_char"]:sp["end_char"]] for sp in parse["analyses"][0]["text_spans"]]
+    limit = 5000
+
+    report = export(ctx, FIT.model_copy(update={"max_input_tokens": limit}), "vista",
+                    workers=1, now=NOW + timedelta(minutes=1))
+
+    (row,) = _rows(report.bundle)
+    assert row["n_input_tokens"] <= limit and report.skipped == 0
+    assert "characters of the text are left out here.]" in row["content"]
+    assert len(cited) == 3 and all(c.strip() and c in row["content"] for c in cited)
+    assert row["text_sha256"] == one["text_sha256"] and one["n_input_tokens"] > limit
+
+
+def _ranges(monkeypatch, tmp_path, held):
+    from ingestion_workflow.services.offload import record_text as rt
+
+    path = tmp_path / "ranges.json"
+    path.write_text(json.dumps(held))
+    monkeypatch.setattr(rt, "RANGES", path)
+    rt._ranges.cache_clear()
+
+
+def test_a_reviewed_skip_leaves_a_paper_out_as_no_record_of_its_own(
+        ctx, tmp_path, fake_tokens, monkeypatch):
+    paper = _paper(tmp_path / "pond", ARTICLE)
+    _synced(ctx, ARTICLE, paper)
+    sha = json.loads((paper / "parse" / "coordinate_parse.json").read_text())["text_sha256"]
+    _ranges(monkeypatch, tmp_path, {ARTICLE: {"text_sha256": sha, "skip": "a book on others"}})
+
+    report = export(ctx, FIT, "vista", workers=1, now=NOW)
+
+    assert report.left_out[NOT_A_RECORD] == 1 and report.shards == []
+
+
+def test_a_skip_for_another_text_of_the_paper_is_not_applied(
+        ctx, tmp_path, fake_tokens, monkeypatch):
+    _synced(ctx, ARTICLE, _paper(tmp_path / "pond", ARTICLE))
+    _ranges(monkeypatch, tmp_path, {ARTICLE: {"text_sha256": "0" * 64, "skip": "stale"}})
+
+    assert len(_rows(export(ctx, FIT, "vista", workers=1, now=NOW).bundle)) == 1
+
+
+def test_a_reviewed_range_never_cuts_the_paragraph_of_an_analysis(
+        ctx, tmp_path, fake_tokens, monkeypatch):
+    """The range keeps only the first 500 characters; the analysis's three spans are later."""
+    paper = _paper(tmp_path / "pond", ARTICLE)
+    _synced(ctx, ARTICLE, paper)
+    parse = json.loads((paper / "parse" / "coordinate_parse.json").read_text())
+    text = (paper / json.loads((paper / "parse" / "parsed_paper.json").read_text())["text_path"]
+            ).read_text()
+    cited = [text[sp["start_char"]:sp["end_char"]] for sp in parse["analyses"][0]["text_spans"]]
+    assert all(text.index(c) > 500 for c in cited)
+    _ranges(monkeypatch, tmp_path, {ARTICLE: {"text_sha256": parse["text_sha256"],
+                                              "keep": [[0, 500]]}})
+
+    (row,) = _rows(export(ctx, FIT.model_copy(update={"max_input_tokens": 6000}), "vista",
+                          workers=1, now=NOW).bundle)
+
+    sent_text = row["content"].split("\n\nCoordinate sets:\n")[0]
+    assert all(c in sent_text for c in cited)
+    assert "characters of the text are left out here.]" in sent_text

@@ -1,0 +1,282 @@
+{
+ "3rx6t4xvzb23": {
+  "text_sha256": "47d5c246d4a23bb3cd1457cc4c7f6f7d67383cbe5727d1cd10b3e1253e1e8001",
+  "keep": [
+   [
+    114459,
+    157523
+   ],
+   [
+    157523,
+    190626
+   ]
+  ],
+  "note": "thesis: Keep only the Study II chapter, including its own supplemental subsection C2.7 (which holds most of the tables). There is no general-methods chapter to add: each study chapter has its own methods. Opt"
+ },
+ "4im3nsqbzj5i": {
+  "text_sha256": "0c36234364c4f13f95613de2a55e9e69eee78487a36ed4b7f7beb7a75e35943b",
+  "keep": [
+   [
+    2344,
+    5423
+   ],
+   [
+    74317,
+    98082
+   ],
+   [
+    132194,
+    158808
+   ],
+   [
+    185569,
+    224376
+   ],
+   [
+    246662,
+    247928
+   ]
+  ],
+  "note": "thesis: Chapters with analyses (Ch1-Ch3, ~53k) fit and are enough. Narrower: keep each chapter's \"2 MATERIALS AND METHODS\" to \"4 DISCUSSION\", dropping chapter introductions/discussions, the Ch3 Destrieux ROI "
+ },
+ "5afx522m6rax": {
+  "text_sha256": "a36e994a08284b805a3c96fee9c43a0e68521f568707c640eda9af98d79660a6",
+  "skip": "No task, no contrast, no activation or group comparison: it is a structural atlas of monkey basal ganglia nuclei in ear-bar frame coordinates (not MNI/Talairach, not human). Nothing fits the record's "
+ },
+ "cqj5aoh2yonc": {
+  "text_sha256": "b0481dd13d10bbff24b15f46aba63ed654808063b2a81c1c81fd249685023b57",
+  "keep": [
+   [
+    195759,
+    273987
+   ],
+   [
+    373173,
+    411921
+   ]
+  ],
+  "note": "thesis: Anchor-chapter selection fails here because every anchor sits in the front-matter lists. Use the thesis structure instead: keep the Methods and Results parts, and the annex with the coordinate tables."
+ },
+ "fsxfvnas35jp": {
+  "text_sha256": "c44a28a38ae47598723c5220cda11c1178e6d68762956afdf1857ad5b224189e",
+  "keep": [
+   [
+    108174,
+    168596
+   ],
+   [
+    198523,
+    240679
+   ],
+   [
+    269968,
+    306972
+   ]
+  ],
+  "note": "thesis: Chapters holding anchors (Studies 1, 3, 5) suffice, because the shared acquisition/preprocessing description the later studies refer to sits in Study 1, which itself holds anchors. Ignore the front-ma"
+ },
+ "j5wfzaiq44v3": {
+  "text_sha256": "66afac28ec642a12f98407e5f0b29231a67cc6e93a93c6db5f019f6468c5430b",
+  "keep": [
+   [
+    66832,
+    119298
+   ],
+   [
+    130834,
+    141394
+   ],
+   [
+    141394,
+    173603
+   ],
+   [
+    249619,
+    306273
+   ],
+   [
+    414283,
+    429130
+   ],
+   [
+    434892,
+    438306
+   ]
+  ],
+  "note": "thesis: Chapter-with-anchors keeps all of Partie empirique 1 and 2 (~70K incl. the anchor-free Neuropsychologia 2014 article and four reference lists) but misses the detached figure-legend block where 6 of 10"
+ },
+ "lo34whiz3zhz": {
+  "text_sha256": "578eaa0f0e3034eadb31299778d0e2f19972b76bad32d08115597406e38da6cf",
+  "keep": [
+   [
+    203232,
+    268281
+   ],
+   [
+    293120,
+    301372
+   ],
+   [
+    395611,
+    397456
+   ]
+  ],
+  "note": "thesis: Chapters with anchors would keep Chapters 2 and 3 with references (~47K) and mix two studies with different samples (sighted n=16 vs EB 16 / SC 18) into one record. Keep only the chapter whose title m"
+ },
+ "odfasbrzdyfv": {
+  "text_sha256": "d7e6b8d010364f9bcf4ffe45ce5e7a9bbbdb20a4603a26f7e60b64c9f719160d",
+  "keep": [
+   [
+    183550,
+    208633
+   ],
+   [
+    231041,
+    272102
+   ],
+   [
+    373787,
+    424830
+   ]
+  ],
+  "note": "thesis: Keeping only the spans with anchors would take Study 1 ch. 6 and Apêndice III but miss Study 2's methods (ch. 9), which hold the participants, acquisition and GLM for the appendix tables. Keep each st"
+ },
+ "oehxqoo6ja3z": {
+  "text_sha256": "e7cc1f4b6238dbb6bd8e26d51e9880b97e2afa6373bf5e857cdaf8aa25cbf63e",
+  "skip": "The book discusses other people's fMRI studies. It has no participants, acquisition or analyses of its own. The one table is copied from de Lange et al., which should be extracted from its own paper."
+ },
+ "q7t4vdtkcu4y": {
+  "text_sha256": "f6f98b86b32fb257f90337a78152055682a83ded4fee501f19a6c37fb43dbbc8",
+  "skip": "Judgement call. The only neuroimaging content is a coordinate-based meta-analysis of other people's fMRI studies. It has no participants, acquisition or preprocessing of its own, so the record's group"
+ },
+ "rdgrd3r52lbn": {
+  "text_sha256": "00a61d7ab6c140f3ae0c61e7c0f4027f832d42009a79cdd2925fbfb3013f252e",
+  "keep": [
+   [
+    224240,
+    286835
+   ],
+   [
+    286835,
+    336869
+   ],
+   [
+    336869,
+    403737
+   ],
+   [
+    403737,
+    442616
+   ],
+   [
+    519270,
+    554036
+   ]
+  ],
+  "note": "thesis: Keep the chapters that hold the real tables. The 8 list-of-tables anchors must not pull in the front matter. Study 5 (7.2) and Annex B are behavioural and can go. Annex A is a separate co-authored VBM"
+ },
+ "rslzroynz6yk": {
+  "text_sha256": "2748f90c23f48095747899caa6114f4c05b160a2ad55833f91d3488ab7b9fd93",
+  "keep": [
+   [
+    111768,
+    158289
+   ],
+   [
+    181986,
+    237504
+   ],
+   [
+    252926,
+    262271
+   ]
+  ],
+  "note": "thesis: Chapters with anchors (Ch5 + Ch6 whole) is ~37.6K and would work, but ~9.8K of it is the two reference lists; Ch6's tables sit after its References heading, so a plain 'cut at References' would lose a"
+ },
+ "rxjjtux7t4ke": {
+  "text_sha256": "a53e18854e99b6ae283fa2669122ae5ce7bf8e823b4a31bcf8773e5c02abf7f2",
+  "keep": [
+   [
+    586756,
+    663704
+   ]
+  ],
+  "note": "book: Keep the one chapter holding anchors. The rest of the volume is other authors' chapters, and ch. 11 is a review with no tables of its own."
+ },
+ "sbklmbkg2i3o": {
+  "text_sha256": "9d1530154c1e167aac368d01c52e72ab8ccc27cb297e1bddd13a580a896f0b74",
+  "keep": [
+   [
+    213524,
+    233779
+   ],
+   [
+    233779,
+    266744
+   ],
+   [
+    266744,
+    305523
+   ],
+   [
+    459580,
+    463678
+   ]
+  ],
+  "note": "thesis: The chapters holding anchors (Studies 2-4, the study-3 annex and the figure legends) are enough at ~24k. Etude 1 (a review) and the general discussion carry no analyses and are dropped. Studies 3 and "
+ },
+ "tv4e7zq5txvc": {
+  "text_sha256": "cbe2a76197d3ab6e39b27c00461ee49d064fb85f406dd046735f3d52555e289a",
+  "keep": [
+   [
+    156594,
+    196289
+   ],
+   [
+    206078,
+    213771
+   ],
+   [
+    229330,
+    273850
+   ],
+   [
+    295439,
+    311944
+   ]
+  ],
+  "note": "thesis: Keeping only Part 2 (154753-311944, ~39k tokens) is enough. Narrower: drop the two articles' reference lists and the TMS sub-study (no analyses), keeping both imaging articles with their supplements ("
+ },
+ "y2nyspbvn5f7": {
+  "text_sha256": "b61ccbe1e715b1e7692de09b7166882e9589e27f0a1e9c98429d1c1b169a1f4c",
+  "keep": [
+   [
+    306287,
+    360480
+   ],
+   [
+    382537,
+    398488
+   ]
+  ],
+  "note": "thesis: Keeping Chapter 6 whole (306287-398488, ~21.5k) fits easily; narrower is to also drop the chapter's reference list (360480-382537), keeping the supplements that follow it."
+ },
+ "ziaaknzjis32": {
+  "text_sha256": "9e9cfabfe1bddfd32895d324085973bd9e16ed883bd3ee4c2af9ff828d3a9c87",
+  "keep": [
+   [
+    137864,
+    162503
+   ],
+   [
+    183944,
+    209026
+   ],
+   [
+    229934,
+    255750
+   ]
+  ],
+  "note": "thesis: Chapters holding analyses (ch4, ch5, ch6 = ~29.3k) would fit, but the anchor rule also pulls in Annexe A, which repeats ch4 in English (3 duplicate analyses). Keep ch4-ch6 and drop Annexe A (or keep A"
+ }
+}
