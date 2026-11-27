@@ -1,6 +1,6 @@
 {
 "model": "task-design-v4",
-"note": "records from astra_records.json; no text, so no excerpt; answers from beast vLLM, greedy, 2026-11-26; xbp5wa6xqs3x (a resting-state task without conditions) added 2026-11-27 from the production catalog's 27B record; j2sjvw7hq3az (a task without conditions whose analysis is parametric) added 2026-11-27; rt72p6lw3elr (analyses naming a condition the record does not define) added 2026-11-27",
+"note": "records from astra_records.json; no text, so no excerpt; answers from beast vLLM, greedy, 2026-11-26; xbp5wa6xqs3x (a resting-state task without conditions) added 2026-11-27 from the production catalog's 27B record; j2sjvw7hq3az (a task without conditions whose analysis is parametric) added 2026-11-27; rt72p6lw3elr (analyses naming a condition the record does not define) added 2026-11-27; s55x4rmdfijn (analyses comparing a task against rest by their task ids) added 2026-11-27",
 "studies": {
 "6SKTGteXbbBs": {
 "record": {
@@ -10923,6 +10923,3961 @@
 "tsk_empathy": {
 "content": "{\"factors\": [{\"from_term\": null, \"axis\": \"emotion\", \"levels\": [{\"level\": \"pain\", \"value\": \"pain\"}, {\"level\": \"negative emotions\", \"value\": \"sad\"}, {\"level\": \"positive emotions\", \"value\": \"happy\"}]}], \"context\": [{\"axis\": \"modality\", \"value\": \"visual\"}], \"conditions\": [{\"id\": \"pain\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"emotion\", \"value\": \"pain\"}], \"expansion\": null, \"gloss\": \"pain observation\"}, {\"id\": \"negative emotions\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"emotion\", \"value\": \"sad\"}], \"expansion\": null, \"gloss\": \"sad emotion observation\"}, {\"id\": \"positive emotions\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"emotion\", \"value\": \"happy\"}], \"expansion\": null, \"gloss\": \"happy emotion observation\"}], \"task\": \"tct_empathy_pain_observation\", \"family\": \"social_cognition_and_games\", \"task_confidence\": \"medium\"}",
 "prompt_sha256": "c5941713d4775f2339cf24619e19408e273df5c91f29a2e28a7384a919f97d61"
+}
+}
+},
+"s55x4rmdfijn": {
+"record": {
+"acquisitions": [
+{
+"acquisition_duration_seconds": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 348,
+"value_source": "generated"
+},
+"acquisition_type": "MRI",
+"acquisition_voxel_size_mm": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+3.2,
+3.2,
+3.2
+],
+"value_source": "generated"
+},
+"brain_coverage": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"echo_time_seconds": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+0.03
+],
+"value_source": "generated"
+},
+"local_id": "acq_fmri_rest",
+"magnetic_field_strength_tesla": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 3,
+"value_source": "generated"
+},
+"modality": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "fMRI",
+"value_source": "generated"
+},
+"mr_acquisition_type": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"number_of_volumes": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 180,
+"value_source": "generated"
+},
+"pulse_sequence_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "axial echo-planar imaging T2*-weighted sequence",
+"value_source": "generated"
+},
+"repetition_time_seconds": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 2,
+"value_source": "generated"
+}
+},
+{
+"acquisition_duration_seconds": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 500,
+"value_source": "generated"
+},
+"acquisition_type": "MRI",
+"acquisition_voxel_size_mm": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+3.2,
+3.2,
+3
+],
+"value_source": "generated"
+},
+"brain_coverage": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"echo_time_seconds": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+0.03
+],
+"value_source": "generated"
+},
+"local_id": "acq_fmri_kidmid",
+"magnetic_field_strength_tesla": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 3,
+"value_source": "generated"
+},
+"modality": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "fMRI",
+"value_source": "generated"
+},
+"mr_acquisition_type": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"number_of_volumes": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"pulse_sequence_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "T2*-weighted gradient echo EPI",
+"value_source": "generated"
+},
+"repetition_time_seconds": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 2,
+"value_source": "generated"
+}
+},
+{
+"acquisition_duration_seconds": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 315,
+"value_source": "generated"
+},
+"acquisition_type": "MRI",
+"acquisition_voxel_size_mm": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+0.9,
+0.9,
+0.9
+],
+"value_source": "generated"
+},
+"brain_coverage": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"echo_time_seconds": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+0.0024
+],
+"value_source": "generated"
+},
+"local_id": "acq_smri",
+"magnetic_field_strength_tesla": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 3,
+"value_source": "generated"
+},
+"modality": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "sMRI",
+"value_source": "generated"
+},
+"mr_acquisition_type": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"number_of_volumes": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"pulse_sequence_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "sagittal spoiled gradient echo",
+"value_source": "generated"
+},
+"repetition_time_seconds": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 0.0063,
+"value_source": "generated"
+}
+}
+],
+"analyses": [
+{
+"acquisitions": [
+"acq_fmri_rest",
+"acq_fmri_kidmid"
+],
+"coordinate_space": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "MNI",
+"value_source": "generated"
+},
+"definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Average reward-to-brain FC was stronger during task-state (M=0.11) than during resting-state (M=0.01).",
+"value_source": "generated"
+},
+"details": {
+"connectivity_method": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Pearson correlations between ROI mean timeseries",
+"value_source": "generated"
+},
+"details_type": "ConnectivityDetails",
+"inference_target": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "connectivity_parameter",
+"value_source": "generated"
+},
+"modulatory_input": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"seed_regions": [
+"reg_reward"
+]
+},
+"effect": {
+"cells": [
+{
+"direction": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "positive",
+"value_source": "generated"
+},
+"label": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "task-state",
+"value_source": "generated"
+},
+"term": "trm_state"
+},
+{
+"direction": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "negative",
+"value_source": "generated"
+},
+"label": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "resting-state",
+"value_source": "generated"
+},
+"term": "trm_state"
+}
+],
+"kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "contrast",
+"value_source": "generated"
+},
+"statistic": {
+"degrees_of_freedom_denominator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"degrees_of_freedom_numerator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "t",
+"value_source": "generated"
+}
+}
+},
+"groups": [
+{
+"group": "grp_youths",
+"n": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 164,
+"value_source": "generated"
+}
+}
+],
+"inference_settings": "inf_supplement",
+"interpretations": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Average reward-to-brain FC was stronger during task-state than during resting-state."
+],
+"value_source": "generated"
+},
+"local_id": "a_prose_1",
+"measure": "mea_fc",
+"model_estimation": "mod_fc",
+"model_representation_notes": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "The supplied parse key identifies Table S1, which defines ROIs rather than this result. The result is retained under prose#1 because the supplied listing contains no prose#1 entry.",
+"value_source": "generated"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Reward-to-brain FC during task-state versus resting-state",
+"value_source": "generated"
+},
+"outcome": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "significant_effect",
+"value_source": "generated"
+},
+"prespecification": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"regions": [
+"reg_reward"
+],
+"source_table_analysis": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analysis#fe9c57f4c89fa0e4",
+"value_source": "generated"
+},
+"spatial_scope": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "roi",
+"value_source": "generated"
+},
+"tasks": [
+"tsk_rest",
+"tsk_kidmid"
+]
+},
+{
+"acquisitions": [
+"acq_fmri_rest",
+"acq_fmri_kidmid"
+],
+"coordinate_space": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "MNI",
+"value_source": "generated"
+},
+"definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Within-reward FC was significantly stronger during task-state (M=0.22) than during resting-state (M=0.19).",
+"value_source": "generated"
+},
+"details": {
+"connectivity_method": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Pearson correlations between ROI mean timeseries",
+"value_source": "generated"
+},
+"details_type": "ConnectivityDetails",
+"inference_target": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "connectivity_parameter",
+"value_source": "generated"
+},
+"modulatory_input": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"seed_regions": [
+"reg_reward"
+]
+},
+"effect": {
+"cells": [
+{
+"direction": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "positive",
+"value_source": "generated"
+},
+"label": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "task-state",
+"value_source": "generated"
+},
+"term": "trm_state"
+},
+{
+"direction": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "negative",
+"value_source": "generated"
+},
+"label": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "resting-state",
+"value_source": "generated"
+},
+"term": "trm_state"
+}
+],
+"kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "contrast",
+"value_source": "generated"
+},
+"statistic": {
+"degrees_of_freedom_denominator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"degrees_of_freedom_numerator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "t",
+"value_source": "generated"
+}
+}
+},
+"groups": [
+{
+"group": "grp_youths",
+"n": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 164,
+"value_source": "generated"
+}
+}
+],
+"inference_settings": "inf_supplement",
+"interpretations": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Within-reward FC was significantly stronger during task-state than during resting-state."
+],
+"value_source": "generated"
+},
+"local_id": "a_prose_2",
+"measure": "mea_fc",
+"model_estimation": "mod_fc",
+"model_representation_notes": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "The supplied parse key identifies Table S1, which defines ROIs rather than this result. The result is retained under prose#2 because the supplied listing contains no prose#2 entry.",
+"value_source": "generated"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Within-reward FC during task-state versus resting-state",
+"value_source": "generated"
+},
+"outcome": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "significant_effect",
+"value_source": "generated"
+},
+"prespecification": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"regions": [
+"reg_reward"
+],
+"source_table_analysis": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analysis#fe9c57f4c89fa0e4",
+"value_source": "generated"
+},
+"spatial_scope": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "roi",
+"value_source": "generated"
+},
+"tasks": [
+"tsk_rest",
+"tsk_kidmid"
+]
+},
+{
+"acquisitions": [
+"acq_fmri_kidmid"
+],
+"coordinate_space": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "MNI",
+"value_source": "generated"
+},
+"definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Reward-to-brain FC during task-state was negatively correlated with age (r=-.25, p=.003).",
+"value_source": "generated"
+},
+"details": {
+"connectivity_method": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Pearson correlations between ROI mean timeseries",
+"value_source": "generated"
+},
+"details_type": "ConnectivityDetails",
+"inference_target": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "connectivity_parameter",
+"value_source": "generated"
+},
+"modulatory_input": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"seed_regions": [
+"reg_reward"
+]
+},
+"effect": {
+"cells": [
+{
+"direction": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "negative",
+"value_source": "generated"
+},
+"label": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"level": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"term": "trm_age_task"
+}
+],
+"kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "cross_subject_regression",
+"value_source": "generated"
+},
+"statistic": {
+"degrees_of_freedom_denominator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"degrees_of_freedom_numerator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "correlation",
+"value_source": "generated"
+}
+}
+},
+"groups": [
+{
+"group": "grp_youths",
+"n": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 164,
+"value_source": "generated"
+}
+}
+],
+"inference_settings": "inf_supplement",
+"interpretations": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Reward-to-brain FC during task-state was negatively correlated with age."
+],
+"value_source": "generated"
+},
+"local_id": "a_prose_3",
+"measure": "mea_fc",
+"model_estimation": "mod_fc_task_age",
+"model_representation_notes": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "The supplied parse key identifies Table S1, which defines ROIs rather than this result. The result is retained under prose#3 because the supplied listing contains no prose#3 entry.",
+"value_source": "generated"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Reward-to-brain FC during task-state and age",
+"value_source": "generated"
+},
+"outcome": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "significant_effect",
+"value_source": "generated"
+},
+"prespecification": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"regions": [
+"reg_reward"
+],
+"source_table_analysis": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analysis#fe9c57f4c89fa0e4",
+"value_source": "generated"
+},
+"spatial_scope": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "roi",
+"value_source": "generated"
+},
+"tasks": [
+"tsk_kidmid"
+]
+},
+{
+"acquisitions": [
+"acq_fmri_rest"
+],
+"coordinate_space": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "MNI",
+"value_source": "generated"
+},
+"definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Reward-to-brain FC during resting-state was not significantly correlated with age (r=-.04, p=.58).",
+"value_source": "generated"
+},
+"details": {
+"connectivity_method": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Pearson correlations between ROI mean timeseries",
+"value_source": "generated"
+},
+"details_type": "ConnectivityDetails",
+"inference_target": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "connectivity_parameter",
+"value_source": "generated"
+},
+"modulatory_input": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"seed_regions": [
+"reg_reward"
+]
+},
+"effect": {
+"cells": [
+{
+"direction": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "negative",
+"value_source": "generated"
+},
+"label": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"level": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"term": "trm_age_rest"
+}
+],
+"kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "cross_subject_regression",
+"value_source": "generated"
+},
+"statistic": {
+"degrees_of_freedom_denominator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"degrees_of_freedom_numerator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "correlation",
+"value_source": "generated"
+}
+}
+},
+"groups": [
+{
+"group": "grp_youths",
+"n": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 164,
+"value_source": "generated"
+}
+}
+],
+"inference_settings": "inf_supplement",
+"interpretations": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Reward-to-brain FC during resting-state was not significantly correlated with age."
+],
+"value_source": "generated"
+},
+"local_id": "a_prose_4",
+"measure": "mea_fc",
+"model_estimation": "mod_fc_rest_age",
+"model_representation_notes": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "The supplied parse key identifies Table S1, which defines ROIs rather than this result. The result is retained under prose#4 because the supplied listing contains no prose#4 entry.",
+"value_source": "generated"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Reward-to-brain FC during resting-state and age",
+"value_source": "generated"
+},
+"outcome": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "no_significant_effect",
+"value_source": "generated"
+},
+"prespecification": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"regions": [
+"reg_reward"
+],
+"source_table_analysis": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analysis#fe9c57f4c89fa0e4",
+"value_source": "generated"
+},
+"spatial_scope": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "roi",
+"value_source": "generated"
+},
+"tasks": [
+"tsk_rest"
+]
+},
+{
+"acquisitions": [
+"acq_fmri_rest"
+],
+"coordinate_space": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "MNI",
+"value_source": "generated"
+},
+"definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Within-reward FC during resting-state was significantly associated with age (r=.22, p=.005).",
+"value_source": "generated"
+},
+"details": {
+"connectivity_method": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Pearson correlations between ROI mean timeseries",
+"value_source": "generated"
+},
+"details_type": "ConnectivityDetails",
+"inference_target": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "connectivity_parameter",
+"value_source": "generated"
+},
+"modulatory_input": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"seed_regions": [
+"reg_reward"
+]
+},
+"effect": {
+"cells": [
+{
+"direction": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "positive",
+"value_source": "generated"
+},
+"label": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"level": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"term": "trm_age_within_rest"
+}
+],
+"kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "cross_subject_regression",
+"value_source": "generated"
+},
+"statistic": {
+"degrees_of_freedom_denominator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"degrees_of_freedom_numerator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "correlation",
+"value_source": "generated"
+}
+}
+},
+"groups": [
+{
+"group": "grp_youths",
+"n": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 164,
+"value_source": "generated"
+}
+}
+],
+"inference_settings": "inf_supplement",
+"interpretations": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Within-reward FC during resting-state was significantly associated with age."
+],
+"value_source": "generated"
+},
+"local_id": "a_prose_5",
+"measure": "mea_fc",
+"model_estimation": "mod_fc_within_rest_age",
+"model_representation_notes": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "The supplied parse key identifies Table S1, which defines ROIs rather than this result. The result is retained under prose#5 because the supplied listing contains no prose#5 entry.",
+"value_source": "generated"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Within-reward FC during resting-state and age",
+"value_source": "generated"
+},
+"outcome": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "significant_effect",
+"value_source": "generated"
+},
+"prespecification": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"regions": [
+"reg_reward"
+],
+"source_table_analysis": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analysis#fe9c57f4c89fa0e4",
+"value_source": "generated"
+},
+"spatial_scope": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "roi",
+"value_source": "generated"
+},
+"tasks": [
+"tsk_rest"
+]
+},
+{
+"acquisitions": [
+"acq_fmri_kidmid"
+],
+"coordinate_space": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "MNI",
+"value_source": "generated"
+},
+"definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Within-reward FC during task-state was not significantly associated with age (r=-.06, p=.51).",
+"value_source": "generated"
+},
+"details": {
+"connectivity_method": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Pearson correlations between ROI mean timeseries",
+"value_source": "generated"
+},
+"details_type": "ConnectivityDetails",
+"inference_target": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "connectivity_parameter",
+"value_source": "generated"
+},
+"modulatory_input": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"seed_regions": [
+"reg_reward"
+]
+},
+"effect": {
+"cells": [
+{
+"direction": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "negative",
+"value_source": "generated"
+},
+"label": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"level": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"term": "trm_age_within_task"
+}
+],
+"kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "cross_subject_regression",
+"value_source": "generated"
+},
+"statistic": {
+"degrees_of_freedom_denominator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"degrees_of_freedom_numerator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "correlation",
+"value_source": "generated"
+}
+}
+},
+"groups": [
+{
+"group": "grp_youths",
+"n": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 164,
+"value_source": "generated"
+}
+}
+],
+"inference_settings": "inf_supplement",
+"interpretations": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Within-reward FC during task-state was not significantly associated with age."
+],
+"value_source": "generated"
+},
+"local_id": "a_prose_6",
+"measure": "mea_fc",
+"model_estimation": "mod_fc_within_task_age",
+"model_representation_notes": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "The supplied parse key identifies Table S1, which defines ROIs rather than this result. The result is retained under prose#6 because the supplied listing contains no prose#6 entry.",
+"value_source": "generated"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Within-reward FC during task-state and age",
+"value_source": "generated"
+},
+"outcome": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "no_significant_effect",
+"value_source": "generated"
+},
+"prespecification": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"regions": [
+"reg_reward"
+],
+"source_table_analysis": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analysis#fe9c57f4c89fa0e4",
+"value_source": "generated"
+},
+"spatial_scope": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "roi",
+"value_source": "generated"
+},
+"tasks": [
+"tsk_kidmid"
+]
+}
+],
+"coordinate_sets": [
+{
+"anchor_kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "roi",
+"value_source": "generated"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Table S1. MNI Coordinates of Reward Network ROIs",
+"value_source": "generated"
+},
+"local_id": "analysis#fe9c57f4c89fa0e4",
+"regions": [
+"reg_reward"
+],
+"result_kind": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"role": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "anchor",
+"value_source": "generated"
+}
+}
+],
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Cross-sectional analysis of reward-network task–rest functional-connectivity similarity in 164 youths, examining age, early life stress, and depressive symptoms. The primary imaging-derived outcome is a participant-level similarity score, not a voxelwise map. Supplementary analyses also examine reward-to-brain and within-reward connectivity.",
+"value_source": "generated"
+},
+"design": {
+"allocation": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "not_applicable",
+"value_source": "generated"
+},
+"assignment_structure": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "observational_cohorts",
+"value_source": "generated"
+},
+"blinding": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "not_applicable",
+"value_source": "generated"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Observational cross-sectional analysis of a longitudinal community cohort. Participants were followed approximately every two years, but only one occasion per participant was analyzed. The paper reports earliest available data in Methods, whereas the Discussion reports first-visit data for approximately 52% and later data for 48%.",
+"value_source": "generated"
+},
+"timepoints": [
+{
+"local_id": "tp_1",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "first timepoint",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 1,
+"value_source": "generated"
+},
+"relation_to_intervention": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "not_applicable",
+"value_source": "generated"
+},
+"time_from_intervention": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"local_id": "tp_2",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "second timepoint",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 2,
+"value_source": "generated"
+},
+"relation_to_intervention": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "not_applicable",
+"value_source": "generated"
+},
+"time_from_intervention": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"local_id": "tp_3",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "third timepoint",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 3,
+"value_source": "generated"
+},
+"relation_to_intervention": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "not_applicable",
+"value_source": "generated"
+},
+"time_from_intervention": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+]
+},
+"devices": [
+{
+"local_id": "dev_mr750",
+"manufacturer": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "General Electric",
+"value_source": "generated"
+},
+"model": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Discovery MR750",
+"value_source": "generated"
+}
+},
+{
+"local_id": "dev_uhp",
+"manufacturer": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "GE",
+"value_source": "generated"
+},
+"model": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "UHP",
+"value_source": "generated"
+}
+}
+],
+"extraction_metadata": {
+"extraction_date": "2026-11-26",
+"extractor_model": "Qwen/Qwen3.8-27B",
+"extractor_version": "ns-27b-f-bf09e3a0e196",
+"source_text_hash": "e942e11d2fbe1c4612b1bb6683bf59f2ed50e2fa48a9279957b307759f04a378"
+},
+"groups": [
+{
+"acquired_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_maximum": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 20.1,
+"value_source": "generated"
+},
+"age_mean": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 12.9,
+"value_source": "generated"
+},
+"age_median": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 12.4,
+"value_source": "generated"
+},
+"age_minimum": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 9.11,
+"value_source": "generated"
+},
+"age_standard_deviation": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 2.29,
+"value_source": "generated"
+},
+"age_unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "years",
+"value_source": "generated"
+},
+"approached_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"clinical_characteristics": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "CDI mean 3.09 (SD 3.29), range 0–14; ELS severity mean 6.48 (SD 5.20), range 0–24.",
+"value_source": "generated"
+},
+"consented_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Community sample from a longitudinal project examining early life stress and psychobiological development across puberty; one occasion per participant was analyzed.",
+"value_source": "generated"
+},
+"diagnostic_system": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"education_summary": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"enrolled_count": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 224,
+"value_source": "generated"
+},
+"excluded_count": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 60,
+"value_source": "generated"
+},
+"exclusion_criteria": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"MRI contraindications",
+"Nonfluency in English",
+"History of neurological or medical illnesses",
+"Onset of menses for girls",
+"Missing concurrent resting-state and task fMRI or failure of quality control",
+"More than 20% of volumes exceeding 0.25 mm FD"
+],
+"value_source": "generated"
+},
+"inclusion_criteria": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"9 to 13 years of age at entry to the original study",
+"Complete resting-state fMRI, task-based fMRI, and depressive-symptom data at more than one timepoint"
+],
+"value_source": "generated"
+},
+"is_healthy": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": true,
+"value_source": "generated"
+},
+"local_id": "grp_youths",
+"medical_condition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Community sample not selected for a diagnosis or history of depression"
+],
+"value_source": "generated"
+},
+"medication_status": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"medications": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "youths",
+"value_source": "generated"
+},
+"other_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"population_characteristics": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Community sample not selected for a diagnosis or history of depression"
+],
+"value_source": "generated"
+},
+"race_distribution": [
+{
+"category": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Asian",
+"value_source": "generated"
+},
+"count": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 22,
+"value_source": "generated"
+},
+"denominator": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 164,
+"value_source": "generated"
+},
+"percentage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 13.4,
+"value_source": "generated"
+},
+"reporting_framework": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"category": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Black",
+"value_source": "generated"
+},
+"count": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 11,
+"value_source": "generated"
+},
+"denominator": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 164,
+"value_source": "generated"
+},
+"percentage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 6.7,
+"value_source": "generated"
+},
+"reporting_framework": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"category": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Hispanic",
+"value_source": "generated"
+},
+"count": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 11,
+"value_source": "generated"
+},
+"denominator": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 164,
+"value_source": "generated"
+},
+"percentage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 6.7,
+"value_source": "generated"
+},
+"reporting_framework": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"category": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Multiracial",
+"value_source": "generated"
+},
+"count": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 32,
+"value_source": "generated"
+},
+"denominator": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 164,
+"value_source": "generated"
+},
+"percentage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 19.5,
+"value_source": "generated"
+},
+"reporting_framework": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"category": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Other",
+"value_source": "generated"
+},
+"count": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 10,
+"value_source": "generated"
+},
+"denominator": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 164,
+"value_source": "generated"
+},
+"percentage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 6.1,
+"value_source": "generated"
+},
+"reporting_framework": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"category": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "White",
+"value_source": "generated"
+},
+"count": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 78,
+"value_source": "generated"
+},
+"denominator": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 164,
+"value_source": "generated"
+},
+"percentage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 47.6,
+"value_source": "generated"
+},
+"reporting_framework": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"recruitment_dates": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"recruitment_method": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Participants from the San Francisco Bay Area in a longitudinal project examining ELS and psychobiological development across puberty.",
+"value_source": "generated"
+},
+"sample_overlap_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"sample_source": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "recruited",
+"value_source": "generated"
+},
+"sample_source_reference": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"sex_distribution": [
+{
+"category": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Female",
+"value_source": "generated"
+},
+"count": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 98,
+"value_source": "generated"
+},
+"denominator": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 164,
+"value_source": "generated"
+},
+"percentage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 59.8,
+"value_source": "generated"
+},
+"reporting_framework": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"category": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Male",
+"value_source": "generated"
+},
+"count": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 66,
+"value_source": "generated"
+},
+"denominator": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 164,
+"value_source": "generated"
+},
+"percentage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 40.2,
+"value_source": "generated"
+},
+"reporting_framework": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"socioeconomic_status_summary": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Income-to-needs ratio mean 1.14 (SD 0.49), range 0.05–1.97; six missing values imputed with the sample mean.",
+"value_source": "generated"
+},
+"species": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "human",
+"value_source": "generated"
+}
+}
+],
+"hypothesis": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"We hypothesized that older participants would be characterized by greater reconfiguration efficiency, because the maturation of their functional networks has been found to facilitate the processing of cognitively demanding tasks.",
+"Furthermore, given findings that ELS has adverse effects on brain development, altering normative maturation of brain circuits implicated in cognitive and affective processing, we expected that high levels of exposure to ELS will disrupt normative age-related differences in reconfiguration efficiency across adolescence.",
+"For the second aim, we hypothesized that the reward network during rest would be more active in adolescents with higher levels of depressive symptoms and, therefore, would be characterized by greater reconfiguration efficiency."
+],
+"value_source": "generated"
+},
+"inference_settings": [
+{
+"alpha_level": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"cluster_extent_threshold": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"clusterwise_threshold_value": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"correction_scope": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"height_threshold_type": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"height_threshold_value": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"inference_level": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "inf_supplement",
+"multiple_comparison_method": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"neighborhood_definition": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"number_of_tests": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"permutation_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"search_volume": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"tfce_parameters": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"tfce_used": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"local_id": "s55x4rmdfijn",
+"measures": [
+{
+"family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "functional_bold",
+"value_source": "generated"
+},
+"local_id": "mea_fc",
+"source_label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "functional connectivity (FC)",
+"value_source": "generated"
+},
+"specific_metric": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Fisher Z-transformed Pearson correlations between ROI mean timeseries",
+"value_source": "generated"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "connectivity_strength",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"model_estimations": [
+{
+"estimator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"hrf_model": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "canonical hemodynamic response function",
+"value_source": "generated"
+},
+"local_id": "mod_kidmid",
+"model_family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "glm",
+"value_source": "generated"
+},
+"model_settings": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Twelve task events: anticipation, target, and receipt for gain, loss, non-gain, and non-loss. Residual 4D NIFTI used as reward-processing-state timeseries.",
+"value_source": "generated"
+},
+"model_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Task-event regression",
+"value_source": "generated"
+},
+"preprocessing": [
+"prp_kidmid"
+],
+"software": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "FSL fsl_glm",
+"value_source": "generated"
+},
+"spatial_unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "voxel",
+"value_source": "generated"
+},
+"stage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "subject",
+"value_source": "generated"
+},
+"terms": [
+{
+"functional_form": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"levels": [
+{
+"conditions": [
+"cond_gain"
+],
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "anticipation to gain",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"conditions": [
+"cond_loss"
+],
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "anticipation to loss",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"conditions": [
+"cond_nongain"
+],
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "anticipation to non-gain",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"conditions": [
+"cond_nonloss"
+],
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "anticipation to non-loss",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"conditions": [
+"cond_gain"
+],
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "target gain",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"conditions": [
+"cond_loss"
+],
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "target loss",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"conditions": [
+"cond_nongain"
+],
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "target non-gain",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"conditions": [
+"cond_nonloss"
+],
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "target non-loss",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"conditions": [
+"cond_gain"
+],
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "receipt of gain",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"conditions": [
+"cond_loss"
+],
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "receipt of loss",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"conditions": [
+"cond_nongain"
+],
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "receipt of non-gain",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"conditions": [
+"cond_nonloss"
+],
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "receipt of non-loss",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"local_id": "trm_kidmid_events",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "12 task events",
+"value_source": "generated"
+},
+"source_definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Twelve event-specific regressors regressed out of the fMRI timeseries.",
+"value_source": "generated"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "categorical",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"variation_level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "within_subject",
+"value_source": "generated"
+}
+}
+]
+},
+{
+"estimator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"hrf_model": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"inputs_from": [
+"mod_kidmid"
+],
+"local_id": "mod_fc",
+"model_family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "paired comparison",
+"value_source": "generated"
+},
+"model_settings": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "ROI mean timeseries were correlated separately for each state; average reward-to-brain and within-reward FC were compared between states.",
+"value_source": "generated"
+},
+"model_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Comparison of reward-to-brain and within-reward FC between resting-state and task-state",
+"value_source": "generated"
+},
+"preprocessing": [
+"prp_rest",
+"prp_kidmid"
+],
+"software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"spatial_unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "roi",
+"value_source": "generated"
+},
+"stage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "group",
+"value_source": "generated"
+},
+"terms": [
+{
+"functional_form": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"levels": [
+{
+"conditions": [
+"tsk_rest"
+],
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "resting-state",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"conditions": [
+"tsk_kidmid"
+],
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "task-state",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"local_id": "trm_state",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "state",
+"value_source": "generated"
+},
+"source_definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Resting-state and task-state FC computed separately.",
+"value_source": "generated"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "categorical",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"variation_level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "within_subject",
+"value_source": "generated"
+}
+}
+]
+},
+{
+"estimator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"hrf_model": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"inputs_from": [
+"mod_kidmid"
+],
+"local_id": "mod_fc_task_age",
+"model_family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "correlation",
+"value_source": "generated"
+},
+"model_settings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"model_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Task-state reward-to-brain FC and age",
+"value_source": "generated"
+},
+"preprocessing": [
+"prp_kidmid"
+],
+"software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"spatial_unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "roi",
+"value_source": "generated"
+},
+"stage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "group",
+"value_source": "generated"
+},
+"terms": [
+{
+"functional_form": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "trm_age_task",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "age",
+"value_source": "generated"
+},
+"source_definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Chronological age.",
+"value_source": "generated"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "continuous",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "years",
+"value_source": "generated"
+},
+"variation_level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "between_subject",
+"value_source": "generated"
+}
+}
+]
+},
+{
+"estimator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"hrf_model": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "mod_fc_rest_age",
+"model_family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "correlation",
+"value_source": "generated"
+},
+"model_settings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"model_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Resting-state reward-to-brain FC and age",
+"value_source": "generated"
+},
+"preprocessing": [
+"prp_rest"
+],
+"software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"spatial_unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "roi",
+"value_source": "generated"
+},
+"stage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "group",
+"value_source": "generated"
+},
+"terms": [
+{
+"functional_form": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "trm_age_rest",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "age",
+"value_source": "generated"
+},
+"source_definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Chronological age.",
+"value_source": "generated"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "continuous",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "years",
+"value_source": "generated"
+},
+"variation_level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "between_subject",
+"value_source": "generated"
+}
+}
+]
+},
+{
+"estimator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"hrf_model": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "mod_fc_within_rest_age",
+"model_family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "correlation",
+"value_source": "generated"
+},
+"model_settings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"model_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Resting-state within-reward FC and age",
+"value_source": "generated"
+},
+"preprocessing": [
+"prp_rest"
+],
+"software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"spatial_unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "roi",
+"value_source": "generated"
+},
+"stage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "group",
+"value_source": "generated"
+},
+"terms": [
+{
+"functional_form": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "trm_age_within_rest",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "age",
+"value_source": "generated"
+},
+"source_definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Chronological age.",
+"value_source": "generated"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "continuous",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "years",
+"value_source": "generated"
+},
+"variation_level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "between_subject",
+"value_source": "generated"
+}
+}
+]
+},
+{
+"estimator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"hrf_model": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"inputs_from": [
+"mod_kidmid"
+],
+"local_id": "mod_fc_within_task_age",
+"model_family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "correlation",
+"value_source": "generated"
+},
+"model_settings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"model_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Task-state within-reward FC and age",
+"value_source": "generated"
+},
+"preprocessing": [
+"prp_kidmid"
+],
+"software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"spatial_unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "roi",
+"value_source": "generated"
+},
+"stage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "group",
+"value_source": "generated"
+},
+"terms": [
+{
+"functional_form": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "trm_age_within_task",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "age",
+"value_source": "generated"
+},
+"source_definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Chronological age.",
+"value_source": "generated"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "continuous",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "years",
+"value_source": "generated"
+},
+"variation_level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "between_subject",
+"value_source": "generated"
+}
+}
+]
+}
+],
+"preprocessings": [
+{
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Resting-state preprocessing and denoising; 180 volumes acquired, first six removed, and 1.8% ± 2.6% of volumes censored.",
+"value_source": "generated"
+},
+"local_id": "prp_rest",
+"smoothing_fwhm_mm": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+2
+],
+"value_source": "generated"
+},
+"software": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"FreeSurfer 6.0.1",
+"fMRIPrep 20.2.1",
+"FSL",
+"AFNI 3dTProject"
+],
+"value_source": "generated"
+},
+"steps": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Surface-based registration using T1-weighted images",
+"Skull stripping",
+"Susceptibility distortion correction",
+"Slice timing correction",
+"Boundary-based registration to T1-weighted reference",
+"Normalization to age-appropriate MNIPediatricAsym cohort-4 or cohort-6 space",
+"Removal of first six volumes",
+"Censoring motion-outlier frames and interpolation from neighboring values",
+"Simultaneous nuisance regression and 0.008–0.10 Hz band-pass filtering",
+"Spatial smoothing"
+],
+"value_source": "generated"
+}
+},
+{
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "KidMID preprocessing and denoising; first 18 and last 15 volumes removed, task-event effects regressed out, and 4.4% ± 7.4% of volumes censored.",
+"value_source": "generated"
+},
+"local_id": "prp_kidmid",
+"smoothing_fwhm_mm": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+2
+],
+"value_source": "generated"
+},
+"software": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"FreeSurfer 6.0.1",
+"fMRIPrep 20.2.1",
+"FSL fsl_glm",
+"AFNI 3dTProject"
+],
+"value_source": "generated"
+},
+"steps": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Surface-based registration using T1-weighted images",
+"Skull stripping",
+"Susceptibility distortion correction",
+"Slice timing correction",
+"Boundary-based registration to T1-weighted reference",
+"Normalization to age-appropriate MNIPediatricAsym cohort-4 or cohort-6 space",
+"Removal of first 18 and last 15 volumes",
+"Regression of 12 task events convolved with canonical HRF",
+"Censoring motion-outlier frames and interpolation from neighboring values",
+"Simultaneous nuisance regression and 0.008–0.10 Hz band-pass filtering",
+"Spatial smoothing"
+],
+"value_source": "generated"
+}
+}
+],
+"regions": [
+{
+"atlas": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Seitzman-300 ROI parcellation",
+"value_source": "generated"
+},
+"definition_method": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "atlas",
+"value_source": "generated"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Eight reward-network ROIs selected from Seitzman network labels: left pars orbitalis, bilateral orbitofrontal cortex, right insula, bilateral amygdala, and bilateral caudate. Mean timeseries were extracted from 4- to 5-mm spheres. MNI centers: left pars orbitalis (-30.63, 18.71, -18.98), radius 5 mm; left orbitofrontal cortex (-21.14, 40.87, -20.48), radius 5 mm; right orbitofrontal cortex (23.96, 31.94, -17.78), radius 5 mm; right insula (27.06, 16.22, -16.93), radius 5 mm; left amygdala (-20.3, -2.27, -22.21), radius 4 mm; right amygdala (19.51, -1.85, -23.11), radius 4 mm; right caudate (12.66, 17.32, -5.06), radius 4 mm; left caudate (-12.49, 17.05, -4.49), radius 4 mm.",
+"value_source": "generated"
+},
+"local_id": "reg_reward",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "reward network",
+"value_source": "generated"
+},
+"region_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "network",
+"value_source": "generated"
+}
+}
+],
+"result_reporting": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analyses_reported",
+"value_source": "generated"
+},
+"tables": [
+{
+"caption": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Participant Characteristics (N = 164)",
+"value_source": "generated"
+},
+"column_headings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"footer": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "tbl1",
+"purpose": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"table_number": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Table 1",
+"value_source": "generated"
+}
+},
+{
+"caption": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "MNI Coordinates of Reward Network ROIs",
+"value_source": "generated"
+},
+"column_headings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"footer": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "tbl1_2",
+"purpose": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"table_number": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Table S1.",
+"value_source": "generated"
+}
+},
+{
+"caption": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Results of the Stepwise Regression Analyses",
+"value_source": "generated"
+},
+"column_headings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"footer": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Note. Res.df = residual degrees of freedom; RRS = residual sum of squares, AIC = Akaike information criterion",
+"value_source": "generated"
+},
+"local_id": "tbl2",
+"purpose": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"table_number": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Table S2.",
+"value_source": "generated"
+}
+}
+],
+"tasks": [
+{
+"acquisitions": [
+"acq_fmri_rest"
+],
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Six-minute resting-state fMRI acquisition.",
+"value_source": "generated"
+},
+"design_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "continuous",
+"value_source": "generated"
+},
+"instructions": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "tsk_rest",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Resting-state",
+"value_source": "generated"
+},
+"performance_measures": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"presentation_software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"references": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"response_modality": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"none"
+],
+"value_source": "generated"
+},
+"stimuli": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"stimulus_content": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"stimulus_modality": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"none"
+],
+"value_source": "generated"
+}
+},
+{
+"acquisitions": [
+"acq_fmri_kidmid"
+],
+"conditions": [
+{
+"condition_kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "task_state",
+"value_source": "generated"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Successful target response before disappearance wins +5 points.",
+"value_source": "generated"
+},
+"local_id": "cond_gain",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "gain",
+"value_source": "generated"
+},
+"stimulus_content": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"monetary incentives"
+],
+"value_source": "generated"
+}
+},
+{
+"condition_kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "task_state",
+"value_source": "generated"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "+0 points.",
+"value_source": "generated"
+},
+"local_id": "cond_nongain",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "non-gain",
+"value_source": "generated"
+},
+"stimulus_content": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"monetary incentives"
+],
+"value_source": "generated"
+}
+},
+{
+"condition_kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "task_state",
+"value_source": "generated"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Successful target response before disappearance avoids losing points; the main text specifies –5 points, whereas the supplement specifies –5 for non-loss.",
+"value_source": "generated"
+},
+"local_id": "cond_loss",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "loss",
+"value_source": "generated"
+},
+"stimulus_content": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"monetary incentives"
+],
+"value_source": "generated"
+}
+},
+{
+"condition_kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "task_state",
+"value_source": "generated"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "–0 points in the main text; the supplement instead labels non-loss –5.",
+"value_source": "generated"
+},
+"local_id": "cond_nonloss",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "non-loss",
+"value_source": "generated"
+},
+"stimulus_content": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"monetary incentives"
+],
+"value_source": "generated"
+}
+}
+],
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Child-modified Monetary Incentive Delay task with 72 pseudo-randomized trials. Each trial included an incentive cue, anticipation, a triangular target response, fixation delay, and outcome message. Trials lasted 6 seconds and were locked to three fMRI volumes, with no intertrial interval. Target timing was adapted to a 66% hit rate.",
+"value_source": "generated"
+},
+"design_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "event_related",
+"value_source": "generated"
+},
+"instructions": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Respond to the triangular target as quickly as possible.",
+"value_source": "generated"
+},
+"local_id": "tsk_kidmid",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Monetary Incentive Delay Task (KidMID)",
+"value_source": "generated"
+},
+"performance_measures": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Reaction time",
+"Hit rate"
+],
+"value_source": "generated"
+},
+"presentation_software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"references": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"response_modality": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"stimuli": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Incentive cues: circle, circle with lines, square, square with lines",
+"Triangular target",
+"Trial outcome message"
+],
+"value_source": "generated"
+},
+"stimulus_content": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"stimulus_modality": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"visual"
+],
+"value_source": "generated"
+}
+}
+]
+},
+"answers": {
+"tsk_rest": {
+"content": "{\"factors\": [], \"context\": [], \"conditions\": [{\"id\": null, \"kind\": \"rest\", \"atoms\": [], \"expansion\": null, \"gloss\": \"rest\"}], \"task\": \"hedtsk_rest\", \"family\": \"pseudo_tasks\", \"task_confidence\": \"high\"}",
+"prompt_sha256": "6c1cbc5e45245e7d64c99047a25726687d27cc37b7922f6228234ebc2183dfeb"
+},
+"tsk_kidmid": {
+"content": "{\"factors\": [{\"from_term\": \"12 task events\", \"axis\": \"incentive\", \"levels\": [{\"level\": \"gain\", \"value\": \"gain\"}, {\"level\": \"non-gain\", \"value\": \"neutral\"}, {\"level\": \"loss\", \"value\": \"loss\"}, {\"level\": \"non-loss\", \"value\": \"neutral\"}]}], \"context\": [{\"axis\": \"stimulus\", \"value\": \"money\"}, {\"axis\": \"phase\", \"value\": \"anticipation\"}], \"conditions\": [{\"id\": \"cond_gain\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"incentive\", \"value\": \"gain\"}], \"expansion\": null, \"gloss\": \"gain incentive anticipation\"}, {\"id\": \"cond_nongain\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"incentive\", \"value\": \"neutral\"}], \"expansion\": null, \"gloss\": \"neutral incentive anticipation\"}, {\"id\": \"cond_loss\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"incentive\", \"value\": \"loss\"}], \"expansion\": null, \"gloss\": \"loss incentive anticipation\"}, {\"id\": \"cond_nonloss\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"incentive\", \"value\": \"neutral\"}], \"expansion\": null, \"gloss\": \"neutral incentive anticipation\"}], \"task\": \"hedtsk_monetary_incentive_delay\", \"family\": \"reward_and_value_choice\", \"task_confidence\": \"high\"}",
+"prompt_sha256": "664987f9cdc38cd39b574573e82e0aed5ee318225683e82d56be146133df06a2"
 }
 }
 }

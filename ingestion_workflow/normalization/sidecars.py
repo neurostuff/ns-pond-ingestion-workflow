@@ -158,12 +158,15 @@ def write_missing_conditions(record, structures, version):
     `structure.assemble`'s target or baseline): the record missed a condition of that task, and the
     paper is worth a new record. Nothing else changes. Arms and timepoints are not conditions, and a
     task without conditions whose analyses compare groups, correlate, or compare sessions or arms
-    is not flagged. Measured 2026-11-27 on 4,000 papers: 305 of 3,855 tasks had no conditions; 252
-    of them had no within-task comparison, 38 compared only arms or timepoints, and 11 named
-    conditions no task lists."""
+    is not flagged. Nor is a side naming a task's own id: that is the whole task (a task against
+    rest, a task's main effect), not a missed condition. Measured 2026-11-27 on 4,000 papers: 305
+    of 3,855 tasks had no conditions; 252 of them had no within-task comparison, 38 compared only
+    arms or timepoints, and 11 named conditions no task lists. Over all 71,896 records, 319 such
+    ids were named: 145 task ids and 174 others."""
     mapping_tool = tool("conditions_check", version)
     defined = {str(value_of(c.get("local_id"))) for t in record.get("tasks") or [] if isinstance(t, dict)
                for c in t.get("conditions") or [] if isinstance(c, dict)}
+    defined |= set(_by_id(record.get("tasks")))
     analyses = _by_id(record.get("analyses"))
     missing = {}
     for s in structures:

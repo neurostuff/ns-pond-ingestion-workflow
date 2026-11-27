@@ -1,9 +1,10 @@
 """The `normalized` sidecars written into real records validate against the extraction record.
 
-The records are six 27B records (`data/design_records.json`), each with task-design v4's answer
+The records are seven 27B records (`data/design_records.json`), each with task-design v4's answer
 for its tasks as beast's server gave it (no text, so no excerpt in the prompt). Three have a task
 without conditions: xbp5wa6xqs3x a resting-state scan, j2sjvw7hq3az a task whose analysis is
 parametric, and rt72p6lw3elr a task whose analyses name a condition the record does not define.
+s55x4rmdfijn compares a task against a resting-state scan, naming the two tasks' ids.
 """
 
 import copy
@@ -186,10 +187,11 @@ def test_only_the_task_the_analyses_name_is_flagged():
     assert flagged == [True, False]
 
 
-@pytest.mark.parametrize("study", ["ya2RC6UYbibC", CONDLESS, "j2sjvw7hq3az"])
+@pytest.mark.parametrize("study", ["ya2RC6UYbibC", CONDLESS, "j2sjvw7hq3az", "s55x4rmdfijn"])
 def test_no_flag_when_every_condition_an_analysis_names_is_defined(study):
     """Conditions all defined (ya2RC6UYbibC); a resting-state main effect (xbp5wa6xqs3x); a
-    parametric analysis of a task without conditions, naming none (j2sjvw7hq3az)."""
+    parametric analysis of a task without conditions, naming none (j2sjvw7hq3az); a task against
+    rest, whose sides name the two tasks' ids (s55x4rmdfijn)."""
     r = copy.deepcopy(DATA[study]["record"])
     assert api.finish(r, answers(study), None, MODEL, VERSION)["tasks:conditions_missing"] == 0
     assert all("ns-pond conditions missing" not in entries(t["name"]) for t in r["tasks"])
