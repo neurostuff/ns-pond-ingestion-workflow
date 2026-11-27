@@ -308,6 +308,12 @@ def test_a_word_file_is_read_with_its_tables(tmp_path):
     ([("Abbreviations", "bi"), (": B=Baclofen; P=Placebo; 1=time point 1; 2=time point 2", "i"),
       ("", "bp"), ("Supplementary Table 3: Analyses of reaction times and misses in the baclofen group", "b")],
      "Supplementary Table 3: Analyses of reaction times and misses in the baclofen group"),
+    # A paragraph citing a table in another format is no caption.
+    ([("Details of the sample are given in ", ""), ("Table S1", "i"), (" for more information.", "")], ""),
+    ([("Coupling rose in the high-load condition (", ""), ("Table 2", "i"), (") in the PLV comparison.", "")], ""),
+    # i4kcc33wifzz's supplement: a citation the next sentence follows.
+    ([("Significant clusters are listed in ", ""), ("Supplemental Table 3", "i"),
+      (". The most significant cluster remained.", "")], ""),
 ])
 def test_a_word_caption_whose_runs_differ_in_format_is_read_whole(tmp_path, runs, caption):
     import docx
@@ -331,7 +337,7 @@ def test_a_word_caption_whose_runs_differ_in_format_is_read_whole(tmp_path, runs
     sp.read(item, tmp_path / "read")
 
     [read] = item.tables
-    assert read["caption"] == caption
+    assert (read.get("caption") or "") == caption
 
 
 @pytest.mark.parametrize("paragraphs, caption", [
