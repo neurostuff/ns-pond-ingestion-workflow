@@ -1,6 +1,6 @@
 {
 "model": "task-design-v4",
-"note": "records from astra_records.json; no text, so no excerpt; answers from beast vLLM, greedy, 2026-11-26; xbp5wa6xqs3x (a resting-state task without conditions) added 2026-11-27 from the production catalog's 27B record",
+"note": "records from astra_records.json; no text, so no excerpt; answers from beast vLLM, greedy, 2026-11-26; xbp5wa6xqs3x (a resting-state task without conditions) added 2026-11-27 from the production catalog's 27B record; j2sjvw7hq3az (a task without conditions whose analysis is parametric) added 2026-11-27; rt72p6lw3elr (analyses naming a condition the record does not define) added 2026-11-27",
 "studies": {
 "6SKTGteXbbBs": {
 "record": {
@@ -7958,6 +7958,2971 @@
 "tsk_rest": {
 "content": "{\"factors\": [], \"context\": [], \"conditions\": [{\"id\": null, \"kind\": \"rest\", \"atoms\": [], \"expansion\": null, \"gloss\": \"rest\"}, {\"id\": null, \"kind\": \"rest\", \"atoms\": [], \"expansion\": null, \"gloss\": \"rest\"}], \"task\": \"hedtsk_rest\", \"family\": \"pseudo_tasks\", \"task_confidence\": \"high\"}",
 "prompt_sha256": "75a3ee3110c40c308bc5192b68332be4fe26e57aa5538079d84e38d5ba1b84a7"
+}
+}
+},
+"j2sjvw7hq3az": {
+"record": {
+"acquisitions": [
+{
+"acquisition_duration_seconds": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"acquisition_type": "MRI",
+"acquisition_voxel_size_mm": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"brain_coverage": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"echo_time_seconds": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "acq_fmri",
+"magnetic_field_strength_tesla": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"modality": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "fMRI",
+"value_source": "generated"
+},
+"mr_acquisition_type": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"number_of_volumes": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"pulse_sequence_type": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"repetition_time_seconds": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"analyses": [
+{
+"acquisitions": [
+"acq_fmri"
+],
+"coordinate_space": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Expected value was negatively correlated with activations in the anterior insula in a neuroeconomics study with monetary reward.",
+"value_source": "generated"
+},
+"details": {
+"details_type": "MassUnivariateDetails"
+},
+"effect": {
+"cells": [
+{
+"direction": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "negative",
+"value_source": "generated"
+},
+"label": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"level": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"term": "trm_expected_value"
+}
+],
+"kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "parametric_modulation",
+"value_source": "generated"
+},
+"statistic": {
+"degrees_of_freedom_denominator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"degrees_of_freedom_numerator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"family": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+},
+"groups": [
+{
+"group": "grp_rolls_mccabe_2008",
+"n": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"interpretations": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Effectively there was more insula activation in situations that might be described as aversive."
+],
+"value_source": "generated"
+},
+"local_id": "a_prose_1",
+"measure": "mea_bold",
+"model_estimation": "mod_expected_value",
+"model_representation_notes": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "The supplied text does not identify the coordinate reference space or the original study's sample size, model specification, or inferential threshold. The stage-1 MNI label is not adopted as a fact about this result.",
+"value_source": "generated"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "negative correlation with expected value",
+"value_source": "generated"
+},
+"outcome": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "significant_effect",
+"value_source": "generated"
+},
+"prespecification": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"source_table_analysis": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analysis#fb88c655c790277a",
+"value_source": "generated"
+},
+"spatial_scope": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"tasks": [
+"tsk_monetary"
+]
+}
+],
+"coordinate_sets": [
+{
+"analysis": "a_prose_1",
+"anchor_kind": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Anterior insula location [-38 24 16] with negative correlation with expected monetary reward value.",
+"value_source": "generated"
+},
+"local_id": "analysis#fb88c655c790277a",
+"result_kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "association",
+"value_source": "generated"
+},
+"role": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "result",
+"value_source": "generated"
+}
+}
+],
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Review arguing that emotion and episodic memory involve separate limbic systems with different computational principles. It synthesizes anatomical, neurophysiological, functional neuroimaging, and neuropsychological evidence, including previously reported human fMRI studies.",
+"value_source": "generated"
+},
+"design": {
+"allocation": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "not_applicable",
+"value_source": "generated"
+},
+"assignment_structure": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "review of previously reported studies",
+"value_source": "generated"
+},
+"blinding": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Narrative review without a newly recruited cohort or newly assigned intervention. The only coordinate-bearing result in the supplied text is a negative anterior-insula association with expected monetary reward value from Rolls, McCabe, et al. (2008).",
+"value_source": "generated"
+}
+},
+"extraction_metadata": {
+"extraction_date": "2026-10-28",
+"extractor_model": "Qwen/Qwen3.8-27B",
+"extractor_version": "ns-27b-e-d7d2347b1330",
+"source_text_hash": "61f34eebcfe04d141198a34f1a097789a8ef19c6d150ab1e0feb4e21eaa642af"
+},
+"groups": [
+{
+"acquired_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_maximum": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_mean": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_median": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_minimum": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_standard_deviation": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"approached_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"clinical_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"consented_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Participants in the previously reported study cited as Rolls, McCabe, et al. (2008); not a newly recruited cohort for this review.",
+"value_source": "generated"
+},
+"diagnostic_system": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"education_summary": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"enrolled_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"excluded_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"exclusion_criteria": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"inclusion_criteria": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"is_healthy": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "grp_rolls_mccabe_2008",
+"medical_condition": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"medication_status": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"medications": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "neuroeconomics study with monetary reward",
+"value_source": "generated"
+},
+"other_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"population_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"recruitment_dates": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"recruitment_method": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"sample_overlap_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"sample_source": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "previously_reported",
+"value_source": "generated"
+},
+"sample_source_reference": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Rolls, McCabe, et al., 2008",
+"value_source": "generated"
+},
+"socioeconomic_status_summary": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"species": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"hypothesis": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "j2sjvw7hq3az",
+"measures": [
+{
+"family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "functional_bold",
+"value_source": "generated"
+},
+"local_id": "mea_bold",
+"source_label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "blood oxygenation-level dependent signal (BOLD) activations",
+"value_source": "generated"
+},
+"specific_metric": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "bold_response",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"model_estimations": [
+{
+"estimator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"hrf_model": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "mod_expected_value",
+"model_family": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"model_settings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"model_type": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"spatial_unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"stage": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"terms": [
+{
+"functional_form": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "trm_expected_value",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "expected value",
+"value_source": "generated"
+},
+"source_definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Expected value of monetary reward in the neuroeconomics study.",
+"value_source": "generated"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "continuous",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"variation_level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "within_subject",
+"value_source": "generated"
+}
+}
+]
+}
+],
+"result_reporting": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analyses_reported",
+"value_source": "generated"
+},
+"tasks": [
+{
+"acquisitions": [
+"acq_fmri"
+],
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Monetary reward paradigm used to examine expected value and reward uncertainty.",
+"value_source": "generated"
+},
+"design_type": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"instructions": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "tsk_monetary",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "neuroeconomics study with monetary reward",
+"value_source": "generated"
+},
+"performance_measures": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"presentation_software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"references": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Rolls, McCabe, et al., 2008"
+],
+"value_source": "generated"
+},
+"response_modality": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"stimuli": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"stimulus_content": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"monetary reward"
+],
+"value_source": "generated"
+},
+"stimulus_modality": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+]
+},
+"answers": {
+"tsk_monetary": {
+"content": "{\"factors\": [{\"from_term\": null, \"axis\": \"risk\", \"levels\": [{\"level\": null, \"value\": \"risky\"}, {\"level\": null, \"value\": \"safe\"}]}], \"context\": [{\"axis\": \"phase\", \"value\": \"decision\"}], \"conditions\": [{\"id\": null, \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"risk\", \"value\": \"risky\"}], \"expansion\": null, \"gloss\": \"risky choice\"}, {\"id\": null, \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"risk\", \"value\": \"safe\"}], \"expansion\": null, \"gloss\": \"safe choice\"}], \"task\": \"tct_risky_decision\", \"family\": \"reward_and_value_choice\", \"task_confidence\": \"high\"}",
+"prompt_sha256": "0eb184fc1cafe9dd5d32305cd05184e713468408f617b08de97c0edf80dd02df"
+}
+}
+},
+"rt72p6lw3elr": {
+"record": {
+"acquisitions": [
+{
+"acquisition_duration_seconds": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"acquisition_type": "MRI",
+"acquisition_voxel_size_mm": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"brain_coverage": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"echo_time_seconds": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "acq_fmri",
+"magnetic_field_strength_tesla": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"modality": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "fMRI",
+"value_source": "generated"
+},
+"mr_acquisition_type": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"number_of_volumes": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"pulse_sequence_type": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"repetition_time_seconds": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"analyses": [
+{
+"coordinate_space": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Talairach or Montreal Neurological Institute (MNI) space",
+"value_source": "generated"
+},
+"definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Coordinate-based activation likelihood estimation meta-analysis of empathy for pain, negative emotions, and positive emotions in healthy adults.",
+"value_source": "generated"
+},
+"details": {
+"details_type": "OtherAnalysisDetails",
+"method_label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "activation likelihood estimation (ALE)",
+"value_source": "generated"
+},
+"reason_first_class_type_not_used": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Coordinate-based meta-analysis of published activation foci, not a primary participant-level mass-univariate model.",
+"value_source": "generated"
+},
+"structured_details": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "{\"studies\":47,\"foci\":2029,\"contrasts\":194,\"subjects\":3411,\"inference\":\"random-effect clustering between experiments/contrasts\"}",
+"value_source": "generated"
+}
+},
+"effect": {
+"cells": [
+{
+"direction": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "positive",
+"value_source": "generated"
+},
+"label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "all three emotional categories",
+"value_source": "generated"
+},
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "empathy",
+"value_source": "generated"
+},
+"term": "trm_empathy_all"
+}
+],
+"kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "simple_effect",
+"value_source": "generated"
+},
+"statistic": {
+"degrees_of_freedom_denominator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"degrees_of_freedom_numerator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "ALE",
+"value_source": "generated"
+}
+}
+},
+"groups": [
+{
+"group": "grp_healthy",
+"n": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 3411,
+"value_source": "generated"
+}
+}
+],
+"inference_settings": "inf_ale",
+"interpretations": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"AIC, but not ACC, is consistently involved in the three categories of empathetic emotions examined, suggesting a unique role of AIC in processing affective visual stimuli regardless of valence."
+],
+"value_source": "generated"
+},
+"local_id": "a_t2_1",
+"measure": "mea_ale",
+"model_estimation": "mod_ale_all",
+"model_representation_notes": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "The sample is an aggregate across published studies, not a newly recruited cohort. The single positive cell represents above-chance convergence of published empathy contrasts, not a common within-participant condition contrast.",
+"value_source": "generated"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Empathy-Related Brain Regions (All Coordinates)",
+"value_source": "generated"
+},
+"outcome": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "significant_effect",
+"value_source": "generated"
+},
+"prespecification": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"source_table_analysis": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analysis#646ad4cea080cc58",
+"value_source": "generated"
+},
+"spatial_scope": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "whole_brain",
+"value_source": "generated"
+},
+"tables": [
+"tbl2"
+],
+"tasks": [
+"tsk_empathy"
+]
+},
+{
+"coordinate_space": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Talairach or Montreal Neurological Institute (MNI) space",
+"value_source": "generated"
+},
+"definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Coordinate-based activation likelihood estimation meta-analysis of empathy for pain.",
+"value_source": "generated"
+},
+"details": {
+"details_type": "OtherAnalysisDetails",
+"method_label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "activation likelihood estimation (ALE)",
+"value_source": "generated"
+},
+"reason_first_class_type_not_used": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Coordinate-based meta-analysis of published activation foci.",
+"value_source": "generated"
+},
+"structured_details": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "{\"foci\":948,\"contrasts\":98,\"subjects\":1598,\"inference\":\"random-effect clustering between experiments/contrasts\"}",
+"value_source": "generated"
+}
+},
+"effect": {
+"cells": [
+{
+"direction": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "positive",
+"value_source": "generated"
+},
+"label": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "empathy for pain",
+"value_source": "generated"
+},
+"term": "trm_empathy_pain"
+}
+],
+"kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "simple_effect",
+"value_source": "generated"
+},
+"statistic": {
+"degrees_of_freedom_denominator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"degrees_of_freedom_numerator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "ALE",
+"value_source": "generated"
+}
+}
+},
+"groups": [
+{
+"group": "grp_healthy",
+"n": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 1598,
+"value_source": "generated"
+}
+}
+],
+"inference_settings": "inf_ale",
+"interpretations": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Meta-analysis on empathy for pain also showed most consistent activations in bilateral insula and ACC."
+],
+"value_source": "generated"
+},
+"local_id": "a_t3_1",
+"measure": "mea_ale",
+"model_estimation": "mod_ale_pain",
+"model_representation_notes": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Aggregate published-study sample; the positive cell denotes convergence of empathy-for-pain contrasts rather than a common within-participant contrast.",
+"value_source": "generated"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Brain Regions Involved in Empathy for Pain",
+"value_source": "generated"
+},
+"outcome": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "significant_effect",
+"value_source": "generated"
+},
+"prespecification": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"source_table_analysis": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analysis#a7009963027389f8",
+"value_source": "generated"
+},
+"spatial_scope": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "whole_brain",
+"value_source": "generated"
+},
+"tables": [
+"tbl3"
+],
+"tasks": [
+"tsk_empathy"
+]
+},
+{
+"coordinate_space": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Talairach or Montreal Neurological Institute (MNI) space",
+"value_source": "generated"
+},
+"definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Coordinate-based activation likelihood estimation meta-analysis of empathy for negative emotions.",
+"value_source": "generated"
+},
+"details": {
+"details_type": "OtherAnalysisDetails",
+"method_label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "activation likelihood estimation (ALE)",
+"value_source": "generated"
+},
+"reason_first_class_type_not_used": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Coordinate-based meta-analysis of published activation foci.",
+"value_source": "generated"
+},
+"structured_details": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "{\"foci\":192,\"contrasts\":20,\"subjects\":403,\"inference\":\"random-effect clustering between experiments/contrasts\"}",
+"value_source": "generated"
+}
+},
+"effect": {
+"cells": [
+{
+"direction": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "positive",
+"value_source": "generated"
+},
+"label": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "empathy for negative emotions",
+"value_source": "generated"
+},
+"term": "trm_empathy_negative"
+}
+],
+"kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "simple_effect",
+"value_source": "generated"
+},
+"statistic": {
+"degrees_of_freedom_denominator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"degrees_of_freedom_numerator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "ALE",
+"value_source": "generated"
+}
+}
+},
+"groups": [
+{
+"group": "grp_healthy",
+"n": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 403,
+"value_source": "generated"
+}
+}
+],
+"inference_settings": "inf_ale",
+"interpretations": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Empathy for negative emotions also reliably activated AIC and ACC, in addition to LPFC, MPFC, red nucleus, substantia nigra, and putamen/caudate nucleus."
+],
+"value_source": "generated"
+},
+"local_id": "a_t4_1",
+"measure": "mea_ale",
+"model_estimation": "mod_ale_negative",
+"model_representation_notes": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Aggregate published-study sample; the positive cell denotes convergence of empathy-for-negative-emotion contrasts rather than a common within-participant contrast.",
+"value_source": "generated"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Brain Regions Involved in Empathy for Negative Emotions",
+"value_source": "generated"
+},
+"outcome": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "significant_effect",
+"value_source": "generated"
+},
+"prespecification": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"source_table_analysis": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analysis#ea5ab11f02a4c6ce",
+"value_source": "generated"
+},
+"spatial_scope": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "whole_brain",
+"value_source": "generated"
+},
+"tables": [
+"tbl4"
+],
+"tasks": [
+"tsk_empathy"
+]
+},
+{
+"coordinate_space": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Talairach or Montreal Neurological Institute (MNI) space",
+"value_source": "generated"
+},
+"definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Coordinate-based activation likelihood estimation meta-analysis of empathy for positive emotions.",
+"value_source": "generated"
+},
+"details": {
+"details_type": "OtherAnalysisDetails",
+"method_label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "activation likelihood estimation (ALE)",
+"value_source": "generated"
+},
+"reason_first_class_type_not_used": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Coordinate-based meta-analysis of published activation foci.",
+"value_source": "generated"
+},
+"structured_details": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "{\"foci\":70,\"contrasts\":9,\"subjects\":157,\"inference\":\"random-effect clustering between experiments/contrasts\"}",
+"value_source": "generated"
+}
+},
+"effect": {
+"cells": [
+{
+"direction": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "positive",
+"value_source": "generated"
+},
+"label": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "empathy for positive emotions",
+"value_source": "generated"
+},
+"term": "trm_empathy_positive"
+}
+],
+"kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "simple_effect",
+"value_source": "generated"
+},
+"statistic": {
+"degrees_of_freedom_denominator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"degrees_of_freedom_numerator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "ALE",
+"value_source": "generated"
+}
+}
+},
+"groups": [
+{
+"group": "grp_healthy",
+"n": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 157,
+"value_source": "generated"
+}
+}
+],
+"inference_settings": "inf_ale",
+"interpretations": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Brain regions that showed consistent activation for empathy for positive emotions include AIC, SI, superior temporal gyrus, MPFC, LPFC, and inferior parietal lobule.",
+"This category yielded fewer brain regions than previous categories, probably because of the smaller number of studies/contrasts for positive emotions."
+],
+"value_source": "generated"
+},
+"local_id": "a_t5_1",
+"measure": "mea_ale",
+"model_estimation": "mod_ale_positive",
+"model_representation_notes": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Aggregate published-study sample; the positive cell denotes convergence of empathy-for-positive-emotion contrasts rather than a common within-participant contrast.",
+"value_source": "generated"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Brain Regions Involved in Empathy for Positive Emotions",
+"value_source": "generated"
+},
+"outcome": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "significant_effect",
+"value_source": "generated"
+},
+"prespecification": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"source_table_analysis": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analysis#477682b5ca115304",
+"value_source": "generated"
+},
+"spatial_scope": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "whole_brain",
+"value_source": "generated"
+},
+"tables": [
+"tbl5"
+],
+"tasks": [
+"tsk_empathy"
+]
+}
+],
+"coordinate_sets": [
+{
+"analysis": "a_t2_1",
+"anchor_kind": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Empathy-related brain regions across all three emotional categories.",
+"value_source": "generated"
+},
+"local_id": "analysis#646ad4cea080cc58",
+"result_kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "meta-analytic convergence",
+"value_source": "generated"
+},
+"role": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "result",
+"value_source": "generated"
+}
+},
+{
+"analysis": "a_t3_1",
+"anchor_kind": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Brain regions involved in empathy for pain.",
+"value_source": "generated"
+},
+"local_id": "analysis#a7009963027389f8",
+"result_kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "meta-analytic convergence",
+"value_source": "generated"
+},
+"role": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "result",
+"value_source": "generated"
+}
+},
+{
+"analysis": "a_t4_1",
+"anchor_kind": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Brain regions involved in empathy for negative emotions.",
+"value_source": "generated"
+},
+"local_id": "analysis#ea5ab11f02a4c6ce",
+"result_kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "meta-analytic convergence",
+"value_source": "generated"
+},
+"role": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "result",
+"value_source": "generated"
+}
+},
+{
+"analysis": "a_t5_1",
+"anchor_kind": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Brain regions involved in empathy for positive emotions.",
+"value_source": "generated"
+},
+"local_id": "analysis#477682b5ca115304",
+"result_kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "meta-analytic convergence",
+"value_source": "generated"
+},
+"role": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "result",
+"value_source": "generated"
+}
+}
+],
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Review of anterior insular cortex and emotional awareness, including a coordinate-based ALE meta-analysis of 47 empathy fMRI studies and discussion of previously reported functional and neuropsychological evidence.",
+"value_source": "generated"
+},
+"design": {
+"allocation": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "not_applicable",
+"value_source": "generated"
+},
+"assignment_structure": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "meta-analysis",
+"value_source": "generated"
+},
+"blinding": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Literature-based meta-analysis of published fMRI studies, with separate analyses of empathy for pain, negative emotions, and positive emotions. No new participant acquisition or intervention is reported.",
+"value_source": "generated"
+}
+},
+"extraction_metadata": {
+"extraction_date": "2026-10-28",
+"extractor_model": "Qwen/Qwen3.8-27B",
+"extractor_version": "ns-27b-e-d7d2347b1330",
+"source_text_hash": "5d02b0a822c8e123fdf2d974691efb27e47570ee64118702f1b8be33db2e940a"
+},
+"groups": [
+{
+"acquired_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_maximum": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_mean": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_median": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_minimum": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_standard_deviation": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"approached_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"clinical_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"consented_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Aggregate participants from 47 published fMRI studies; 3,411 subjects in the final dataset. Category-specific subsets are 1,598 for pain, 403 for negative emotions, and 157 for positive emotions.",
+"value_source": "generated"
+},
+"diagnostic_system": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"education_summary": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"enrolled_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"excluded_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"exclusion_criteria": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Children",
+"Aging adults",
+"Psychiatric patients",
+"Medical physicians",
+"Buddhist meditators"
+],
+"value_source": "generated"
+},
+"inclusion_criteria": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Healthy adults",
+"Published fMRI studies of empathetic processes"
+],
+"value_source": "generated"
+},
+"is_healthy": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": true,
+"value_source": "generated"
+},
+"local_id": "grp_healthy",
+"medical_condition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Healthy adults"
+],
+"value_source": "generated"
+},
+"medication_status": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"medications": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "healthy adults",
+"value_source": "generated"
+},
+"other_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"population_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"recruitment_dates": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"recruitment_method": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"sample_overlap_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"sample_source": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "previously_reported",
+"value_source": "generated"
+},
+"sample_source_reference": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Table 1",
+"value_source": "generated"
+},
+"socioeconomic_status_summary": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"species": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "human",
+"value_source": "generated"
+}
+}
+],
+"hypothesis": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"inference_settings": [
+{
+"alpha_level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 0.05,
+"value_source": "generated"
+},
+"cluster_extent_threshold": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 31,
+"value_source": "generated"
+},
+"clusterwise_threshold_value": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"correction_scope": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"height_threshold_type": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"height_threshold_value": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"inference_level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "cluster",
+"value_source": "generated"
+},
+"local_id": "inf_ale",
+"multiple_comparison_method": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "FDR",
+"value_source": "generated"
+},
+"neighborhood_definition": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"number_of_tests": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"permutation_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"search_volume": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"tfce_parameters": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"tfce_used": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"local_id": "69nieL522cF5",
+"measures": [
+{
+"family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "functional_bold",
+"value_source": "generated"
+},
+"local_id": "mea_ale",
+"source_label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "ALE",
+"value_source": "generated"
+},
+"specific_metric": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Spatial convergence of published fMRI activation foci",
+"value_source": "generated"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "activation likelihood estimation",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"model_estimations": [
+{
+"estimator": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "activation likelihood estimation (ALE)",
+"value_source": "generated"
+},
+"hrf_model": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "mod_ale_all",
+"model_family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "activation likelihood estimation",
+"value_source": "generated"
+},
+"model_settings": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Activated foci treated as three-dimensional Gaussian probability distributions centered at reported coordinates; sample size incorporated into distribution size; random-effect inference tests above-chance clustering between experiments/contrasts.",
+"value_source": "generated"
+},
+"model_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "coordinate-based meta-analysis",
+"value_source": "generated"
+},
+"software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"spatial_unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "voxel",
+"value_source": "generated"
+},
+"stage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "meta-analysis",
+"value_source": "generated"
+},
+"terms": [
+{
+"functional_form": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"levels": [
+{
+"conditions": [
+"cond_empathy"
+],
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "empathy",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"local_id": "trm_empathy_all",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "empathy category",
+"value_source": "generated"
+},
+"source_definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "All three emotional categories: empathy for pain, negative emotions, and positive emotions.",
+"value_source": "generated"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "categorical",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"variation_level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "across experiments/contrasts",
+"value_source": "generated"
+}
+}
+]
+},
+{
+"estimator": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "activation likelihood estimation (ALE)",
+"value_source": "generated"
+},
+"hrf_model": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "mod_ale_pain",
+"model_family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "activation likelihood estimation",
+"value_source": "generated"
+},
+"model_settings": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Gaussian probability distributions centered at activation coordinates, with sample-size-dependent distribution size and random-effect inference between experiments/contrasts.",
+"value_source": "generated"
+},
+"model_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "coordinate-based meta-analysis",
+"value_source": "generated"
+},
+"software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"spatial_unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "voxel",
+"value_source": "generated"
+},
+"stage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "meta-analysis",
+"value_source": "generated"
+},
+"terms": [
+{
+"functional_form": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"levels": [
+{
+"conditions": [
+"cond_empathy"
+],
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "empathy for pain",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"local_id": "trm_empathy_pain",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "empathy category",
+"value_source": "generated"
+},
+"source_definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Empathy for pain contrasts, including pain>no pain and other’s pain>self pain.",
+"value_source": "generated"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "categorical",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"variation_level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "across experiments/contrasts",
+"value_source": "generated"
+}
+}
+]
+},
+{
+"estimator": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "activation likelihood estimation (ALE)",
+"value_source": "generated"
+},
+"hrf_model": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "mod_ale_negative",
+"model_family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "activation likelihood estimation",
+"value_source": "generated"
+},
+"model_settings": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Gaussian probability distributions centered at activation coordinates, with sample-size-dependent distribution size and random-effect inference between experiments/contrasts.",
+"value_source": "generated"
+},
+"model_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "coordinate-based meta-analysis",
+"value_source": "generated"
+},
+"software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"spatial_unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "voxel",
+"value_source": "generated"
+},
+"stage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "meta-analysis",
+"value_source": "generated"
+},
+"terms": [
+{
+"functional_form": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"levels": [
+{
+"conditions": [
+"cond_empathy"
+],
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "empathy for negative emotions",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"local_id": "trm_empathy_negative",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "empathy category",
+"value_source": "generated"
+},
+"source_definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Empathy for negative emotions contrasts, including compassionate–sad>compassionate–neutral and overlap between observing and feeling disgust.",
+"value_source": "generated"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "categorical",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"variation_level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "across experiments/contrasts",
+"value_source": "generated"
+}
+}
+]
+},
+{
+"estimator": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "activation likelihood estimation (ALE)",
+"value_source": "generated"
+},
+"hrf_model": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "mod_ale_positive",
+"model_family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "activation likelihood estimation",
+"value_source": "generated"
+},
+"model_settings": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Gaussian probability distributions centered at activation coordinates, with sample-size-dependent distribution size and random-effect inference between experiments/contrasts.",
+"value_source": "generated"
+},
+"model_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "coordinate-based meta-analysis",
+"value_source": "generated"
+},
+"software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"spatial_unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "voxel",
+"value_source": "generated"
+},
+"stage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "meta-analysis",
+"value_source": "generated"
+},
+"terms": [
+{
+"functional_form": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"levels": [
+{
+"conditions": [
+"cond_empathy"
+],
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "empathy for positive emotions",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"local_id": "trm_empathy_positive",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "empathy category",
+"value_source": "generated"
+},
+"source_definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Empathy for positive emotions contrasts, including overlap between sucrose–saliva and pleasant faces–neutral faces and correlation of happy > neutral contrast with EQ.",
+"value_source": "generated"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "categorical",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"variation_level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "across experiments/contrasts",
+"value_source": "generated"
+}
+}
+]
+}
+],
+"result_reporting": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analyses_reported",
+"value_source": "generated"
+},
+"tables": [
+{
+"caption": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Demographics of Studies Included in the Meta-Analysis1",
+"value_source": "generated"
+},
+"column_headings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"footer": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "1All references are given in the Literature Cited.",
+"value_source": "generated"
+},
+"local_id": "tbl1",
+"purpose": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"table_number": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "TABLE 1",
+"value_source": "generated"
+}
+},
+{
+"caption": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Empathy-Related Brain Regions (All Coordinates)1",
+"value_source": "generated"
+},
+"column_headings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"footer": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "1PFDR < 0.05, k > 30, voxel size = 2 × 2 × 2 mm.ACC, anterior cingulate cortex; RCZa, anterior rostral cingulate zone; RCZp, posterior rostral cingulate zone; CCZ, caudal cingulate zone; MPFC, medial prefrontal cortex; L, left; R, right. RCZa, RCZp, and CCZ are defined as by Fan et al. (2008).",
+"value_source": "generated"
+},
+"local_id": "tbl2",
+"purpose": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "reported_effect",
+"value_source": "generated"
+},
+"table_number": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "TABLE 2",
+"value_source": "generated"
+}
+},
+{
+"caption": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Brain Regions Involved in Empathy for Pain1",
+"value_source": "generated"
+},
+"column_headings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"footer": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "1PFDR < 0.05, k > 30, voxel size = 2 × 2 × 2 mm. ACC, anterior cingulate cortex; RCZa, anterior rostral cingulate zone; RCZp, posterior rostral cingulate zone; CCZ, caudal cingulate zone; SI, primary somatosensory cortex; MPFC, medial prefrontal cortex; L, left; R, right. RCZa, RCZp, and CCZ are defined as by Fan et al. (2008).",
+"value_source": "generated"
+},
+"local_id": "tbl3",
+"purpose": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "reported_effect",
+"value_source": "generated"
+},
+"table_number": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "TABLE 3",
+"value_source": "generated"
+}
+},
+{
+"caption": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Brain Regions Involved in Empathy for Negative Emotions1",
+"value_source": "generated"
+},
+"column_headings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"footer": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "1PFDR < 0.05, k > 30, voxel size = 2 × 2 × 2 mm. ACC, anterior cingulate cortex; RCZa, anterior rostral cingulate zone; MPFC, medial prefrontal cortex; L, left; R, right. RCZa, RCZp, and CCZ are defined as by Fan et al. (2008).",
+"value_source": "generated"
+},
+"local_id": "tbl4",
+"purpose": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "reported_effect",
+"value_source": "generated"
+},
+"table_number": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "TABLE 4",
+"value_source": "generated"
+}
+},
+{
+"caption": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Brain Regions Involved in Empathy for Positive Emotions1",
+"value_source": "generated"
+},
+"column_headings": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"footer": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "1PFDR < 0.05, k > 30, voxel size = 2 × 2 × 2 mm. SI, primary somatosensory cortex; MPFC, medial prefrontal cortex; L, left; R, right.",
+"value_source": "generated"
+},
+"local_id": "tbl5",
+"purpose": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "reported_effect",
+"value_source": "generated"
+},
+"table_number": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "TABLE 5",
+"value_source": "generated"
+}
+}
+],
+"tasks": [
+{
+"acquisitions": [
+"acq_fmri"
+],
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Meta-analytic paradigm category spanning published empathy tasks, including valence rating, observation, imitation, perspective taking, empathizing, emotion inference, empathetic decision making, and hit/miss judgment. No new task was administered by this review.",
+"value_source": "generated"
+},
+"design_type": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"instructions": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "tsk_empathy",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "empathy",
+"value_source": "generated"
+},
+"performance_measures": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Response time",
+"Error rates",
+"d′",
+"d′painful − d′nonpainful"
+],
+"value_source": "generated"
+},
+"presentation_software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"references": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Gu et al., 2012"
+],
+"value_source": "generated"
+},
+"response_modality": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"stimuli": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Visual images and videos",
+"Auditory/visual stimuli"
+],
+"value_source": "generated"
+},
+"stimulus_content": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"stimulus_modality": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"visual",
+"auditory"
+],
+"value_source": "generated"
+}
+}
+]
+},
+"answers": {
+"tsk_empathy": {
+"content": "{\"factors\": [{\"from_term\": null, \"axis\": \"emotion\", \"levels\": [{\"level\": \"pain\", \"value\": \"pain\"}, {\"level\": \"negative emotions\", \"value\": \"sad\"}, {\"level\": \"positive emotions\", \"value\": \"happy\"}]}], \"context\": [{\"axis\": \"modality\", \"value\": \"visual\"}], \"conditions\": [{\"id\": \"pain\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"emotion\", \"value\": \"pain\"}], \"expansion\": null, \"gloss\": \"pain observation\"}, {\"id\": \"negative emotions\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"emotion\", \"value\": \"sad\"}], \"expansion\": null, \"gloss\": \"sad emotion observation\"}, {\"id\": \"positive emotions\", \"kind\": \"task_state\", \"atoms\": [{\"axis\": \"emotion\", \"value\": \"happy\"}], \"expansion\": null, \"gloss\": \"happy emotion observation\"}], \"task\": \"tct_empathy_pain_observation\", \"family\": \"social_cognition_and_games\", \"task_confidence\": \"medium\"}",
+"prompt_sha256": "c5941713d4775f2339cf24619e19408e273df5c91f29a2e28a7384a919f97d61"
 }
 }
 }

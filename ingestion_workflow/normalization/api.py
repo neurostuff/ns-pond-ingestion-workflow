@@ -132,6 +132,7 @@ def finish(record, answers, parse, model, version):
     tally = {f"tasks:{k}": n for k, n in sidecars.write_tasks(
         r, designs, model, vocabulary.load()["version"], version).items()}
     tally.update({f"contrasts:{k}": n for k, n in sidecars.write_contrasts(r, found, version).items()})
+    tally.update({f"tasks:{k}": n for k, n in sidecars.write_missing_conditions(r, structures, version).items()})
     return tally
 
 

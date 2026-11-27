@@ -1,8 +1,9 @@
 """The `normalized` sidecars written into real records validate against the extraction record.
 
-The records are four 27B records (`data/design_records.json`), each with task-design v4's answer for
-its tasks as beast's server gave it (no text, so no excerpt in the prompt). One, xbp5wa6xqs3x, has a
-resting-state task without conditions.
+The records are six 27B records (`data/design_records.json`), each with task-design v4's answer
+for its tasks as beast's server gave it (no text, so no excerpt in the prompt). Three have a task
+without conditions: xbp5wa6xqs3x a resting-state scan, j2sjvw7hq3az a task whose analysis is
+parametric, and rt72p6lw3elr a task whose analyses name a condition the record does not define.
 """
 
 import copy
@@ -153,3 +154,42 @@ def test_a_task_with_no_name_description_or_conditions_is_not_asked():
                          "description": {"value": "Eyes closed, 8 min."}}]}
 
     assert [design.v(t["local_id"]) for t in design.tasks_of(record)] == ["t3", "t4"]
+
+
+
+
+MISSED = "rt72p6lw3elr"
+
+
+def test_a_task_whose_analyses_name_an_undefined_condition_is_flagged():
+    """rt72p6lw3elr's empathy task lists no conditions, but its analyses compare cond_empathy."""
+    r = copy.deepcopy(DATA[MISSED]["record"])
+    tally = api.finish(r, answers(MISSED), None, MODEL, VERSION)
+    (task,) = r["tasks"]
+    flag = entries(task["name"])["ns-pond conditions missing"]
+    assert flag["value"] == "likely" and flag["method"].endswith(": cond_empathy")
+    assert flag["mapping_tool"] == f"ingestion_workflow.normalization.conditions_check {VERSION}"
+    assert tally["tasks:conditions_missing"] == 1
+    # the task's label is still written beside the flag
+    assert entries(task["name"])["astra canonical task"]["value"] == "tct_empathy_pain_observation"
+
+
+def test_only_the_task_the_analyses_name_is_flagged():
+    """A second task, which no analysis names (xbp5wa6xqs3x's resting-state scan), gets no flag."""
+    r = copy.deepcopy(DATA[MISSED]["record"])
+    rest = copy.deepcopy(DATA[CONDLESS]["record"]["tasks"][0])
+    assert rest["local_id"] == "tsk_rest"
+    r["tasks"].append(rest)
+    tally = api.finish(r, answers(MISSED), None, MODEL, VERSION)
+    assert tally["tasks:conditions_missing"] == 1
+    flagged = ["ns-pond conditions missing" in entries(t["name"]) for t in r["tasks"]]
+    assert flagged == [True, False]
+
+
+@pytest.mark.parametrize("study", ["ya2RC6UYbibC", CONDLESS, "j2sjvw7hq3az"])
+def test_no_flag_when_every_condition_an_analysis_names_is_defined(study):
+    """Conditions all defined (ya2RC6UYbibC); a resting-state main effect (xbp5wa6xqs3x); a
+    parametric analysis of a task without conditions, naming none (j2sjvw7hq3az)."""
+    r = copy.deepcopy(DATA[study]["record"])
+    assert api.finish(r, answers(study), None, MODEL, VERSION)["tasks:conditions_missing"] == 0
+    assert all("ns-pond conditions missing" not in entries(t["name"]) for t in r["tasks"])
