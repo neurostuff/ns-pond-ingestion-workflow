@@ -303,15 +303,23 @@ def test_a_word_file_is_read_with_its_tables(tmp_path):
     # A run that starts with its punctuation takes no space before it.
     ([("Table S3", "b"), (". Brain areas showing gene interaction effects on ReHo", "")],
      "Table S3. Brain areas showing gene interaction effects on ReHo"),
+    # r5i3sldauyg4's supplement: a figure's note, a page break, then the next table's caption,
+    # all one paragraph. The caption starts at its own run.
+    ([("Abbreviations", "bi"), (": B=Baclofen; P=Placebo; 1=time point 1; 2=time point 2", "i"),
+      ("", "bp"), ("Supplementary Table 3: Analyses of reaction times and misses in the baclofen group", "b")],
+     "Supplementary Table 3: Analyses of reaction times and misses in the baclofen group"),
 ])
 def test_a_word_caption_whose_runs_differ_in_format_is_read_whole(tmp_path, runs, caption):
     import docx
+    from docx.enum.text import WD_BREAK
 
     document = docx.Document()
     paragraph = document.add_paragraph()
     for text, style in runs:
         run = paragraph.add_run(text)
         run.bold, run.italic = "b" in style, "i" in style
+        if "p" in style:
+            run.add_break(WD_BREAK.PAGE)
     table = document.add_table(rows=2, cols=4)
     for r, row in enumerate([["Region", "x", "y", "z"], ["IFG", "-39", "20", "19"]]):
         for c, cell in enumerate(row):

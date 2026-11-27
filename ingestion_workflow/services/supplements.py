@@ -514,8 +514,9 @@ def word_captions(document) -> List[str]:
 
     Docling reads a paragraph whose runs differ in format ("**Supplementary Table 5.**
     Whole-brain ...") as an inline group of texts; the group's texts, joined, are the paragraph.
-    A paragraph that is only the label ("Table S6") takes the next paragraph, its title, when
-    one comes before the table.
+    When the paragraph doesn't start a caption, the caption starts at the first text that does
+    (a figure's note, a page break, then "Supplementary Table 3: ..."). A paragraph that is only
+    the label ("Table S6") takes the next paragraph, its title, when one comes before the table.
     """
     out, last, grouped, titled = [], "", set(), True
     for node, _ in document.iterate_items(with_groups=True):
@@ -528,7 +529,11 @@ def word_captions(document) -> List[str]:
         if getattr(node, "label", None) == "inline":
             parts = [child.resolve(document) for child in node.children]
             grouped.update(part.self_ref for part in parts)
-            text = _join_runs([getattr(part, "text", "") or "" for part in parts])
+            runs = [getattr(part, "text", "") or "" for part in parts]
+            text = _join_runs(runs)
+            if not _CAPTION_LINE.match(_squash(text)):
+                start = next((i for i, run in enumerate(runs) if _CAPTION_LINE.match(_squash(run))), 0)
+                text = _join_runs(runs[start:])
         else:
             text = getattr(node, "text", "") or ""
         text = _squash(text)
