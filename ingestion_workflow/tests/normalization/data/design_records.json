@@ -1,6 +1,6 @@
 {
 "model": "task-design-v4",
-"note": "records from astra_records.json; no text, so no excerpt; answers from beast vLLM, greedy, 2026-11-26",
+"note": "records from astra_records.json; no text, so no excerpt; answers from beast vLLM, greedy, 2026-11-26; xbp5wa6xqs3x (a resting-state task without conditions) added 2026-11-27 from the production catalog's 27B record",
 "studies": {
 "6SKTGteXbbBs": {
 "record": {
@@ -6457,6 +6457,1507 @@
 "prompt_tokens_details": null,
 "completion_tokens_details": null
 }
+}
+}
+},
+"xbp5wa6xqs3x": {
+"record": {
+"acquisitions": [
+{
+"acquisition_duration_seconds": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 480,
+"value_source": "generated"
+},
+"acquisition_type": "MRI",
+"acquisition_voxel_size_mm": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+2.3,
+2.3,
+2.3
+],
+"value_source": "generated"
+},
+"brain_coverage": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"device": "dev_signa",
+"echo_time_seconds": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+0.035
+],
+"value_source": "generated"
+},
+"local_id": "acq_fmri_rest",
+"magnetic_field_strength_tesla": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 3,
+"value_source": "generated"
+},
+"modality": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "fMRI",
+"value_source": "generated"
+},
+"mr_acquisition_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "2D",
+"value_source": "generated"
+},
+"number_of_volumes": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"pulse_sequence_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "gradient-echo EPI with simultaneous multi-slice acceleration (GE HyperBand; MB = 8)",
+"value_source": "generated"
+},
+"repetition_time_seconds": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 0.65,
+"value_source": "generated"
+}
+},
+{
+"acquisition_duration_seconds": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"acquisition_type": "MRI",
+"acquisition_voxel_size_mm": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+0.8,
+0.8,
+0.8
+],
+"value_source": "generated"
+},
+"brain_coverage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "whole_brain",
+"value_source": "generated"
+},
+"device": "dev_signa",
+"echo_time_seconds": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+0.00355
+],
+"value_source": "generated"
+},
+"local_id": "acq_smri",
+"magnetic_field_strength_tesla": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 3,
+"value_source": "generated"
+},
+"modality": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "sMRI",
+"value_source": "generated"
+},
+"mr_acquisition_type": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"number_of_volumes": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"pulse_sequence_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "T1-weighted MPRAGE",
+"value_source": "generated"
+},
+"repetition_time_seconds": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 2.523,
+"value_source": "generated"
+}
+}
+],
+"analyses": [
+{
+"acquisitions": [
+"acq_fmri_rest"
+],
+"coordinate_space": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "fsLR32k",
+"value_source": "generated"
+},
+"definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Comparison of resting-state functional connectivity from the anatomical hand knob to dsGrid stimulation sites versus P3 locations.",
+"value_source": "generated"
+},
+"details": {
+"connectivity_method": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "seed_based",
+"value_source": "generated"
+},
+"details_type": "ConnectivityDetails",
+"inference_target": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "connectivity_parameter",
+"value_source": "generated"
+},
+"modulatory_input": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"seed_regions": [
+"reg_hand_knob"
+],
+"target_regions": [
+"reg_dsgird",
+"reg_p3"
+]
+},
+"effect": {
+"cells": [
+{
+"direction": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "undirected",
+"value_source": "generated"
+},
+"label": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "dsGrid",
+"value_source": "generated"
+},
+"term": "trm_rsfc_site"
+},
+{
+"direction": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "undirected",
+"value_source": "generated"
+},
+"label": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "P3",
+"value_source": "generated"
+},
+"term": "trm_rsfc_site"
+}
+],
+"kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "omnibus",
+"value_source": "generated"
+},
+"statistic": {
+"degrees_of_freedom_denominator": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 46,
+"value_source": "generated"
+},
+"degrees_of_freedom_numerator": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 1,
+"value_source": "generated"
+},
+"family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "f",
+"value_source": "generated"
+}
+}
+},
+"groups": [
+{
+"group": "grp_healthy",
+"n": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 47,
+"value_source": "generated"
+}
+}
+],
+"inference_settings": "inf_wald",
+"interpretations": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"We found significantly increased resting-state functional connectivity from anatomical hand knob to our dsGrid stimulation sites compared to P3 locations."
+],
+"value_source": "generated"
+},
+"local_id": "a_prose_1",
+"measure": "mea_rsfc",
+"model_estimation": "mod_rsfc",
+"model_representation_notes": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Subject was a random effect. The reported F test is unsigned; the direction of the connectivity difference is retained in the definition and interpretation.",
+"value_source": "generated"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "P3 ROI",
+"value_source": "generated"
+},
+"outcome": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "significant_effect",
+"value_source": "generated"
+},
+"prespecification": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"regions": [
+"reg_hand_knob",
+"reg_dsgird",
+"reg_p3"
+],
+"source_table_analysis": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analysis#f499195e9a251c04",
+"value_source": "generated"
+},
+"spatial_scope": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "roi",
+"value_source": "generated"
+},
+"tasks": [
+"tsk_rest"
+]
+}
+],
+"coordinate_sets": [
+{
+"anchor_kind": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "roi",
+"value_source": "generated"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Group-derived MNI coordinates for the P3 ROI, projected into fsLR32k and aligned to individual cortical anatomy.",
+"value_source": "generated"
+},
+"local_id": "analysis#f499195e9a251c04",
+"regions": [
+"reg_p3"
+],
+"result_kind": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"role": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "anchor",
+"value_source": "generated"
+}
+}
+],
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Validation of dsGrid, a dual-site TMS grid-search targeting method, by comparing individualized parietal targets with conventional P3 targets using resting-state connectivity, task-based connectivity, and task-evoked BOLD activity in 47 healthy adults.",
+"value_source": "generated"
+},
+"design": {
+"allocation": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "not_applicable",
+"value_source": "generated"
+},
+"assignment_structure": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "observational_cohorts",
+"value_source": "generated"
+},
+"blinding": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "One healthy cohort completed an MRI session and a separate TMS session. The MRI session included structural imaging, two resting-state runs, and five force-tracking runs. The TMS session established individualized dsGrid targets. Imaging comparisons were within participants between dsGrid and P3 locations, not between stimulation arms.",
+"value_source": "generated"
+},
+"timepoints": [
+{
+"local_id": "tp_mri",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "MRI session",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 1,
+"value_source": "generated"
+},
+"relation_to_intervention": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "not_applicable",
+"value_source": "generated"
+},
+"time_from_intervention": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+},
+{
+"local_id": "tp_tms",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "TMS session",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 2,
+"value_source": "generated"
+},
+"relation_to_intervention": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "not_applicable",
+"value_source": "generated"
+},
+"time_from_intervention": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+]
+},
+"devices": [
+{
+"local_id": "dev_signa",
+"manufacturer": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "GE",
+"value_source": "generated"
+},
+"model": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Signa MR 750",
+"value_source": "generated"
+}
+}
+],
+"extraction_metadata": {
+"extraction_date": "2026-10-28",
+"extractor_model": "Qwen/Qwen3.8-27B",
+"extractor_version": "ns-27b-e-d7d2347b1330",
+"source_text_hash": "e6d2b128c708f38539724b5463d691dba8a45f0cdd7625f1c5d5aac0a09f3609"
+},
+"groups": [
+{
+"acquired_count": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 47,
+"value_source": "generated"
+},
+"age_maximum": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 50,
+"value_source": "generated"
+},
+"age_mean": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_median": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_minimum": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 18,
+"value_source": "generated"
+},
+"age_standard_deviation": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"age_unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "years",
+"value_source": "generated"
+},
+"approached_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"clinical_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"consented_count": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 47,
+"value_source": "generated"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Participants enrolled in a clinical trial completed MRI and TMS sessions for validation of dsGrid targeting.",
+"value_source": "generated"
+},
+"diagnostic_system": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"education_summary": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"enrolled_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"excluded_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"exclusion_criteria": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"handedness_distribution": [
+{
+"category": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "right-handed",
+"value_source": "generated"
+},
+"count": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 47,
+"value_source": "generated"
+},
+"denominator": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 47,
+"value_source": "generated"
+},
+"percentage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 100,
+"value_source": "generated"
+},
+"reporting_framework": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Edinburgh Handedness Inventory",
+"value_source": "generated"
+}
+}
+],
+"inclusion_criteria": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Healthy adults",
+"Right-handed"
+],
+"value_source": "generated"
+},
+"is_healthy": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "grp_healthy",
+"medical_condition": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"medication_status": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"medications": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "healthy adult participants",
+"value_source": "generated"
+},
+"other_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"population_characteristics": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"recruitment_dates": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"recruitment_method": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Participants enrolled in a clinical trial (ClinicalTrials.gov ID: NCT05103176).",
+"value_source": "generated"
+},
+"sample_overlap_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"sample_source": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "recruited",
+"value_source": "generated"
+},
+"sample_source_reference": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "NCT05103176",
+"value_source": "generated"
+},
+"sex_distribution": [
+{
+"category": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "females",
+"value_source": "generated"
+},
+"count": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 32,
+"value_source": "generated"
+},
+"denominator": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 47,
+"value_source": "generated"
+},
+"percentage": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"reporting_framework": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"socioeconomic_status_summary": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"species": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "human",
+"value_source": "generated"
+}
+}
+],
+"hypothesis": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"We hypothesized that dsGrid targeting would more accurately capture individual differences in parietal-motor connectivity and task-related neural activity compared to the group-based P3 target."
+],
+"value_source": "generated"
+},
+"inference_settings": [
+{
+"alpha_level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": 0.05,
+"value_source": "generated"
+},
+"cluster_extent_threshold": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"clusterwise_threshold_value": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"correction_scope": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"height_threshold_type": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"height_threshold_value": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"inference_level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "region",
+"value_source": "generated"
+},
+"local_id": "inf_wald",
+"multiple_comparison_method": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"neighborhood_definition": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"number_of_tests": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"permutation_count": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"search_volume": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"tfce_parameters": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"tfce_used": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"local_id": "C3SMvZAUDVa9",
+"measures": [
+{
+"family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "functional_bold",
+"value_source": "generated"
+},
+"local_id": "mea_rsfc",
+"source_label": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "resting-state functional connectivity",
+"value_source": "generated"
+},
+"specific_metric": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Fisher-transformed functional connectivity correlation values",
+"value_source": "generated"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "connectivity_strength",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+],
+"model_estimations": [
+{
+"estimator": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"hrf_model": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "mod_rsfc",
+"model_family": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "mixed_effects",
+"value_source": "generated"
+},
+"model_settings": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Fisher-transformed resting-state functional connectivity as dependent variable; target site fixed effect; subject random effect; type II Wald F test with Kenward–Roger degrees of freedom correction.",
+"value_source": "generated"
+},
+"model_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "linear mixed effect model",
+"value_source": "generated"
+},
+"preprocessing": [
+"prp_fmriprep",
+"prp_rsfc"
+],
+"software": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "R 4.2.3; lme4",
+"value_source": "generated"
+},
+"spatial_unit": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "roi",
+"value_source": "generated"
+},
+"stage": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "group",
+"value_source": "generated"
+},
+"terms": [
+{
+"functional_form": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"levels": [
+{
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "dsGrid",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"regions": [
+"reg_dsgird"
+]
+},
+{
+"level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "P3",
+"value_source": "generated"
+},
+"order": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"regions": [
+"reg_p3"
+]
+}
+],
+"local_id": "trm_rsfc_site",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "target site",
+"value_source": "generated"
+},
+"source_definition": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Target site (dsGrid or P3) as a fixed effect.",
+"value_source": "generated"
+},
+"type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "categorical",
+"value_source": "generated"
+},
+"unit": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"variation_level": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "within_subject",
+"value_source": "generated"
+}
+}
+]
+}
+],
+"preprocessings": [
+{
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Common fMRIPrep preprocessing for resting-state and task fMRI, followed by projection to individual MSMSulc surfaces and fsLR32k space.",
+"value_source": "generated"
+},
+"local_id": "prp_fmriprep",
+"smoothing_fwhm_mm": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+4
+],
+"value_source": "generated"
+},
+"software": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"fMRIPrep 20.2.5",
+"AFNI 20160207 3dQwarp",
+"FreeSurfer bbregister",
+"FSL 5.0.9 mcflirt",
+"ANTs antsApplyTransforms",
+"ciftify"
+],
+"value_source": "generated"
+},
+"steps": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Generate reference volume and skull-stripped reference",
+"Estimate B0 nonuniformity from opposing phase-encoding EPI references",
+"Correct susceptibility distortion",
+"Boundary-based BOLD-to-T1w registration with six degrees of freedom",
+"Estimate head-motion parameters",
+"Resample BOLD time series to native space with composite motion and susceptibility correction",
+"Calculate framewise displacement and CSF, WM, and whole-brain global signals",
+"Expand confounds with temporal derivatives and quadratic terms",
+"Identify motion outliers exceeding 0.2 mm FD",
+"Project functional data to individual MSMSulc surfaces and fsLR32k space"
+],
+"value_source": "generated"
+}
+},
+{
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Additional resting-state processing after common fMRIPrep preprocessing.",
+"value_source": "generated"
+},
+"local_id": "prp_rsfc",
+"smoothing_fwhm_mm": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+4
+],
+"value_source": "generated"
+},
+"software": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"nilearn"
+],
+"value_source": "generated"
+},
+"steps": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": [
+"Butterworth temporal filtering at 0.009–0.08 Hz",
+"Apply the same filter to confound regressors",
+"Regress 36 confound regressors and motion-outlier spike regressors",
+"Z-score residual time series",
+"2D surface Gaussian smoothing"
+],
+"value_source": "generated"
+}
+}
+],
+"regions": [
+{
+"atlas": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"definition_method": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "prior_literature",
+"value_source": "generated"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Group-derived MNI coordinates (−42.75, −69.5, 49.82), projected into fsLR32k and aligned to individual cortical anatomy. A 5 mm-radius sphere was projected onto the cortical surface and dilated to a 10 mm circle. The ROI localized to the left angular gyrus within the inferior parietal lobule.",
+"value_source": "generated"
+},
+"local_id": "reg_p3",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "P3 ROI",
+"value_source": "generated"
+},
+"region_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "coordinate_sphere",
+"value_source": "generated"
+}
+},
+{
+"atlas": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"definition_method": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "same_study_analysis",
+"value_source": "generated"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Participant-specific PPC hotspot identified by dual-site TMS grid search during grasp preparation. The hotspot coil position was projected onto the individual cortical surface using Brainsight 2.4.9. A 5 mm-radius sphere was projected onto the cortical surface and dilated to a 10 mm circle.",
+"value_source": "generated"
+},
+"local_id": "reg_dsgird",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "dsGrid",
+"value_source": "generated"
+},
+"region_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "coordinate_sphere",
+"value_source": "generated"
+}
+},
+{
+"atlas": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"definition_method": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "anatomical_a_priori",
+"value_source": "generated"
+},
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Left precentral hand knob localized on anatomical scans. A 5 mm-radius sphere was projected onto the individual cortical surface and dilated to a 10 mm circle.",
+"value_source": "generated"
+},
+"local_id": "reg_hand_knob",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "motor hand knob",
+"value_source": "generated"
+},
+"region_type": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "anatomical",
+"value_source": "generated"
+}
+}
+],
+"result_reporting": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "analyses_reported",
+"value_source": "generated"
+},
+"tasks": [
+{
+"acquisitions": [
+"acq_fmri_rest"
+],
+"description": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "Two resting-state scans, each lasting 4 minutes, totaling 8 minutes.",
+"value_source": "generated"
+},
+"design_type": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"instructions": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"local_id": "tsk_rest",
+"name": {
+"evidence": {
+"status": "not_found"
+},
+"extraction_status": "extracted",
+"value": "resting-state",
+"value_source": "generated"
+},
+"performance_measures": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"presentation_software": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"references": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"response_modality": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"stimuli": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"stimulus_content": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+},
+"stimulus_modality": {
+"evidence": {
+"status": "not_applicable"
+},
+"extraction_status": "not_reported"
+}
+}
+]
+},
+"answers": {
+"tsk_rest": {
+"content": "{\"factors\": [], \"context\": [], \"conditions\": [{\"id\": null, \"kind\": \"rest\", \"atoms\": [], \"expansion\": null, \"gloss\": \"rest\"}, {\"id\": null, \"kind\": \"rest\", \"atoms\": [], \"expansion\": null, \"gloss\": \"rest\"}], \"task\": \"hedtsk_rest\", \"family\": \"pseudo_tasks\", \"task_confidence\": \"high\"}",
+"prompt_sha256": "75a3ee3110c40c308bc5192b68332be4fe26e57aa5538079d84e38d5ba1b84a7"
 }
 }
 }
