@@ -131,7 +131,7 @@ def test_the_model_s_answer_is_the_recorded_role(tmp_path, favour, recorded, hel
         model.stop("done")
     metadata = made.to_metadata()
     assert {k: metadata[k] for k in recorded} == recorded
-    assert made.uploaded is not held
+    assert made.held is held
     assert metadata["prior_study_evidence"] == ([{"text": "Seeds from Lee et al."}]
                                                 if recorded["from_prior_study"] else [])
     assert metadata["role_source"] == model.source
