@@ -115,14 +115,14 @@ def _text(root: Path):
 
 
 def _row(job, text_sha256, parse_keys, n_in, content, kwargs, record_digest=None,
-         response_schema=None) -> dict:
+         response_schema=None, retry_schema=None) -> dict:
     article_id, _, base_study_id, _, serve = job[:5]
     room = serve["max_len"] - n_in - serve["reserve"]
     return InputRow(article_id=article_id, base_study_id=base_study_id, text_sha256=text_sha256,
                     parse_keys=parse_keys, record_digest=record_digest, n_input_tokens=n_in,
                     content=content, chat_template_kwargs=kwargs,
                     max_tokens=max(256, min(serve["max_tokens"], room)),
-                    response_schema=response_schema).model_dump()
+                    response_schema=response_schema, retry_schema=retry_schema).model_dump()
 
 
 #: Of what a fitted request's prompt leaves of its `max_input_tokens`, the share the text is
@@ -197,10 +197,10 @@ def build_record(job) -> Tuple[Optional[dict], str]:
     paper_prompt = prompt.prompt_of(text, listed)
     content, kwargs = prompt.user_content(paper_prompt, template, job[3])
     n_in = prompt.ntok(prompt.user_turn(paper_prompt, template))
-    schema = (prompt.record_shape(prompt.schema_index(), "schema", keys=list(listed))
-              if job[4].get("guided") else None)
+    schema = prompt.record_shape(prompt.schema_index(), "schema", keys=list(listed))
     return _row(job, text_sha256, list(listed), n_in, content, kwargs,
-                response_schema=schema), ""
+                response_schema=schema if job[4].get("guided") else None,
+                retry_schema=schema), ""
 
 
 def build_evidence(job) -> Tuple[Optional[dict], str]:
@@ -212,10 +212,47 @@ def build_evidence(job) -> Tuple[Optional[dict], str]:
         return None, read
     _, _, text, text_sha256 = read
     record = job[5]
-    request, _ = evidence.prompt_of(record, text)
+    request, units = evidence.prompt_of(record, text)
     content, kwargs = prompt.user_content(request, evidence.TEMPLATE, job[3])
+    schema = evidence_schema(record, len(units))
     return _row(job, text_sha256, sorted(parse_keys(record)), evidence.n_input_tokens(request),
-                content, kwargs, record_digest(record)), ""
+                content, kwargs, record_digest(record),
+                response_schema=schema if job[4].get("guided") else None,
+                retry_schema=schema), ""
+
+
+#: The most unit numbers a guided evidence answer cites for one value. Of the ev1 answers
+#: that closed in ns-ev1-20261127-1958, 99% cite at most 38 for any value.
+UNITS_PER_VALUE = 64
+
+
+def evidence_schema(record, n_units: int) -> dict:
+    """The JSON schema of an evidence answer to `record`: its evidence shape
+    (`evidence.ev_target`), each list no longer than the record's and each item's local_id the
+    record's, each value at most UNITS_PER_VALUE unit numbers of 1..n_units. Decoded as any
+    JSON object, 4,001 of ns-ev1-20261127-1958's 27,821 answers went back through `analyses`
+    after its last item until max_tokens."""
+    from pondie_astra import evidence
+
+    compact, shape = evidence.ev_target(record, lambda _: [1])
+    units = {"$ref": "#/$defs/units"}
+
+    def of(value, ev):
+        if isinstance(ev, dict):
+            props = ({"local_id": {"const": value["local_id"]}}
+                     if isinstance(value, dict) and isinstance(value.get("local_id"), str) else {})
+            props.update((k, of(value.get(k) if isinstance(value, dict) else None, v))
+                         for k, v in ev.items() if k != "local_id")
+            return {"type": "object", "properties": props, "additionalProperties": False}
+        if ev and all(isinstance(i, int) for i in ev):
+            return units
+        items = value if isinstance(value, list) else ev   # trailing empty items are not in ev
+        return {"type": "array", "items": False, "maxItems": len(items),
+                "prefixItems": [of(v, ev[n] if n < len(ev) else {}) for n, v in enumerate(items)]}
+
+    return {**of(compact, shape), "$defs": {"units": {
+        "type": "array", "items": {"type": "integer", "minimum": 1, "maximum": n_units},
+        "maxItems": UNITS_PER_VALUE}}}
 
 
 BUILDERS = {"record": build_record, "evidence": build_evidence}
