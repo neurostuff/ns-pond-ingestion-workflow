@@ -10,6 +10,8 @@ every other normalizer's alone. Where the entries go:
     groups[].medical_condition         MONDO, ONVOC (pondie's entry shape), astra medical role
     analyses[].name                    ns-pond contrast key v2, ns-pond contrast kind, ns-pond contrast measure,
                                        ns-pond contrast baseline type, ns-pond contrast manipulated
+    tasks[].name (conditions_check)    ns-pond conditions missing: a task whose analyses name conditions
+                                       the record does not define
 
 `acquisitions[].modality` carries pondie's `Modality` entry, which pondie's `apply_normalized` writes.
 
@@ -147,4 +149,44 @@ def write_contrasts(record, identities, version):
         _sidecar.replace(analysis["name"], mapping_tool, entries)
         tally["keys"] += 1
         tally["incomplete"] += not k["complete"]
+    return tally
+
+
+
+def write_missing_conditions(record, structures, version):
+    """A flag on each task one of whose analyses names a condition the record never defines (in
+    `structure.assemble`'s target or baseline): the record missed a condition of that task, and the
+    paper is worth a new record. Nothing else changes. Arms and timepoints are not conditions, and a
+    task without conditions whose analyses compare groups, correlate, or compare sessions or arms
+    is not flagged. Nor is a side naming a task's own id: that is the whole task (a task against
+    rest, a task's main effect), not a missed condition. Measured 2026-11-27 on 4,000 papers: 305
+    of 3,855 tasks had no conditions; 252 of them had no within-task comparison, 38 compared only
+    arms or timepoints, and 11 named conditions no task lists. Over all 71,896 records, 319 such
+    ids were named: 145 task ids and 174 others."""
+    mapping_tool = tool("conditions_check", version)
+    defined = {str(value_of(c.get("local_id"))) for t in record.get("tasks") or [] if isinstance(t, dict)
+               for c in t.get("conditions") or [] if isinstance(c, dict)}
+    defined |= set(_by_id(record.get("tasks")))
+    analyses = _by_id(record.get("analyses"))
+    missing = {}
+    for s in structures:
+        named = {str(i) for side in ("target", "baseline") for i in (s.get(side) or {}).get("conditions") or []}
+        undefined = named - defined
+        if not undefined:
+            continue
+        for tid in (analyses.get(str(s.get("analysis"))) or {}).get("tasks") or []:
+            missing.setdefault(str(value_of(tid)), set()).update(undefined)
+    tally = {"conditions_missing": 0}
+    for tid, task in _by_id(record.get("tasks")).items():
+        if not isinstance(task.get("name"), dict):
+            continue
+        entries = []
+        if missing.get(tid):
+            entries = [_sidecar.entry(
+                "ns-pond conditions missing", MAPPED, mapping_tool, value="likely",
+                method="its analyses name conditions the record does not define: "
+                       + ", ".join(sorted(missing[tid])),
+                also_read=["conditions", "analyses"])]
+            tally["conditions_missing"] += 1
+        _sidecar.replace(task["name"], mapping_tool, entries)
     return tally
