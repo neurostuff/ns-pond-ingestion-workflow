@@ -371,8 +371,8 @@ EV1_PRED = json.loads((DATA / "26klegjq7mhi.ev1.pred.json").read_text())
 EV1_RECORD = json.loads((DATA / "26klegjq7mhi.ev1.extraction.json").read_text())
 
 
-def _evidence_bundle(world):
-    """The record imported, then an evidence bundle of it pushed and submitted."""
+def _evidence_export(world):
+    """The record imported, then an evidence bundle of it exported."""
     from ingestion_workflow.catalog import Run, RunKind
     from ingestion_workflow.services.offload.importer import import_run
 
@@ -385,6 +385,12 @@ def _evidence_bundle(world):
         update={"adapter_sha256": hashlib.sha256(b"weights").hexdigest(),
                 "model_revision": load_spec(SPEC_FILE).model_revision, "model": "Qwen/Qwen3.8-27B"})
     bundle = export(world["ctx"], spec, "vista", workers=1, now=NOW + timedelta(minutes=1)).bundle
+    return bundle
+
+
+def _evidence_bundle(world):
+    """The record imported, then an evidence bundle of it pushed and submitted."""
+    bundle = _evidence_export(world)
     R.push(world["remote"], bundle, hf_cache=Path("/nonexistent"))
     R.submit(world["remote"], bundle, yes=False)
     (job,) = BundleDir(bundle).state().jobs.values()
@@ -489,3 +495,94 @@ def test_a_server_that_never_starts_gives_up_after_its_attempts(flaky_server, ca
     assert job.start_with_retry(cmd, env, port, tmp / "vllm-s000-1", tmp / "cache") is None
     assert (tmp / "calls").read_text().count("start\n") == job.SERVE_ATTEMPTS
     assert "vllm did not start (attempt 2 of 2)" in capsys.readouterr().out
+
+
+def _evidence_row(world):
+    held = BundleDir(_evidence_export(world))
+    (shard,) = held.bundle().shards
+    return json.loads(held.inputs(shard.name).read_text().splitlines()[0])
+
+
+def _looped(prediction):
+    """ns-ev1-20261127-1958's failure: after the last analysis, the analyses again."""
+    looped = json.loads(json.dumps(prediction))
+    looped["analyses"] = looped["analyses"] * 3
+    return looped
+
+
+def test_an_evidence_retry_is_decoded_against_the_records_evidence_shape(world):
+    import jsonschema
+
+    row = _evidence_row(world)
+    assert row["response_schema"] is None   # ns-ev1 is not guided: only its retries are
+    schema = row["retry_schema"]
+    check = jsonschema.validators.validator_for(schema)(schema)
+    assert check.is_valid(EV1_PRED["prediction"]), \
+        next(check.iter_errors(EV1_PRED["prediction"])).message
+    assert not check.is_valid(_looped(EV1_PRED["prediction"]))
+    n_units = schema["$defs"]["units"]["items"]["maximum"]
+    past = json.loads(json.dumps(EV1_PRED["prediction"]))
+    past["description"] = [n_units + 1]
+    assert not check.is_valid(past)
+    renamed = json.loads(json.dumps(EV1_PRED["prediction"]))
+    next(a for a in renamed["analyses"] if a.get("local_id"))["local_id"] = "a_not_in_the_record"
+    assert not check.is_valid(renamed)
+
+
+def test_the_job_asks_again_against_the_retry_schema_while_an_answer_is_not_json(world, tmp_path):
+    """The spec's request, cut off at max_tokens; the guided retry answers."""
+    import threading
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    from ingestion_workflow.services.offload.cluster import job
+
+    row = _evidence_row(world)
+    answer = json.dumps(EV1_PRED["prediction"], separators=(",", ":"))
+    looped = json.dumps(_looped(EV1_PRED["prediction"]), separators=(",", ":"))
+    asked = []
+
+    class Model(BaseHTTPRequestHandler):
+        def do_POST(self):
+            body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+            asked.append(body)
+            guided = body["response_format"]["type"] == "json_schema"
+            content, finish = (answer, "stop") if guided else (looped[:5000], "length")
+            out = json.dumps({"choices": [{"finish_reason": finish,
+                                           "message": {"content": content}}],
+                              "usage": {"prompt_tokens": 1, "completion_tokens": 2}}).encode()
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(out)))
+            self.end_headers()
+            self.wfile.write(out)
+
+        def log_message(self, *args):
+            pass
+
+    root = tmp_path / "bundle"
+    (root / "inputs").mkdir(parents=True)
+    (root / "inputs" / "s000.jsonl").write_text(json.dumps(row) + "\n")
+    spec = load_spec(SPEC_FILE.with_name("ns-ev1.json"))
+    (root / "bundle.json").write_text(json.dumps({"spec": spec.model_dump()}))
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Model)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        job.run(root, "s000", f"http://127.0.0.1:{server.server_port}/v1/chat/completions")
+    finally:
+        server.shutdown()
+    (res,) = [json.loads(line) for line in (root / "results" / "s000.jsonl").read_text().splitlines()]
+    assert res["prediction"] == EV1_PRED["prediction"] and res["error"] is None
+    assert res["attempts"] == 2
+    assert [b["response_format"]["type"] for b in asked] == ["json_object", "json_schema"]
+    assert asked[1]["response_format"]["json_schema"]["schema"] == row["retry_schema"]
+    assert asked[1]["temperature"] == 0.0
+
+
+def test_a_row_is_asked_at_most_once_per_distinct_request(world):
+    from ingestion_workflow.services.offload.cluster.job import RETRIES, bodies
+
+    row = _evidence_row(world)
+    serve = load_spec(SPEC_FILE.with_name("ns-ev1.json")).serve.model_dump()
+    assert len(bodies(row, serve)) == 1 + len(RETRIES)
+    assert len(bodies(dict(row, retry_schema=None), serve)) == 1
+    guided = dict(row, response_schema=row["retry_schema"])   # a guided greedy spec
+    assert [b.get("temperature") for b in bodies(guided, serve)] == [0.0, 0.7]

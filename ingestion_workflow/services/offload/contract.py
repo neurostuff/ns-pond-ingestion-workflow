@@ -137,6 +137,8 @@ class InputRow(BaseModel):
     max_tokens: int
     #: The JSON schema the answer is decoded against, when the spec is guided.
     response_schema: Optional[Dict[str, Any]] = None
+    #: The JSON schema an answer that is not JSON is asked again against, in the job.
+    retry_schema: Optional[Dict[str, Any]] = None
 
 
 class ResultRow(BaseModel):
@@ -152,6 +154,8 @@ class ResultRow(BaseModel):
     prompt_tokens: Optional[int] = None
     completion_tokens: Optional[int] = None
     wall_s: Optional[float] = None
+    #: How many times the job asked: more than 1 when an answer was not JSON (job.RETRIES).
+    attempts: int = 1
 
 
 class BundleState(BaseModel):

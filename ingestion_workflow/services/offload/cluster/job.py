@@ -32,6 +32,11 @@ SERVE_ATTEMPTS = 2
 #: How long one start may take before it counts as failed.
 SERVE_START_S = 1800
 
+#: How the job asks again, in order, while an answer is not JSON (cut off at max_tokens, or
+#: malformed): decoded against the row's retry_schema, greedy, then sampled. Unguided, the
+#: ev1 model went back through a record's list after its last item until max_tokens.
+RETRIES = ({}, {"temperature": 0.7, "seed": 1})
+
 #: The compile and autotune caches vLLM, torch and FlashInfer write, by environment variable
 #: and subdirectory. Each job keeps its own on the node's disk: shared ones in $HOME (NFS)
 #: let one job read another's half-written autotune file ("Stale file handle") and its
@@ -193,11 +198,13 @@ def stop(srv):
             continue
 
 
-def request_body(row, serve):
+def request_body(row, serve, retry=None):
     """The chat request for one input row: greedy unless the spec samples, and decoded
-    against the row's schema when it has one."""
-    schema = row.get("response_schema")
-    body = {"model": "model", "temperature": serve.get("temperature", 0.0),
+    against the row's schema when it has one. A retry (one of RETRIES) is decoded against
+    the row's retry_schema, with the retry's sampling."""
+    schema = row.get("retry_schema") if retry is not None else row.get("response_schema")
+    sampling = retry if retry is not None else serve
+    body = {"model": "model", "temperature": sampling.get("temperature", 0.0),
             "max_tokens": row["max_tokens"],
             "messages": [{"role": "user", "content": row["content"]}],
             "chat_template_kwargs": row["chat_template_kwargs"]}
@@ -206,9 +213,47 @@ def request_body(row, serve):
                                    "json_schema": {"name": "compact-record", "schema": schema}}
     elif serve.get("response_format", "json_object") == "json_object":
         body["response_format"] = {"type": "json_object"}
-    if serve.get("seed") is not None:
-        body["seed"] = serve["seed"]
+    if sampling.get("seed") is not None:
+        body["seed"] = sampling["seed"]
     return body
+
+
+def bodies(row, serve):
+    """The requests the job may send for a row, in order: the spec's, then each retry that
+    differs from those before it (none without a retry_schema)."""
+    out = [request_body(row, serve)]
+    for retry in RETRIES if row.get("retry_schema") else ():
+        body = request_body(row, serve, retry)
+        if body not in out:
+            out.append(body)
+    return out
+
+
+def not_json(res):
+    return res["finish_reason"] == "length" or (res["error"] or "").startswith("invalid_json")
+
+
+def ask(url, body, res):
+    """Send one request; fill `res` with its answer, or its error."""
+    res.update(prediction=None, content=None, finish_reason=None, error=None,
+               prompt_tokens=None, completion_tokens=None)
+    try:
+        q = urllib.request.Request(url, json.dumps(body).encode(),
+                                   {"Content-Type": "application/json"})
+        j = json.load(urllib.request.urlopen(q, timeout=7200))
+        choice = j["choices"][0]
+        res.update(finish_reason=choice.get("finish_reason"),
+                   prompt_tokens=j["usage"]["prompt_tokens"],
+                   completion_tokens=j["usage"]["completion_tokens"])
+        text = res["content"] = choice["message"].get("content")
+        try:
+            res["prediction"] = json.loads(text)
+        except Exception as e:  # noqa: BLE001
+            res["error"] = "invalid_json: " + repr(e)[:150]
+    except urllib.error.HTTPError as e:
+        res["error"] = f"http {e.code}: " + e.read().decode()[:400]
+    except Exception as e:  # noqa: BLE001
+        res["error"] = "exc: " + repr(e)[:300]
 
 
 def run(root, shard, url):
@@ -230,27 +275,12 @@ def run(root, shard, url):
 
     def one(r):
         t = time.time()
-        res = {"article_id": r["article_id"], "key": r.get("key"), "text_sha256": r["text_sha256"],
-               "prediction": None, "content": None, "finish_reason": None, "error": None,
-               "prompt_tokens": None, "completion_tokens": None}
-        body = request_body(r, serve)
-        try:
-            q = urllib.request.Request(url, json.dumps(body).encode(),
-                                       {"Content-Type": "application/json"})
-            j = json.load(urllib.request.urlopen(q, timeout=7200))
-            choice = j["choices"][0]
-            res.update(finish_reason=choice.get("finish_reason"),
-                       prompt_tokens=j["usage"]["prompt_tokens"],
-                       completion_tokens=j["usage"]["completion_tokens"])
-            text = res["content"] = choice["message"].get("content")
-            try:
-                res["prediction"] = json.loads(text)
-            except Exception as e:  # noqa: BLE001
-                res["error"] = "invalid_json: " + repr(e)[:150]
-        except urllib.error.HTTPError as e:
-            res["error"] = f"http {e.code}: " + e.read().decode()[:400]
-        except Exception as e:  # noqa: BLE001
-            res["error"] = "exc: " + repr(e)[:300]
+        res = {"article_id": r["article_id"], "key": r.get("key"), "text_sha256": r["text_sha256"]}
+        for n, body in enumerate(bodies(r, serve), 1):
+            ask(url, body, res)
+            res["attempts"] = n
+            if not not_json(res):
+                break
         res["wall_s"] = round(time.time() - t, 1)
         with lock:
             handle.write(json.dumps(res) + "\n")
