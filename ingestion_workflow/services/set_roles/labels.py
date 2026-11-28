@@ -6,7 +6,7 @@ and `from_prior_study`, independent of the role (ns-pond-ingestion-workflow#55):
 a borrowed seed is still a seed. The values are study_schema's enums, imported,
 never retyped here. Numbers that are not brain coordinates at all (channel
 numbers, lattice points, a phantom's targets) have no role: `role` is None and
-the set is left out of what is uploaded and of the extractors' targets.
+the set is left out of the parse, so it is not uploaded, and of the extractors' targets.
 
 Two more answers stay in ns-pond until study_schema has fields for them: `space`,
 whether the coordinates are human MNI/Talairach millimetres (`template`) or a
@@ -27,13 +27,13 @@ from study_schema.models.paper_parse import AnchorKind, CoordinateRole
 COORDINATE_ROLES: Tuple[str, ...] = tuple(r.value for r in CoordinateRole)
 ANCHOR_KINDS: Tuple[str, ...] = tuple(k.value for k in AnchorKind)
 
-#: The roles uploaded to neurostore: this study's results and the regions it
-#: defined to get them. A peak quoted from another study, a bare slice position,
-#: an electrode location or an `other` coordinate is held: it stays in its place in the
-#: roles payload and in pondie's stage1, marked `held`, and is not uploaded.
-UPLOADED_ROLES: Tuple[str, ...] = (CoordinateRole.result.value, CoordinateRole.anchor.value)
+#: This study's own roles: its results and the regions it defined to get them. A peak
+#: quoted from another study, a bare slice position, an electrode location or an `other`
+#: coordinate is `held`. It is still parsed and uploaded with its role, and Neurostore's
+#: releases export results only (docs/set-roles-artifact.md).
+OWN_ROLES: Tuple[str, ...] = (CoordinateRole.result.value, CoordinateRole.anchor.value)
 
-#: Whether a set's coordinates are human template millimetres; only `template` sets are uploaded.
+#: Whether a set's coordinates are human template millimetres; an `other` set is held.
 SPACES: Tuple[str, ...] = ("template", "other")
 #: Where a set's coordinates come from.
 COORDINATE_SOURCES: Tuple[str, ...] = ("this_study", "prior_study", "atlas_or_database")
@@ -166,9 +166,9 @@ class RoleDecision:
         return self.decided.from_prior_study
 
     @property
-    def uploaded(self) -> bool:
-        """A result or anchor in human template millimetres: what neurostore is given."""
-        return self.role in UPLOADED_ROLES and self.space == "template"
+    def held(self) -> bool:
+        """Anything but a result or anchor in human template millimetres."""
+        return not (self.role in OWN_ROLES and self.space == "template")
 
     def to_metadata(self) -> dict:
         """The decision in CoordinateParse's field names, plus who decided and how surely.

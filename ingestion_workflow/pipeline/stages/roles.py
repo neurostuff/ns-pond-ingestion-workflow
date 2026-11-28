@@ -45,7 +45,7 @@ from .space import _article_text
 logger = logging.getLogger(__name__)
 
 #: Bump when what the stage writes changes, apart from the models and the contexts.
-#: 6: every set has `space` and `coordinate_source`, and only template-space sets are uploaded.
+#: 6: every set has `space` and `coordinate_source`, and a set in another space is held.
 ROLES_VERSION = 6
 
 #: Articles classified at once, their inputs held in memory meanwhile: their sets
@@ -154,12 +154,13 @@ def assign_roles(
     builder; it raises `ModelUnavailable` when it cannot be used: no set is
     given a role any other way. Each analysis gains `metadata.set_role`
     (`SET_ROLE_FIELDS`) and `metadata.held`. Tables read without their header
-    and rows go in `unread` (`set_contexts`). Sets that are not uploaded -- a
-    reference, a bare slice position (other), a localization, or any set whose
-    coordinates are not human template millimetres (space `other`) -- are held:
-    they stay in the collection's `analyses`, in their place, so a set's
-    position (pondie's `table_id#ordinal`) never moves, and upload leaves them
-    out (`uploaded_sets`).
+    and rows go in `unread` (`set_contexts`). A set that is not this study's
+    result or anchor -- a reference, a bare slice position (other), a
+    localization, or any set whose coordinates are not human template
+    millimetres (space `other`) -- is held: it stays in the collection's
+    `analyses`, in its place, so a set's position (pondie's `table_id#ordinal`)
+    never moves. The parse writes it with its role, upload sends it, and
+    Neurostore's releases export results only.
 
     A set whose points cannot be template brain coordinates (`geometry.not_brain`,
     given every point of the set's table, or of the prose, for scale) is decided
@@ -212,18 +213,18 @@ def assign_roles(
                 "metadata": {
                     **(analysis.get("metadata") or {}),
                     "set_role": metadata,
-                    "held": not decision.uploaded,
+                    "held": decision.held,
                 },
             }
             # An anchor by its kind.
             if decision.role is not None:
                 roles[decision.anchor_kind or decision.role] += 1
-            held += not decision.uploaded
+            held += decision.held
             kept.append(analysis)
             values.append([table_id, index, decision.role, decision.anchor_kind,
                            decision.from_prior_study, decision.space,
-                           decision.coordinate_source, not decision.uploaded])
-            records.append([table_id, index, metadata, not decision.uploaded])
+                           decision.coordinate_source, decision.held])
+            records.append([table_id, index, metadata, decision.held])
         out[table_id] = {**collection, "analyses": kept}
     summary = {
         "tables": sum(1 for c in out.values() if (c or {}).get("analyses")),
@@ -250,22 +251,8 @@ def assign_roles(
     return out, summary
 
 
-def uploaded_sets(payload: Mapping[str, Any]) -> Dict[str, Any]:
-    """The payload without its held sets: what upload writes to neurostore."""
-    return {
-        table_id: {
-            **(collection or {}),
-            "analyses": [
-                a for a in (collection or {}).get("analyses") or []
-                if not ((a or {}).get("metadata") or {}).get("held")
-            ],
-        }
-        for table_id, collection in (payload or {}).items()
-    }
-
-
 def unassigned(payload: Mapping[str, Any]) -> List[str]:
-    """`table_id#index` of every set, uploaded or held, without a role the roles stage decided.
+    """`table_id#index` of every set, held or not, without a role the roles stage decided.
 
     What upload and sync check before writing anything: a set missing its
     `metadata.set_role` or `metadata.held`, or carrying a role that is

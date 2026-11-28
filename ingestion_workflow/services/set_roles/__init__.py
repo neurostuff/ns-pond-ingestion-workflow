@@ -20,7 +20,7 @@ from .labels import (
     COORDINATE_ROLES,
     COORDINATE_SOURCES,
     SPACES,
-    UPLOADED_ROLES,
+    OWN_ROLES,
     RoleDecision,
     SetRole,
 )
@@ -39,6 +39,6 @@ __all__ = [
     "SetRole",
     "TABLE_CONTEXT_VERSION",
     "TableSetContext",
-    "UPLOADED_ROLES",
+    "OWN_ROLES",
     "decide",
 ]

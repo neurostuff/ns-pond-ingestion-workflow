@@ -6,7 +6,7 @@ import pytest
 from ingestion_workflow.services.set_roles import (
     ANCHOR_KINDS,
     COORDINATE_ROLES,
-    UPLOADED_ROLES,
+    OWN_ROLES,
     Prediction,
     ProseSetContext,
     SetRole,
@@ -180,7 +180,7 @@ def _prediction(role, p, kind=None, space="template", source="this_study"):
 def test_the_role_is_the_model_s_answer_however_sure_it_is():
     decision = decide(_prediction("reference", 0.4), source="enc@1", origin="table")
     assert (decision.role, decision.source, decision.confidence) == ("reference", "enc@1", 0.4)
-    assert not decision.uploaded
+    assert decision.held
 
 
 def test_a_decision_without_a_prediction_is_refused():
@@ -220,11 +220,11 @@ def test_a_borrowed_seed_is_a_seed_from_a_prior_study():
         origin="text",
         evidence=["The seed came from Smith et al. (2010)."],
     )
-    assert (decision.role, decision.anchor_kind, decision.from_prior_study, decision.uploaded) == (
+    assert (decision.role, decision.anchor_kind, decision.from_prior_study, decision.held) == (
         "anchor",
         "seed",
         True,
-        True,
+        False,
     )
     assert decision.prior_study_evidence == ({"text": "The seed came from Smith et al. (2010)."},)
 
@@ -238,14 +238,14 @@ def test_an_atlas_node_is_not_from_a_prior_study_but_says_where_it_came_from():
 
 def test_a_result_in_another_frame_is_held():
     decision = decide(_prediction("result", 0.9, space="other"), source="enc@1", origin="table")
-    assert (decision.role, decision.space, decision.uploaded) == ("result", "other", False)
+    assert (decision.role, decision.space, decision.held) == ("result", "other", True)
 
 
 def test_numbers_that_are_not_coordinates_have_no_role_space_or_source():
     prediction = Prediction(None, None, {r: 0.2 for r in COORDINATE_ROLES}, None, None, 0.1)
     decision = decide(prediction, source="enc@1", origin="table")
     assert (decision.role, decision.space, decision.coordinate_source) == (None, None, None)
-    assert decision.confidence == pytest.approx(0.9) and not decision.uploaded
+    assert decision.confidence == pytest.approx(0.9) and decision.held
 
 
 @pytest.mark.parametrize("fields, error", [
@@ -272,7 +272,7 @@ def test_no_evidence_is_recorded_for_the_study_s_own_set():
 
 
 def test_other_is_a_role_that_is_not_uploaded():
-    assert "other" in COORDINATE_ROLES and "other" not in UPLOADED_ROLES
+    assert "other" in COORDINATE_ROLES and "other" not in OWN_ROLES
     assert SetRole.of({"role": "other", "anchor_kind": None, "from_prior_study": False}).role == "other"
 
 

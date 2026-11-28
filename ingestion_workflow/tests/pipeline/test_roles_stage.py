@@ -10,7 +10,6 @@ import pytest
 from ingestion_workflow.catalog import Artifact, Catalog, Outcome, Status
 from ingestion_workflow.clients.model_server import ModelUnavailable
 from ingestion_workflow.config import RoleModel, Settings
-from ingestion_workflow.models import AnalysisCollection
 from ingestion_workflow.models.ids import Identifier
 from ingestion_workflow.pipeline import Context
 from ingestion_workflow.pipeline.stages import STAGE_ORDER, build
@@ -18,7 +17,6 @@ from ingestion_workflow.pipeline.stages.roles import (
     RolesStage,
     assign_roles,
     unassigned,
-    uploaded_sets,
 )
 from ingestion_workflow.pipeline.stages.space import SpaceStage
 from ingestion_workflow.pipeline.stages.sync import SyncStage
@@ -193,10 +191,7 @@ def test_every_set_is_read_through_its_origin_s_context_by_the_one_model():
         "model": "fake@1",
     }
     assert unassigned(out) == []
-    # Upload leaves the held set out.
-    assert [a.name for a in AnalysisCollection.from_dict(uploaded_sets(out)["t2"]).analyses] == [
-        "patients > controls"
-    ]
+    assert [a["metadata"]["held"] for a in out["t2"]["analyses"]] == [False, True]
 
 
 def test_an_unsure_answer_is_still_the_model_s_and_says_how_unsure():
@@ -211,14 +206,14 @@ def test_an_unsure_answer_is_still_the_model_s_and_says_how_unsure():
 
 
 def test_a_set_in_another_frame_keeps_its_role_and_is_held():
-    """A rat seed is an anchor and a seed, in bregma millimetres: not uploaded."""
+    """A rat seed is an anchor and a seed, in bregma millimetres: held."""
     rat = FakeClassifier({**TABLE_ANSWERS, "patients > controls": ("anchor", 0.9, "seed", "other")})
     out, summary = assign_roles(_tables(), [], TEXT, rat)
     seed = out["t2"]["analyses"][0]["metadata"]
     assert (seed["set_role"]["role"], seed["set_role"]["anchor_kind"], seed["set_role"]["space"],
             seed["held"]) == ("anchor", "seed", "other", True)
     assert (summary["held"], summary["other_space"]) == (2, 1)
-    assert uploaded_sets(out)["t2"]["analyses"] == []
+    assert [a["metadata"]["held"] for a in out["t2"]["analyses"]] == [True, True]
 
 
 @pytest.mark.parametrize("source, prior", [
